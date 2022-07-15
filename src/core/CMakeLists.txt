@@ -1,0 +1,35 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
+
+LINK_DIRECTORIES(
+    ${Boost_LIBRARY_DIRS}
+)
+
+FILE(GLOB_RECURSE LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+FILE(GLOB_RECURSE LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
+ADD_LIBRARY(core SHARED ${LIB_HEAD} ${LIB_SRC})
+TARGET_INCLUDE_DIRECTORIES(core PUBLIC 
+                            ${3RDPARTY_DIR}/spdlog/include
+                            ${PROJECT_INCLUDE_DIR} 
+                            ${Boost_INCLUDE_DIRS} 
+                            ${Protobuf_INCLUDE_DIR})
+TARGET_LINK_LIBRARIES(core ${Boost_LIBRARIES} ${Protobuf_LIBRARY} module_logger)
+
+# transfer all headers to the include directory 
+FILE(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR}/core)
+FOREACH(include ${LIB_HEAD})
+	MESSAGE("-- Copying ${include}")
+	CONFIGURE_FILE(${include} ${PROJECT_INCLUDE_DIR}/core COPYONLY)
+ENDFOREACH()
+
+INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/include/core
+    FILES_MATCHING
+    PATTERN "*.h"
+    PATTERN "*.hpp" EXCLUDE
+    PATTERN "CMakeLists.txt" EXCLUDE
+    )
+
+INSTALL(TARGETS core
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin)

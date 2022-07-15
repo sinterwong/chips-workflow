@@ -1,0 +1,31 @@
+//
+// Created by Wallel on 2022/2/22.
+//
+
+#include "opencvDisplayModule.h"
+
+namespace module {
+OpencvDisplayModule::OpencvDisplayModule(Backend *ptr,
+                                         const std::string &initName,
+                                         const std::string &initType,
+                                         const std::vector<std::string> &recv,
+                                         const std::vector<std::string> &send,
+                                         const std::vector<std::string> &pool)
+    : Module(ptr, initName, initType, recv, send, pool) {}
+
+void OpencvDisplayModule::forward(
+    std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
+  for (auto &[send, type, buf] : message) {
+    assert(type == "FrameMessage");
+    int height, width;
+    height = buf.height;
+    width = buf.width;
+
+    auto frameBufMessage = backendPtr->pool.read(buf.key);
+    auto framePtr = std::any_cast<cv::Mat>(frameBufMessage.read("Mat"));
+
+    cv::imshow("image", framePtr);
+    cv::waitKey(20);
+  }
+}
+} // namespace module
