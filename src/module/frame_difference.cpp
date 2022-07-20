@@ -1,3 +1,14 @@
+/**
+ * @file frame_difference.cpp
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2022-06-15
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #include "frame_difference.h"
 #include "logger/logger.hpp"
 #include <opencv2/imgcodecs.hpp>
@@ -7,7 +18,7 @@ namespace solution {
 
 bool FrameDifference::update(
     std::shared_ptr<cv::Mat> &frame,
-    std::vector<std::pair<std::string, std::array<float, 5>>> &bboxes) {
+    std::vector<std::pair<std::string, std::array<float, 6>>> &bboxes) {
   if (!lastFrame) {
     return false;
   }
@@ -23,7 +34,7 @@ bool FrameDifference::update(
 //运动物体检测函数声明
 bool FrameDifference::moveDetect(
     const cv::Mat &temp, const cv::Mat &frame,
-    std::vector<std::pair<std::string, std::array<float, 5>>> &bboxes) {
+    std::vector<std::pair<std::string, std::array<float, 6>>> &bboxes) {
 
   //平滑、帧差或背景差、二值化、膨胀、腐蚀。
   // 1.平滑处理
@@ -80,11 +91,11 @@ bool FrameDifference::moveDetect(
   std::vector<cv::Rect> boundRect(contours.size());
   for (int i = 0; i < contours.size(); i++) {
     boundRect[i] = cv::boundingRect(contours[i]);
-    std::pair<std::string, std::array<float, 5>> bbox = {
-        "frame_difference",
+    std::pair<std::string, std::array<float, 6>> bbox = {
+        name,
         {static_cast<float>(boundRect[i].x), static_cast<float>(boundRect[i].y),
          static_cast<float>(boundRect[i].x + boundRect[i].width),
-         static_cast<float>(boundRect[i].y + boundRect[i].height), 0.0}};
+         static_cast<float>(boundRect[i].y + boundRect[i].height), 0.0, 0.0}};
     bboxes.emplace_back(std::move(bbox));
   }
   return true;

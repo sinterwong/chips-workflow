@@ -1,48 +1,46 @@
 /**
- * @file detectModule.cpp
+ * @file classifierModule.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief
+ * @brief 
  * @version 0.1
- * @date 2022-06-03
- *
+ * @date 2022-07-18
+ * 
  * @copyright Copyright (c) 2022
- *
+ * 
  */
 
-#include "jetson/detectModule.h"
+#include "jetson/classifierModule.h"
 #include "backend.h"
 #include "inference.h"
+#include "jetson/classifier.hpp"
 #include <cassert>
-#include <memory>
-#include <opencv2/core/mat.hpp>
 #include <opencv2/imgcodecs.hpp>
-#include <utility>
 
 namespace module {
 
-DetectModule::DetectModule(Backend *ptr, const std::string &initName,
-                           const std::string &initType,
-                           const common::ParamsConfig _params,
-                           const std::vector<std::string> &recv,
-                           const std::vector<std::string> &send,
-                           const std::vector<std::string> &pool)
+ClassifierModule::ClassifierModule(Backend *ptr, const std::string &initName,
+                                   const std::string &initType,
+                                   const common::ParamsConfig _params,
+                                   const std::vector<std::string> &recv,
+                                   const std::vector<std::string> &send,
+                                   const std::vector<std::string> &pool)
     : Module(ptr, initName, initType, recv, send, pool), params(_params) {
 
+  // 算法配置信息，之后可以存入数据库
   inferParams.batchSize = 1;
-  inferParams.numAnchors = 25200;
-  inferParams.numClasses = 80;
-  inferParams.inputTensorNames.push_back("images");
+  inferParams.numClasses = 2;
+  inferParams.inputTensorNames.push_back("input");
   inferParams.outputTensorNames.push_back("output");
   inferParams.inputShape = {640, 640, 3};
   inferParams.serializedFilePath = params.modelDir + "/yolov5s.engine";
 
-  instance = std::make_shared<infer::trt::DetctionInfer>(inferParams);
+  instance = std::make_shared<infer::trt::ClassifierInfer>(inferParams);
   instance->initialize();
 }
 
-DetectModule::~DetectModule() {}
+ClassifierModule::~ClassifierModule() {}
 
-void DetectModule::forward(
+void ClassifierModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
   if (!instance) {
     std::cout << "instance is not init!!!" << std::endl;
@@ -50,13 +48,16 @@ void DetectModule::forward(
   }
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      FLOWENGINE_LOGGER_INFO("{} DetectModule module was done!", name);
+      FLOWENGINE_LOGGER_INFO("{} ClassifierModule module was done!", name);
       stopFlag.store(true);
     } else if (type == "FrameMessage") {
+
       auto frameBufMessage = backendPtr->pool.read(buf.key);
-      // void *data = std::any_cast<void *>(frameBufMessage.read("void*"));
       std::shared_ptr<cv::Mat> image =
           std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
+
+      // 如果存在 region, 就基于提供的region进行分类,
+      // 暂时认定为这个模块就是算法最上游
 
       cv::Mat croppedImage;
       cv::Rect rect;
@@ -65,7 +66,6 @@ void DetectModule::forward(
                         params.region[3]};
         croppedImage = cv::Mat(*image, rect);
         infer::Result ret;
-        ret.shape = {croppedImage.cols, croppedImage.rows, 3};
         instance->infer(croppedImage.data, ret);
         buf.width = croppedImage.cols;
         buf.height = croppedImage.rows;
@@ -81,6 +81,7 @@ void DetectModule::forward(
         autoSend(buf);
       } else {
         for (auto &bbox : buf.results.bboxes) {
+          // 如果存在上游，就只需要分类基于上游bbox给一个类别和置信度即可
           if (bbox.first == send) {
             rect = cv::Rect{static_cast<int>(bbox.second[0]),
                             static_cast<int>(bbox.second[1]),
@@ -88,21 +89,13 @@ void DetectModule::forward(
                             static_cast<int>(bbox.second[3] - bbox.second[1])};
             croppedImage = cv::Mat(*image, rect);
             infer::Result ret;
-            ret.shape = {croppedImage.cols, croppedImage.rows, 3};
             instance->infer(croppedImage.data, ret);
             buf.width = croppedImage.cols;
             buf.height = croppedImage.rows;
-            for (auto &rbbox : ret.detResults) {
-              // std::pair<std::string, std::array<float, 6>> b{}
-              std::pair<std::string, std::array<float, 6>> b = {
-                  name,
-                  {rbbox.bbox[0] + bbox.second[0],
-                   rbbox.bbox[1] + bbox.second[1],
-                   rbbox.bbox[2] + bbox.second[0],
-                   rbbox.bbox[3] + bbox.second[1], rbbox.class_confidence,
-                   rbbox.class_id}};
-              buf.results.bboxes.emplace_back(std::move(b));
-            }
+            // 直接替换掉原本检测的类别属性
+            bbox.first = name;
+            bbox.second[5] = ret.classResult.first;  // confidence
+            bbox.second[4] = ret.classResult.second; // class_id
             autoSend(buf);
           }
         }

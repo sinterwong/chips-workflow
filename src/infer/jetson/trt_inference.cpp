@@ -12,6 +12,7 @@
 #include "jetson/trt_inference.hpp"
 #include "jetson/logger.h"
 #include "jetson/preprocess.h"
+#include <array>
 
 namespace infer {
 namespace trt {
@@ -81,17 +82,18 @@ bool TRTInference::initialize() {
     FLOWENGINE_LOGGER_WARN("ExecutionContext is failed!");
     return false;
   }
-  // inputDims = {mParams.batchSize, mParams.inputShape[2], mParams.inputShape[0],
-  // mParams.inputShape[1]}; outputDims = {mParams.batchSize, mParams.numAnchors,
-  // mParams.numClasses + 5}; context->setBindingDimensions(0, inputDims);
-  // std::cout << context->getBindingDimensions(0) << std::endl;
+  // inputDims = {mParams.batchSize, mParams.inputShape[2],
+  // mParams.inputShape[0], mParams.inputShape[1]}; outputDims =
+  // {mParams.batchSize, mParams.numAnchors, mParams.numClasses + 5};
+  // context->setBindingDimensions(0, inputDims); std::cout <<
+  // context->getBindingDimensions(0) << std::endl;
   return true;
 }
 
-void TRTInference::infer(void* inputs, Result &result) {
+void TRTInference::infer(void *inputs, Result &result) {
   BufferManager buffers(mEngine, mParams.batchSize, context);
 
-  if (!processInput(inputs, buffers)) {
+  if (!processInput(inputs, buffers, result.shape)) {
     FLOWENGINE_LOGGER_ERROR("process input error!");
     exit(-1);
   }
@@ -112,31 +114,26 @@ void TRTInference::infer(void* inputs, Result &result) {
   }
 }
 
-bool TRTInference::processInput(void* inputs,
-                                BufferManager const &buffers) const {
+bool TRTInference::processInput(void *inputs,
+                                BufferManager const &buffers, std::array<int, 3> const& shape) const {
   float *deviceInputBuffer = static_cast<float *>(
       buffers.getDeviceBuffer(mParams.inputTensorNames[0])); // explicit batch
-  int size_image =
-      mParams.originShape[0] * mParams.originShape[1] * mParams.originShape[2];
-  int size_image_dst =
-      mParams.inputShape[0] * mParams.inputShape[1] * mParams.inputShape[2];
-  // std::cout << mParams.originShape[0] << ", " << mParams.originShape[1] << std::endl;
-  // std::cout << inputs[0].cols << ", " << inputs[0].rows << std::endl;
-  for (int i = 0; i < mParams.batchSize; i++) {
-    // copy data to pinned memory
-    memcpy(imageHost, inputs, size_image);
+  int size_image = shape[0] * shape[1] * shape[2];
+  // int size_image_dst =
+  //     mParams.inputShape[0] * mParams.inputShape[1] * mParams.inputShape[2]; // if batch_size > 1
+  // copy data to pinned memory
+  memcpy(imageHost, inputs, size_image);
 
-    // copy data to device memory
-    CHECK(cudaMemcpyAsync(imageDevice, imageHost, size_image,
-                          cudaMemcpyHostToDevice, processStream));
+  // copy data to device memory
+  CHECK(cudaMemcpyAsync(imageDevice, imageHost, size_image,
+                        cudaMemcpyHostToDevice, processStream));
 
-    preprocess_kernel_img(imageDevice, mParams.originShape[0],
-                          mParams.originShape[1], deviceInputBuffer,
-                          mParams.inputShape[0], mParams.inputShape[1],
-                          processStream);
+  preprocess_kernel_img(imageDevice, shape[0],
+                        shape[1], deviceInputBuffer,
+                        mParams.inputShape[0], mParams.inputShape[1],
+                        processStream);
 
-    deviceInputBuffer += size_image_dst;
-  }
+  // deviceInputBuffer += size_image_dst; // if batch_size > 1
 
   // cv::Mat resizedFrame;
   // if (mParams.scaling > 0) {

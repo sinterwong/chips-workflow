@@ -1,17 +1,18 @@
-//
-// Created by Wallel on 2022/2/22.
-//
+/**
+ * @file sendOutputModule.cpp
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2022-06-05
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 
 #include "sendOutputModule.h"
 #include "logger/logger.hpp"
 #include "messageBus.h"
-#include "rapidjson/document.h"
-#include "rapidjson/rapidjson.h"
-#include <array>
-#include <opencv2/core/types.hpp>
 #include <opencv2/imgproc.hpp>
-#include <string>
-#include <vector>
 
 namespace module {
 size_t curl_callback(void *ptr, size_t size, size_t nmemb, std::string *data) {
@@ -153,6 +154,8 @@ bool SendOutputModule::drawResult(cv::Mat &image, ResultMessage const &rm) {
                   bbox.second[2] - bbox.second[0],
                   bbox.second[3] - bbox.second[1]);
     cv::rectangle(image, rect, cv::Scalar(255, 255, 0), 2);
+    cv::putText(image, bbox.first, cv::Point(rect.x, rect.y - 1),
+                cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(255, 0, 255), 2);
   }
 
   for (auto &poly : rm.polys) {
@@ -173,7 +176,7 @@ void SendOutputModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      std::cout << "SendOutput module was done!" << std::endl;
+      FLOWENGINE_LOGGER_INFO("{} SendOutputModule module was done!", name);
       stopFlag.store(true);
     }
     FrameBuf frameBufMessage = backendPtr->pool.read(buf.key);
@@ -185,9 +188,12 @@ void SendOutputModule::forward(
 
     // TODO 临时画个图
     cv::Mat showImage = frame->clone();
+    if (buf.frameType == "RGB888") {
+      cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
+    }
     drawResult(showImage, buf.results);
     resultTemplate.alarmFile = imageConverter.mat2str(showImage);
-    
+
     // resultTemplate.alarmFile = imageConverter.mat2str(*frame);
     resultTemplate.alarmId = generate_hex(16);
 

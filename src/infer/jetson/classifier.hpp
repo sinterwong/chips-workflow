@@ -8,19 +8,19 @@
  * @copyright Copyright (c) 2022
  *
  */
-#ifndef __INFERENCE_DETECTION_H_
-#define __INFERENCE_DETECTION_H_
+#ifndef __INFERENCE_CLASSIFIER_H_
+#define __INFERENCE_CLASSIFIER_H_
 #include "inference.h"
 #include "jetson/trt_inference.hpp"
 
 namespace infer {
 namespace trt {
-class DetctionInfer : public TRTInference {
+class ClassifierInfer : public TRTInference {
   //!
   //! \brief construction
   //!
 public:
-  DetctionInfer(InferParams const &params) : TRTInference(params) {}
+  ClassifierInfer(InferParams const &params) : TRTInference(params) {}
 
 private:
   //!
@@ -34,18 +34,17 @@ private:
   virtual bool processOutput(BufferManager const &,
                              Result &) const override;
 
-  static inline bool compare(DetectionResult const &a,
-                             DetectionResult const &b) {
-    return a.det_confidence > b.det_confidence;
-  }
+  //!
+  //! \brief Reads the input and mean data, preprocesses, and stores the result
+  //! in a managed buffer
+  //!
+  // virtual bool processInput(void *, BufferManager const &) const override;
 
-  float iou(std::array<float, 4> const &, std::array<float, 4> const &) const;
+  //!
+  //! \brief Softmax and argmax for output
+  //!
+  std::pair<int, float> softmax_argmax(float* output, int outputSize) const;
 
-  void nms(std::vector<DetectionResult> &, float *) const;
-
-  void renderOriginShape(std::vector<DetectionResult> &results, float scaling) const;
-
-  int DETECTION_SIZE = sizeof(DetectionResult) / sizeof(float);
 };
 } // namespace trt
 } // namespace infer

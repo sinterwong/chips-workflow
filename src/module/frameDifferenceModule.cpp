@@ -1,6 +1,13 @@
-//
-// Created by Wallel on 2022/3/1.
-//
+/**
+ * @file frameDifferenceModule.cpp
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2022-06-15
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 
 #include "frameDifferenceModule.h"
 #include "backend.h"
@@ -15,7 +22,7 @@ FrameDifferenceModule::FrameDifferenceModule(
     Backend *ptr, const std::string &initName, const std::string &initType,
     const std::vector<std::string> &recv, const std::vector<std::string> &send,
     const std::vector<std::string> &pool)
-    : Module(ptr, initName, initType, recv, send, pool) {}
+    : Module(ptr, initName, initType, recv, send, pool), fd(initName) {}
 
 FrameDifferenceModule::~FrameDifferenceModule() {}
 

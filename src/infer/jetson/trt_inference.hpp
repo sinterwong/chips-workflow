@@ -17,6 +17,7 @@
 #include "jetson/buffers.h"
 #include "jetson/common.h"
 #include <NvInferRuntimeCommon.h>
+#include <array>
 #include <cmath>
 #include <memory>
 
@@ -62,7 +63,7 @@ private:
   //! \brief Reads the input and mean data, preprocesses, and stores the result
   //! in a managed buffer
   //!
-  virtual bool processInput(void *, BufferManager const &) const;
+  virtual bool processInput(void *, BufferManager const &, std::array<int, 3> const &) const;
 
   //!
   //! \brief Verifies that the output is correct and prints it

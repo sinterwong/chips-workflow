@@ -152,7 +152,7 @@ def run():
             stop_process(ok)
     stream2configs = new_configs
 
-# python app_control.py --url http://114.242.23.39:9400/v1/internal/get_config --host_id 62
+# python app_control.py --url http://114.242.23.39:9403/v1/internal/get_config --host_id 62
 if __name__ == "__main__":
     args = parser.parse_args()
     stream2pid = {}

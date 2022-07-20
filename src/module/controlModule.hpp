@@ -1,6 +1,13 @@
-//
-// Created by Wallel on 2022/2/22.
-//
+/**
+ * @file controlModule.hpp
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2022-07-10
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 
 #ifndef __METAENGINE_STATUE_CONTROL_H
 #define __METAENGINE_STATUE_CONTROL_H

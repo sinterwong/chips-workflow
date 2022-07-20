@@ -1,6 +1,13 @@
-//
-// Created by Wallel on 2022/2/22.
-//
+/**
+ * @file sendOutputModule.h
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2022-06-05
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 
 #ifndef __METAENGINE_SEND_OUTPUT_H_
 #define __METAENGINE_SEND_OUTPUT_H_

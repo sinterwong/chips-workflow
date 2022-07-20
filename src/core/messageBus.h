@@ -22,8 +22,8 @@
 // #include "basicMessage.pb.h"
 
 struct ResultMessage {
-  std::vector<std::pair<std::string, std::array<float, 5>>> bboxes;  // [x1, y1, x2, y2, confidence, classid]
-  std::vector<std::pair<std::string, std::array<float, 8>>> polys;  // [x1, y1, ..., x4, y4, confidence, classid]
+  std::vector<std::pair<std::string, std::array<float, 6>>> bboxes;  // [x1, y1, x2, y2, confidence, classid]
+  std::vector<std::pair<std::string, std::array<float, 9>>> polys;  // [x1, y1, ..., x4, y4, classid]
 };
 
 struct queueMessage {
@@ -32,7 +32,8 @@ struct queueMessage {
   int key;
   std::string send;
   std::string recv;
-  std::string type;
+  std::string messageType;
+  std::string frameType;
   std::string str;
   ResultMessage results;
 };

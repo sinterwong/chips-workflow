@@ -1,6 +1,13 @@
-//
-// Created by Wallel on 2022/2/22.
-//
+/**
+ * @file jetsonSourceModule.cpp
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2022-06-02
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 
 #include "jetsonSourceModule.h"
 #include <mutex>
@@ -30,7 +37,7 @@ std::any getMatBuffer(std::vector<std::any> &list, FrameBuf *buf) {
   void *data = reinterpret_cast<void *>(std::any_cast<uchar3 *>(list[0]));
   std::shared_ptr<cv::Mat> mat =
       std::make_shared<cv::Mat>(buf->height, buf->width, CV_8UC3, data);
-  cv::cvtColor(*mat, *mat, cv::COLOR_BGR2RGB);
+  // cv::cvtColor(*mat, *mat, cv::COLOR_BGR2RGB);
   return mat;
 }
 
@@ -85,7 +92,8 @@ void JetsonSourceModule::forward(
     int returnKey = backendPtr->pool.write(frameBufMessage);
 
     queueMessage sendMessage;
-    sendMessage.type = "RGB888";
+    sendMessage.frameType = "RGB888";
+    // sendMessage.type = "RGB888";
     sendMessage.height = opt.height;
     sendMessage.width = opt.width;
     sendMessage.key = returnKey;

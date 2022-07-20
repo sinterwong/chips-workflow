@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2022
  *
  */
-#include "inference.h"
 #include "jetson/detection.hpp"
+#include "inference.h"
 #include <algorithm>
 #include <vector>
 
@@ -17,7 +17,7 @@ namespace infer {
 namespace trt {
 
 float DetctionInfer::iou(std::array<float, 4> const &lbox,
-                     std::array<float, 4> const &rbox) const {
+                         std::array<float, 4> const &rbox) const {
   float interBox[] = {
       std::max(lbox[0] - lbox[2] / 2.f, rbox[0] - rbox[2] / 2.f), // left
       std::min(lbox[0] + lbox[2] / 2.f, rbox[0] + rbox[2] / 2.f), // right
@@ -32,7 +32,8 @@ float DetctionInfer::iou(std::array<float, 4> const &lbox,
   return interBoxS / (lbox[2] * lbox[3] + rbox[2] * rbox[3] - interBoxS);
 }
 
-void DetctionInfer::nms(std::vector<DetectionResult> &res, float *output) const {
+void DetctionInfer::nms(std::vector<DetectionResult> &res,
+                        float *output) const {
   std::map<float, std::vector<DetectionResult>> m;
   // output += ((mParams.numAnchors) * (mParams.numClasses + 5));
   int num = mParams.numClasses + 5;
@@ -40,12 +41,6 @@ void DetctionInfer::nms(std::vector<DetectionResult> &res, float *output) const 
     if (output[i + 4] <= mParams.c_thr)
       continue;
 
-    // // ---------- printer --------------
-    // for (int b = 0; b < num; b++) {
-    //   std::cout << output[i + b] << " ";
-    // }
-    // std::cout << std::endl;
-    // // _________________________________
     DetectionResult det;
     det.class_id = std::distance(
         output + i + 5, std::max_element(output + i + 5, output + i + num));
@@ -78,18 +73,31 @@ void DetctionInfer::nms(std::vector<DetectionResult> &res, float *output) const 
   }
 }
 
+void DetctionInfer::renderOriginShape(std::vector<DetectionResult> &results,
+                                      float scaling) const {
+  for (auto &ret : results) {
+    ret.bbox[0] /= scaling;
+    ret.bbox[1] /= scaling;
+    ret.bbox[2] /= scaling;
+    ret.bbox[3] /= scaling;
+  }
+}
+
 bool DetctionInfer::verifyOutput(Result const &result) const { return true; }
 
 bool DetctionInfer::processOutput(BufferManager const &buffers,
-                              Result &result) const {
+                                  Result &result) const {
   float *hostOutputBuffer =
       static_cast<float *>(buffers.getHostBuffer(mParams.outputTensorNames[0]));
   int outputSize = mParams.numAnchors * (mParams.numClasses + 5);
-  for (int b = 0; b < mParams.batchSize; b++) {
-    std::vector<DetectionResult> res;
-    nms(res, &hostOutputBuffer[b * outputSize]);
-    result.detResults.push_back(res);
-  }
+  // std::vector<DetectionResult> res;
+  // nms(res, &hostOutputBuffer[b * outputSize]);  // if batch_size >
+  // result.detResults.emplace_back(res);
+  nms(result.detResults, hostOutputBuffer);
+  // rect 还原成原始大小
+  float scaling = float(mParams.inputShape[0]) /
+                  (float)std::max(result.shape[0], result.shape[1]);
+  renderOriginShape(result.detResults, scaling);
   return true;
 };
 } // namespace trt

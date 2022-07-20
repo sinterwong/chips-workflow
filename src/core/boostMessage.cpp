@@ -42,7 +42,7 @@ bool BoostMessage::send(std::string source, std::string target,
 
   message.send = source;
   message.recv = target;
-  message.type = type;
+  message.messageType = type;
 
   socketRecv[key]->enqueue(message);
   return true;
@@ -79,7 +79,7 @@ bool BoostMessage::recv(std::string source, MessageBus::returnFlag &flag,
     if (recver->size_approx() > 0) {
       recver->try_dequeue(byte);
       send = byte.send;
-      type = byte.type;
+      type = byte.messageType;
       return true;
     }
     if (waitFlag)

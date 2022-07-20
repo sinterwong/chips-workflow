@@ -1,6 +1,13 @@
-//
-// Created by Wallel on 2022/2/22.
-//
+/**
+ * @file controlModule.cpp
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2022-07-10
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 
 #include "controlModule.hpp"
 #include "logger/logger.hpp"
