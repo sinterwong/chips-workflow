@@ -20,7 +20,7 @@ class ClassifierInfer : public TRTInference {
   //! \brief construction
   //!
 public:
-  ClassifierInfer(InferParams const &params) : TRTInference(params) {}
+  ClassifierInfer(const common::AlgorithmConfig &_param) : TRTInference(_param) {}
 
 private:
   //!

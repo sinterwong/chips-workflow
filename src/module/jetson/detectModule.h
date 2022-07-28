@@ -27,14 +27,14 @@
 namespace module {
 class DetectModule : public Module {
 private:
-  std::shared_ptr<infer::trt::DetctionInfer> instance;
   int count = 0;
-  infer::InferParams inferParams;
-  common::ParamsConfig params;
+  cv::Rect region{0, 0, 0, 0};
+  common::AlgorithmConfig params;
+  std::shared_ptr<infer::trt::DetctionInfer> instance;
 
 public:
   DetectModule(Backend *ptr, const std::string &initName,
-               const std::string &initType, const common::ParamsConfig _params,
+               const std::string &initType, const common::AlgorithmConfig &_params,
                const std::vector<std::string> &recv = {},
                const std::vector<std::string> &send = {},
                const std::vector<std::string> &pool = {});

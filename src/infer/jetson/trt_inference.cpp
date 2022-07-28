@@ -54,7 +54,7 @@ bool TRTInference::initialize() {
   }
   char *trtModelStream{nullptr};
   size_t size{0};
-  std::ifstream file(mParams.serializedFilePath, std::ios::binary);
+  std::ifstream file(mParams.modelPath, std::ios::binary);
   if (file.good()) {
     // LOG(INFO) << "Loading the engine: " << mParams.serializedFilePath
     // << std::endl;
@@ -90,12 +90,12 @@ bool TRTInference::initialize() {
   return true;
 }
 
-void TRTInference::infer(void *inputs, Result &result) {
+bool TRTInference::infer(void *inputs, Result &result) {
   BufferManager buffers(mEngine, mParams.batchSize, context);
 
   if (!processInput(inputs, buffers, result.shape)) {
     FLOWENGINE_LOGGER_ERROR("process input error!");
-    exit(-1);
+    return false;
   }
 
   // buffers.copyInputToDevice();  // 以下的预处理直接将输入放进了device中
@@ -103,15 +103,16 @@ void TRTInference::infer(void *inputs, Result &result) {
   bool status = context->executeV2(buffers.getDeviceBindings().data());
   if (!status) {
     FLOWENGINE_LOGGER_ERROR("execute error!");
-    exit(-1);
+    return false;
   }
 
   // Memcpy from device output buffers to host output buffers
   buffers.copyOutputToHost();
   if (!processOutput(buffers, result)) {
     FLOWENGINE_LOGGER_ERROR("process output error!");
-    exit(-1);
+    return false;
   }
+  return true;
 }
 
 bool TRTInference::processInput(void *inputs,

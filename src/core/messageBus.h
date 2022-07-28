@@ -50,9 +50,7 @@ public:
     successWithMore,
   };
 
-  virtual bool registered(std::string name,
-                          const std::vector<std::string> &reqRecvName,
-                          const std::vector<std::string> &proRecvName) = 0;
+  virtual bool registered(std::string name) = 0;
 
   virtual bool send(std::string source, std::string target, std::string type,
                     queueMessage message) = 0;

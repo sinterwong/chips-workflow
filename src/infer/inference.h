@@ -13,6 +13,7 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <array>
+#include "common/common.hpp"
 
 namespace infer {
 
@@ -30,18 +31,6 @@ struct Result {
   std::array<int, 3> shape;
 };
 
-struct InferParams{
-  int32_t batchSize; //!< Number of inputs in a batch
-  std::vector<std::string> inputTensorNames;
-  std::vector<std::string> outputTensorNames;
-  std::string serializedFilePath;
-  short numClasses;
-  int numAnchors;
-  std::array<int, 3> inputShape;
-  float c_thr = 0.3;
-  float nms_thr = 0.5;
-};
-
 class Inference {
 public:
   virtual ~Inference() {}
@@ -53,7 +42,7 @@ public:
   //!
   //! \brief Runs the inference engine with input of Mat
   //!
-  virtual void infer(void*, Result &) = 0;
+  virtual bool infer(void*, Result &) = 0;
 };
 } // namespace infer
 #endif

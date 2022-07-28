@@ -20,7 +20,7 @@ class DetctionInfer : public TRTInference {
   //! \brief construction
   //!
 public:
-  DetctionInfer(InferParams const &params) : TRTInference(params) {}
+  DetctionInfer(const common::AlgorithmConfig &_param) : TRTInference(_param) {}
 
 private:
   //!
@@ -43,7 +43,7 @@ private:
 
   void nms(std::vector<DetectionResult> &, float *) const;
 
-  void renderOriginShape(std::vector<DetectionResult> &results, float scaling) const;
+  void renderOriginShape(std::vector<DetectionResult> &results, std::array<int, 3> const &shape) const;
 
   int DETECTION_SIZE = sizeof(DetectionResult) / sizeof(float);
 };

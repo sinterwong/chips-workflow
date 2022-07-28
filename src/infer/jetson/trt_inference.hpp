@@ -21,6 +21,8 @@
 #include <cmath>
 #include <memory>
 
+#define IMAGE_MAX_SIZE 2560 * 1440 * 3
+
 namespace infer {
 namespace trt {
 class TRTInference : public Inference {
@@ -28,16 +30,12 @@ public:
   //!
   //! \brief construction
   //!
-  TRTInference(InferParams const &params) : mParams(params) {
+  TRTInference(const common::AlgorithmConfig &_param) : mParams(_param) {
     CHECK(cudaStreamCreate(&processStream));
     // prepare input data cache in pinned memory
-    CHECK(cudaMallocHost((void **)&imageHost, mParams.originShape[0] *
-                                                  mParams.originShape[1] *
-                                                  mParams.originShape[2]));
+    CHECK(cudaMallocHost((void **)&imageHost, IMAGE_MAX_SIZE));
     // prepare input data cache in device memory
-    CHECK(cudaMalloc((void **)&imageDevice, mParams.originShape[0] *
-                                                mParams.originShape[1] *
-                                                mParams.originShape[2]));
+    CHECK(cudaMalloc((void **)&imageDevice, IMAGE_MAX_SIZE));
   }
 
   //!
@@ -56,7 +54,7 @@ public:
   //!
   //! \brief Runs the inference engine
   //!
-  virtual void infer(void *, Result &) override;
+  virtual bool infer(void *, Result &) override;
 
 private:
   //!
@@ -91,7 +89,7 @@ private:
   cudaStream_t processStream;
 
 protected:
-  InferParams mParams; //!< The parameters for the sample.
+  common::AlgorithmConfig mParams; //!< The parameters for the sample.
 };
 } // namespace trt
 } // namespace infer

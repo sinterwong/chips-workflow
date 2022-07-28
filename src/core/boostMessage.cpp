@@ -19,9 +19,7 @@ MessageBus::returnFlag BoostMessageCheakEmpty(
 
 BoostMessage::BoostMessage() {}
 
-bool BoostMessage::registered(std::string name,
-                              const std::vector<std::string> &reqRecvName,
-                              const std::vector<std::string> &proRecvName) {
+bool BoostMessage::registered(std::string name) {
   std::cout << "Create module: " << name << std::endl;
   socketRecv.emplace_back(
       std::make_shared<moodycamel::BlockingConcurrentQueue<queueMessage>>(16));

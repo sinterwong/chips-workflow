@@ -10,9 +10,7 @@
  */
 
 #include "sendOutputModule.h"
-#include "logger/logger.hpp"
-#include "messageBus.h"
-#include <opencv2/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
 
 namespace module {
 size_t curl_callback(void *ptr, size_t size, size_t nmemb, std::string *data) {
@@ -20,15 +18,16 @@ size_t curl_callback(void *ptr, size_t size, size_t nmemb, std::string *data) {
   return size * nmemb;
 }
 
-SendOutputModule::SendOutputModule(Backend *ptr, const std::string &url,
-                                   common::AlarmInfo const &_resultTemplate,
+SendOutputModule::SendOutputModule(Backend *ptr,
                                    const std::string &initName,
-                                   const std::string &initType,
+                                   const std::string &initType, 
+                                   const common::SendConfig &sendConfig,
                                    const std::vector<std::string> &recv,
                                    const std::vector<std::string> &send,
                                    const std::vector<std::string> &pool)
-    : Module(ptr, initName, initType, recv, send, pool), url(url),
-      resultTemplate(_resultTemplate) {}
+    : Module(ptr, initName, initType, recv, send, pool){
+      url = sendConfig.url;
+    }
 
 bool SendOutputModule::postResult(std::string const &url,
                                   common::AlarmInfo const &alarmInfo,
@@ -52,6 +51,7 @@ bool SendOutputModule::postResult(std::string const &url,
 
   // /*
   // Add member
+  rapidjson::Value camera_id(alarmInfo.cameraId.c_str(), allocator);
   rapidjson::Value alarm_type(alarmInfo.alarmType.c_str(), allocator);
   rapidjson::Value alarm_file(alarmInfo.alarmFile.c_str(), allocator);
   rapidjson::Value alarm_id(alarmInfo.alarmId.c_str(), allocator);
@@ -64,8 +64,8 @@ bool SendOutputModule::postResult(std::string const &url,
   doc.AddMember("alarm_detail", alarm_detail, allocator);
   doc.AddMember("camera_ip", camera_ip, allocator);
   doc.AddMember("result_info", result_info, allocator);
+  doc.AddMember("camera_id", camera_id, allocator);
   // --------------------
-  doc.AddMember("camera_id", alarmInfo.cameraId, allocator);
   doc.AddMember("host_id", alarmInfo.hostId, allocator);
   doc.AddMember("province_id", alarmInfo.provinceId, allocator);
   doc.AddMember("city_id", alarmInfo.cityId, allocator);
@@ -179,7 +179,10 @@ void SendOutputModule::forward(
       FLOWENGINE_LOGGER_INFO("{} SendOutputModule module was done!", name);
       stopFlag.store(true);
     }
-    FrameBuf frameBufMessage = backendPtr->pool.read(buf.key);
+    if (recvModule.empty()) {
+      return;
+    }
+    FrameBuf frameBufMessage = backendPtr->pool->read(buf.key);
     auto frame =
         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
     if (frame->empty()) {
@@ -192,18 +195,20 @@ void SendOutputModule::forward(
       cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
     }
     drawResult(showImage, buf.results);
-    resultTemplate.alarmFile = imageConverter.mat2str(showImage);
+    cv::imwrite("/home/wangxt/workspace/projects/flowengine/tests/data/output.jpg", showImage);
 
-    // resultTemplate.alarmFile = imageConverter.mat2str(*frame);
-    resultTemplate.alarmId = generate_hex(16);
+    // resultTemplate.alarmFile = imageConverter.mat2str(showImage);
 
-    writeResult(buf.results, resultTemplate.resultInfo);
+    // // resultTemplate.alarmFile = imageConverter.mat2str(*frame);
+    // resultTemplate.alarmId = generate_hex(16);
 
-    std::string response;
-    if (!postResult(url, resultTemplate, response)) {
-      FLOWENGINE_LOGGER_ERROR(
-          "SendOutputModule.forward: post result was failed, please check!");
-    }
+    // writeResult(buf.results, resultTemplate.resultInfo);
+
+    // std::string response;
+    // if (!postResult(url, resultTemplate, response)) {
+    //   FLOWENGINE_LOGGER_ERROR(
+    //       "SendOutputModule.forward: post result was failed, please check!");
+    // }
   }
 }
 } // namespace module

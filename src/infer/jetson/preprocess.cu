@@ -69,9 +69,9 @@ __global__ void warpaffine_kernel(uint8_t *src, int src_line_size,
   }
 
   // bgr to rgb
-  float t = c2;
-  c2 = c0;
-  c0 = t;
+  // float t = c2;
+  // c2 = c0;
+  // c0 = t;
 
   // normalization
   c0 = c0 / 255.0f;

@@ -19,13 +19,12 @@
 #include "logger/logger.hpp"
 #include "module.hpp"
 
-#include "controlModule.hpp"
+#include "pipelineModule.hpp"
 
 #include <gflags/gflags.h>
 #include <unordered_map>
 #include <vector>
 
-DEFINE_string(config_path, "", "Specify config path.");
 DEFINE_string(result_url, "", "Specify send result url.");
 DEFINE_int32(num_workers, 5, "Specify number of thread pool .");
 
@@ -41,12 +40,9 @@ int main(int argc, char **argv) {
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-  std::shared_ptr<ControlModule> control(new ControlModule(FLAGS_config_path, FLAGS_result_url, FLAGS_num_workers));
-  if (!control->initialize()) {
-    return -1;
-  }
+  std::shared_ptr<PipelineModule> pipeline(new PipelineModule(FLAGS_result_url, FLAGS_num_workers));
 
-  control->go();
+  pipeline->go();
 
   gflags::ShutDownCommandLineFlags();
   FlowEngineLoggerDrop();
@@ -54,5 +50,5 @@ int main(int argc, char **argv) {
 }
 
 /*
-./test_pipeline --config_path /home/wangxt/workspace/projects/flowengine/conf/app/114_242_23_39_9303.json --result_url http://114.242.23.39:9400/v1/internal/receive_alarm
+./test_pipe --result_url http://114.242.23.39:9400/v1/internal/receive_alarm
 */

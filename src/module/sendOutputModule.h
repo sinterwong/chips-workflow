@@ -33,15 +33,15 @@ namespace module {
 class SendOutputModule : public Module {
 private:
   bool ret;
-  common::AlarmInfo resultTemplate;
   utils::ImageConverter imageConverter;
   std::string url;
   int count = 0;
 
 public:
-  SendOutputModule(Backend *ptr, const std::string &url,
-                   common::AlarmInfo const &_resultTemplate,
-                   const std::string &initName, const std::string &initType,
+  SendOutputModule(Backend *ptr,
+                   const std::string &initName, 
+                   const std::string &initType, 
+                   const common::SendConfig &sendConfig,
                    const std::vector<std::string> &recv = {},
                    const std::vector<std::string> &send = {},
                    const std::vector<std::string> &pool = {});

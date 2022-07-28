@@ -34,7 +34,7 @@ void FrameDifferenceModule::forward(
       // std::cout << "FreameDifference module was done!" << std::endl;
       stopFlag.store(true);
     } else if (type == "FrameMessage") {
-      auto frameBufMessage = backendPtr->pool.read(buf.key);
+      auto frameBufMessage = backendPtr->pool->read(buf.key);
       auto frame =
           std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
       if (fd.statue()) {

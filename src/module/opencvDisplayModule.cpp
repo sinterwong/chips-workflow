@@ -21,7 +21,7 @@ void OpencvDisplayModule::forward(
     height = buf.height;
     width = buf.width;
 
-    auto frameBufMessage = backendPtr->pool.read(buf.key);
+    auto frameBufMessage = backendPtr->pool->read(buf.key);
     auto framePtr = std::any_cast<cv::Mat>(frameBufMessage.read("Mat"));
 
     cv::imshow("image", framePtr);

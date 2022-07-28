@@ -31,7 +31,7 @@ void JetsonOutputModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
   for (auto &[send, type, buf] : message) {
     assert(type == "FrameMessage");
-    FrameBuf frameBufMessage = backendPtr->pool.read(buf.key);
+    FrameBuf frameBufMessage = backendPtr->pool->read(buf.key);
     auto frame = std::any_cast<uchar3 *>(frameBufMessage.read("uchar3*"));
     // std::cout << (frame == nullptr) << std::endl;
     outputStream->Render(frame, buf.width, buf.height);

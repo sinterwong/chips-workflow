@@ -99,7 +99,7 @@ RKMediaCameraModule::RKMediaCameraModule(Backend *ptr,
 void RKMediaCameraModule::forward(
         std::vector<std::tuple<std::string, std::string, queueMessage>> message)
 {
-    backendPtr->pool.checkSize();
+    backendPtr->pool->checkSize();
     mb = RK_MPI_SYS_GetMediaBuffer(RK_ID_RGA, 0, -1);
     if (!mb)
     {
@@ -111,7 +111,7 @@ void RKMediaCameraModule::forward(
         if (ret)
             printf("Warn: Get image info failed! ret = %d\n", ret);
         FrameBuf frameBufMessage = makeFrameBuf(mb);
-        int returnKey = backendPtr->pool.write(frameBufMessage);
+        int returnKey = backendPtr->pool->write(frameBufMessage);
 
         queueMessage sendMessage;
         sendMessage.width = stImageInfo.u32Width;

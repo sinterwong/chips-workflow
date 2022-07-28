@@ -62,7 +62,7 @@ void RKMediaVOModule::forward(
     {
         assert(type == "FrameMessage");
 
-        auto frameBufMessage = backendPtr->pool.read(buf.key);
+        auto frameBufMessage = backendPtr->pool->read(buf.key);
 
         assert(height == videoHeight);
         assert(width == videoWidth);

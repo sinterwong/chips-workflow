@@ -20,7 +20,7 @@ void cskTrackModule::forward(
       std::cout << "get Control!" << std::endl;
     } else if (type == "FrameMessage") {
       if (moduleFlag == init || moduleFlag == tracking) {
-        auto frameBufMessage = backendPtr->pool.read(buf.key);
+        auto frameBufMessage = backendPtr->pool->read(buf.key);
 
         cv::Mat image = std::any_cast<cv::Mat>(frameBufMessage.read("Mat"));
 

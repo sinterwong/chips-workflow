@@ -7,15 +7,20 @@
 
 #include "messageBus.h"
 #include "routeFramePool.h"
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 class Backend {
 public:
-  MessageBus *message;
-  RouteFramePool pool;
+  std::unique_ptr<MessageBus> message;
+  std::unique_ptr<RouteFramePool> pool;
 
-  Backend(MessageBus *);
+Backend(std::unique_ptr<MessageBus> &&message_,
+          std::unique_ptr<RouteFramePool> &&pool_)
+      : message(std::move(message_)), pool(std::move(pool_)) {}
+
 };
 
 #endif // FLOWCORE_BACKEND_H

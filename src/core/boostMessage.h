@@ -26,8 +26,7 @@ protected:
 public:
   BoostMessage();
 
-  bool registered(std::string name, const std::vector<std::string> &reqRecvName,
-                  const std::vector<std::string> &proRecvName) override;
+  bool registered(std::string name) override;
 
   bool send(std::string source, std::string target, std::string type,
             queueMessage message) override;

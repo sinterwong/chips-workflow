@@ -29,12 +29,12 @@ class ClassifierModule : public Module {
 private:
   std::shared_ptr<infer::trt::ClassifierInfer> instance;
   int count = 0;
-  infer::InferParams inferParams;
-  common::ParamsConfig params;
+  common::AlgorithmConfig params;
+  cv::Rect region{0, 0, 0, 0};
 
 public:
   ClassifierModule(Backend *ptr, const std::string &initName,
-               const std::string &initType, const common::ParamsConfig _params,
+               const std::string &initType, const common::AlgorithmConfig &_params,
                const std::vector<std::string> &recv = {},
                const std::vector<std::string> &send = {},
                const std::vector<std::string> &pool = {});

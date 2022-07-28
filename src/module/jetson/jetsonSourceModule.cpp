@@ -1,12 +1,12 @@
 /**
  * @file jetsonSourceModule.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-02
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include "jetsonSourceModule.h"
@@ -60,16 +60,15 @@ FrameBuf makeFrameBuf(uchar3 *image, int height, int width) {
 }
 
 JetsonSourceModule::JetsonSourceModule(
-    Backend *ptr, const std::string &uri, const int width, const int height,
-    const std::string &codec, const std::string &initName,
-    const std::string &initType, const std::vector<std::string> &recv,
+    Backend *ptr, const std::string &initName, const std::string &initType,
+    const common::CameraConfig &_params, const std::vector<std::string> &recv,
     const std::vector<std::string> &send, const std::vector<std::string> &pool)
     : Module(ptr, initName, initType, recv, send, pool) {
 
-  opt.height = height;
-  opt.width = width;
-  opt.codec = videoOptions::CodecFromStr(codec.c_str());
-  opt.resource = uri;
+  opt.height = _params.heightPixel;
+  opt.width = _params.widthPixel;
+  opt.codec = videoOptions::CodecFromStr(_params.videoCode.c_str());
+  opt.resource = _params.cameraIp;
   // inputStream = std::unique_ptr<videoSource>(videoSource::Create(opt));
   inputStream = videoSource::Create(opt);
   if (!inputStream) {
@@ -89,7 +88,7 @@ void JetsonSourceModule::forward(
     frameBufMessage.height = opt.height;
     frameBufMessage.width = opt.width;
 
-    int returnKey = backendPtr->pool.write(frameBufMessage);
+    int returnKey = backendPtr->pool->write(frameBufMessage);
 
     queueMessage sendMessage;
     sendMessage.frameType = "RGB888";
@@ -110,17 +109,5 @@ void JetsonSourceModule::forward(
   //   stopFlag.store(true);
   // }
 }
-
-void JetsonSourceModule::delSendModule(std::string const &name) {
-  std::lock_guard<std::mutex> lk(_m);
-  auto iter = std::remove(sendModule.begin(), sendModule.end(), name);
-  sendModule.erase(iter, sendModule.end());
-}
-
-void JetsonSourceModule::addSendModule(std::string const &name) {
-  std::lock_guard<std::mutex> lk(_m);
-  sendModule.push_back(name);
-}
-
 
 } // namespace module

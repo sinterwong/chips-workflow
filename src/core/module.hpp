@@ -23,8 +23,12 @@ protected:
   std::string type;
 
   std::unordered_map<std::string, int> hash;
+
   std::vector<std::tuple<std::string, std::string, queueMessage>> message;
+
   bool loop;
+
+  std::mutex _m;
 
 public:
   std::vector<std::string> recvModule, sendModule;
@@ -43,7 +47,7 @@ public:
     framePool = pool;
 
     stopFlag.store(false);
-    backendPtr->message->registered(name, recvModule, sendModule);
+    backendPtr->message->registered(name);
   }
 
   virtual void beforeGetMessage(){};
@@ -103,6 +107,28 @@ public:
       ret = ret and temp;
     }
     return ret;
+  }
+
+  void delSendModule(std::string const &name) {
+    std::lock_guard<std::mutex> lk(_m);
+    auto iter = std::remove(sendModule.begin(), sendModule.end(), name);
+    sendModule.erase(iter, sendModule.end());
+  }
+
+  void addSendModule(std::string const &name) {
+    std::lock_guard<std::mutex> lk(_m);
+    sendModule.push_back(name);
+  }
+
+  void delRecvModule(std::string const &name) {
+    std::lock_guard<std::mutex> lk(_m);
+    auto iter = std::remove(recvModule.begin(), recvModule.end(), name);
+    recvModule.erase(iter, recvModule.end());
+  }
+
+  void addRecvModule(std::string const &name) {
+    std::lock_guard<std::mutex> lk(_m);
+    recvModule.push_back(name);
   }
 };
 } // namespace module

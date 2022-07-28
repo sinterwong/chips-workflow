@@ -16,6 +16,7 @@
 #include <memory>
 #include <vector>
 
+#include "common/common.hpp"
 #include "frameMessage.pb.h"
 #include "module.hpp"
 #include "videoSource.h"
@@ -46,12 +47,10 @@ private:
 
   videoOptions opt;
 
-  std::mutex _m;
-
 public:
-  JetsonSourceModule(Backend *ptr, const std::string &uri, const int width,
-                     const int height, const std::string &codec,
+  JetsonSourceModule(Backend *ptr,
                      const std::string &initName, const std::string &initType,
+                     const common::CameraConfig &_params,
                      const std::vector<std::string> &recv = {},
                      const std::vector<std::string> &send = {},
                      const std::vector<std::string> &pool = {});
@@ -66,9 +65,6 @@ public:
   void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
                    message) override;
   
-  void delSendModule(std::string const &name);
-
-  void addSendModule(std::string const &name);
 };
 } // namespace module
 #endif // __METAENGINE_JETSON_SOURCE_H

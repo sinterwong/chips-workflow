@@ -44,6 +44,7 @@
 
 namespace infer {
 namespace trt {
+
 namespace sample {
 
 template <class MapType, class EngineType>
@@ -62,10 +63,11 @@ bool validateTensorNames(const MapType &map, const EngineType *engine,
       }
     }
     if (!tensorNameFound) {
-      FLOWENGINE_LOGGER_ERROR(
-          "Cannot find input tensor with name \"{}\" in the engine bindings! "
-          "Please make sure the input tensor names are correct.",
-          item.first);
+      sample::gLogError
+          << "Cannot find input tensor with name \"" << item.first
+          << "\" in the engine bindings! "
+          << "Please make sure the input tensor names are correct."
+          << std::endl;
       return false;
     }
   }
@@ -93,18 +95,15 @@ private:
     for (auto &binding : bindings) {
       const auto input = inputs.find(name);
       if (isInput && input != inputs.end()) {
-        FLOWENGINE_LOGGER_INFO("Using values loaded from {} for input {}",
-                               input->second, name);
+        sample::gLogInfo << "Using values loaded from " << input->second
+                         << " for input " << name << std::endl;
         binding->addBinding(bindingIndex, name, isInput, vol, dataType,
                             input->second);
       } else {
-        FLOWENGINE_LOGGER_INFO("Using random values for {} {}", bindingInOutStr,
-                               name);
+        sample::gLogInfo << "Using random values for " << bindingInOutStr << " "
+                         << name << std::endl;
         binding->addBinding(bindingIndex, name, isInput, vol, dataType);
       }
-      // TODO
-      // FLOWENGINE_LOGGER_INFO("Created {} binding for {} with dimensions {}",
-      // bindingInOutStr, name, dims);
       sample::gLogInfo << "Created " << bindingInOutStr << " binding for "
                        << name << " with dimensions " << dims << std::endl;
     }
@@ -112,8 +111,8 @@ private:
 
   bool fillAllBindings(int32_t batch, int32_t endBindingIndex) {
     if (!validateTensorNames(inputs, engine, endBindingIndex)) {
-      FLOWENGINE_LOGGER_ERROR(
-          "Invalid tensor names found in --loadInputs flag.");
+      sample::gLogError << "Invalid tensor names found in --loadInputs flag."
+                        << std::endl;
       return false;
     }
 
@@ -187,8 +186,8 @@ bool setUpInference(InferenceEnvironment &iEnv,
   for (int32_t s = 0; s < inference.streams; ++s) {
     auto ec = iEnv.engine->createExecutionContext();
     if (ec == nullptr) {
-      FLOWENGINE_LOGGER_ERROR(
-          "Unable to create execution context for stream {}.", s);
+      sample::gLogError << "Unable to create execution context for stream " << s
+                        << "." << std::endl;
       return false;
     }
     iEnv.context.emplace_back(ec);
@@ -208,15 +207,17 @@ bool setUpInference(InferenceEnvironment &iEnv,
       bindingsInProfile ? bindingsInProfile : iEnv.engine->getNbBindings();
 
   if (nOptProfiles > 1) {
-    FLOWENGINE_LOGGER_WARN("Multiple profiles are currently not supported. "
-                           "Running with one profile.");
+    sample::gLogWarning << "Multiple profiles are currently not supported. "
+                           "Running with one profile."
+                        << std::endl;
   }
 
   // Make sure that the tensor names provided in command-line args actually
   // exist in any of the engine bindings to avoid silent typos.
   if (!validateTensorNames(inference.shapes, iEnv.engine.get(),
                            endBindingIndex)) {
-    FLOWENGINE_LOGGER_ERROR("Invalid tensor names found in --shapes flag.");
+    sample::gLogError << "Invalid tensor names found in --shapes flag."
+                      << std::endl;
     return false;
   }
 
@@ -252,10 +253,6 @@ bool setUpInference(InferenceEnvironment &iEnv,
                                                    : DEFAULT_DIMENSION;
                            });
           }
-          // TODO
-          // FLOWENGINE_LOGGER_WARN("Dynamic dimensions required for input: {},
-          // but no shapes were provided. Automatically overriding shape to: ",
-          // iEnv.engine->getBindingName(b), staticDims);
           sample::gLogWarning << "Dynamic dimensions required for input: "
                               << iEnv.engine->getBindingName(b)
                               << ", but no shapes were provided. Automatically "
@@ -344,8 +341,9 @@ public:
       // context
       if (mContext.getProfiler() && !mContext.getEnqueueEmitsProfile() &&
           !mContext.reportToProfiler()) {
-        FLOWENGINE_LOGGER_WARN(
-            "Failed to collect layer timing info from previous enqueue()");
+        gLogWarning
+            << "Failed to collect layer timing info from previous enqueue()"
+            << std::endl;
       }
       return true;
     }
@@ -372,8 +370,9 @@ public:
       // context
       if (mContext.getProfiler() && !mContext.getEnqueueEmitsProfile() &&
           !mContext.reportToProfiler()) {
-        FLOWENGINE_LOGGER_WARN(
-            "Failed to collect layer timing info from previous enqueueV2()");
+        gLogWarning
+            << "Failed to collect layer timing info from previous enqueueV2()"
+            << std::endl;
       }
       return true;
     }
@@ -397,9 +396,9 @@ public:
       // Collecting layer timing info from current profile index of execution
       // context
       if (mContext.getProfiler() && !mContext.reportToProfiler()) {
-        FLOWENGINE_LOGGER_WARN(
-            "Failed to collect layer timing info from previous CUDA "
-            "graph launch");
+        gLogWarning << "Failed to collect layer timing info from previous CUDA "
+                       "graph launch"
+                    << std::endl;
       }
       return true;
     }
@@ -622,12 +621,14 @@ private:
         mGraph.endCaptureOnError(stream);
         // Ensure any CUDA error has been cleaned up.
         cudaCheck(cudaGetLastError());
-        FLOWENGINE_LOGGER_WARN("The built TensorRT engine contains operations "
+        sample::gLogWarning << "The built TensorRT engine contains operations "
                                "that are not permitted under "
-                               "CUDA graph capture mode.");
-        FLOWENGINE_LOGGER_WARN("The specified --useCudaGraph flag has been "
+                               "CUDA graph capture mode."
+                            << std::endl;
+        sample::gLogWarning << "The specified --useCudaGraph flag has been "
                                "ignored. The inference will be "
-                               "launched without using CUDA graph launch.");
+                               "launched without using CUDA graph launch."
+                            << std::endl;
       }
     }
   }
@@ -800,13 +801,14 @@ size_t reportGpuMemory() {
   size_t total{0};
   size_t newlyAllocated{0};
   cudaCheck(cudaMemGetInfo(&free, &total));
-  FLOWENGINE_LOGGER_INFO("Free GPU memory = {} GiB", free / 1024.0_MiB);
+  sample::gLogInfo << "Free GPU memory = " << free / 1024.0_MiB << " GiB";
   if (prevFree != 0) {
     newlyAllocated = (prevFree - free);
-    FLOWENGINE_LOGGER_INFO(", newly allocated GPU memory = {} GiB",
-                           newlyAllocated / 1024.0_MiB);
+    sample::gLogInfo << ", newly allocated GPU memory = "
+                     << newlyAllocated / 1024.0_MiB << " GiB";
   }
-  FLOWENGINE_LOGGER_INFO(", total GPU memory = {} GiB", total / 1024.0_MiB);
+  sample::gLogInfo << ", total GPU memory = " << total / 1024.0_MiB << " GiB"
+                   << std::endl;
   prevFree = free;
   return newlyAllocated;
 }
@@ -817,11 +819,11 @@ bool timeDeserialize(InferenceEnvironment &iEnv) {
   constexpr int32_t kNB_ITERS{20};
   std::unique_ptr<IHostMemory> serializedEngine{iEnv.engine->serialize()};
   std::unique_ptr<IRuntime> rt{
-      createInferRuntime(infer::trt::sample::gLogger.getTRTLogger())};
+      createInferRuntime(sample::gLogger.getTRTLogger())};
   std::unique_ptr<ICudaEngine> engine;
 
-  std::unique_ptr<safe::IRuntime> safeRT{sample::createSafeInferRuntime(
-      infer::trt::sample::gLogger.getTRTLogger())};
+  std::unique_ptr<safe::IRuntime> safeRT{
+      sample::createSafeInferRuntime(sample::gLogger.getTRTLogger())};
   std::unique_ptr<safe::ICudaEngine> safeEngine;
 
   if (iEnv.safe) {
@@ -854,21 +856,22 @@ bool timeDeserialize(InferenceEnvironment &iEnv) {
   // Warmup the caches to make sure that cache thrashing isn't throwing off the
   // results
   {
-    FLOWENGINE_LOGGER_INFO("Begin deserialization warmup...");
+    sample::gLogInfo << "Begin deserialization warmup..." << std::endl;
     for (int32_t i = 0, e = 2; i < e; ++i) {
       timeDeserializeFn();
     }
   }
-  FLOWENGINE_LOGGER_INFO("Begin deserialization engine timing...");
+  sample::gLogInfo << "Begin deserialization engine timing..." << std::endl;
   float const first = timeDeserializeFn();
 
   // Check if first deserialization suceeded.
   if (std::isnan(first)) {
-    FLOWENGINE_LOGGER_ERROR("Engine deserialization failed.");
+    sample::gLogError << "Engine deserialization failed." << std::endl;
     return true;
   }
 
-  FLOWENGINE_LOGGER_INFO("First deserialization time = {} milliseconds", first);
+  sample::gLogInfo << "First deserialization time = " << first
+                   << " milliseconds" << std::endl;
 
   // Record initial gpu memory state.
   reportGpuMemory();
@@ -881,11 +884,12 @@ bool timeDeserialize(InferenceEnvironment &iEnv) {
   // reportGpuMemory sometimes reports zero after a single deserialization of a
   // small engine, so use the size of memory for all the iterations.
   const auto totalEngineSizeGpu = reportGpuMemory();
-  FLOWENGINE_LOGGER_INFO("Total deserialization time = {} milliseconds, "
-                         "average time = {}, first time = {}.",
-                         totalTime, averageTime, first);
-  FLOWENGINE_LOGGER_INFO("Deserialization Bandwidth = {} GB/s",
-                         1E-6 * totalEngineSizeGpu / totalTime);
+  sample::gLogInfo << "Total deserialization time = " << totalTime
+                   << " milliseconds, average time = " << averageTime
+                   << ", first time = " << first << "." << std::endl;
+  sample::gLogInfo << "Deserialization Bandwidth = "
+                   << 1E-6 * totalEngineSizeGpu / totalTime << " GB/s"
+                   << std::endl;
 
   // If the first deserialization is more than tolerance slower than
   // the average deserialization, return true, which means an error occurred.
@@ -894,9 +898,9 @@ bool timeDeserialize(InferenceEnvironment &iEnv) {
   const auto tolerance = 2.0F;
   const bool isSlowerThanExpected = first > averageTime * tolerance;
   if (isSlowerThanExpected) {
-    FLOWENGINE_LOGGER_INFO("First deserialization time divided by average time "
-                           "is {}. Exceeds tolerance of {}x.",
-                           (first / averageTime), tolerance);
+    sample::gLogInfo << "First deserialization time divided by average time is "
+                     << (first / averageTime) << ". Exceeds tolerance of "
+                     << tolerance << "x." << std::endl;
   }
   return isSlowerThanExpected;
 }
@@ -904,7 +908,7 @@ bool timeDeserialize(InferenceEnvironment &iEnv) {
 std::string getLayerInformation(const InferenceEnvironment &iEnv,
                                 nvinfer1::LayerInformationFormat format) {
   auto runtime = std::unique_ptr<IRuntime>(
-      createInferRuntime(infer::trt::sample::gLogger.getTRTLogger()));
+      createInferRuntime(sample::gLogger.getTRTLogger()));
   auto inspector =
       std::unique_ptr<IEngineInspector>(iEnv.engine->createEngineInspector());
   std::string result = inspector->getEngineInformation(format);
@@ -913,4 +917,4 @@ std::string getLayerInformation(const InferenceEnvironment &iEnv,
 
 } // namespace sample
 } // namespace trt
-} // namespace infer
+} // namespace inter

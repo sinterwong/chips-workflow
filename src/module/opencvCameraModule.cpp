@@ -76,7 +76,7 @@ void OpencvCameraModule::forward(
   if (ret) {
     FrameBuf frameBufMessage = makeFrameBuf(frame);
 
-    int returnKey = backendPtr->pool.write(frameBufMessage);
+    int returnKey = backendPtr->pool->write(frameBufMessage);
 
     queueMessage sendMessage;
     sendMessage.frameType = "BGA888";

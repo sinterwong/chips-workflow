@@ -73,6 +73,12 @@ public:
   RouteFramePool(int maxSize = 2, int width = 1920, int height = 1080,
                  int channel = 3);
 
+  // RouteFramePool(RouteFramePool &&other);
+
+  // RouteFramePool(RouteFramePool &other);
+
+  // RouteFramePool &operator=(RouteFramePool &&other);
+
   ~RouteFramePool();
 
   FrameBuf read(int) override;

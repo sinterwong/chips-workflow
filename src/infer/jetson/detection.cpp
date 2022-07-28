@@ -11,6 +11,7 @@
 #include "jetson/detection.hpp"
 #include "inference.h"
 #include <algorithm>
+#include <array>
 #include <vector>
 
 namespace infer {
@@ -38,7 +39,7 @@ void DetctionInfer::nms(std::vector<DetectionResult> &res,
   // output += ((mParams.numAnchors) * (mParams.numClasses + 5));
   int num = mParams.numClasses + 5;
   for (int i = 0; i < mParams.numAnchors * num; i += num) {
-    if (output[i + 4] <= mParams.c_thr)
+    if (output[i + 4] <= mParams.cond_thr)
       continue;
 
     DetectionResult det;
@@ -73,13 +74,34 @@ void DetctionInfer::nms(std::vector<DetectionResult> &res,
   }
 }
 
-void DetctionInfer::renderOriginShape(std::vector<DetectionResult> &results,
-                                      float scaling) const {
+void DetctionInfer::renderOriginShape(std::vector<DetectionResult> &results, std::array<int, 3> const &shape) const {
   for (auto &ret : results) {
-    ret.bbox[0] /= scaling;
-    ret.bbox[1] /= scaling;
-    ret.bbox[2] /= scaling;
-    ret.bbox[3] /= scaling;
+    int l, r, t, b;
+    float r_w = mParams.inputShape.at(0) / (shape.at(0) * 1.0);
+    float r_h = mParams.inputShape.at(1) / (shape.at(1) * 1.0);
+    if (r_h > r_w) {
+      l = ret.bbox[0] - ret.bbox[2] / 2.f;
+      r = ret.bbox[0] + ret.bbox[2] / 2.f;
+      t = ret.bbox[1] - ret.bbox[3] / 2.f - (mParams.inputShape.at(1) - r_w * shape.at(1)) / 2;
+      b = ret.bbox[1] + ret.bbox[3] / 2.f - (mParams.inputShape.at(1) - r_w * shape.at(1)) / 2;
+      l = l / r_w;
+      r = r / r_w;
+      t = t / r_w;
+      b = b / r_w;
+    } else {
+      l = ret.bbox[0] - ret.bbox[2] / 2.f - (mParams.inputShape.at(0) - r_h * shape.at(0)) / 2;
+      r = ret.bbox[0] + ret.bbox[2] / 2.f - (mParams.inputShape.at(0) - r_h * shape.at(0)) / 2;
+      t = ret.bbox[1] - ret.bbox[3] / 2.f;
+      b = ret.bbox[1] + ret.bbox[3] / 2.f;
+      l = l / r_h;
+      r = r / r_h;
+      t = t / r_h;
+      b = b / r_h;
+    }
+    ret.bbox[0] = l;
+    ret.bbox[1] = t;
+    ret.bbox[2] = r;
+    ret.bbox[3] = b;
   }
 }
 
@@ -95,9 +117,7 @@ bool DetctionInfer::processOutput(BufferManager const &buffers,
   // result.detResults.emplace_back(res);
   nms(result.detResults, hostOutputBuffer);
   // rect 还原成原始大小
-  float scaling = float(mParams.inputShape[0]) /
-                  (float)std::max(result.shape[0], result.shape[1]);
-  renderOriginShape(result.detResults, scaling);
+  renderOriginShape(result.detResults, result.shape);
   return true;
 };
 } // namespace trt

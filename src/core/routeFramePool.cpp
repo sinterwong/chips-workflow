@@ -16,7 +16,6 @@ RouteFramePool::RouteFramePool(int maxSize, int width, int height,
     FrameBuf temp;
     routeArray.emplace_back(temp);
   }
-
   key = 0;
 }
 
