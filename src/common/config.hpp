@@ -1,3 +1,13 @@
+/**
+ * @file config.hpp
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2022-06-23
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include <array>
 #include <cassert>
 #include <iostream>

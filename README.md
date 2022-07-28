@@ -1,4 +1,4 @@
-# Flow engine
+# Flowengine
 
 That is a temp description.
 
@@ -14,7 +14,6 @@ That is a temp description.
 
 # Build & Install
 ```bash
-$ git clone http://39.101.134.231:8090/core/flowengine.git
 $ cd flowengine
 $ ln -s ${your_path}/protobuf 3rdparty/target/linux_${your_arch}/protobuf
 $ ...
@@ -27,11 +26,8 @@ $ make install DESTDIR={your_destination} (optional)
 # Test
 ## Startup config server
   ```bash
-  $ cd build/${your_arch}/bin # cd build/aarch64/bin
-  $ ./sample_post_config ${url} # ./sample_post_config http://localhost:9400/abutment
   ```
 ## Run flow
   ```bash
-  $ ./sample_flow ${id} ${config_path} # ./sample_flow 9999 data/config.json
   ```
   

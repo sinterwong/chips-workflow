@@ -1,5 +1,5 @@
 /**
- * @file controlModule.hpp
+ * @file pipelineModule.hpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
@@ -35,6 +35,7 @@
 #include <opencv2/opencv.hpp>
 
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace module {
@@ -49,6 +50,11 @@ private:
                   std::unique_ptr<RouteFramePool>{new RouteFramePool(16)}};
   std::unique_ptr<thread_pool> pool;
   std::unordered_map<std::string, std::shared_ptr<Module>> atm;
+  std::unordered_map<std::string, common::WorkerTypes> typeMapping {
+    std::make_pair("calling", common::WorkerTypes::Calling),
+    std::make_pair("smoking", common::WorkerTypes::Smoking),
+    std::make_pair("cat_dog", common::WorkerTypes::CatDog)
+  };
 
 private:
   bool submitModule(common::ModuleConfigure const &config,

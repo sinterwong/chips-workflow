@@ -2,7 +2,7 @@ import requests
 import json
 
 ############## 请求前端配置 #############
-url = 'http://114.242.23.39:9400/v1/internal/get_config'
+url = 'http://192.168.3.100:9400/v1/internal/get_config'
 post_data = {
     'id': 22,
 }
@@ -10,7 +10,7 @@ response = requests.post(url, json=post_data)
 print(json.loads(response.text))
 
 # ############## 返回后端结果 #############
-# url = 'http://114.242.23.39:9400/v1/internal/receive_params'
+# url = 'http://admin:dahua2021@192.168.3.100:8080/v1/internal/receive_params'
 # post_data =  {
 #    "host_id": 25, 
 #    "state" : 0, 

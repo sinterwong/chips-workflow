@@ -1,5 +1,5 @@
 /**
- * @file controlModule.cpp
+ * @file pipelineModule.cpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
@@ -72,6 +72,7 @@ bool PipelineModule::submitModule(common::ModuleConfigure const &config,
 bool PipelineModule::getParamConfig(std::string const &name,
                                     common::ParamsConfig &config) {
   // 通过模块的名称获取模块的配置
+  
   return true;
 }
 
@@ -96,8 +97,7 @@ void PipelineModule::addModule(std::string const &moduleName,
 }
 
 bool PipelineModule::startPipeline(common::FlowConfigure const &config) {
-  common::WorkerTypes type = common::WorkerTypes::Calling;
-
+  common::WorkerTypes type = typeMapping[config.alarmType];
   switch (type) {
   case common::WorkerTypes::Calling: { // pipeline calling
     // Step1: check gesture classifier status

@@ -1,3 +1,14 @@
+/**
+ * @file joining_thread.h
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2022-05-15
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #ifndef __FLOWENGINE_JOINING_THREAD_H_
 #define __FLOWENGINE_JOINING_THREAD_H_
 

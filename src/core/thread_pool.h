@@ -1,3 +1,14 @@
+/**
+ * @file thread_pool.h
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2022-05-16
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #ifndef __SIMPLE_THREAD_POOL_H_
 #define __SIMPLE_THREAD_POOL_H_
 
