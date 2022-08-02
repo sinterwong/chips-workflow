@@ -1,12 +1,12 @@
 /**
  * @file config.hpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-23
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 #include <array>
 #include <cassert>
@@ -20,27 +20,18 @@
 
 namespace common {
 
-enum class ModuleType { Detection = 0, Classifier, Stream, Output, None };
-
-enum class WorkerTypes { Calling, CatDog, Smoking };
-
-// 接收管理进程给出发生变化的配置
-struct FlowConfigure {
-  bool status; // 只有启动和关闭两种状态 true 启动，false 关闭
-  int hostId;  // 设备主机id
-  int provinceId; // 省
-  int cityId;     // 市
-  int regionId;   // 区
-  int stationId;  // 站
-  int location;   // 站内的那个区域（卸油区、加油区等等）
-  std::string cameraId;  // 摄像机唯一ID
-  std::string alarmType; // 报警类型（smoke, phone等等）
-  std::string videoCode; // 视频编码类型
-  std::string flowType;  // 流协议类型
-  std::string cameraIp;  // 网络流链接
+enum class ConfigType { Algorithm, Stream, Output, Logic, None };
+enum class ModuleType {
+  Detection = 0,
+  Classifier,
+  Stream,
+  Output,
+  Calling,
+  Smokeing
 };
 
 struct ModuleConfigure {
+  ModuleType type_;
   std::string moduleName; // 模块名称
   std::string sendName;   // 下游模块
   std::string recvName;   // 上游模块
@@ -48,7 +39,7 @@ struct ModuleConfigure {
 
 struct AlgorithmConfig {
   AlgorithmConfig() = default;
-  AlgorithmConfig(ModuleType type_, std::string const &modelPath_,
+  AlgorithmConfig(std::string const &type_, std::string const &modelPath_,
                   std::vector<std::string> const &inputTensorNames_,
                   std::vector<std::string> const &outputTensorNames_,
                   std::array<int, 3> const &inputShape_, int numClasses_,
@@ -63,7 +54,7 @@ struct AlgorithmConfig {
         cond_thr(cond_thr_), numAnchors(numAnchors_), nms_thr(nms_thr_),
         batchSize(batchSize_){};
   // 算法配置
-  ModuleType type;
+  std::string type;                           // 算法类型
   std::string modelPath;                      // engine 所在目录
   int numClasses;                             // classes of number
   std::vector<std::string> inputTensorNames;  // input tensor names
@@ -77,11 +68,14 @@ struct AlgorithmConfig {
 };
 
 struct CameraConfig {
-  CameraConfig(int widthPixel_, int heightPixel_, std::string const &cameraId_,
-               std::string const &videoCode_, std::string const &flowType_,
-               std::string const &cameraIp_)
+  CameraConfig(std::string const &cameraId_, std::string const &videoCode_,
+               std::string const &flowType_, std::string const &cameraIp_,
+               int widthPixel_, int heightPixel_, int provinceId_, int cityId_,
+               int regionId_, int stationId_, int location_)
       : widthPixel(widthPixel_), heightPixel(heightPixel_), cameraId(cameraId_),
-        videoCode(videoCode_), flowType(flowType_), cameraIp(cameraIp_) {}
+        videoCode(videoCode_), flowType(flowType_), cameraIp(cameraIp_),
+        provinceId(provinceId_), cityId(cityId_), regionId(regionId_),
+        stationId(stationId_), location(location_) {}
   CameraConfig() = default;
   ~CameraConfig() {}
   // 摄像机配置
@@ -91,29 +85,43 @@ struct CameraConfig {
   std::string videoCode; // 视频编码类型
   std::string flowType;  // 流协议类型
   std::string cameraIp;  // 网络流链接
+  int provinceId;        // 省ID
+  int cityId;            // 市ID
+  int regionId;          // 区ID
+  int stationId;         // 站ID
+  int location;          // 所在位置（卸油区，加油区...）
 };
 
-struct SendConfig {
-  SendConfig() = default;
-  SendConfig(std::string const &url_) : url(url_) {}
-  ~SendConfig() {}
+struct LogicConfig {
+  LogicConfig() = default;
+  LogicConfig(std::string const &url_) : url(url_) {}
+  ~LogicConfig() {}
+  std::string url;
+};
+
+struct OutputConfig {
+  OutputConfig() = default;
+  OutputConfig(std::string const &url_) : url(url_) {}
+  ~OutputConfig() {}
   std::string url;
 };
 
 class ParamsConfig {
 public:
-  ParamsConfig() : type_(ModuleType::None) {}
-  ParamsConfig(ModuleType type) : type_(type) {
+  ParamsConfig() : type_(ConfigType::None) {}
+  ParamsConfig(ConfigType type) : type_(type) {
     switch (type_) {
-    case ModuleType::Classifier:
-    case ModuleType::Detection:
+    case ConfigType::Algorithm:
       new (&algorithmConfig_) AlgorithmConfig();
       break;
-    case ModuleType::Stream:
+    case ConfigType::Stream:
       new (&cameraConfig_) CameraConfig();
       break;
-    case ModuleType::Output:
-      new (&sendConfig_) SendConfig();
+    case ConfigType::Logic:
+      new (&logicConfig_) LogicConfig();
+      break;
+    case ConfigType::Output:
+      new (&outputConfig_) OutputConfig();
       break;
     default:
       assert(false);
@@ -123,36 +131,42 @@ public:
 
   ~ParamsConfig() {
     switch (type_) {
-    case ModuleType::Classifier:
-    case ModuleType::Detection:
+    case ConfigType::Algorithm:
       algorithmConfig_.~AlgorithmConfig();
       break;
-    case ModuleType::Stream:
+    case ConfigType::Stream:
       cameraConfig_.~CameraConfig();
       break;
-    case ModuleType::Output:
-      sendConfig_.~SendConfig();
+    case ConfigType::Logic:
+      logicConfig_.~LogicConfig();
+      break;
+    case ConfigType::Output:
+      outputConfig_.~OutputConfig();
+      break;
+    case ConfigType::None:
       break;
     default:
       assert(false);
       break;
     }
-    type_ = ModuleType::None;
+    type_ = ConfigType::None;
   }
 
   ParamsConfig(const ParamsConfig &other) : type_(other.type_) {
     switch (type_) {
-    case ModuleType::None:
+    case ConfigType::None:
       break;
-    case ModuleType::Classifier:
-    case ModuleType::Detection:
+    case ConfigType::Algorithm:
       new (&algorithmConfig_) AlgorithmConfig(other.algorithmConfig_);
       break;
-    case ModuleType::Stream:
+    case ConfigType::Stream:
       new (&cameraConfig_) CameraConfig(other.cameraConfig_);
       break;
-    case ModuleType::Output:
-      new (&sendConfig_) SendConfig(other.sendConfig_);
+    case ConfigType::Logic:
+      new (&logicConfig_) LogicConfig(other.logicConfig_);
+      break;
+    case ConfigType::Output:
+      new (&outputConfig_) OutputConfig(other.outputConfig_);
       break;
     default:
       assert(false);
@@ -162,41 +176,45 @@ public:
 
   ParamsConfig(ParamsConfig &&other) : type_(other.type_) {
     switch (type_) {
-    case ModuleType::None:
+    case ConfigType::None:
       break;
-    case ModuleType::Classifier:
-    case ModuleType::Detection:
+    case ConfigType::Algorithm:
       new (&algorithmConfig_)
           AlgorithmConfig(std::move(other.algorithmConfig_));
       break;
-    case ModuleType::Stream:
+    case ConfigType::Stream:
       new (&cameraConfig_) CameraConfig(std::move(other.cameraConfig_));
       break;
-    case ModuleType::Output:
-      new (&sendConfig_) SendConfig(std::move(other.sendConfig_));
+    case ConfigType::Logic:
+      new (&logicConfig_) LogicConfig(std::move(other.logicConfig_));
+      break;
+    case ConfigType::Output:
+      new (&outputConfig_) OutputConfig(std::move(other.outputConfig_));
       break;
     default:
       assert(false);
       break;
     }
-    other.type_ = ModuleType::None;
+    other.type_ = ConfigType::None;
   }
 
   ParamsConfig &operator=(const ParamsConfig &other) {
     if (&other != this) {
       switch (other.type_) {
-      case ModuleType::None:
+      case ConfigType::None:
         this->~ParamsConfig();
         break;
-      case ModuleType::Classifier:
-      case ModuleType::Detection:
+      case ConfigType::Algorithm:
         *this = other.algorithmConfig_;
         break;
-      case ModuleType::Stream:
+      case ConfigType::Stream:
         *this = other.cameraConfig_;
         break;
-      case ModuleType::Output:
-        *this = other.sendConfig_;
+      case ConfigType::Logic:
+        *this = other.logicConfig_;
+        break;
+      case ConfigType::Output:
+        *this = other.outputConfig_;
         break;
       default:
         assert(false);
@@ -209,34 +227,37 @@ public:
   ParamsConfig &operator=(ParamsConfig &&other) {
     assert(this != &other);
     switch (other.type_) {
-    case ModuleType::None:
+    case ConfigType::None:
       this->~ParamsConfig();
       break;
-    case ModuleType::Classifier:
-    case ModuleType::Detection:
+    case ConfigType::Algorithm:
       *this = std::move(other.algorithmConfig_);
       break;
-    case ModuleType::Stream:
+    case ConfigType::Stream:
       *this = std::move(other.cameraConfig_);
       break;
-    case ModuleType::Output:
-      *this = std::move(other.sendConfig_);
+    case ConfigType::Logic:
+      *this = std::move(other.logicConfig_);
+      break;
+    case ConfigType::Output:
+      *this = std::move(other.outputConfig_);
       break;
     default:
       assert(false);
       break;
     }
-    other.type_ = ModuleType::None;
+    other.type_ = ConfigType::None;
     return *this;
   }
 
-  ParamsConfig(const AlgorithmConfig &a) : type_(a.type), algorithmConfig_(a) {}
+  ParamsConfig(const AlgorithmConfig &a)
+      : type_(ConfigType::Algorithm), algorithmConfig_(a) {}
 
   ParamsConfig(AlgorithmConfig &&a)
-      : type_(a.type), algorithmConfig_(std::move(a)) {}
+      : type_(ConfigType::Algorithm), algorithmConfig_(std::move(a)) {}
 
   ParamsConfig &operator=(const AlgorithmConfig &a) {
-    if (type_ != a.type) {
+    if (type_ != ConfigType::Algorithm) {
       this->~ParamsConfig();
       new (this) ParamsConfig(a);
     } else {
@@ -246,7 +267,7 @@ public:
   }
 
   ParamsConfig &operator=(AlgorithmConfig &&a) {
-    if (type_ != a.type) {
+    if (type_ != ConfigType::Algorithm) {
       this->~ParamsConfig();
       new (this) ParamsConfig(std::move(a));
     } else {
@@ -256,13 +277,13 @@ public:
   }
 
   ParamsConfig(const CameraConfig &b)
-      : type_(ModuleType::Stream), cameraConfig_(b) {}
+      : type_(ConfigType::Stream), cameraConfig_(b) {}
 
   ParamsConfig(CameraConfig &&b)
-      : type_(ModuleType::Stream), cameraConfig_(std::move(b)) {}
+      : type_(ConfigType::Stream), cameraConfig_(std::move(b)) {}
 
   ParamsConfig &operator=(const CameraConfig &b) {
-    if (type_ != ModuleType::Stream) {
+    if (type_ != ConfigType::Stream) {
       this->~ParamsConfig();
       new (this) ParamsConfig(b);
     } else {
@@ -272,7 +293,7 @@ public:
   }
 
   ParamsConfig &operator=(CameraConfig &&b) {
-    if (type_ != ModuleType::Stream) {
+    if (type_ != ConfigType::Stream) {
       this->~ParamsConfig();
       new (this) ParamsConfig(std::move(b));
     } else {
@@ -281,66 +302,102 @@ public:
     return *this;
   }
 
-  ParamsConfig(const SendConfig &b)
-      : type_(ModuleType::Output), sendConfig_(b) {}
+  ParamsConfig(const LogicConfig &b)
+      : type_(ConfigType::Logic), logicConfig_(b) {}
 
-  ParamsConfig(SendConfig &&b)
-      : type_(ModuleType::Output), sendConfig_(std::move(b)) {}
+  ParamsConfig(LogicConfig &&b)
+      : type_(ConfigType::Logic), logicConfig_(std::move(b)) {}
 
-  ParamsConfig &operator=(const SendConfig &b) {
-    if (type_ != ModuleType::Output) {
+  ParamsConfig &operator=(const LogicConfig &b) {
+    if (type_ != ConfigType::Logic) {
       this->~ParamsConfig();
       new (this) ParamsConfig(b);
     } else {
-      sendConfig_ = b;
+      logicConfig_ = b;
     }
     return *this;
   }
 
-  ParamsConfig &operator=(SendConfig &&b) {
-    if (type_ != ModuleType::Output) {
+  ParamsConfig &operator=(LogicConfig &&b) {
+    if (type_ != ConfigType::Logic) {
       this->~ParamsConfig();
       new (this) ParamsConfig(std::move(b));
     } else {
-      sendConfig_ = std::move(b);
+      logicConfig_ = std::move(b);
     }
     return *this;
   }
 
-  ModuleType GetKind() const { return type_; }
+  ParamsConfig(const OutputConfig &b)
+      : type_(ConfigType::Output), outputConfig_(b) {}
+
+  ParamsConfig(OutputConfig &&b)
+      : type_(ConfigType::Output), outputConfig_(std::move(b)) {}
+
+  ParamsConfig &operator=(const OutputConfig &b) {
+    if (type_ != ConfigType::Output) {
+      this->~ParamsConfig();
+      new (this) ParamsConfig(b);
+    } else {
+      outputConfig_ = b;
+    }
+    return *this;
+  }
+
+  ParamsConfig &operator=(OutputConfig &&b) {
+    if (type_ != ConfigType::Output) {
+      this->~ParamsConfig();
+      new (this) ParamsConfig(std::move(b));
+    } else {
+      outputConfig_ = std::move(b);
+    }
+    return *this;
+  }
+
+  ConfigType GetKind() const { return type_; }
 
   AlgorithmConfig &GetAlgorithmConfig() {
-    assert(type_ == ModuleType::Classifier || type_ == ModuleType::Detection);
+    assert(type_ == ConfigType::Algorithm);
     return algorithmConfig_;
   }
 
   const AlgorithmConfig &GetAlgorithmConfig() const {
-    assert(type_ == ModuleType::Classifier || type_ == ModuleType::Detection);
+    assert(type_ == ConfigType::Algorithm);
     return algorithmConfig_;
   }
 
   CameraConfig &GetCameraConfig() {
-    assert(type_ == ModuleType::Stream);
+    assert(type_ == ConfigType::Stream);
     return cameraConfig_;
   }
 
   const CameraConfig &GetCameraConfig() const {
-    assert(type_ == ModuleType::Stream);
+    assert(type_ == ConfigType::Stream);
     return cameraConfig_;
   }
 
-  SendConfig &GetSendConfig() {
-    assert(type_ == ModuleType::Output);
-    return sendConfig_;
+  LogicConfig &GetLogicConfig() {
+    assert(type_ == ConfigType::Logic);
+    return logicConfig_;
   }
 
-  const SendConfig &GetSendConfig() const {
-    assert(type_ == ModuleType::Output);
-    return sendConfig_;
+  const LogicConfig &GetLogicConfig() const {
+    assert(type_ == ConfigType::Logic);
+    return logicConfig_;
+  }
+
+  OutputConfig &GetOutputConfig() {
+    assert(type_ == ConfigType::Output);
+    return outputConfig_;
+  }
+
+  const OutputConfig &GetOutputConfig() const {
+    assert(type_ == ConfigType::Output);
+    return outputConfig_;
   }
 
 private:
-  ModuleType type_;
+  ConfigType type_;
   union {
     // 摄像机参数
     CameraConfig cameraConfig_;
@@ -348,36 +405,13 @@ private:
     // 算法参数
     AlgorithmConfig algorithmConfig_;
 
-    // 发送结果的参数
-    SendConfig sendConfig_;
+    // 逻辑模块参数
+    LogicConfig logicConfig_;
+
+    // 发送模块参数
+    OutputConfig outputConfig_;
   };
 };
 } // namespace common
-
-// int main() {
-// A a(1, "Hello from A");
-// B b(2, "Hello from B");
-
-// ParamsConfig mv_1 = a;
-
-// cout << "mv_1 = a: " << mv_1.GetA().name << endl;
-// mv_1 = b;
-// cout << "mv_1 = b: " << mv_1.GetB().name << endl;
-// mv_1 = A(3, "hello again from A");
-// cout << R"aaa(mv_1 = A(3, "hello again from A"): )aaa" << mv_1.GetA().name
-//      << endl;
-// mv_1 = 42;
-// cout << "mv_1 = 42: " << mv_1.GetInteger() << endl;
-
-// b.vec = {10, 20, 30, 40, 50};
-
-// mv_1 = move(b);
-// cout << "After move, mv_1 = b: vec.size = " << mv_1.GetB().vec.size() <<
-// endl;
-
-// cout << endl << "Press a letter" << endl;
-// char c;
-// cin >> c;
-// }
 
 #endif // _FLOWENGINE_COMMON_CONFIG_HPP_

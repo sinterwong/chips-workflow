@@ -55,8 +55,7 @@ public:
   virtual void beforeForward(){};
 
   virtual void
-  forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
-              message) = 0;
+  forward(std::vector<std::tuple<std::string, std::string, queueMessage>> message) = 0;
 
   virtual void afterForward(){};
 

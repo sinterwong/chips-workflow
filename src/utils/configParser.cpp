@@ -1,104 +1,156 @@
 /**
  * @file configParser.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-30
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include "configParser.hpp"
+#include <utility>
+#include <vector>
 
 namespace utils {
-bool ConfigParser::parseConfig(const char *jsonstr,
-                               std::vector<common::FlowConfigure> &result) {
-  // rapidjson::Document d;
-  // if (d.Parse(jsonstr).HasParseError()) {
-  //   // FLOWENGINE_LOGGER_ERROR("parseJson: parse error!");
-  //   return false;
-  // }
-  // if (!d.IsObject()) {
-  //   FLOWENGINE_LOGGER_ERROR("parseJson: should be an object!");
-  //   return false;
-  // }
-  // if (d.HasMember("code")) {
-  //   rapidjson::Value &m = d["code"];
-  //   int code = m.GetInt();
-  //   if (code != 200) {
-  //     FLOWENGINE_LOGGER_ERROR("parseJson: failed response code {}", code);
-  //     return false;
-  //   }
-  // }
-  // FLOWENGINE_LOGGER_INFO("parseJson: Loading configure of camera....");
-  // if (d.HasMember("data")) {
-  //   rapidjson::Value &m = d["data"];
-  //   if (m.IsArray()) {
-  //     for (int i = 0; i < m.Size(); i++) {
-  //       common::FlowConfigure fc;
-  //       rapidjson::Value &e = m[i];
-  //       if (e.HasMember("CameraIp")) {
-  //         fc.status = e["Status"].GetInt();
-  //         fc.hostId = e["HostId"].GetInt();
-  //         fc.cameraId = e["CameraId"].GetInt();
-  //         fc.provinceId = e["ProvinceId"].GetInt();
-  //         fc.cityId = e["CityId"].GetInt();
-  //         fc.regionId = e["RegionId"].GetInt();
-  //         fc.stationId = e["StationId"].GetInt();
-  //         fc.width = e["Width"].GetInt();
-  //         fc.height = e["Height"].GetInt();
-  //         fc.location = e["Location"].GetInt();
-  //         fc.alarmType = e["AlarmType"].GetString();
-  //         fc.videoCode = e["VideoCode"].GetString();
-  //         fc.flowType = e["FlowType"].GetString();
-  //         fc.cameraIp = e["CameraIp"].GetString();
-  //         // std::string paramsConfigs = e["Config"].GetString();
-  //         // 算法参数
-  //         if (e.HasMember("Config") && e.IsObject()) {
-  //           rapidjson::Value &c = e["Config"];
-  //           if (c.HasMember("region")) {
-  //             rapidjson::Value &r = c["region"];
-  //             if (r.IsArray() && r.Size() == 4) {
-  //               for (int i = 0; i < r.Size(); i++) {
-  //                 rapidjson::Value &c = r[i];
-  //                 fc.paramsConfig.algorithmConfig.region[i] = c.GetInt();
-  //               }
-  //             }
-  //           }
-  //           if (c.HasMember("nms_thr")) {
-  //             fc.paramsConfig.algorithmConfig.nms_thr = c["nms_thr"].GetFloat();
-  //           }
-  //           if (c.HasMember("cond_thr")) {
-  //             fc.paramsConfig.algorithmConfig.cond_thr = c["cond_thr"].GetFloat();
-  //           }
-  //           if (c.HasMember("modelDir")) {
-  //             fc.paramsConfig.algorithmConfig.modelPath = c["modelDir"].GetString();
-  //           }
-  //         }
-  //       }
-  //       result.push_back(fc);
-  //     }
-  //   }
-  // }
+
+bool ConfigParser::parseConfig(
+    const char *jsonstr,
+    std::vector<std::vector<std::pair<ModuleConfigure, ParamsConfig>>>
+        &pipelinesConfigs) {
+  rapidjson::Document d;
+  if (d.Parse(jsonstr).HasParseError()) {
+    // FLOWENGINE_LOGGER_ERROR("parseJson: parse error!");
+    return false;
+  }
+  if (!d.IsObject()) {
+    FLOWENGINE_LOGGER_ERROR("parseJson: should be an object!");
+    return false;
+  }
+  if (d.HasMember("Pipelines")) {
+    rapidjson::Value &pipelines = d["Pipelines"];
+    if (!pipelines.IsArray()) {
+      FLOWENGINE_LOGGER_INFO("parseJson: Pipelines if not an array....");
+      return false;
+    }
+
+    for (int i = 0; i < pipelines.Size(); i++) {
+      rapidjson::Value &e = pipelines[i];
+      if (!e.IsObject()) {
+        continue;
+      }
+      rapidjson::Value &pipeline = e["Pipeline"];
+      if (!pipeline.IsArray()) {
+        FLOWENGINE_LOGGER_INFO("parseJson: Pipeline if not an array....");
+        return false;
+      }
+      std::vector<std::pair<ModuleConfigure, ParamsConfig>> pipe;
+      for (int p = 0; p < pipeline.Size(); p++) {
+
+        rapidjson::Value &params = pipeline[p];
+        if (!params.IsObject()) {
+          continue;
+        }
+        if (!params.HasMember("type")) {
+          FLOWENGINE_LOGGER_ERROR(
+              "parseJson: Params doesn't contain type, please check!");
+          return false;
+        }
+        std::string type = params["type"].GetString();
+        common::ConfigType type_ = typeMapping.at(type);
+        ParamsConfig pc;
+        if (type == "logic") {
+          type = params["name"].GetString();
+        }
+        ModuleConfigure mc{moduleMapping.at(type),
+                           params["name"].GetString(),
+                           params["sendName"].GetString(),
+                           params["recvName"].GetString()};
+        switch (type_) {
+        case common::ConfigType::Stream: { // Detection
+          pc = common::CameraConfig{
+              params["name"].GetString(), params["videoCode"].GetString(),
+              params["flowType"].GetString(), params["cameraIp"].GetString(),
+              params["width"].GetInt(),       params["height"].GetInt(),
+              params["ProvinceId"].GetInt(),  params["CityId"].GetInt(),
+              params["RegionId"].GetInt(),    params["StationId"].GetInt(),
+              params["Location"].GetInt(),
+          };
+          break;
+        }
+        case common::ConfigType::Algorithm: { // Algorithm
+          rapidjson::Value &in = params["inputNames"];
+          std::vector<std::string> inputNames;
+          for (int i = 0; i < in.Size(); i++) {
+            rapidjson::Value &n = in[i];
+            inputNames.emplace_back(n.GetString());
+          }
+
+          rapidjson::Value &out = params["outputNames"];
+          std::vector<std::string> outputNames;
+          for (int i = 0; i < out.Size(); i++) {
+            rapidjson::Value &n = out[i];
+            outputNames.emplace_back(n.GetString());
+          }
+
+          // rapidjson::Value &ac = params["attentionClasses"];
+          // std::vector<int> attentionClasses;
+          // for (int i = 0; i < ac.Size(); i ++) {
+          //   rapidjson::Value &n = ac[i];
+          //   attentionClasses.emplace_back(n.GetString());
+          // }
+          // std::move(attentionClasses)
+
+          rapidjson::Value &ins = params["inputShape"];
+          std::array<int, 3> inputShape{ins[0].GetInt(), ins[1].GetInt(),
+                                        ins[2].GetInt()};
+
+          pc = common::AlgorithmConfig{
+              params["type"].GetString(),   params["modelPath"].GetString(),
+              std::move(inputNames),        std::move(outputNames),
+              std::move(inputShape),        params["numClasses"].GetInt(),
+              params["numAnchors"].GetInt()};
+          break;
+        }
+        case common::ConfigType::Logic: { // Detection
+          pc = common::LogicConfig{params["url"].GetString()};
+          break;
+        }
+        case common::ConfigType::Output: { // Detection
+          pc = common::OutputConfig{params["url"].GetString()};
+          break;
+        }
+        default: {
+          break;
+        }
+        }
+        pipe.emplace_back(std::pair<ModuleConfigure, ParamsConfig>{
+            std::move(mc), std::move(pc)});
+      }
+      if (!pipe.empty()) {
+        pipelinesConfigs.emplace_back(pipe);
+      }
+    }
+  }
   return true;
 }
 
 bool ConfigParser::readFile(std::string const &filename, std::string &result) {
-  // FILE *fp = fopen(filename.c_str(), "rb");
-  // if (!fp) {
-  //   FLOWENGINE_LOGGER_ERROR("open failed! file: {}", filename);
-  //   return false;
-  // }
+  FILE *fp = fopen(filename.c_str(), "rb");
+  if (!fp) {
+    FLOWENGINE_LOGGER_ERROR("open failed! file: {}", filename);
+    return false;
+  }
 
-  // char *buf = new char[1024 * 16];
-  // int n = fread(buf, 1, 1024 * 16, fp);
-  // fclose(fp);
+  char *buf = new char[1024 * 16];
+  int n = fread(buf, 1, 1024 * 16, fp);
+  fclose(fp);
 
-  // if (n >= 0) {
-  //   result.append(buf, 0, n);
-  // }
-  // delete[] buf;
+  if (n >= 0) {
+    result.append(buf, 0, n);
+  }
+  delete[] buf;
   // std::string temp = "{\"code\": 200,\"msg\": \"SUCCESS\"}";
   // writeJson(temp, filename);
   return true;
@@ -124,43 +176,41 @@ bool ConfigParser::writeJson(std::string const &jsonstr,
 // Main func begin
 bool ConfigParser::postConfig(std::string const &url, int deviceId,
                               std::string &result) {
+  CURL *curl = curl_easy_init();
+  struct curl_slist *headers = NULL;
+  // without this 500 error
+  headers =
+      curl_slist_append(headers, "Content-Type:application/json;charset=UTF-8");
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+  curl_easy_setopt(curl, CURLOPT_POST, 1); //设置为非0表示本次操作为POST
+  curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
-  // CURL *curl = curl_easy_init();
+  rapidjson::Document doc;
+  doc.SetObject(); // key-value 相当与map
 
-  // struct curl_slist *headers = NULL;
-  // // without this 500 error
-  // headers =
-  //     curl_slist_append(headers, "Content-Type:application/json;charset=UTF-8");
-  // curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-  // curl_easy_setopt(curl, CURLOPT_POST, 1); //设置为非0表示本次操作为POST
-  // curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+  rapidjson::Document::AllocatorType &allocator =
+      doc.GetAllocator(); //获取分配器
 
-  // rapidjson::Document doc;
-  // doc.SetObject(); // key-value 相当与map
+  // Add member
+  doc.AddMember("id", deviceId, allocator);
 
-  // rapidjson::Document::AllocatorType &allocator =
-  //     doc.GetAllocator(); //获取分配器
+  rapidjson::StringBuffer buffer;
+  // PrettyWriter是格式化的json，如果是Writer则是换行空格压缩后的json
+  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+  doc.Accept(writer);
 
-  // // Add member
-  // doc.AddMember("id", deviceId, allocator);
+  std::string s_out3 = std::string(buffer.GetString());
 
-  // rapidjson::StringBuffer buffer;
-  // // PrettyWriter是格式化的json，如果是Writer则是换行空格压缩后的json
-  // rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-  // doc.Accept(writer);
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, s_out3.c_str());
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, s_out3.length());
 
-  // std::string s_out3 = std::string(buffer.GetString());
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_callback);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 
-  // curl_easy_setopt(curl, CURLOPT_POSTFIELDS, s_out3.c_str());
-  // curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, s_out3.length());
+  CURLcode response = curl_easy_perform(curl);
 
-  // curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_callback);
-  // curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
-
-  // CURLcode response = curl_easy_perform(curl);
-
-  // // end of for
-  // curl_easy_cleanup(curl);
+  // end of for
+  curl_easy_cleanup(curl);
   return true;
 }
 } // namespace utils

@@ -13,6 +13,7 @@
 #include "backend.h"
 #include "inference.h"
 #include "jetson/classifier.hpp"
+#include "logger/logger.hpp"
 #include <cassert>
 #include <opencv2/imgcodecs.hpp>
 
@@ -40,7 +41,7 @@ void ClassifierModule::forward(
   }
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      FLOWENGINE_LOGGER_INFO("{} DetectModule module was done!", name);
+      FLOWENGINE_LOGGER_INFO("{} ClassifierModule module was done!", name);
       stopFlag.store(true);
       return;
     }
@@ -59,17 +60,18 @@ void ClassifierModule::forward(
       if (!instance->infer(inferImage->data, ret) ) {
         continue;
       }
-      buf.width = inferImage->cols;
-      buf.height = inferImage->rows;
       std::pair<std::string, std::array<float, 6>> b = {
           name,
           {static_cast<float>(region.x), static_cast<float>(region.y),
            static_cast<float>(region.x + region.width),
            static_cast<float>(region.y + region.height), ret.classResult.second,
            static_cast<float>(ret.classResult.first)}};
-      buf.results.bboxes.emplace_back(std::move(b));
+      buf.algorithmResult.bboxes.emplace_back(std::move(b));
     } else if (type == "AlgorithmMessage") {
-      for (auto &bbox : buf.results.bboxes) {
+      // FLOWENGINE_LOGGER_INFO("ClassifierModule: Upstream bbox size: {}", buf.algorithmResult.bboxes.size());
+      // std::cout << "ClassifierModule: Upstream bbox size: " << buf.algorithmResult.bboxes.size() << std::endl;
+      for (int i = 0; i < buf.algorithmResult.bboxes.size(); i ++) {
+        auto &bbox = buf.algorithmResult.bboxes.at(i);
         if (bbox.first == send) {
           cv::Rect rect{static_cast<int>(bbox.second[0]),
                         static_cast<int>(bbox.second[1]),
@@ -81,14 +83,12 @@ void ClassifierModule::forward(
           if (!instance->infer(croppedImage.data, ret)) {
             continue;
           }
-          buf.width = croppedImage.cols;
-          buf.height = croppedImage.rows;
           std::pair<std::string, std::array<float, 6>> b = {
               name,
               {bbox.second[0], bbox.second[1], bbox.second[2], bbox.second[3],
                ret.classResult.second,
                static_cast<float>(ret.classResult.first)}};
-          buf.results.bboxes.emplace_back(std::move(b));
+          buf.algorithmResult.bboxes.emplace_back(b); 
         }
       }
     }

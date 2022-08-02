@@ -39,6 +39,8 @@
 #include <vector>
 
 namespace module {
+using common::ModuleConfigure;
+using common::ParamsConfig;
 
 class PipelineModule {
 private:
@@ -50,19 +52,14 @@ private:
                   std::unique_ptr<RouteFramePool>{new RouteFramePool(16)}};
   std::unique_ptr<thread_pool> pool;
   std::unordered_map<std::string, std::shared_ptr<Module>> atm;
-  std::unordered_map<std::string, common::WorkerTypes> typeMapping {
-    std::make_pair("calling", common::WorkerTypes::Calling),
-    std::make_pair("smoking", common::WorkerTypes::Smoking),
-    std::make_pair("cat_dog", common::WorkerTypes::CatDog)
-  };
 
 private:
   bool submitModule(common::ModuleConfigure const &config,
                     common::ParamsConfig const &paramsConfig);
 
-  bool startPipeline(common::FlowConfigure const &config);
+  bool startPipeline(std::string const &uri);
 
-  bool getParamConfig(std::string const &name, common::ParamsConfig &config);
+  bool parseConfigs(std::string const &uri, std::vector<std::vector<std::pair<ModuleConfigure, ParamsConfig>>> &);
 
   void addModule(std::string const &moduleName, std::string const &sendModule,
                  std::string const &recvModule);

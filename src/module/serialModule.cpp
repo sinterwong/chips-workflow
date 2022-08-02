@@ -3,6 +3,7 @@
 //
 
 #include "serialModule.h"
+#include "frameMessage.pb.h"
 
 namespace module {
 serialModule::serialModule(Backend *ptr, const std::string &initName,
@@ -14,6 +15,7 @@ serialModule::serialModule(Backend *ptr, const std::string &initName,
 
 void serialModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
+  // tutorial::FrameMessage buf;
   //    char ch = getchar();
   //    tutorial::FrameMessage buf;
   //    bool flag = false;

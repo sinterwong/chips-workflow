@@ -40,9 +40,9 @@ void FrameDifferenceModule::forward(
       if (fd.statue()) {
         fd.init(frame);
       } else {
-        fd.update(frame, buf.results.bboxes);
+        fd.update(frame, buf.algorithmResult.bboxes);
       }
-      if (!buf.results.bboxes.empty()) {
+      if (!buf.algorithmResult.bboxes.empty()) {
         autoSend(buf);
       }
     }

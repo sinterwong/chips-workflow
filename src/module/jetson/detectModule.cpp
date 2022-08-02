@@ -62,8 +62,6 @@ void DetectModule::forward(
       if (!instance->infer(inferImage->data, ret)) {
         continue;
       }
-      buf.width = inferImage->cols;
-      buf.height = inferImage->rows;
 
       for (auto &rbbox : ret.detResults) {
         // std::pair<std::string, std::array<float, 6>> b{}
@@ -72,10 +70,11 @@ void DetectModule::forward(
             {rbbox.bbox[0] + region.x, rbbox.bbox[1] + region.y,
              rbbox.bbox[2] + region.x, rbbox.bbox[3] + region.y,
              rbbox.class_confidence, rbbox.class_id}};
-        buf.results.bboxes.emplace_back(std::move(b));
+        buf.algorithmResult.bboxes.emplace_back(std::move(b));
       }
     } else if (type == "AlgorithmMessage") {
-      for (auto &bbox : buf.results.bboxes) {
+      for (int i = 0; i < buf.algorithmResult.bboxes.size(); i ++) {
+        auto &bbox = buf.algorithmResult.bboxes.at(i);
         if (bbox.first == send) {
           cv::Rect rect{static_cast<int>(bbox.second[0]),
                         static_cast<int>(bbox.second[1]),
@@ -87,8 +86,6 @@ void DetectModule::forward(
           if (!instance->infer(croppedImage.data, ret)) {
             continue;
           }
-          buf.width = croppedImage.cols;
-          buf.height = croppedImage.rows;
           for (auto &rbbox : ret.detResults) {
             // std::pair<std::string, std::array<float, 6>> b{}
             std::pair<std::string, std::array<float, 6>> b = {
@@ -96,7 +93,7 @@ void DetectModule::forward(
                 {rbbox.bbox[0] + bbox.second[0], rbbox.bbox[1] + bbox.second[1],
                  rbbox.bbox[2] + bbox.second[0], rbbox.bbox[3] + bbox.second[1],
                  rbbox.class_confidence, rbbox.class_id}};
-            buf.results.bboxes.emplace_back(std::move(b));
+            buf.algorithmResult.bboxes.emplace_back(std::move(b));
           }
         }
       }

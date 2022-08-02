@@ -19,6 +19,7 @@
 #include <vector>
 #include <random>
 
+#include "messageBus.h"
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"
@@ -41,7 +42,7 @@ public:
   SendOutputModule(Backend *ptr,
                    const std::string &initName, 
                    const std::string &initType, 
-                   const common::SendConfig &sendConfig,
+                   const common::OutputConfig &outputConfig,
                    const std::vector<std::string> &recv = {},
                    const std::vector<std::string> &send = {},
                    const std::vector<std::string> &pool = {});
@@ -50,12 +51,12 @@ public:
   void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
                    message) override;
 
-  bool postResult(std::string const &url, common::AlarmInfo const &resultInfo,
+  bool postResult(std::string const &url, AlarmResult const &resultInfo,
                   std::string &result);
   
-  bool writeResult(ResultMessage const &rm, std::string &result);
+  bool writeResult(AlgorithmResult const &rm, std::string &result);
 
-  bool drawResult(cv::Mat &image, ResultMessage const &rm);
+  bool drawResult(cv::Mat &image, AlgorithmResult const &rm);
 
   inline unsigned int random_char() {
     std::random_device rd;

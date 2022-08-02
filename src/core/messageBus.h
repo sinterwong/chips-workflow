@@ -21,9 +21,46 @@
 
 // #include "basicMessage.pb.h"
 
-struct ResultMessage {
-  std::vector<std::pair<std::string, std::array<float, 6>>> bboxes;  // [x1, y1, x2, y2, confidence, classid]
-  std::vector<std::pair<std::string, std::array<float, 9>>> polys;  // [x1, y1, ..., x4, y4, classid]
+/**
+ * @brief 报警时的摄像头信息
+ * 
+ */
+struct CameraResult {
+  int widthPixel;        // 视频宽度
+  int heightPixel;       // 视频高度
+  std::string cameraId;  // 摄像机唯一ID
+  std::string videoCode; // 视频编码类型
+  std::string flowType;  // 流协议类型
+  std::string cameraIp;  // 网络流链接
+  int provinceId;        // 省ID
+  int cityId;            // 市ID
+  int regionId;          // 区ID
+  int stationId;         // 站ID
+  int location;          // 所在位置（卸油区，加油区...）
+};
+
+/**
+ * @brief 报警信息
+ * 
+ */
+struct AlarmResult {
+  std::string cameraId;     // 摄像机唯一ID
+  std::string alarmType;    // 报警类型（smoke, phone等等）
+  std::string alarmFile;    // 报警图片
+  std::string alarmId;      // 报警的唯一标识 uuid
+  std::string alarmDetails; // 报警细节
+  std::string cameraIp;     // 网络流链接
+};
+
+/**
+ * @brief 报警时的算法信息
+ * 
+ */
+struct AlgorithmResult {
+  std::vector<std::pair<std::string, std::array<float, 6>>>
+      bboxes; // [x1, y1, x2, y2, confidence, classid]
+  std::vector<std::pair<std::string, std::array<float, 9>>>
+      polys; // [x1, y1, ..., x4, y4, classid]
 };
 
 struct queueMessage {
@@ -35,7 +72,9 @@ struct queueMessage {
   std::string messageType;
   std::string frameType;
   std::string str;
-  ResultMessage results;
+  AlarmResult alarmResult;
+  CameraResult cameraResult;
+  AlgorithmResult algorithmResult;
 };
 
 class MessageBus {

@@ -18,6 +18,7 @@
 
 #include "common/common.hpp"
 #include "frameMessage.pb.h"
+#include "messageBus.h"
 #include "module.hpp"
 #include "videoSource.h"
 #include <opencv2/opencv.hpp>
@@ -46,6 +47,23 @@ private:
   bool signal_recieved;
 
   videoOptions opt;
+
+  CameraResult cameraResult;
+
+private:
+  inline void setCameraResult(common::CameraConfig const & config) {
+    cameraResult.widthPixel = config.widthPixel;
+    cameraResult.heightPixel = config.heightPixel;
+    cameraResult.cameraId = config.cameraId;
+    cameraResult.videoCode = config.videoCode;
+    cameraResult.flowType = config.flowType;
+    cameraResult.cameraIp = config.cameraIp;
+    cameraResult.provinceId = config.provinceId;
+    cameraResult.cityId = config.cityId;
+    cameraResult.regionId = config.regionId;
+    cameraResult.stationId = config.stationId;
+    cameraResult.location = config.location;
+  }
 
 public:
   JetsonSourceModule(Backend *ptr,

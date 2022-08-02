@@ -27,6 +27,10 @@
 #include "rapidjson/writer.h"
 
 namespace utils {
+
+using common::ModuleConfigure;
+using common::ParamsConfig;
+
 static size_t curl_callback(void *ptr, size_t size, size_t nmemb,
                             std::string *data) {
   data->append((char *)ptr, size * nmemb);
@@ -34,11 +38,32 @@ static size_t curl_callback(void *ptr, size_t size, size_t nmemb,
 }
 
 class ConfigParser {
-public:
-  // parse json info to flowconfigure sturct
-  bool parseConfig(char const *jsonstr, std::vector<common::FlowConfigure> &);
+private:
+  // 配置参数类型
+  std::unordered_map<std::string, common::ConfigType> typeMapping {
+    std::make_pair("stream", common::ConfigType::Stream),
+    std::make_pair("detection", common::ConfigType::Algorithm),
+    std::make_pair("classifier", common::ConfigType::Algorithm),
+    std::make_pair("output", common::ConfigType::Output),
+    std::make_pair("logic", common::ConfigType::Logic),
+  };
+  // 启动模块的类型
+  std::unordered_map<std::string, common::ModuleType> moduleMapping {
+    std::make_pair("stream", common::ModuleType::Stream),
+    std::make_pair("detection", common::ModuleType::Detection),
+    std::make_pair("classifier", common::ModuleType::Classifier),
+    std::make_pair("output", common::ModuleType::Output),
+    std::make_pair("calling", common::ModuleType::Calling),
+    std::make_pair("smoking", common::ModuleType::Smokeing)
+  };
 
-  bool parseParams(const char *jsonstr, common::ParamsConfig &result);
+
+public:
+  // ConfigParser(std::string const &url_) : url(url_) {}
+  bool
+  parseConfig(const char *jsonstr,
+              std::vector<std::vector<std::pair<ModuleConfigure, ParamsConfig>>>
+                  &pipelinesConfigs);
 
   bool readFile(std::string const &filename, std::string &result);
 

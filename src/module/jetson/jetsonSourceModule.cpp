@@ -10,6 +10,7 @@
  */
 
 #include "jetsonSourceModule.h"
+#include "messageBus.h"
 #include <mutex>
 #include <opencv2/imgproc.hpp>
 
@@ -75,6 +76,7 @@ JetsonSourceModule::JetsonSourceModule(
     LogError("jetson source:  failed to create input stream\n");
     exit(-1);
   }
+  setCameraResult(_params);
 }
 
 void JetsonSourceModule::forward(
@@ -92,10 +94,10 @@ void JetsonSourceModule::forward(
 
     queueMessage sendMessage;
     sendMessage.frameType = "RGB888";
-    // sendMessage.type = "RGB888";
     sendMessage.height = opt.height;
     sendMessage.width = opt.width;
     sendMessage.key = returnKey;
+    sendMessage.cameraResult = cameraResult;
     autoSend(sendMessage);
     // count++;
   } else {
