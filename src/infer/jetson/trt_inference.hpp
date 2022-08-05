@@ -55,13 +55,20 @@ public:
   //! \brief Runs the inference engine
   //!
   virtual bool infer(void *, Result &) override;
+  // virtual bool infer(cv::Mat const&, Result &) override;
 
 private:
+  //!
+  //! \brief Resize input
+  //!
+  bool resizeInput(cv::Mat &) const;
+
   //!
   //! \brief Reads the input and mean data, preprocesses, and stores the result
   //! in a managed buffer
   //!
-  virtual bool processInput(void *, BufferManager const &, std::array<int, 3> const &) const;
+  virtual bool processInput(void *, BufferManager const &,
+                            std::array<int, 3> const &) const;
 
   //!
   //! \brief Verifies that the output is correct and prints it

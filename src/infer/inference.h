@@ -40,9 +40,14 @@ public:
   virtual bool initialize() = 0;
 
   //!
-  //! \brief Runs the inference engine with input of Mat
+  //! \brief Runs the inference engine with input of void*
   //!
   virtual bool infer(void*, Result &) = 0;
+
+  //!
+  //! \brief Runs the inference engine with input of Mat
+  //!
+  // virtual bool infer(cv::Mat&, Result &) = 0;
 };
 } // namespace infer
 #endif

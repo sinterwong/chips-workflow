@@ -34,13 +34,19 @@ void CallingModule::forward(
     } else if (type == "AlgorithmMessage") {
       // 此处根据 buf.algorithmResult 写吸烟的逻辑并填充 buf.alarmResult 信息
       // 如果符合条件就发送至SendOutputModule
-      // std::cout << "CallingModule: Upstream bbox size: " << buf.algorithmResult.bboxes.size() << std::endl;
-      for (auto &bbox: buf.algorithmResult.bboxes) {
-        // std::cout << "CallingModule: Upstream bbox name: " << bbox.first << std::endl;
+      for (int i = 0; i < buf.algorithmResult.bboxes.size(); i ++) {
+        auto &bbox = buf.algorithmResult.bboxes.at(i);
+        if (bbox.first == send) {
+          if (bbox.second.at(5) != 0) {
+            // 意味着存在报警
+            buf.alarmResult.alarmDetails = "存在吸烟或打电话";
+            buf.alarmResult.alarmType = name;
+            autoSend(buf);
+            break;
+          }
+        }
       }
-      // std::cout << "*********************" << std::endl;
     }
-    autoSend(buf);
   }
 }
 } // namespace module

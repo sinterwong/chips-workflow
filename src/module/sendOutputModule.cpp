@@ -31,7 +31,7 @@ SendOutputModule::SendOutputModule(Backend *ptr,
     }
 
 bool SendOutputModule::postResult(std::string const &url,
-                                  AlarmResult const &alarmInfo,
+                                  AlarmInfo const &alarmInfo,
                                   std::string &result) {
 
   CURL *curl = curl_easy_init();
@@ -58,23 +58,22 @@ bool SendOutputModule::postResult(std::string const &url,
   rapidjson::Value alarm_id(alarmInfo.alarmId.c_str(), allocator);
   rapidjson::Value alarm_detail(alarmInfo.alarmDetails.c_str(), allocator);
   rapidjson::Value camera_ip(alarmInfo.cameraIp.c_str(), allocator);
-  // rapidjson::Value result_info(alarmInfo.resultInfo.c_str(), allocator);
+  rapidjson::Value result_info(alarmInfo.algorithmResult.c_str(), allocator);
   doc.AddMember("alarm_file", alarm_file, allocator);
   doc.AddMember("alarm_type", alarm_type, allocator);
   doc.AddMember("alarm_id", alarm_id, allocator);
   doc.AddMember("alarm_detail", alarm_detail, allocator);
   doc.AddMember("camera_ip", camera_ip, allocator);
-  // doc.AddMember("result_info", result_info, allocator);
+  doc.AddMember("result_info", result_info, allocator);
   doc.AddMember("camera_id", camera_id, allocator);
   // --------------------
-  // doc.AddMember("host_id", alarmInfo.hostId, allocator);
-  // doc.AddMember("province_id", alarmInfo.provinceId, allocator);
-  // doc.AddMember("city_id", alarmInfo.cityId, allocator);
-  // doc.AddMember("region_id", alarmInfo.regionId, allocator);
-  // doc.AddMember("station_id", alarmInfo.stationId, allocator);
-  // doc.AddMember("width", alarmInfo.width, allocator);
-  // doc.AddMember("height", alarmInfo.height, allocator);
-  // doc.AddMember("location", alarmInfo.location, allocator);
+  doc.AddMember("province_id", alarmInfo.provinceId, allocator);
+  doc.AddMember("city_id", alarmInfo.cityId, allocator);
+  doc.AddMember("region_id", alarmInfo.regionId, allocator);
+  doc.AddMember("station_id", alarmInfo.stationId, allocator);
+  doc.AddMember("width", alarmInfo.width, allocator);
+  doc.AddMember("height", alarmInfo.height, allocator);
+  doc.AddMember("location", alarmInfo.location, allocator);
   // */
 
   rapidjson::StringBuffer buffer;
@@ -198,18 +197,35 @@ void SendOutputModule::forward(
     drawResult(showImage, buf.algorithmResult);
     cv::imwrite("/home/wangxt/workspace/projects/flowengine/tests/data/output.jpg", showImage);
 
-    // resultTemplate.alarmFile = imageConverter.mat2str(showImage);
+    buf.alarmResult.alarmFile = imageConverter.mat2str(showImage);
 
-    // // resultTemplate.alarmFile = imageConverter.mat2str(*frame);
-    // resultTemplate.alarmId = generate_hex(16);
+    // resultTemplate.alarmFile = imageConverter.mat2str(*frame);
+    buf.alarmResult.alarmId = generate_hex(16);
+    std::string algorithmInfo;
+    writeResult(buf.algorithmResult, algorithmInfo);
 
-    // writeResult(buf.algorithmResult, resultTemplate.resultInfo);
+    AlarmInfo alarmInfo {
+      buf.cameraResult.heightPixel,
+      buf.cameraResult.widthPixel,
+      buf.cameraResult.provinceId,
+      buf.cameraResult.cityId,
+      buf.cameraResult.regionId,
+      buf.cameraResult.stationId,
+      buf.cameraResult.location,
+      buf.cameraResult.cameraId,
+      buf.cameraResult.cameraIp,
+      buf.alarmResult.alarmType,
+      buf.alarmResult.alarmFile,
+      buf.alarmResult.alarmId,
+      buf.alarmResult.alarmDetails,
+      algorithmInfo,
+    };
 
-    // std::string response;
-    // if (!postResult(url, resultTemplate, response)) {
-    //   FLOWENGINE_LOGGER_ERROR(
-    //       "SendOutputModule.forward: post result was failed, please check!");
-    // }
+    std::string response;
+    if (!postResult(url, alarmInfo, response)) {
+      FLOWENGINE_LOGGER_ERROR(
+          "SendOutputModule.forward: post result was failed, please check!");
+    }
   }
 }
 } // namespace module

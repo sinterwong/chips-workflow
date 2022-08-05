@@ -142,9 +142,8 @@ void PipelineModule::go() {
     std::string uri =
         "/home/wangxt/workspace/projects/flowengine/tests/data/output.json";
     startPipeline(uri);
-    std::this_thread::sleep_for(std::chrono::seconds(30));
-    // pool->stop();
-    break;
+    std::this_thread::sleep_for(std::chrono::minutes(15));
+    // break;
   }
 }
 

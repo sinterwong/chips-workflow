@@ -63,14 +63,13 @@ bool ConfigParser::parseConfig(
         if (type == "logic") {
           type = params["name"].GetString();
         }
-        ModuleConfigure mc{moduleMapping.at(type),
-                           params["name"].GetString(),
+        ModuleConfigure mc{moduleMapping.at(type), params["name"].GetString(),
                            params["sendName"].GetString(),
                            params["recvName"].GetString()};
         switch (type_) {
         case common::ConfigType::Stream: { // Detection
           pc = common::CameraConfig{
-              params["name"].GetString(), params["videoCode"].GetString(),
+              params["name"].GetString(),     params["videoCode"].GetString(),
               params["flowType"].GetString(), params["cameraIp"].GetString(),
               params["width"].GetInt(),       params["height"].GetInt(),
               params["ProvinceId"].GetInt(),  params["CityId"].GetInt(),
@@ -102,15 +101,29 @@ bool ConfigParser::parseConfig(
           // }
           // std::move(attentionClasses)
 
+          rapidjson::Value &rg = params["region"];
+          std::array<int, 4> region{rg[0].GetInt(), rg[1].GetInt(),
+                                    rg[2].GetInt(), rg[3].GetInt()};
+
           rapidjson::Value &ins = params["inputShape"];
           std::array<int, 3> inputShape{ins[0].GetInt(), ins[1].GetInt(),
                                         ins[2].GetInt()};
 
           pc = common::AlgorithmConfig{
-              params["type"].GetString(),   params["modelPath"].GetString(),
-              std::move(inputNames),        std::move(outputNames),
-              std::move(inputShape),        params["numClasses"].GetInt(),
-              params["numAnchors"].GetInt()};
+              params["modelPath"].GetString(),
+              std::move(inputNames),
+              std::move(outputNames),
+              std::move(inputShape),
+              params["numClasses"].GetInt(),
+              params["numAnchors"].GetInt(),
+              std::move(region),
+              params["cond_thr"].GetFloat(),
+              params["nms_thr"].GetFloat(),
+              params["alpha"].GetFloat(),
+              params["beta"].GetFloat(),
+              params["isScale"].GetBool(),
+              params["batchSize"].GetInt(),
+          };
           break;
         }
         case common::ConfigType::Logic: { // Detection

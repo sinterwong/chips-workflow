@@ -74,30 +74,31 @@ void DetctionInfer::nms(std::vector<DetectionResult> &res,
   }
 }
 
-void DetctionInfer::renderOriginShape(std::vector<DetectionResult> &results, std::array<int, 3> const &shape) const {
+void DetctionInfer::renderOriginShape(std::vector<DetectionResult> &results,
+                                      std::array<int, 3> const &shape) const {
   for (auto &ret : results) {
     int l, r, t, b;
-    float r_w = mParams.inputShape.at(0) / (shape.at(0) * 1.0);
-    float r_h = mParams.inputShape.at(1) / (shape.at(1) * 1.0);
-    if (r_h > r_w) {
-      l = ret.bbox[0] - ret.bbox[2] / 2.f;
-      r = ret.bbox[0] + ret.bbox[2] / 2.f;
-      t = ret.bbox[1] - ret.bbox[3] / 2.f - (mParams.inputShape.at(1) - r_w * shape.at(1)) / 2;
-      b = ret.bbox[1] + ret.bbox[3] / 2.f - (mParams.inputShape.at(1) - r_w * shape.at(1)) / 2;
-      l = l / r_w;
-      r = r / r_w;
-      t = t / r_w;
-      b = b / r_w;
-    } else {
-      l = ret.bbox[0] - ret.bbox[2] / 2.f - (mParams.inputShape.at(0) - r_h * shape.at(0)) / 2;
-      r = ret.bbox[0] + ret.bbox[2] / 2.f - (mParams.inputShape.at(0) - r_h * shape.at(0)) / 2;
-      t = ret.bbox[1] - ret.bbox[3] / 2.f;
-      b = ret.bbox[1] + ret.bbox[3] / 2.f;
-      l = l / r_h;
-      r = r / r_h;
-      t = t / r_h;
-      b = b / r_h;
-    }
+    float ratio = std::min(mParams.inputShape[0] * 1.0 / shape.at(0),
+                           mParams.inputShape[1] * 1.0 / shape.at(1));
+    // if (r_h > r_w) {
+    //   l = ret.bbox[0] - ret.bbox[2] / 2.f;
+    //   r = ret.bbox[0] + ret.bbox[2] / 2.f;
+    //   t = ret.bbox[1] - ret.bbox[3] / 2.f - (mParams.inputShape.at(1) - r_w *
+    //   shape.at(1)) / 2; b = ret.bbox[1] + ret.bbox[3] / 2.f -
+    //   (mParams.inputShape.at(1) - r_w * shape.at(1)) / 2; l = l / r_w; r = r
+    //   / r_w; t = t / r_w; b = b / r_w;
+    // } else {
+    //   l = ret.bbox[0] - ret.bbox[2] / 2.f - (mParams.inputShape.at(0) - r_h *
+    //   shape.at(0)) / 2; r = ret.bbox[0] + ret.bbox[2] / 2.f -
+    //   (mParams.inputShape.at(0) - r_h * shape.at(0)) / 2; t = ret.bbox[1] -
+    //   ret.bbox[3] / 2.f; b = ret.bbox[1] + ret.bbox[3] / 2.f; l = l / r_h; r
+    //   = r / r_h; t = t / r_h; b = b / r_h;
+    // }
+    l = (ret.bbox[0] - ret.bbox[2] / 2.f) / ratio;
+    r = (ret.bbox[0] + ret.bbox[2] / 2.f) / ratio;
+    t = (ret.bbox[1] - ret.bbox[3] / 2.f) / ratio;
+    b = (ret.bbox[1] + ret.bbox[3] / 2.f) / ratio;
+
     ret.bbox[0] = l;
     ret.bbox[1] = t;
     ret.bbox[2] = r;

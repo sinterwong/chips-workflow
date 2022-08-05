@@ -15,6 +15,7 @@
 #include "jetson/classifier.hpp"
 #include "logger/logger.hpp"
 #include <cassert>
+#include <memory>
 #include <opencv2/imgcodecs.hpp>
 
 namespace module {
@@ -51,7 +52,7 @@ void ClassifierModule::forward(
     if (type == "FrameMessage") {
       std::shared_ptr<cv::Mat> inferImage;
       if (region.area() != 0) {
-        inferImage = std::make_shared<cv::Mat>(*image, region);
+        inferImage = std::make_shared<cv::Mat>((*image)(region).clone());
       } else {
         inferImage = image;
       }
@@ -77,7 +78,8 @@ void ClassifierModule::forward(
                         static_cast<int>(bbox.second[1]),
                         static_cast<int>(bbox.second[2] - bbox.second[0]),
                         static_cast<int>(bbox.second[3] - bbox.second[1])};
-          cv::Mat croppedImage(*image, rect);
+          cv::Mat croppedImage = (*image)(rect).clone();
+          cv::cvtColor(croppedImage, croppedImage, cv::COLOR_RGB2BGR);
           infer::Result ret;
           ret.shape = {croppedImage.cols, croppedImage.rows, 3};
           if (!instance->infer(croppedImage.data, ret)) {

@@ -39,30 +39,33 @@ struct ModuleConfigure {
 
 struct AlgorithmConfig {
   AlgorithmConfig() = default;
-  AlgorithmConfig(std::string const &type_, std::string const &modelPath_,
+  AlgorithmConfig(std::string const &modelPath_,
                   std::vector<std::string> const &inputTensorNames_,
                   std::vector<std::string> const &outputTensorNames_,
                   std::array<int, 3> const &inputShape_, int numClasses_,
                   int numAnchors_ = 0,
                   std::array<int, 4> region_ = {0, 0, 0, 0},
                   float cond_thr_ = 0.3, float nms_thr_ = 0.5,
+                  float alpha_ = 255.0, float beta_ = 0.0, bool isScale_ = true,
                   int batchSize_ = 1)
-      : type(type_), modelPath(modelPath_), numClasses(numClasses_),
-        inputTensorNames(std::move(inputTensorNames_)),
+      : modelPath(modelPath_), inputTensorNames(std::move(inputTensorNames_)),
         outputTensorNames(std::move(outputTensorNames_)),
-        inputShape(std::move(inputShape_)), region(region_),
-        cond_thr(cond_thr_), numAnchors(numAnchors_), nms_thr(nms_thr_),
+        inputShape(std::move(inputShape_)), numClasses(numClasses_),
+        numAnchors(numAnchors_), region(region_), cond_thr(cond_thr_),
+        nms_thr(nms_thr_), alpha(alpha_), beta(beta_), isScale(isScale_),
         batchSize(batchSize_){};
   // 算法配置
-  std::string type;                           // 算法类型
   std::string modelPath;                      // engine 所在目录
   int numClasses;                             // classes of number
   std::vector<std::string> inputTensorNames;  // input tensor names
   std::vector<std::string> outputTensorNames; // output tensor names
   std::array<int, 3> inputShape;              // 算法需要的输入尺度
   std::array<int, 4> region;                  // 划定区域
+  bool isScale;                               // 是否等比例缩放
   float cond_thr;                             // 置信度阈值
   float nms_thr;                              // NMS 阈值
+  float alpha;                                // 预处理时除数
+  float beta;                                 // 预处理时减数
   int numAnchors; // detection model anchors of number  yolov5s: 25200
   int batchSize;  // batch of number
 };

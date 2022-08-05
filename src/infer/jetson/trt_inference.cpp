@@ -12,11 +12,18 @@
 #include "jetson/trt_inference.hpp"
 #include "jetson/logger.h"
 #include "jetson/preprocess.h"
+#include "jetson/standard.h"
+#include <algorithm>
 #include <array>
+#include <opencv2/core/base.hpp>
+#include <opencv2/core/hal/interface.h>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 
 namespace infer {
 namespace trt {
-void hwc_to_chw(cv::InputArray src, cv::OutputArray dst) {
+void hwc_to_chw(cv::InputArray &src, cv::OutputArray &dst) {
   const int src_h = src.rows();
   const int src_w = src.cols();
   const int src_c = src.channels();
@@ -30,7 +37,7 @@ void hwc_to_chw(cv::InputArray src, cv::OutputArray dst) {
   cv::transpose(hw_c, dst_1d);
 }
 
-void chw_to_hwc(cv::InputArray src, cv::OutputArray dst) {
+void chw_to_hwc(cv::InputArray &src, cv::OutputArray &dst) {
   const auto &src_size = src.getMat().size;
   const int src_c = src_size[0];
   const int src_h = src_size[1];
@@ -115,56 +122,69 @@ bool TRTInference::infer(void *inputs, Result &result) {
   return true;
 }
 
-bool TRTInference::processInput(void *inputs,
-                                BufferManager const &buffers, std::array<int, 3> const& shape) const {
+bool TRTInference::resizeInput(cv::Mat &image) const {
+  if (mParams.isScale) {
+    int height = image.rows;
+    int width = image.cols;
+    float ratio = std::min(mParams.inputShape[0] * 1.0 / width,
+                           mParams.inputShape[1] * 1.0 / height);
+
+    int dw = width * ratio;
+    int dh = height * ratio;
+    cv::resize(image, image, cv::Size(dw, dh));
+    cv::copyMakeBorder(image, image, 0, std::max(0, mParams.inputShape[1] - dh),
+                       0, std::max(0, mParams.inputShape[0] - dw),
+                       cv::BORDER_CONSTANT, 0);
+  } else {
+    cv::resize(image, image,
+               cv::Size(mParams.inputShape[0], mParams.inputShape[1]));
+  }
+  return true;
+}
+
+bool TRTInference::processInput(void *inputs, BufferManager const &buffers,
+                                std::array<int, 3> const &shape) const {
   float *deviceInputBuffer = static_cast<float *>(
       buffers.getDeviceBuffer(mParams.inputTensorNames[0])); // explicit batch
-  int size_image = shape[0] * shape[1] * shape[2];
-  // int size_image_dst =
-  //     mParams.inputShape[0] * mParams.inputShape[1] * mParams.inputShape[2]; // if batch_size > 1
-  // copy data to pinned memory
+  // /*
+  cv::Mat image{shape[1], shape[0], CV_8UC3, inputs};
+  // cv::imwrite("/home/wangxt/workspace/projects/flowengine/tests/data/out.jpg", image);
+  int image_size = image.cols * image.rows * image.channels();
+
+  if (!resizeInput(image)) {
+    return false;
+  }
+  int resized_size = image.cols * image.rows * image.channels();
+
+  cv::Mat chw_image;
+
+  hwc_to_chw(image, chw_image);
+  
+  memcpy(imageHost, chw_image.data, resized_size + 1);
+
+  // copy data to device memory
+  CHECK(cudaMemcpyAsync(imageDevice, imageHost, resized_size,
+                        cudaMemcpyHostToDevice, processStream));
+  strandard_image(imageDevice, deviceInputBuffer, resized_size, mParams.alpha, mParams.beta, processStream);
+
+  // if batch_size > 1
+  // int size_image_dst = mParams.inputShape[0] * mParams.inputShape[1] * mParams.inputShape[2]; 
+  // deviceInputBuffer += size_image_dst;
+  // */
+
+  /*
   memcpy(imageHost, inputs, size_image);
 
   // copy data to device memory
   CHECK(cudaMemcpyAsync(imageDevice, imageHost, size_image,
                         cudaMemcpyHostToDevice, processStream));
 
-  preprocess_kernel_img(imageDevice, shape[0],
-                        shape[1], deviceInputBuffer,
+  preprocess_kernel_img(imageDevice, shape[0], shape[1], deviceInputBuffer,
                         mParams.inputShape[0], mParams.inputShape[1],
-                        processStream);
+                        mParams.alpha, mParams.beta, processStream);
 
-  // deviceInputBuffer += size_image_dst; // if batch_size > 1
+  */
 
-  // cv::Mat resizedFrame;
-  // if (mParams.scaling > 0) {
-  //   int dw = mParams.originShape[0] * mParams.scaling;
-  //   int dh = mParams.originShape[1] * mParams.scaling;
-  //   cv::resize(inputs, resizedFrame, cv::Size(), mParams.scaling,
-  //              mParams.scaling);
-  //   cv::copyMakeBorder(
-  //       resizedFrame, resizedFrame, 0, std::max(0, mParams.inputShape[1] -
-  //       dh), 0, std::max(0, mParams.inputShape[0] - dw), cv::BORDER_WRAP,
-  //       127);
-  // } else {
-  //   cv::resize(inputs, resizedFrame,
-  //              cv::Size(mParams.inputShape[0], mParams.inputShape[1]));
-  // }
-
-  // cv::cvtColor(resizedFrame, resizedFrame, cv::COLOR_BGR2RGB);
-  // // resizedFrame.convertTo(resizedFrame, CV_32FC3, 1.0 / 255);
-  // hwc_to_chw(resizedFrame, resizedFrame);
-  // cv::Mat inputImage = std::move(
-  //     resizedFrame.reshape(1, resizedFrame.total() *
-  //     resizedFrame.channels()));
-  // std::vector<uint8_t> data = inputImage.isContinuous() ? inputImage :
-  // inputImage.clone(); float *hostInputBuffer =
-  //     static_cast<float
-  //     *>(buffers.getHostBuffer(mParams.inputTensorNames[0]));
-  // // hostInputBuffer = data.data();  vector改成float就行，待会试试看能不能行
-  // for (int i = 0; i < data.size(); i++) {
-  //   hostInputBuffer[i] = float(data[i] / 255.0);
-  // }
   return true;
 }
 

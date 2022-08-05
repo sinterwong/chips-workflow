@@ -83,8 +83,12 @@ void JetsonSourceModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
   assert(inputStream);
 
-  ret = inputStream->Capture(&frame, 1000);
-
+  bool ret = inputStream->Capture(&frame, 1000);
+  if (count < 5) {
+    count ++;
+    return;
+  }
+  count = 0;
   if (ret) {
     FrameBuf frameBufMessage = makeFrameBuf(frame, opt.height, opt.width);
     frameBufMessage.height = opt.height;
@@ -99,7 +103,7 @@ void JetsonSourceModule::forward(
     sendMessage.key = returnKey;
     sendMessage.cameraResult = cameraResult;
     autoSend(sendMessage);
-    // count++;
+
   } else {
     if (!inputStream->IsStreaming()) {
       LogInfo("jetson source:  input steram was done.\n");
@@ -107,9 +111,6 @@ void JetsonSourceModule::forward(
       stopFlag.store(true);
     }
   }
-  // if (count > 2000) {
-  //   stopFlag.store(true);
-  // }
 }
 
 } // namespace module

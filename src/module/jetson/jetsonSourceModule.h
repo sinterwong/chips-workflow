@@ -31,20 +31,12 @@ FrameBuf makeFrameBuf(uchar3 *, int, int);
 
 class JetsonSourceModule : public Module {
 private:
-  std::string uri;
-
   // std::unique_ptr<videoSource> inputStream;
   videoSource *inputStream;
 
   uchar3 *frame = nullptr;
 
   int count = 0;
-
-  bool ret;
-
-  tutorial::FrameMessage buf;
-
-  bool signal_recieved;
 
   videoOptions opt;
 

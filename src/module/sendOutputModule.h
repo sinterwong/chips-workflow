@@ -31,6 +31,24 @@
 #include "utils/convertMat.hpp"
 
 namespace module {
+
+struct AlarmInfo {
+  int height;                   // 高
+  int width;                    // 宽
+  int provinceId;               // 省ID
+  int cityId;                   // 市ID
+  int regionId;                 // 区ID
+  int stationId;                // 站ID
+  int location;                 // 所在位置（卸油区，加油区...）
+  std::string cameraId;
+  std::string cameraIp;
+  std::string alarmType;
+  std::string alarmFile;
+  std::string alarmId;
+  std::string alarmDetails;
+  std::string algorithmResult;
+};
+
 class SendOutputModule : public Module {
 private:
   bool ret;
@@ -51,7 +69,7 @@ public:
   void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
                    message) override;
 
-  bool postResult(std::string const &url, AlarmResult const &resultInfo,
+  bool postResult(std::string const &url, AlarmInfo const &resultInfo,
                   std::string &result);
   
   bool writeResult(AlgorithmResult const &rm, std::string &result);

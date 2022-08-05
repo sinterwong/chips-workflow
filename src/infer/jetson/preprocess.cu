@@ -5,9 +5,9 @@ namespace infer {
 namespace trt {
 __global__ void warpaffine_kernel(uint8_t *src, int src_line_size,
                                   int src_width, int src_height, float *dst,
-                                  int dst_width, int dst_height,
-                                  uint8_t const_value_st, AffineMatrix d2s,
-                                  int edge) {
+                                  int dst_width, int dst_height, float alpha,
+                                  float beta, uint8_t const_value_st,
+                                  AffineMatrix d2s, int edge) {
   int position = blockDim.x * blockIdx.x + threadIdx.x;
   if (position >= edge)
     return;
@@ -74,9 +74,17 @@ __global__ void warpaffine_kernel(uint8_t *src, int src_line_size,
   // c0 = t;
 
   // normalization
-  c0 = c0 / 255.0f;
-  c1 = c1 / 255.0f;
-  c2 = c2 / 255.0f;
+  if (alpha != 0.0) {
+    c0 = c0 / alpha;
+    c1 = c1 / alpha;
+    c2 = c2 / alpha;
+  }
+
+  if (beta != 0.0) {
+    c0 = c0 - beta;
+    c1 = c1 - beta;
+    c2 = c2 - beta;
+  }
 
   // rgbrgbrgb to rrrgggbbb
   int area = dst_width * dst_height;
@@ -90,7 +98,7 @@ __global__ void warpaffine_kernel(uint8_t *src, int src_line_size,
 
 void preprocess_kernel_img(uint8_t *src, int src_width, int src_height,
                            float *dst, int dst_width, int dst_height,
-                           cudaStream_t stream) {
+                           float alpha, float beta, cudaStream_t stream) {
   AffineMatrix s2d, d2s;
   float scale =
       std::min(dst_height / (float)src_height, dst_width / (float)src_width);
@@ -113,7 +121,7 @@ void preprocess_kernel_img(uint8_t *src, int src_width, int src_height,
   int blocks = ceil(jobs / (float)threads);
   warpaffine_kernel<<<blocks, threads, 0, stream>>>(
       src, src_width * 3, src_width, src_height, dst, dst_width, dst_height,
-      128, d2s, jobs);
+      alpha, beta, 128, d2s, jobs);
   cudaStreamSynchronize(stream);
 }
 
