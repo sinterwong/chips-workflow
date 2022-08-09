@@ -1,12 +1,12 @@
 /**
  * @file sendOutputModule.h
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-05
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #ifndef __METAENGINE_SEND_OUTPUT_H_
@@ -16,8 +16,8 @@
 #include <curl/curl.h>
 #include <memory>
 #include <opencv2/opencv.hpp>
-#include <vector>
 #include <random>
+#include <vector>
 
 #include "messageBus.h"
 #include "rapidjson/document.h"
@@ -33,20 +33,15 @@
 namespace module {
 
 struct AlarmInfo {
-  int height;                   // 高
-  int width;                    // 宽
-  int provinceId;               // 省ID
-  int cityId;                   // 市ID
-  int regionId;                 // 区ID
-  int stationId;                // 站ID
-  int location;                 // 所在位置（卸油区，加油区...）
-  std::string cameraId;
-  std::string cameraIp;
-  std::string alarmType;
-  std::string alarmFile;
-  std::string alarmId;
-  std::string alarmDetails;
-  std::string algorithmResult;
+  int height;                  // 高
+  int width;                   // 宽
+  int cameraId;                // 摄像机 ID
+  std::string cameraIp;        // 视频流 IP
+  std::string alarmType;       // 报警类型
+  std::string alarmFile;       // 报警图片(base64)
+  std::string alarmId;         // 本次报警唯一 ID
+  std::string alarmDetails;    // 报警细节
+  std::string algorithmResult; // 算法返回结果
 };
 
 class SendOutputModule : public Module {
@@ -57,9 +52,8 @@ private:
   int count = 0;
 
 public:
-  SendOutputModule(Backend *ptr,
-                   const std::string &initName, 
-                   const std::string &initType, 
+  SendOutputModule(Backend *ptr, const std::string &initName,
+                   const std::string &initType,
                    const common::OutputConfig &outputConfig,
                    const std::vector<std::string> &recv = {},
                    const std::vector<std::string> &send = {},
@@ -71,7 +65,7 @@ public:
 
   bool postResult(std::string const &url, AlarmInfo const &resultInfo,
                   std::string &result);
-  
+
   bool writeResult(AlgorithmResult const &rm, std::string &result);
 
   bool drawResult(cv::Mat &image, AlgorithmResult const &rm);

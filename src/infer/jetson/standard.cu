@@ -17,7 +17,6 @@ __global__ void standard_kernel(uint8_t *src, float *dst, float alpha,
   if (beta != 0.0) {
     dst[position] = dst[position] - beta;
   }
-  // dst[position] = src[position] / 255.0;
 }
 
 void strandard_image(uint8_t *src, float *dst, int size,

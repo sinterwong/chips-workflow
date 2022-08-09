@@ -23,25 +23,20 @@
 
 /**
  * @brief 报警时的摄像头信息
- * 
+ *
  */
 struct CameraResult {
   int widthPixel;        // 视频宽度
   int heightPixel;       // 视频高度
-  std::string cameraId;  // 摄像机唯一ID
+  int cameraId;          // 摄像机唯一ID
   std::string videoCode; // 视频编码类型
   std::string flowType;  // 流协议类型
   std::string cameraIp;  // 网络流链接
-  int provinceId;        // 省ID
-  int cityId;            // 市ID
-  int regionId;          // 区ID
-  int stationId;         // 站ID
-  int location;          // 所在位置（卸油区，加油区...）
 };
 
 /**
  * @brief 报警信息
- * 
+ *
  */
 struct AlarmResult {
   std::string cameraId;     // 摄像机唯一ID
@@ -54,7 +49,7 @@ struct AlarmResult {
 
 /**
  * @brief 报警时的算法信息
- * 
+ *
  */
 struct AlgorithmResult {
   std::vector<std::pair<std::string, std::array<float, 6>>>

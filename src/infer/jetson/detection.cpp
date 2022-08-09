@@ -95,14 +95,24 @@ void DetctionInfer::renderOriginShape(std::vector<DetectionResult> &results,
     //   = r / r_h; t = t / r_h; b = b / r_h;
     // }
     l = (ret.bbox[0] - ret.bbox[2] / 2.f) / ratio;
-    r = (ret.bbox[0] + ret.bbox[2] / 2.f) / ratio;
     t = (ret.bbox[1] - ret.bbox[3] / 2.f) / ratio;
+    r = (ret.bbox[0] + ret.bbox[2] / 2.f) / ratio;
     b = (ret.bbox[1] + ret.bbox[3] / 2.f) / ratio;
-
-    ret.bbox[0] = l;
-    ret.bbox[1] = t;
-    ret.bbox[2] = r;
-    ret.bbox[3] = b;
+    // std::cout << "ratio: " << ratio << std::endl;
+    // std::cout << "shape: " << shape[0] << ", " << shape[1] << std::endl;
+    // std::cout << "inputShape: " << mParams.inputShape[0] << ", " << mParams.inputShape[1] << std::endl;
+    // std::cout << ret.bbox[0] - ret.bbox[2] / 2.f << ", "
+    //           << ret.bbox[1] - ret.bbox[3] / 2.f << ", "
+    //           << ret.bbox[0] + ret.bbox[2] / 2.f << ", "
+    //           << ret.bbox[1] + ret.bbox[3] / 2.f << ", " << std::endl;
+    ret.bbox[0] = l > 0 ? l : 0;
+    ret.bbox[1] = t > 0 ? t : 0;
+    ret.bbox[2] = r < shape[0] ? r : shape[0];
+    ret.bbox[3] = b < shape[1] ? b : shape[1];
+    // std::cout << ret.bbox[0] << ", "
+    //           << ret.bbox[1] << ", "
+    //           << ret.bbox[2] << ", "
+    //           << ret.bbox[3] << ", " << std::endl;
   }
 }
 
@@ -119,6 +129,19 @@ bool DetctionInfer::processOutput(BufferManager const &buffers,
   nms(result.detResults, hostOutputBuffer);
   // rect 还原成原始大小
   renderOriginShape(result.detResults, result.shape);
+  std::vector<DetectionResult>::iterator it = result.detResults.begin();
+  // 清除掉不符合要求的框
+	for(;it != result.detResults.end();) {
+    cv::Rect rect{static_cast<int>(it->bbox[0]),
+                        static_cast<int>(it->bbox[1]),
+                        static_cast<int>(it->bbox[2] - it->bbox[0]),
+                        static_cast<int>(it->bbox[3] - it->bbox[1])};
+		if(rect.area() < 2 * 2) 
+			it = result.detResults.erase(it);
+		else
+			//迭代器指向下一个元素位置
+			++it;
+	}
   return true;
 };
 } // namespace trt

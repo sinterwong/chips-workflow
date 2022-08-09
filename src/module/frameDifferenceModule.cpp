@@ -30,9 +30,10 @@ void FrameDifferenceModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      FLOWENGINE_LOGGER_INFO("FreameDifference module was done!");
-      // std::cout << "FreameDifference module was done!" << std::endl;
+      // FLOWENGINE_LOGGER_INFO("FreameDifference module was done!");
+      std::cout << "FreameDifference module was done!" << std::endl;
       stopFlag.store(true);
+      return;
     } else if (type == "FrameMessage") {
       auto frameBufMessage = backendPtr->pool->read(buf.key);
       auto frame =

@@ -19,8 +19,7 @@ CallingModule::CallingModule(Backend *ptr, const std::string &initName,
                              const std::vector<std::string> &recv,
                              const std::vector<std::string> &send,
                              const std::vector<std::string> &pool)
-    : Module(ptr, initName, initType, recv, send, pool) {
-}
+    : Module(ptr, initName, initType, recv, send, pool) {}
 
 void CallingModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
@@ -29,14 +28,18 @@ void CallingModule::forward(
   }
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      FLOWENGINE_LOGGER_INFO("{} CallingModule module was done!", name);
+      // FLOWENGINE_LOGGER_INFO("{} CallingModule module was done!", name);
+      std::cout << name << "{} CallingModule module was done!" << std::endl;
       stopFlag.store(true);
+      return;
     } else if (type == "AlgorithmMessage") {
       // 此处根据 buf.algorithmResult 写吸烟的逻辑并填充 buf.alarmResult 信息
       // 如果符合条件就发送至SendOutputModule
-      for (int i = 0; i < buf.algorithmResult.bboxes.size(); i ++) {
+      for (int i = 0; i < buf.algorithmResult.bboxes.size(); i++) {
         auto &bbox = buf.algorithmResult.bboxes.at(i);
         if (bbox.first == send) {
+          std::cout << "classid: " << bbox.second.at(5) << ", "
+                    << "confidence: " << bbox.second.at(4) << std::endl;
           if (bbox.second.at(5) != 0) {
             // 意味着存在报警
             buf.alarmResult.alarmDetails = "存在吸烟或打电话";

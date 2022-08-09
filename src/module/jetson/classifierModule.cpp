@@ -1,12 +1,12 @@
 /**
  * @file classifierModule.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-18
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include "jetson/classifierModule.h"
@@ -16,6 +16,7 @@
 #include "logger/logger.hpp"
 #include <cassert>
 #include <memory>
+#include <opencv2/core/mat.hpp>
 #include <opencv2/imgcodecs.hpp>
 
 namespace module {
@@ -42,7 +43,8 @@ void ClassifierModule::forward(
   }
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      FLOWENGINE_LOGGER_INFO("{} ClassifierModule module was done!", name);
+      // FLOWENGINE_LOGGER_INFO("{} ClassifierModule module was done!", name);
+      std::cout << name << "{} Classifier module was done!" << std::endl;
       stopFlag.store(true);
       return;
     }
@@ -58,7 +60,7 @@ void ClassifierModule::forward(
       }
       infer::Result ret;
       ret.shape = {inferImage->cols, inferImage->rows, 3};
-      if (!instance->infer(inferImage->data, ret) ) {
+      if (!instance->infer(inferImage->data, ret)) {
         continue;
       }
       std::pair<std::string, std::array<float, 6>> b = {
@@ -69,19 +71,28 @@ void ClassifierModule::forward(
            static_cast<float>(ret.classResult.first)}};
       buf.algorithmResult.bboxes.emplace_back(std::move(b));
     } else if (type == "AlgorithmMessage") {
-      // FLOWENGINE_LOGGER_INFO("ClassifierModule: Upstream bbox size: {}", buf.algorithmResult.bboxes.size());
-      // std::cout << "ClassifierModule: Upstream bbox size: " << buf.algorithmResult.bboxes.size() << std::endl;
-      for (int i = 0; i < buf.algorithmResult.bboxes.size(); i ++) {
+      if (buf.algorithmResult.bboxes.size() < 0) {
+        return;
+      }
+      for (int i = 0; i < buf.algorithmResult.bboxes.size(); i++) {
         auto &bbox = buf.algorithmResult.bboxes.at(i);
+
         if (bbox.first == send) {
           cv::Rect rect{static_cast<int>(bbox.second[0]),
                         static_cast<int>(bbox.second[1]),
                         static_cast<int>(bbox.second[2] - bbox.second[0]),
                         static_cast<int>(bbox.second[3] - bbox.second[1])};
+          if (rect.area() < 3 * 3) {
+            continue;
+          }
           cv::Mat croppedImage = (*image)(rect).clone();
+
           cv::cvtColor(croppedImage, croppedImage, cv::COLOR_RGB2BGR);
+          cv::imwrite("/home/wangxt/workspace/projects/flowengine/tests/data/out.jpg", croppedImage);
           infer::Result ret;
+
           ret.shape = {croppedImage.cols, croppedImage.rows, 3};
+
           if (!instance->infer(croppedImage.data, ret)) {
             continue;
           }
@@ -90,7 +101,8 @@ void ClassifierModule::forward(
               {bbox.second[0], bbox.second[1], bbox.second[2], bbox.second[3],
                ret.classResult.second,
                static_cast<float>(ret.classResult.first)}};
-          buf.algorithmResult.bboxes.emplace_back(b); 
+
+          buf.algorithmResult.bboxes.emplace_back(b);
         }
       }
     }

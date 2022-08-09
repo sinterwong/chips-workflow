@@ -21,6 +21,7 @@
 #include "messageBus.h"
 #include "module.hpp"
 #include "videoSource.h"
+#include "logger/logger.hpp"
 #include <opencv2/opencv.hpp>
 namespace module {
 
@@ -46,15 +47,10 @@ private:
   inline void setCameraResult(common::CameraConfig const & config) {
     cameraResult.widthPixel = config.widthPixel;
     cameraResult.heightPixel = config.heightPixel;
-    cameraResult.cameraId = config.cameraId;
     cameraResult.videoCode = config.videoCode;
     cameraResult.flowType = config.flowType;
     cameraResult.cameraIp = config.cameraIp;
-    cameraResult.provinceId = config.provinceId;
-    cameraResult.cityId = config.cityId;
-    cameraResult.regionId = config.regionId;
-    cameraResult.stationId = config.stationId;
-    cameraResult.location = config.location;
+    cameraResult.cameraId = config.cameraId;
   }
 
 public:
@@ -74,6 +70,8 @@ public:
 
   void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
                    message) override;
+
+  void step() override;
   
 };
 } // namespace module

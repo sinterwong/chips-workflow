@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "backend.h"
+#include "logger/logger.hpp"
 
 namespace module {
 class Module {
@@ -30,9 +31,9 @@ protected:
 
   std::mutex _m;
 
-public:
   std::vector<std::string> recvModule, sendModule;
 
+public:
   std::atomic_bool stopFlag;
 
   Module(Backend *ptr, const std::string &initName, const std::string &initType,
@@ -48,6 +49,10 @@ public:
 
     stopFlag.store(false);
     backendPtr->message->registered(name);
+    // FlowEngineLoggerInit(true, true, true, true);
+  }
+  virtual ~Module() {
+    // FlowEngineLoggerDrop();
   }
 
   virtual void beforeGetMessage(){};
@@ -55,17 +60,18 @@ public:
   virtual void beforeForward(){};
 
   virtual void
-  forward(std::vector<std::tuple<std::string, std::string, queueMessage>> message) = 0;
+  forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
+              message) = 0;
 
   virtual void afterForward(){};
 
-  void go() {
+  virtual void go() {
     while (!stopFlag.load()) {
       step();
     }
   }
 
-  void step() {
+  virtual void step() {
     message.clear();
     hash.clear();
     loop = false;
@@ -111,23 +117,43 @@ public:
   void delSendModule(std::string const &name) {
     std::lock_guard<std::mutex> lk(_m);
     auto iter = std::remove(sendModule.begin(), sendModule.end(), name);
-    sendModule.erase(iter, sendModule.end());
+    if (iter != sendModule.end()) {
+      sendModule.erase(iter, sendModule.end());
+    }
   }
 
   void addSendModule(std::string const &name) {
     std::lock_guard<std::mutex> lk(_m);
-    sendModule.push_back(name);
+    auto iter = std::find(sendModule.begin(), sendModule.end(), name);
+    if (iter == sendModule.end()) {
+      sendModule.push_back(name);
+    }
   }
 
   void delRecvModule(std::string const &name) {
     std::lock_guard<std::mutex> lk(_m);
     auto iter = std::remove(recvModule.begin(), recvModule.end(), name);
-    recvModule.erase(iter, recvModule.end());
+    if (iter != recvModule.end()) {
+      recvModule.erase(iter, recvModule.end());
+    }
   }
 
   void addRecvModule(std::string const &name) {
     std::lock_guard<std::mutex> lk(_m);
-    recvModule.push_back(name);
+    auto iter = std::find(recvModule.begin(), recvModule.end(), name);
+    if (iter == recvModule.end()) {
+      recvModule.push_back(name);
+    }
+  }
+
+  std::vector<std::string> getSendModule() {
+    std::lock_guard<std::mutex> lk(_m);
+    return sendModule;
+  }
+
+  std::vector<std::string> getRecvModule() {
+    std::lock_guard<std::mutex> lk(_m);
+    return recvModule;
   }
 };
 } // namespace module

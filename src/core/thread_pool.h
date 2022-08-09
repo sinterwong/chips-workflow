@@ -141,7 +141,7 @@ private:
   std::vector<std::thread> threads_;
 
   // 任务队列需要选用长度固定的循环队列，防止溢出
-  circular_buffer<task, 4> q_;
+  circular_buffer<task, 8> q_;
 
   std::condition_variable not_full_;  // 不未满条件
   std::condition_variable not_empty_; // 不为空条件

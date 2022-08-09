@@ -55,9 +55,6 @@ void FrameBuf::del() {
 
 std::any FrameBuf::read(std::string str) {
   auto iter = mapFunction.find(str);
-  if (iter == mapFunction.end()) {
-    std::cout << "Fuck!" << std::endl;
-  }
   assert(iter != mapFunction.end());
   return iter->second(dataList, this);
 }

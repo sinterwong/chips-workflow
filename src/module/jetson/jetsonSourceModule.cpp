@@ -79,23 +79,47 @@ JetsonSourceModule::JetsonSourceModule(
   setCameraResult(_params);
 }
 
+void JetsonSourceModule::step() {
+  message.clear();
+  hash.clear();
+  loop = false;
+
+  beforeGetMessage();
+  beforeForward();
+
+  forward(message);
+  afterForward();
+}
+
 void JetsonSourceModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
-  assert(inputStream);
-
-  bool ret = inputStream->Capture(&frame, 1000);
-  if (count < 5) {
-    count ++;
-    return;
+  for (auto &[send, type, buf] : message) {
+    if (type == "ControlMessage") {
+      // FLOWENGINE_LOGGER_INFO("{} JetsonSourceModule module was done!", name);
+      std::cout << name << "{} JetsonSource module was done!" << std::endl;
+      stopFlag.store(true);
+      return;
+    }
   }
-  count = 0;
-  if (ret) {
+  assert(inputStream);
+  bool ret = inputStream->Capture(&frame, 1000);
+
+  if (!ret) {
+    if (!inputStream->IsStreaming()) {
+      LogInfo("jetson source:  input steram was done.\n");
+      // sendCM();
+      stopFlag.store(true);
+      return;
+    }
+  } else {
+    if (count++ < 5) {
+      return;
+    }
+    count = 0;
     FrameBuf frameBufMessage = makeFrameBuf(frame, opt.height, opt.width);
     frameBufMessage.height = opt.height;
     frameBufMessage.width = opt.width;
-
     int returnKey = backendPtr->pool->write(frameBufMessage);
-
     queueMessage sendMessage;
     sendMessage.frameType = "RGB888";
     sendMessage.height = opt.height;
@@ -103,13 +127,6 @@ void JetsonSourceModule::forward(
     sendMessage.key = returnKey;
     sendMessage.cameraResult = cameraResult;
     autoSend(sendMessage);
-
-  } else {
-    if (!inputStream->IsStreaming()) {
-      LogInfo("jetson source:  input steram was done.\n");
-      // sendCM();
-      stopFlag.store(true);
-    }
   }
 }
 

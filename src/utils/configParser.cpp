@@ -72,10 +72,7 @@ bool ConfigParser::parseConfig(
               params["name"].GetString(),     params["videoCode"].GetString(),
               params["flowType"].GetString(), params["cameraIp"].GetString(),
               params["width"].GetInt(),       params["height"].GetInt(),
-              params["ProvinceId"].GetInt(),  params["CityId"].GetInt(),
-              params["RegionId"].GetInt(),    params["StationId"].GetInt(),
-              params["Location"].GetInt(),
-          };
+              params["Id"].GetInt()};
           break;
         }
         case common::ConfigType::Algorithm: { // Algorithm
@@ -165,24 +162,25 @@ bool ConfigParser::readFile(std::string const &filename, std::string &result) {
   }
   delete[] buf;
   // std::string temp = "{\"code\": 200,\"msg\": \"SUCCESS\"}";
-  // writeJson(temp, filename);
+  std::string temp = "{}";
+  writeJson(temp, filename);
   return true;
 }
 
 bool ConfigParser::writeJson(std::string const &jsonstr,
                              std::string const &outPath) {
-  // rapidjson::Document doc;
-  // FLOWENGINE_LOGGER_INFO("writing json....");
-  // FILE *fp = fopen(outPath.c_str(), "wb"); // non-Windows use "w"
-  // char writeBuffer[65536];
-  // rapidjson::FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
-  // rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(os);
-  // if (doc.Parse(jsonstr.c_str()).HasParseError()) {
-  //   FLOWENGINE_LOGGER_ERROR("parseJson: parse error!");
-  //   return false;
-  // }
-  // doc.Accept(writer);
-  // fclose(fp);
+  rapidjson::Document doc;
+  FLOWENGINE_LOGGER_INFO("writing json....");
+  FILE *fp = fopen(outPath.c_str(), "wb"); // non-Windows use "w"
+  char writeBuffer[65536];
+  rapidjson::FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
+  rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(os);
+  if (doc.Parse(jsonstr.c_str()).HasParseError()) {
+    FLOWENGINE_LOGGER_ERROR("parseJson: parse error!");
+    return false;
+  }
+  doc.Accept(writer);
+  fclose(fp);
   return true;
 }
 

@@ -43,7 +43,8 @@ void DetectModule::forward(
   }
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      FLOWENGINE_LOGGER_INFO("{} DetectModule module was done!", name);
+      // FLOWENGINE_LOGGER_INFO("{} DetectModule module was done!", name);
+      std::cout << name << "{} Detection module was done!" << std::endl;
       stopFlag.store(true);
       return;
     }
@@ -87,7 +88,6 @@ void DetectModule::forward(
             continue;
           }
           for (auto &rbbox : ret.detResults) {
-            // std::pair<std::string, std::array<float, 6>> b{}
             std::pair<std::string, std::array<float, 6>> b = {
                 name,
                 {rbbox.bbox[0] + bbox.second[0], rbbox.bbox[1] + bbox.second[1],

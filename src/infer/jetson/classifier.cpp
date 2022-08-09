@@ -29,10 +29,10 @@ std::pair<int, float> ClassifierInfer::softmax_argmax(float *output,
   // Calculate Softmax
   float sum{0.0};
   for (size_t i = 0; i < outputSize; i++) {
-    output[i] = exp(output[i]);
+    // std::cout << output[i] << std::endl;
+    // output[i] = exp(output[i]);
     sum += output[i];
   }
-
   for (size_t i = 0; i < outputSize; i++) {
     output[i] /= sum; // 获取概率值
     if (val < output[i]) {

@@ -18,6 +18,7 @@
 #include <opencv2/core/base.hpp>
 #include <opencv2/core/hal/interface.h>
 #include <opencv2/core/mat.hpp>
+#include <opencv2/core/types.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 
@@ -134,7 +135,7 @@ bool TRTInference::resizeInput(cv::Mat &image) const {
     cv::resize(image, image, cv::Size(dw, dh));
     cv::copyMakeBorder(image, image, 0, std::max(0, mParams.inputShape[1] - dh),
                        0, std::max(0, mParams.inputShape[0] - dw),
-                       cv::BORDER_CONSTANT, 0);
+                       cv::BORDER_CONSTANT, cv::Scalar(128, 128, 128));
   } else {
     cv::resize(image, image,
                cv::Size(mParams.inputShape[0], mParams.inputShape[1]));
@@ -148,7 +149,7 @@ bool TRTInference::processInput(void *inputs, BufferManager const &buffers,
       buffers.getDeviceBuffer(mParams.inputTensorNames[0])); // explicit batch
   // /*
   cv::Mat image{shape[1], shape[0], CV_8UC3, inputs};
-  // cv::imwrite("/home/wangxt/workspace/projects/flowengine/tests/data/out.jpg", image);
+
   int image_size = image.cols * image.rows * image.channels();
 
   if (!resizeInput(image)) {
@@ -182,7 +183,6 @@ bool TRTInference::processInput(void *inputs, BufferManager const &buffers,
   preprocess_kernel_img(imageDevice, shape[0], shape[1], deviceInputBuffer,
                         mParams.inputShape[0], mParams.inputShape[1],
                         mParams.alpha, mParams.beta, processStream);
-
   */
 
   return true;

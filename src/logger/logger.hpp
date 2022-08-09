@@ -10,9 +10,9 @@
 
 
 // logger setting
-#define FLOWENGINE_LOGGER_NAME "hello"
-#define FLOWENGINE_LOGGER_LOGGER_ERROR_FILENAME "logs/hello_error.log"
-#define FLOWENGINE_LOGGER_LOGGER_TRACE_FILENAME "logs/hello_trace.log"
+#define FLOWENGINE_LOGGER_NAME "flowengine"
+#define FLOWENGINE_LOGGER_LOGGER_ERROR_FILENAME "logs/flowengine_error.log"
+#define FLOWENGINE_LOGGER_LOGGER_TRACE_FILENAME "logs/flowengine_error.log"
 #define FLOWENGINE_LOGGER_PATTERN "[%Y-%m-%d %H:%M:%S.%e][%^%l%$][%t][%s:%#] %v"
 #define FLOWENGINE_LOGGER_ROTATING_MAX_FILE_SIZE (1024*1024)
 #define FLOWENGINE_LOGGER_ROTATING_MAX_FILE_NUM 5

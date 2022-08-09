@@ -71,28 +71,22 @@ struct AlgorithmConfig {
 };
 
 struct CameraConfig {
-  CameraConfig(std::string const &cameraId_, std::string const &videoCode_,
+  CameraConfig(std::string const &name_, std::string const &videoCode_,
                std::string const &flowType_, std::string const &cameraIp_,
-               int widthPixel_, int heightPixel_, int provinceId_, int cityId_,
-               int regionId_, int stationId_, int location_)
-      : widthPixel(widthPixel_), heightPixel(heightPixel_), cameraId(cameraId_),
-        videoCode(videoCode_), flowType(flowType_), cameraIp(cameraIp_),
-        provinceId(provinceId_), cityId(cityId_), regionId(regionId_),
-        stationId(stationId_), location(location_) {}
+               int widthPixel_, int heightPixel_, int cameraId_)
+      : cameraName(name_), videoCode(videoCode_), flowType(flowType_),
+        cameraIp(cameraIp_), widthPixel(widthPixel_), heightPixel(heightPixel_),
+        cameraId(cameraId_) {}
   CameraConfig() = default;
   ~CameraConfig() {}
   // 摄像机配置
-  int widthPixel;        // 视频宽度
-  int heightPixel;       // 视频高度
-  std::string cameraId;  // 摄像机唯一ID
-  std::string videoCode; // 视频编码类型
-  std::string flowType;  // 流协议类型
-  std::string cameraIp;  // 网络流链接
-  int provinceId;        // 省ID
-  int cityId;            // 市ID
-  int regionId;          // 区ID
-  int stationId;         // 站ID
-  int location;          // 所在位置（卸油区，加油区...）
+  int widthPixel;         // 视频宽度
+  int heightPixel;        // 视频高度
+  int cameraId;           // 摄像机 ID
+  std::string cameraName; // 摄像机名称(uuid)
+  std::string videoCode;  // 视频编码类型
+  std::string flowType;   // 流协议类型
+  std::string cameraIp;   // 网络流链接
 };
 
 struct LogicConfig {

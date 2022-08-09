@@ -17,7 +17,8 @@ void cskTrackModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      std::cout << "get Control!" << std::endl;
+      std::cout << name << "{} CSKTrackModule module was done!" << std::endl;
+      return;
     } else if (type == "FrameMessage") {
       if (moduleFlag == init || moduleFlag == tracking) {
         auto frameBufMessage = backendPtr->pool->read(buf.key);
