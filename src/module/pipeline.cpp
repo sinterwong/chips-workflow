@@ -10,11 +10,16 @@
  */
 
 #include "pipeline.hpp"
+#include "module.hpp"
+#include <algorithm>
+#include <memory>
+#include <unordered_map>
 
 namespace module {
 using common::ModuleType;
 
-PipelineModule::PipelineModule(std::string const &config_, std::string const &sendUrl_, size_t workers_n)
+PipelineModule::PipelineModule(std::string const &config_,
+                               std::string const &sendUrl_, size_t workers_n)
     : config(config_), sendUrl(sendUrl_) {
   pool = std::unique_ptr<thread_pool>(new thread_pool());
   pool->start(workers_n);
@@ -69,13 +74,15 @@ bool PipelineModule::submitModule(ModuleConfigure const &config,
     break;
   }
   }
-  addModule(config.moduleName, config.sendName, config.recvName);
+  // 模块关联上
+  attachModule(config.moduleName, config.sendName, config.recvName);
   return true;
 }
 
 bool PipelineModule::parseConfigs(
     std::string const &path,
-    std::vector<std::vector<std::pair<ModuleConfigure, ParamsConfig>>> &pipelines) {
+    std::vector<std::vector<std::pair<ModuleConfigure, ParamsConfig>>>
+        &pipelines) {
   std::string content;
   if (!configParser.readFile(path, content)) {
     FLOWENGINE_LOGGER_ERROR("config parse: read file is failed!");
@@ -89,9 +96,9 @@ bool PipelineModule::parseConfigs(
   return true;
 }
 
-void PipelineModule::addModule(std::string const &moduleName,
-                               std::string const &sendModule,
-                               std::string const &recvModule) {
+void PipelineModule::attachModule(std::string const &moduleName,
+                                  std::string const &sendModule,
+                                  std::string const &recvModule) {
   if (!sendModule.empty()) {
     atm.at(moduleName)->addSendModule(sendModule);
   }
@@ -101,52 +108,83 @@ void PipelineModule::addModule(std::string const &moduleName,
   }
 }
 
-void PipelineModule::delModule(std::string const &moduleName) {
-
+void PipelineModule::detachModule(std::string const &moduleName) {
+  // 找到并解除输入模块的所有关联
   auto iter = atm.find(moduleName);
   if (iter == atm.end()) {
     FLOWENGINE_LOGGER_ERROR("{} is not runing", moduleName);
-    return ;
+    return;
   }
-  // 删除模块之前需要先解除所有关联
   for (auto &sm : atm.at(moduleName)->getSendModule()) {
     atm.at(sm)->delRecvModule(moduleName);
   };
 
   for (auto &rm : atm.at(moduleName)->getRecvModule()) {
-    if (rm == name) {  // 保留pipeline控制模块
+    if (rm == name) { // 保留pipeline控制模块
       continue;
     }
     atm.at(rm)->delSendModule(moduleName);
   };
-  // 发送终止消息
+}
+
+void PipelineModule::stopModule(std::string const &moduleName) {
+
+  // 解除关联
+  detachModule(moduleName);
+
+  // 发送终止正在 go 的消息
   backend.message->send(name, moduleName, type, queueMessage());
+
+  // 从atm中删除对象
+  int num = atm.erase(moduleName);
 }
 
 bool PipelineModule::startPipeline() {
-  std::vector<
-      std::vector<std::pair<ModuleConfigure, ParamsConfig>>> pipelines;
+  std::vector<std::vector<std::pair<ModuleConfigure, ParamsConfig>>> pipelines;
   if (!parseConfigs(config, pipelines)) {
     FLOWENGINE_LOGGER_ERROR("parse config error");
     return false;
   }
+  std::vector<std::string> currentModules;
   for (auto &pipeline : pipelines) {
     for (auto &config : pipeline) {
+      currentModules.push_back(config.first.moduleName);
       if (atm.find(config.first.moduleName) == atm.end()) {
         submitModule(config.first, config.second);
       } else {
-        addModule(config.first.moduleName, config.first.sendName,
-                  config.first.recvName);
+        attachModule(config.first.moduleName, config.first.sendName,
+                     config.first.recvName);
       }
     }
   }
+  if (!currentModules.empty()) {
+    currentModules.push_back("output");
+    // 说明pipelines存在更新
+    std::unordered_map<std::string, std::shared_ptr<Module>>::iterator iter;
+    for (iter = atm.begin(); iter != atm.end();) {
+      auto it =
+          std::find(currentModules.begin(), currentModules.end(), iter->first);
+      if (it == currentModules.end()) {
+        // 说明该模块需要关闭（函数中存在删除atm的部分）
+        // 解除关联
+        detachModule(iter->first);
+        // 发送终止正在 go 的消息
+        backend.message->send(name, iter->first, type, queueMessage());
+        // 从atm中删除对象
+        iter = atm.erase(iter);
+      } else {
+        ++iter;
+      }
+    }
+  }
+
   return true;
 }
 
 void PipelineModule::go() {
   while (true) {
     startPipeline();
-    std::this_thread::sleep_for(std::chrono::seconds(50));
+    std::this_thread::sleep_for(std::chrono::seconds(15));
     // terminate();  // 终止所有任务
     // break;
   }

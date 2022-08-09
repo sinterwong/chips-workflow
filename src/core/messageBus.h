@@ -57,7 +57,10 @@ struct AlgorithmResult {
   std::vector<std::pair<std::string, std::array<float, 9>>>
       polys; // [x1, y1, ..., x4, y4, classid]
 };
-
+/**
+ * @brief 传递的消息
+ * 
+ */
 struct queueMessage {
   int width;
   int height;
@@ -72,6 +75,10 @@ struct queueMessage {
   AlgorithmResult algorithmResult;
 };
 
+/**
+ * @brief 模块控制中心
+ * 
+ */
 class MessageBus {
 protected:
   std::unordered_set<std::string> pool;
