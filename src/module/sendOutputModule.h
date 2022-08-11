@@ -15,8 +15,6 @@
 #include <any>
 #include <curl/curl.h>
 #include <memory>
-#include <opencv2/opencv.hpp>
-#include <random>
 #include <vector>
 
 #include "messageBus.h"
@@ -28,7 +26,6 @@
 #include "common/common.hpp"
 #include "logger/logger.hpp"
 #include "module.hpp"
-#include "utils/convertMat.hpp"
 
 namespace module {
 
@@ -47,7 +44,6 @@ struct AlarmInfo {
 class SendOutputModule : public Module {
 private:
   bool ret;
-  utils::ImageConverter imageConverter;
   std::string url;
   int count = 0;
 
@@ -68,26 +64,7 @@ public:
 
   bool writeResult(AlgorithmResult const &rm, std::string &result);
 
-  bool drawResult(cv::Mat &image, AlgorithmResult const &rm);
-
-  inline unsigned int random_char() {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, 255);
-    return dis(gen);
-  }
-
-  inline std::string generate_hex(const unsigned int len) {
-    std::stringstream ss;
-    for (auto i = 0; i < len; i++) {
-      const auto rc = random_char();
-      std::stringstream hexstream;
-      hexstream << std::hex << rc;
-      auto hex = hexstream.str();
-      ss << (hex.length() < 2 ? '0' + hex : hex);
-    }
-    return ss.str();
-  }
+  
 };
 } // namespace module
 #endif // __METAENGINE_SEND_OUTPUT_H_

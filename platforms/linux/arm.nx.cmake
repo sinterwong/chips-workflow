@@ -12,7 +12,7 @@ SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
 SET(YOUR_TARGET_OS linux)
-SET(YOUR_TARGET_ARCH armv7-a)
+SET(YOUR_TARGET_ARCH armv8-a)
 
 SET(CMAKE_SKIP_BUILD_RPATH TRUE)
 SET(CMAKE_SKIP_RPATH TRUE)
@@ -23,7 +23,7 @@ SET(CMAKE_SKIP_RPATH TRUE)
 
 # set g++ param
 # -fopenmp link libgomp
-SET(CMAKE_CXX_FLAGS "-std=c++11 -march=armv7-a -mfloat-abi=softfp -mfpu=neon-vfpv4 \
+SET(CMAKE_CXX_FLAGS "-std=c++17 -march=armv8-a -mfloat-abi=softfp -mfpu=neon-vfpv4 \
     -ffunction-sections \
     -fdata-sections -O2 -fstack-protector-strong -lm -ldl -lstdc++\
     ${CMAKE_CXX_FLAGS}")

@@ -10,9 +10,8 @@ ADD_LIBRARY(core SHARED ${LIB_HEAD} ${LIB_SRC})
 TARGET_INCLUDE_DIRECTORIES(core PUBLIC 
                             ${3RDPARTY_DIR}/spdlog/include
                             ${PROJECT_INCLUDE_DIR} 
-                            ${Boost_INCLUDE_DIRS} 
                             ${Protobuf_INCLUDE_DIR})
-TARGET_LINK_LIBRARIES(core ${Boost_LIBRARIES} ${Protobuf_LIBRARY} module_logger)
+TARGET_LINK_LIBRARIES(core ${Protobuf_LIBRARY} module_logger)
 
 # transfer all headers to the include directory 
 FILE(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR}/core)

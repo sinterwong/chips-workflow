@@ -32,8 +32,8 @@ FrameBuf makeFrameBuf(uchar3 *, int, int);
 
 class JetsonSourceModule : public Module {
 private:
-  // std::unique_ptr<videoSource> inputStream;
-  videoSource *inputStream;
+  std::unique_ptr<videoSource> inputStream;
+  // videoSource *inputStream;
 
   uchar3 *frame = nullptr;
 
@@ -61,12 +61,7 @@ public:
                      const std::vector<std::string> &send = {},
                      const std::vector<std::string> &pool = {});
 
-  ~JetsonSourceModule() {
-    delete inputStream;
-    inputStream = nullptr;
-    // delete [] frame;
-    // frame = nullptr;
-  }
+  ~JetsonSourceModule() {}
 
   void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
                    message) override;

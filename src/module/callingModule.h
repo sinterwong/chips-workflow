@@ -18,13 +18,10 @@
 
 #include "common/common.hpp"
 #include "logger/logger.hpp"
-#include "module.hpp"
+#include "logicModule.h"
 
 namespace module {
-class CallingModule : public Module {
-private:
-  bool ret;
-  int count = 0;
+class CallingModule : public LogicModule {
 
 public:
   CallingModule(Backend *ptr,
@@ -38,6 +35,7 @@ public:
 
   void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
                    message) override;
+  
 };
 } // namespace module
 #endif // __METAENGINE_CALLING_MODULE_H_

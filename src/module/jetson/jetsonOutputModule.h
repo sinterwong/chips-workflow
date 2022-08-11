@@ -28,8 +28,8 @@ private:
 
   videoOptions opt;
 
-  // std::unique_ptr<videoOutput> outputStream;
-  videoOutput *outputStream;
+  std::unique_ptr<videoOutput> outputStream;
+  // videoOutput *outputStream;
 
 public:
   JetsonOutputModule(Backend *ptr, const std::string &uri,
@@ -38,8 +38,8 @@ public:
                      const std::vector<std::string> &send = {},
                      const std::vector<std::string> &pool = {});
   ~JetsonOutputModule() {
-    delete outputStream;
-    outputStream = nullptr;
+    // delete outputStream;
+    // outputStream = nullptr;
   }
 
   void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>

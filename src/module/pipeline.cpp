@@ -24,12 +24,6 @@ PipelineModule::PipelineModule(std::string const &config_,
   pool = std::unique_ptr<thread_pool>(new thread_pool());
   pool->start(workers_n);
   // pool = std::unique_ptr<BS::thread_pool>(new BS::thread_pool(workers_n));
-
-  // 启动SendOutput模块，此模块一个进程只此一个
-  ModuleConfigure config{ModuleType::Output, "output", "", ""};
-  common::OutputConfig outputConfig = {sendUrl};
-  ParamsConfig paramsConfig{outputConfig};
-  submitModule(config, paramsConfig);
 }
 
 bool PipelineModule::submitModule(ModuleConfigure const &config,
@@ -147,10 +141,19 @@ bool PipelineModule::startPipeline() {
   }
   std::vector<std::string> currentModules;
   for (auto &pipeline : pipelines) {
+    std::string streamName;
     for (auto &config : pipeline) {
       currentModules.push_back(config.first.moduleName);
+      if (config.first.ctype == "stream") {
+        streamName = config.first.moduleName;
+      }
       if (atm.find(config.first.moduleName) == atm.end()) {
         submitModule(config.first, config.second);
+        // 逻辑模块因为需要写出视频, 因此也需要关联上stream
+        if (config.first.ctype == "logic") {
+          atm.at(streamName)->addSendModule(config.first.moduleName);
+          atm.at(config.first.moduleName)->addRecvModule(streamName);
+        }
       } else {
         attachModule(config.first.moduleName, config.first.sendName,
                      config.first.recvName);
@@ -158,7 +161,6 @@ bool PipelineModule::startPipeline() {
     }
   }
   if (!currentModules.empty()) {
-    currentModules.push_back("output");
     // 说明pipelines存在更新
     std::unordered_map<std::string, std::shared_ptr<Module>>::iterator iter;
     for (iter = atm.begin(); iter != atm.end();) {

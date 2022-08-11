@@ -70,8 +70,8 @@ JetsonSourceModule::JetsonSourceModule(
   opt.width = _params.widthPixel;
   opt.codec = videoOptions::CodecFromStr(_params.videoCode.c_str());
   opt.resource = _params.cameraIp;
-  // inputStream = std::unique_ptr<videoSource>(videoSource::Create(opt));
-  inputStream = videoSource::Create(opt);
+  inputStream = std::unique_ptr<videoSource>(videoSource::Create(opt));
+  // inputStream = videoSource::Create(opt);
   if (!inputStream) {
     LogError("jetson source:  failed to create input stream\n");
     exit(-1);
@@ -107,15 +107,10 @@ void JetsonSourceModule::forward(
   if (!ret) {
     if (!inputStream->IsStreaming()) {
       LogInfo("jetson source:  input steram was done.\n");
-      // sendCM();
       stopFlag.store(true);
       return;
     }
   } else {
-    if (count++ < 5) {
-      return;
-    }
-    count = 0;
     FrameBuf frameBufMessage = makeFrameBuf(frame, opt.height, opt.width);
     frameBufMessage.height = opt.height;
     frameBufMessage.width = opt.width;

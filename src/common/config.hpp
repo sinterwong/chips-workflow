@@ -32,6 +32,7 @@ enum class ModuleType {
 
 struct ModuleConfigure {
   ModuleType type_;
+  std::string ctype;
   std::string moduleName; // 模块名称
   std::string sendName;   // 下游模块
   std::string recvName;   // 上游模块
@@ -91,9 +92,11 @@ struct CameraConfig {
 
 struct LogicConfig {
   LogicConfig() = default;
-  LogicConfig(std::string const &url_) : url(url_) {}
+  LogicConfig(std::string const &outputDir_, int videoDuration_ = 0)
+      : outputDir(outputDir_), videDuration(videoDuration_) {}
   ~LogicConfig() {}
-  std::string url;
+  std::string outputDir;
+  int videDuration;
 };
 
 struct OutputConfig {

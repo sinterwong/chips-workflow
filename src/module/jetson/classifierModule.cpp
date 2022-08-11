@@ -52,6 +52,10 @@ void ClassifierModule::forward(
     std::shared_ptr<cv::Mat> image =
         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
     if (type == "FrameMessage") {
+      if (count++ < 5) {
+        return;
+      }
+      count = 0;
       std::shared_ptr<cv::Mat> inferImage;
       if (region.area() != 0) {
         inferImage = std::make_shared<cv::Mat>((*image)(region).clone());

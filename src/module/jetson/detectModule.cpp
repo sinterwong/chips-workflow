@@ -52,6 +52,10 @@ void DetectModule::forward(
     std::shared_ptr<cv::Mat> image =
         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
     if (type == "FrameMessage") {
+      if (count++ < 5) {
+        return;
+      }
+      count = 0;
       std::shared_ptr<cv::Mat> inferImage;
       if (region.area() != 0) {
         inferImage = std::make_shared<cv::Mat>((*image)(region).clone());
@@ -74,7 +78,7 @@ void DetectModule::forward(
         buf.algorithmResult.bboxes.emplace_back(std::move(b));
       }
     } else if (type == "AlgorithmMessage") {
-      for (int i = 0; i < buf.algorithmResult.bboxes.size(); i ++) {
+      for (int i = 0; i < buf.algorithmResult.bboxes.size(); i++) {
         auto &bbox = buf.algorithmResult.bboxes.at(i);
         if (bbox.first == send) {
           cv::Rect rect{static_cast<int>(bbox.second[0]),

@@ -101,7 +101,6 @@ private:
 
   void terminate() {
     // 向所有模块发送终止信号
-    backend.message->send(name, "output", type, queueMessage());
     for (auto iter = atm.begin(); iter != atm.end(); ++iter) {
       backend.message->send(name, iter->first, type, queueMessage());
     }

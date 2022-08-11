@@ -63,7 +63,9 @@ bool ConfigParser::parseConfig(
         if (type == "logic") {
           type = params["name"].GetString();
         }
-        ModuleConfigure mc{moduleMapping.at(type), params["name"].GetString(),
+        ModuleConfigure mc{moduleMapping.at(type),
+                           params["type"].GetString(),
+                           params["name"].GetString(),
                            params["sendName"].GetString(),
                            params["recvName"].GetString()};
         switch (type_) {
@@ -123,11 +125,12 @@ bool ConfigParser::parseConfig(
           };
           break;
         }
-        case common::ConfigType::Logic: { // Detection
-          pc = common::LogicConfig{params["url"].GetString()};
+        case common::ConfigType::Logic: { // Logic
+          pc = common::LogicConfig{params["alarm_output_dir"].GetString(),
+                                   params["video_duration"].GetInt()};
           break;
         }
-        case common::ConfigType::Output: { // Detection
+        case common::ConfigType::Output: { // Output
           pc = common::OutputConfig{params["url"].GetString()};
           break;
         }

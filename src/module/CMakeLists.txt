@@ -31,7 +31,7 @@ IF(TARGET_HARDWARE STREQUAL jetson)
                                 ${CUDA_INCLUDE_DIRS}
                                 ${CURL_INCLUDE_DIR}
     )
-    TARGET_LINK_LIBRARIES(module core infer module_logger jetson-utils utils ${CUDA_LIBS} ${CURL_LIBS})
+    TARGET_LINK_LIBRARIES(module stdc++fs core infer module_logger jetson-utils utils ${CUDA_LIBS} ${CURL_LIBS})
 ELSEIF(TARGET_HARDWARE STREQUAL rv1126)
     # 0: no-simd; 1: sse-Intel; 2: neon-TX2;
     LINK_DIRECTORIES(
@@ -47,12 +47,11 @@ ELSEIF(TARGET_HARDWARE STREQUAL rv1126)
                                 ${PROJECT_INCLUDE_DIR}/core
                                 ${PROJECT_INCLUDE_DIR}/infer
                                 ${OpenCV_INCLUDE_DIRS}
-                                ${Boost_INCLUDE_DIRS}
                                 ${Protobuf_INCLUDE_DIR}
                                 ${CUDA_INCLUDE_DIRS}
                                 ${CURL_INCLUDE_DIR}
     )
-    TARGET_LINK_LIBRARIES(module core infer module_logger ${CURL_LIBS})
+    TARGET_LINK_LIBRARIES(module stdc++fs core infer module_logger ${CURL_LIBS})
 ELSE()
     MESSAGE(WARNING "No valid hardware is specified!")
 ENDIF()

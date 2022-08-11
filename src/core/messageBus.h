@@ -39,17 +39,16 @@ struct CameraResult {
  *
  */
 struct AlarmResult {
-  std::string cameraId;     // 摄像机唯一ID
+  int alarmVideoDuration;   // 报警视频时长（秒）
   std::string alarmType;    // 报警类型（smoke, phone等等）
-  std::string alarmFile;    // 报警图片
+  std::string alarmFile;    // 报警图片路径
   std::string alarmId;      // 报警的唯一标识 uuid
   std::string alarmDetails; // 报警细节
-  std::string cameraIp;     // 网络流链接
 };
 
 /**
  * @brief 报警时的算法信息
- *
+ * @todo 这里的vector线程不安全 未来需要替换
  */
 struct AlgorithmResult {
   std::vector<std::pair<std::string, std::array<float, 6>>>

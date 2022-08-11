@@ -147,30 +147,6 @@ bool SendOutputModule::writeResult(AlgorithmResult const &rm,
   return true;
 }
 
-bool SendOutputModule::drawResult(cv::Mat &image, AlgorithmResult const &rm) {
-
-  for (auto &bbox : rm.bboxes) {
-    cv::Rect rect(bbox.second[0], bbox.second[1],
-                  bbox.second[2] - bbox.second[0],
-                  bbox.second[3] - bbox.second[1]);
-    cv::rectangle(image, rect, cv::Scalar(255, 255, 0), 2);
-    cv::putText(image, bbox.first, cv::Point(rect.x, rect.y - 1),
-                cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(255, 0, 255), 2);
-  }
-
-  for (auto &poly : rm.polys) {
-    std::vector<cv::Point> fillContSingle;
-    for (int i = 0; i < poly.second.size(); i += 2) {
-      fillContSingle.emplace_back(
-          cv::Point{static_cast<int>(poly.second[i]),
-                    static_cast<int>(poly.second[i + 1])});
-    }
-    cv::fillPoly(image, std::vector<std::vector<cv::Point>>{fillContSingle},
-                 cv::Scalar(0, 255, 255));
-  }
-
-  return true;
-}
 
 void SendOutputModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
@@ -184,23 +160,7 @@ void SendOutputModule::forward(
     if (recvModule.empty()) {
       return;
     }
-    FrameBuf frameBufMessage = backendPtr->pool->read(buf.key);
-    auto frame =
-        std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
-    if (frame->empty()) {
-      return;
-    }
 
-    // TODO 临时画个图
-    cv::Mat showImage = frame->clone();
-    if (buf.frameType == "RGB888") {
-      cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
-    }
-    drawResult(showImage, buf.algorithmResult);
-    cv::imwrite("/home/wangxt/workspace/projects/flowengine/tests/data/output.jpg", showImage);
-
-    buf.alarmResult.alarmFile = imageConverter.mat2str(showImage) ;
-    buf.alarmResult.alarmId = generate_hex(16);
     std::string algorithmInfo;
     writeResult(buf.algorithmResult, algorithmInfo);
 

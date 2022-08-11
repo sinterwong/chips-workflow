@@ -19,8 +19,8 @@ JetsonOutputModule::JetsonOutputModule(Backend *ptr, const std::string &uri,
                                        const std::vector<std::string> &pool)
     : Module(ptr, initName, initType, recv, send, pool) {
   opt.resource = uri;
-  // outputStream = std::unique_ptr<videoOutput>(videoOutput::Create(opt));
-  outputStream = videoOutput::Create(opt);
+  outputStream = std::unique_ptr<videoOutput>(videoOutput::Create(opt));
+  // outputStream = videoOutput::Create(opt);
   if (!outputStream) {
     LogError("jetson output:  failed to create input stream\n");
     exit(-1);
