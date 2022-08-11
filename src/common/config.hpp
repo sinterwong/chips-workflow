@@ -24,8 +24,9 @@ enum class ConfigType { Algorithm, Stream, Output, Logic, None };
 enum class ModuleType {
   Detection = 0,
   Classifier,
-  Stream,
-  Output,
+  WebStream,
+  AlarmOutput,
+  StatusOutput,
   Calling,
   Smokeing
 };

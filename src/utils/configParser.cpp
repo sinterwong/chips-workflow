@@ -57,19 +57,16 @@ bool ConfigParser::parseConfig(
               "parseJson: Params doesn't contain type, please check!");
           return false;
         }
-        std::string type = params["type"].GetString();
-        common::ConfigType type_ = typeMapping.at(type);
+        common::ConfigType type_ = typeMapping.at(params["type"].GetString());
+        std::string moduleType = params["sub_type"].GetString();
         ParamsConfig pc;
-        if (type == "logic") {
-          type = params["name"].GetString();
-        }
-        ModuleConfigure mc{moduleMapping.at(type),
+        ModuleConfigure mc{moduleMapping.at(moduleType),
                            params["type"].GetString(),
                            params["name"].GetString(),
                            params["sendName"].GetString(),
                            params["recvName"].GetString()};
         switch (type_) {
-        case common::ConfigType::Stream: { // Detection
+        case common::ConfigType::Stream: { // Stream
           pc = common::CameraConfig{
               params["name"].GetString(),     params["videoCode"].GetString(),
               params["flowType"].GetString(), params["cameraIp"].GetString(),

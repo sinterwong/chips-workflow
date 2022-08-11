@@ -1,5 +1,5 @@
 /**
- * @file sendOutputModule.cpp
+ * @file alarmOutputModule.cpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief 
  * @version 0.1
@@ -9,7 +9,7 @@
  * 
  */
 
-#include "sendOutputModule.h"
+#include "alarmOutputModule.h"
 #include "messageBus.h"
 #include <fstream>
 #include <opencv2/imgcodecs.hpp>
@@ -20,7 +20,7 @@ size_t curl_callback(void *ptr, size_t size, size_t nmemb, std::string *data) {
   return size * nmemb;
 }
 
-SendOutputModule::SendOutputModule(Backend *ptr,
+AlarmOutputModule::AlarmOutputModule(Backend *ptr,
                                    const std::string &initName,
                                    const std::string &initType, 
                                    const common::OutputConfig &outputConfig,
@@ -31,7 +31,7 @@ SendOutputModule::SendOutputModule(Backend *ptr,
       url = outputConfig.url;
     }
 
-bool SendOutputModule::postResult(std::string const &url,
+bool AlarmOutputModule::postResult(std::string const &url,
                                   AlarmInfo const &alarmInfo,
                                   std::string &result) {
 
@@ -96,7 +96,7 @@ bool SendOutputModule::postResult(std::string const &url,
   return true;
 }
 
-bool SendOutputModule::writeResult(AlgorithmResult const &rm,
+bool AlarmOutputModule::writeResult(AlgorithmResult const &rm,
                                    std::string &result) {
   rapidjson::Document doc;
   doc.SetObject(); // key-value 相当与map
@@ -148,11 +148,11 @@ bool SendOutputModule::writeResult(AlgorithmResult const &rm,
 }
 
 
-void SendOutputModule::forward(
+void AlarmOutputModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      // FLOWENGINE_LOGGER_INFO("{} SendOutputModule module was done!", name);
+      // FLOWENGINE_LOGGER_INFO("{} AlarmOutputModule module was done!", name);
       std::cout << name << "{} OutputModule module was done!" << std::endl;
       stopFlag.store(true);
       return;
@@ -179,7 +179,7 @@ void SendOutputModule::forward(
     std::string response;
     if (!postResult(url, alarmInfo, response)) {
       FLOWENGINE_LOGGER_ERROR(
-          "SendOutputModule.forward: post result was failed, please check!");
+          "AlarmOutputModule.forward: post result was failed, please check!");
     }
   }
 }

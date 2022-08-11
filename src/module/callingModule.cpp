@@ -59,7 +59,7 @@ void CallingModule::forward(
       return;
     } else if (type == "AlgorithmMessage") {
       // 此处根据 buf.algorithmResult 写吸烟的逻辑并填充 buf.alarmResult 信息
-      // 如果符合条件就发送至SendOutputModule
+      // 如果符合条件就发送至AlarmOutputModule
       for (int i = 0; i < buf.algorithmResult.bboxes.size(); i++) {
         auto &bbox = buf.algorithmResult.bboxes.at(i);
         if (bbox.first == send) {

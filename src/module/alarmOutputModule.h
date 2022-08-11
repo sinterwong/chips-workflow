@@ -1,5 +1,5 @@
 /**
- * @file sendOutputModule.h
+ * @file alarmOutputModule.h
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
@@ -41,20 +41,20 @@ struct AlarmInfo {
   std::string algorithmResult; // 算法返回结果
 };
 
-class SendOutputModule : public Module {
+class AlarmOutputModule : public Module {
 private:
   bool ret;
   std::string url;
   int count = 0;
 
 public:
-  SendOutputModule(Backend *ptr, const std::string &initName,
+  AlarmOutputModule(Backend *ptr, const std::string &initName,
                    const std::string &initType,
                    const common::OutputConfig &outputConfig,
                    const std::vector<std::string> &recv = {},
                    const std::vector<std::string> &send = {},
                    const std::vector<std::string> &pool = {});
-  ~SendOutputModule() {}
+  ~AlarmOutputModule() {}
 
   void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
                    message) override;
@@ -64,7 +64,7 @@ public:
 
   bool writeResult(AlgorithmResult const &rm, std::string &result);
 
-  
+
 };
 } // namespace module
 #endif // __METAENGINE_SEND_OUTPUT_H_

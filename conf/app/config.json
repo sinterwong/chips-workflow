@@ -1,14 +1,10 @@
 {
   "Pipelines": [
     {
-      "name": "phone",
-      "camera_ip": "rtsp://admin:zkfd123.com@192.168.31.41:554/Streaming/Channels/101",
-      "unit_id": 210,
-      "host_id": 43,
-      "event_id": 32,
       "Pipeline": [
         {
           "type": "stream",
+          "sub_type": "web-stream",
           "name": "1e35f60f-3347-46a7-8061-e00c36ea06eb",
           "recvName": "",
           "sendName": "handDet",
@@ -20,7 +16,8 @@
           "flowType": "rtsp"
         },
         {
-          "type": "detection",
+          "type": "algorithm",
+          "sub_type": "detection",
           "name": "handDet",
           "recvName": "stream",
           "sendName": "phoneCls",
@@ -55,7 +52,8 @@
           ]
         },
         {
-          "type": "classifier",
+          "type": "algorithm",
+          "sub_type": "classifier",
           "name": "phoneCls",
           "recvName": "handDet",
           "sendName": "calling",
@@ -91,15 +89,17 @@
         },
         {
           "type": "logic",
-          "name": "calling",
+          "sub_type": "calling",
+          "name": "calling_29",
           "recvName": "phoneCls",
           "sendName": "output",
-          "video_duration": 5,
+          "video_duration": 10,
           "alarm_output_dir": "/public/alarm/data"
         },
         {
           "type": "output",
-          "name": "output",
+          "sub_type": "alarm",
+          "name": "alarm_01",
           "recvName": "calling",
           "sendName": "",
           "url": "http://localhost:9876/v1/flow/alarm"

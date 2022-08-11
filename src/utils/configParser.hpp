@@ -42,17 +42,17 @@ private:
   // 配置参数类型
   std::unordered_map<std::string, common::ConfigType> typeMapping {
     std::make_pair("stream", common::ConfigType::Stream),
-    std::make_pair("detection", common::ConfigType::Algorithm),
-    std::make_pair("classifier", common::ConfigType::Algorithm),
+    std::make_pair("algorithm", common::ConfigType::Algorithm),
     std::make_pair("output", common::ConfigType::Output),
     std::make_pair("logic", common::ConfigType::Logic),
   };
   // 启动模块的类型
   std::unordered_map<std::string, common::ModuleType> moduleMapping {
-    std::make_pair("stream", common::ModuleType::Stream),
+    std::make_pair("webStream", common::ModuleType::WebStream),
     std::make_pair("detection", common::ModuleType::Detection),
     std::make_pair("classifier", common::ModuleType::Classifier),
-    std::make_pair("output", common::ModuleType::Output),
+    std::make_pair("statusOutput", common::ModuleType::StatusOutput),
+    std::make_pair("alarmOutput", common::ModuleType::AlarmOutput),
     std::make_pair("calling", common::ModuleType::Calling),
     std::make_pair("smoking", common::ModuleType::Smokeing)
   };

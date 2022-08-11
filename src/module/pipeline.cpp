@@ -43,18 +43,18 @@ bool PipelineModule::submitModule(ModuleConfigure const &config,
     pool->submit(&ClassifierModule::go, atm.at(config.moduleName));
     break;
   }
-  case ModuleType::Stream: { // Stream
+  case ModuleType::WebStream: { // Stream
     atm[config.moduleName] = std::shared_ptr<JetsonSourceModule>(
         new JetsonSourceModule(&backend, config.moduleName, "FrameMessage",
                                paramsConfig.GetCameraConfig(), {name}, {}));
     pool->submit(&JetsonSourceModule::go, atm.at(config.moduleName));
     break;
   }
-  case ModuleType::Output: { // Output
-    atm[config.moduleName] = std::shared_ptr<SendOutputModule>(
-        new SendOutputModule(&backend, config.moduleName, "OutputMessage",
+  case ModuleType::AlarmOutput: { // Output
+    atm[config.moduleName] = std::shared_ptr<AlarmOutputModule>(
+        new AlarmOutputModule(&backend, config.moduleName, "OutputMessage",
                              paramsConfig.GetOutputConfig(), {name}, {}));
-    pool->submit(&SendOutputModule::go, atm.at(config.moduleName));
+    pool->submit(&AlarmOutputModule::go, atm.at(config.moduleName));
     break;
   }
   case ModuleType::Calling: { // Calling

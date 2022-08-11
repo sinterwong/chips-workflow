@@ -22,7 +22,7 @@
 #include "jetson/jetsonSourceModule.h"
 #include "logger/logger.hpp"
 #include "module.hpp"
-#include "sendOutputModule.h"
+#include "alarmOutputModule.h"
 #include "thread_pool.h"
 #include "utils/configParser.hpp"
 // #include "BS_thread_pool.hpp"
