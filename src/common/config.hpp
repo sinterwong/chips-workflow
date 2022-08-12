@@ -93,10 +93,13 @@ struct CameraConfig {
 
 struct LogicConfig {
   LogicConfig() = default;
-  LogicConfig(std::string const &outputDir_, int videoDuration_ = 0)
-      : outputDir(outputDir_), videDuration(videoDuration_) {}
+  LogicConfig(std::string const &outputDir_, int eventId_,
+              int videoDuration_ = 0)
+      : outputDir(outputDir_), eventId(eventId_), videDuration(videoDuration_) {
+  }
   ~LogicConfig() {}
   std::string outputDir;
+  int eventId;
   int videDuration;
 };
 

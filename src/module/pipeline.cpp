@@ -142,6 +142,18 @@ void PipelineModule::stopModule(std::string const &moduleName) {
 }
 
 bool PipelineModule::startPipeline() {
+  // 开始之前 先检查目前存在的模块状态是否已经停止（针对摄像头等外部因素）
+  std::unordered_map<std::string, std::shared_ptr<Module>>::iterator iter;
+  for (iter = atm.begin(); iter != atm.end();) {
+    if(iter->second->stopFlag.load()) {
+      // 该模块已经停止
+      iter = atm.erase(iter);
+    }
+    else {
+      ++iter;
+    }
+  }
+
   std::vector<std::vector<std::pair<ModuleConfigure, ParamsConfig>>> pipelines;
   if (!parseConfigs(config, pipelines)) {
     FLOWENGINE_LOGGER_ERROR("parse config error");
@@ -181,6 +193,7 @@ bool PipelineModule::startPipeline() {
         // 解除关联
         detachModule(iter->first);
         // 发送终止正在 go 的消息
+        // iter->second->stopFlag.store(true);
         backend.message->send(name, iter->first, type, queueMessage());
         // 从atm中删除对象
         iter = atm.erase(iter);
@@ -201,7 +214,7 @@ bool PipelineModule::startPipeline() {
 void PipelineModule::go() {
   while (true) {
     startPipeline();
-    std::this_thread::sleep_for(std::chrono::seconds(15));
+    std::this_thread::sleep_for(std::chrono::seconds(30));
     // terminate();  // 终止所有任务
     // break;
   }

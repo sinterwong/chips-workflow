@@ -40,6 +40,7 @@ struct CameraResult {
  */
 struct AlarmResult {
   int alarmVideoDuration;   // 报警视频时长（秒）
+  int eventId;              // 报警类型的ID（smoke, phone等等）
   std::string alarmType;    // 报警类型（smoke, phone等等）
   std::string alarmFile;    // 报警图片路径
   std::string alarmId;      // 报警的唯一标识 uuid
@@ -58,7 +59,7 @@ struct AlgorithmResult {
 };
 /**
  * @brief 传递的消息
- * 
+ *
  */
 struct queueMessage {
   int width;
@@ -76,7 +77,7 @@ struct queueMessage {
 
 /**
  * @brief 模块控制中心
- * 
+ *
  */
 class MessageBus {
 protected:

@@ -103,6 +103,7 @@ private:
     // 向所有模块发送终止信号
     for (auto iter = atm.begin(); iter != atm.end(); ++iter) {
       backend.message->send(name, iter->first, type, queueMessage());
+      // iter->second->stopFlag.store(true);
     }
   }
 

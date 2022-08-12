@@ -97,6 +97,7 @@ void JetsonSourceModule::forward(
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("{} JetsonSourceModule module was done!", name);
       std::cout << name << "{} JetsonSource module was done!" << std::endl;
+      inputStream->Close();
       stopFlag.store(true);
       return;
     }

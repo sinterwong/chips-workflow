@@ -34,6 +34,8 @@ struct AlarmInfo {
   int height;                  // 高
   int width;                   // 宽
   int cameraId;                // 摄像机 ID
+  int eventId;                 // 报警类型Id
+  int prepareDelayInSec;    // 视频录制时间
   std::string cameraIp;        // 视频流 IP
   std::string alarmType;       // 报警类型
   std::string alarmFile;       // 报警图片(base64)
@@ -46,11 +48,11 @@ class AlarmOutputModule : public OutputModule {
 
 public:
   AlarmOutputModule(Backend *ptr, const std::string &initName,
-                   const std::string &initType,
-                   const common::OutputConfig &outputConfig,
-                   const std::vector<std::string> &recv = {},
-                   const std::vector<std::string> &send = {},
-                   const std::vector<std::string> &pool = {});
+                    const std::string &initType,
+                    const common::OutputConfig &outputConfig,
+                    const std::vector<std::string> &recv = {},
+                    const std::vector<std::string> &send = {},
+                    const std::vector<std::string> &pool = {});
   ~AlarmOutputModule() {}
 
   void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
@@ -60,8 +62,6 @@ public:
                   std::string &result);
 
   bool writeResult(AlgorithmResult const &rm, std::string &result);
-
-
 };
 } // namespace module
 #endif // __METAENGINE_SEND_ALARM_OUTPUT_H_

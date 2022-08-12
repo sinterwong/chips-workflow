@@ -75,6 +75,7 @@ void CallingModule::forward(
                 params.outputDir + "/" + buf.alarmResult.alarmId;
             buf.alarmResult.alarmDetails = "存在吸烟或打电话";
             buf.alarmResult.alarmType = name;
+            buf.alarmResult.eventId = params.eventId;
 
             // TODO
             // 临时画个图（后续根据前端参数来决定返回的图片是否带有画图标记）

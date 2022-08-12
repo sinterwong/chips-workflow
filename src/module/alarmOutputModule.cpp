@@ -61,6 +61,8 @@ bool AlarmOutputModule::postResult(std::string const &url,
   doc.AddMember("camera_ip", camera_ip, allocator);
   doc.AddMember("algorithm_results", algorithm_results, allocator);
   // --------------------
+  doc.AddMember("prepare_delay_in_sec", alarmInfo.prepareDelayInSec, allocator);
+  doc.AddMember("event_id", alarmInfo.eventId, allocator);
   doc.AddMember("camera_id", alarmInfo.cameraId, allocator);
   doc.AddMember("width", alarmInfo.width, allocator);
   doc.AddMember("height", alarmInfo.height, allocator);
@@ -142,7 +144,6 @@ bool AlarmOutputModule::writeResult(AlgorithmResult const &rm,
   return true;
 }
 
-
 void AlarmOutputModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
   for (auto &[send, type, buf] : message) {
@@ -164,6 +165,8 @@ void AlarmOutputModule::forward(
       buf.cameraResult.heightPixel,
       buf.cameraResult.widthPixel,
       buf.cameraResult.cameraId,
+      buf.alarmResult.eventId,
+      buf.alarmResult.alarmVideoDuration,
       buf.cameraResult.cameraIp,
       buf.alarmResult.alarmType,
       buf.alarmResult.alarmFile,

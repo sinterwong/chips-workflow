@@ -93,7 +93,8 @@
           "name": "calling_29",
           "recvName": "smokeCls",
           "sendName": "alarm_01",
-          "video_duration": 10,
+          "prepare_delay_in_sec": 10,
+          "event_id": 34,
           "alarm_output_dir": "/public/alarm/data"
         },
         {

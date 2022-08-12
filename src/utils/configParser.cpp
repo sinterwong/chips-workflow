@@ -60,11 +60,10 @@ bool ConfigParser::parseConfig(
         common::ConfigType type_ = typeMapping.at(params["type"].GetString());
         std::string moduleType = params["sub_type"].GetString();
         ParamsConfig pc;
-        ModuleConfigure mc{moduleMapping.at(moduleType),
-                           params["type"].GetString(),
-                           params["name"].GetString(),
-                           params["sendName"].GetString(),
-                           params["recvName"].GetString()};
+        ModuleConfigure mc{
+            moduleMapping.at(moduleType), params["type"].GetString(),
+            params["name"].GetString(), params["sendName"].GetString(),
+            params["recvName"].GetString()};
         switch (type_) {
         case common::ConfigType::Stream: { // Stream
           pc = common::CameraConfig{
@@ -123,8 +122,11 @@ bool ConfigParser::parseConfig(
           break;
         }
         case common::ConfigType::Logic: { // Logic
-          pc = common::LogicConfig{params["alarm_output_dir"].GetString(),
-                                   params["video_duration"].GetInt()};
+          pc = common::LogicConfig{
+              params["alarm_output_dir"].GetString(),
+              params["event_id"].GetInt(),
+              params["prepare_delay_in_sec"].GetInt(),
+          };
           break;
         }
         case common::ConfigType::Output: { // Output
