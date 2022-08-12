@@ -83,7 +83,7 @@ public:
         std::string Msend, Mtype;
         queueMessage Mbyte;
         backendPtr->message->recv(name, flag, Msend, Mtype, Mbyte, true);
-#ifdef DEBUG
+#ifdef Debug
         assert(flag == MessageBus::returnFlag::successWithMore ||
                flag == MessageBus::returnFlag::successWithEmpty);
 #endif
@@ -107,6 +107,7 @@ public:
 
   bool autoSend(const queueMessage &buf) {
     bool ret = false;
+    std::lock_guard<std::mutex> lk(_m);
     for (auto &target : sendModule) {
       auto temp = backendPtr->message->send(name, target, type, buf);
       ret = ret and temp;

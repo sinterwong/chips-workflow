@@ -11,6 +11,7 @@
 
 #include "pipeline.hpp"
 #include "module.hpp"
+#include "statusOutputModule.h"
 #include <algorithm>
 #include <memory>
 #include <unordered_map>
@@ -57,6 +58,13 @@ bool PipelineModule::submitModule(ModuleConfigure const &config,
     pool->submit(&AlarmOutputModule::go, atm.at(config.moduleName));
     break;
   }
+  case ModuleType::StatusOutput: { // Output
+    atm[config.moduleName] = std::shared_ptr<StatusOutputModule>(
+        new StatusOutputModule(&backend, config.moduleName, "OutputMessage",
+                             paramsConfig.GetOutputConfig(), {name}, {}));
+    pool->submit(&AlarmOutputModule::go, atm.at(config.moduleName));
+    break;
+  }
   case ModuleType::Calling: { // Calling
     atm[config.moduleName] = std::shared_ptr<CallingModule>(
         new CallingModule(&backend, config.moduleName, "LogicMessage",
@@ -68,8 +76,6 @@ bool PipelineModule::submitModule(ModuleConfigure const &config,
     break;
   }
   }
-  // 模块关联上
-  attachModule(config.moduleName, config.sendName, config.recvName);
   return true;
 }
 
@@ -95,10 +101,12 @@ void PipelineModule::attachModule(std::string const &moduleName,
                                   std::string const &recvModule) {
   if (!sendModule.empty()) {
     atm.at(moduleName)->addSendModule(sendModule);
+    atm.at(sendModule)->addRecvModule(moduleName);
   }
 
   if (!recvModule.empty()) {
     atm.at(moduleName)->addRecvModule(recvModule);
+    atm.at(recvModule)->addSendModule(moduleName);
   }
 }
 
@@ -140,6 +148,8 @@ bool PipelineModule::startPipeline() {
     return false;
   }
   std::vector<std::string> currentModules;
+  std::vector<ModuleConfigure> moduleRelations;
+  // run 起来所有模块并且制作所有需要关联的模块, 后续可能会有所扩展
   for (auto &pipeline : pipelines) {
     std::string streamName;
     for (auto &config : pipeline) {
@@ -147,21 +157,21 @@ bool PipelineModule::startPipeline() {
       if (config.first.ctype == "stream") {
         streamName = config.first.moduleName;
       }
+      moduleRelations.push_back(config.first);
       if (atm.find(config.first.moduleName) == atm.end()) {
         submitModule(config.first, config.second);
         // 逻辑模块因为需要写出视频, 因此也需要关联上stream
         if (config.first.ctype == "logic") {
-          atm.at(streamName)->addSendModule(config.first.moduleName);
-          atm.at(config.first.moduleName)->addRecvModule(streamName);
+          ModuleConfigure mc{config.first};
+          mc.sendName = "";
+          mc.recvName = streamName;
+          moduleRelations.emplace_back(mc);
         }
-      } else {
-        attachModule(config.first.moduleName, config.first.sendName,
-                     config.first.recvName);
       }
     }
   }
+  // 清掉已经停用的模块
   if (!currentModules.empty()) {
-    // 说明pipelines存在更新
     std::unordered_map<std::string, std::shared_ptr<Module>>::iterator iter;
     for (iter = atm.begin(); iter != atm.end();) {
       auto it =
@@ -177,6 +187,11 @@ bool PipelineModule::startPipeline() {
       } else {
         ++iter;
       }
+    }
+
+    // 关联模块
+    for (auto &mc : moduleRelations) {
+      attachModule(mc.moduleName, mc.sendName, mc.recvName);
     }
   }
 

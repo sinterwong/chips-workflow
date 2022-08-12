@@ -32,6 +32,7 @@ void FrameDifferenceModule::forward(
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("FreameDifference module was done!");
       std::cout << "FreameDifference module was done!" << std::endl;
+      buf.status = 1;
       stopFlag.store(true);
       return;
     } else if (type == "FrameMessage") {

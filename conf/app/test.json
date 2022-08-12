@@ -4,7 +4,7 @@
       "Pipeline": [
         {
           "type": "stream",
-          "sub_type": "web-stream",
+          "sub_type": "webStream",
           "name": "1e35f60f-3347-46a7-8061-e00c36ea06eb",
           "recvName": "",
           "sendName": "handDet",
@@ -19,8 +19,8 @@
           "type": "algorithm",
           "sub_type": "detection",
           "name": "handDet",
-          "recvName": "stream",
-          "sendName": "phoneCls",
+          "recvName": "1e35f60f-3347-46a7-8061-e00c36ea06eb",
+          "sendName": "smokeCls",
           "modelPath": "/home/wangxt/workspace/projects/flowengine/tests/data/handdetn.engine",
           "inputNames": [
             "images"
@@ -54,9 +54,9 @@
         {
           "type": "algorithm",
           "sub_type": "classifier",
-          "name": "phoneCls",
+          "name": "smokeCls",
           "recvName": "handDet",
-          "sendName": "calling",
+          "sendName": "calling_29",
           "modelPath": "/home/wangxt/workspace/projects/flowengine/tests/data/smoke_phone.engine",
           "inputNames": [
             "data"
@@ -91,16 +91,16 @@
           "type": "logic",
           "sub_type": "calling",
           "name": "calling_29",
-          "recvName": "phoneCls",
-          "sendName": "output",
+          "recvName": "smokeCls",
+          "sendName": "alarm_01",
           "video_duration": 10,
           "alarm_output_dir": "/public/alarm/data"
         },
         {
           "type": "output",
-          "sub_type": "alarm",
+          "sub_type": "alarmOutput",
           "name": "alarm_01",
-          "recvName": "calling",
+          "recvName": "calling_29",
           "sendName": "",
           "url": "http://localhost:9876/v1/flow/alarm"
         }

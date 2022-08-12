@@ -11,14 +11,11 @@
 
 #include "alarmOutputModule.h"
 #include "messageBus.h"
+#include "outputModule.h"
 #include <fstream>
 #include <opencv2/imgcodecs.hpp>
 
 namespace module {
-size_t curl_callback(void *ptr, size_t size, size_t nmemb, std::string *data) {
-  data->append((char *)ptr, size * nmemb);
-  return size * nmemb;
-}
 
 AlarmOutputModule::AlarmOutputModule(Backend *ptr,
                                    const std::string &initName,
@@ -27,9 +24,7 @@ AlarmOutputModule::AlarmOutputModule(Backend *ptr,
                                    const std::vector<std::string> &recv,
                                    const std::vector<std::string> &send,
                                    const std::vector<std::string> &pool)
-    : Module(ptr, initName, initType, recv, send, pool){
-      url = outputConfig.url;
-    }
+    : OutputModule(ptr, initName, initType, outputConfig, recv, send, pool){}
 
 bool AlarmOutputModule::postResult(std::string const &url,
                                   AlarmInfo const &alarmInfo,
@@ -153,7 +148,8 @@ void AlarmOutputModule::forward(
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("{} AlarmOutputModule module was done!", name);
-      std::cout << name << "{} OutputModule module was done!" << std::endl;
+      std::cout << name << "{} AlarmOutputModule module was done!" << std::endl;
+      buf.status = 1;
       stopFlag.store(true);
       return;
     }
@@ -177,7 +173,7 @@ void AlarmOutputModule::forward(
     };
 
     std::string response;
-    if (!postResult(url, alarmInfo, response)) {
+    if (!postResult(config.url, alarmInfo, response)) {
       FLOWENGINE_LOGGER_ERROR(
           "AlarmOutputModule.forward: post result was failed, please check!");
     }

@@ -64,11 +64,11 @@ struct queueMessage {
   int width;
   int height;
   int key;
+  int status;
   std::string send;
   std::string recv;
   std::string messageType;
   std::string frameType;
-  std::string str;
   AlarmResult alarmResult;
   CameraResult cameraResult;
   AlgorithmResult algorithmResult;

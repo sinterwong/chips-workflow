@@ -1,0 +1,51 @@
+/**
+ * @file alarmOutputModule.h
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief
+ * @version 0.1
+ * @date 2022-08-12
+ *
+ * @copyright Copyright (c) 2022
+ *
+ */
+
+#ifndef __METAENGINE_SEND_STATUS_OUTPUT_H_
+#define __METAENGINE_SEND_STATUS_OUTPUT_H_
+
+#include <any>
+#include <curl/curl.h>
+#include <memory>
+#include <vector>
+
+#include "common/common.hpp"
+#include "logger/logger.hpp"
+#include "outputModule.h"
+
+namespace module {
+
+struct StatusInfo {
+  std::string moduleName;
+  int status;
+};
+
+class StatusOutputModule : public OutputModule {
+private:
+  int count = 0;
+public:
+  StatusOutputModule(Backend *ptr, const std::string &initName,
+                   const std::string &initType,
+                   const common::OutputConfig &outputConfig,
+                   const std::vector<std::string> &recv = {},
+                   const std::vector<std::string> &send = {},
+                   const std::vector<std::string> &pool = {});
+  ~StatusOutputModule() {}
+
+  void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
+                   message) override;
+
+  bool postResult(std::string const &url, StatusInfo const &resultInfo,
+                  std::string &result);
+
+};
+} // namespace module
+#endif // __METAENGINE_SEND_STATUS_OUTPUT_H_

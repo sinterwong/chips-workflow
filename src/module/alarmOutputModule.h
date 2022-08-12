@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef __METAENGINE_SEND_OUTPUT_H_
-#define __METAENGINE_SEND_OUTPUT_H_
+#ifndef __METAENGINE_SEND_ALARM_OUTPUT_H_
+#define __METAENGINE_SEND_ALARM_OUTPUT_H_
 
 #include <any>
 #include <curl/curl.h>
@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "messageBus.h"
+#include "outputModule.h"
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"
@@ -25,7 +26,7 @@
 
 #include "common/common.hpp"
 #include "logger/logger.hpp"
-#include "module.hpp"
+#include "outputModule.h"
 
 namespace module {
 
@@ -41,11 +42,7 @@ struct AlarmInfo {
   std::string algorithmResult; // 算法返回结果
 };
 
-class AlarmOutputModule : public Module {
-private:
-  bool ret;
-  std::string url;
-  int count = 0;
+class AlarmOutputModule : public OutputModule {
 
 public:
   AlarmOutputModule(Backend *ptr, const std::string &initName,
@@ -67,4 +64,4 @@ public:
 
 };
 } // namespace module
-#endif // __METAENGINE_SEND_OUTPUT_H_
+#endif // __METAENGINE_SEND_ALARM_OUTPUT_H_

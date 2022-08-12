@@ -12,7 +12,6 @@
 #ifndef __FLOWENGINE_PARSER_CONFIG_H_
 #define __FLOWENGINE_PARSER_CONFIG_H_
 #include <array>
-#include <curl/curl.h>
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -30,12 +29,6 @@ namespace utils {
 
 using common::ModuleConfigure;
 using common::ParamsConfig;
-
-static size_t curl_callback(void *ptr, size_t size, size_t nmemb,
-                            std::string *data) {
-  data->append((char *)ptr, size * nmemb);
-  return size * nmemb;
-}
 
 class ConfigParser {
 private:
@@ -68,8 +61,6 @@ public:
   bool readFile(std::string const &filename, std::string &result);
 
   bool writeJson(std::string const &config, std::string const &outPath);
-
-  bool postConfig(std::string const &url, int deviceId, std::string &result);
 };
 
 } // namespace utils

@@ -46,6 +46,7 @@ void ClassifierModule::forward(
       // FLOWENGINE_LOGGER_INFO("{} ClassifierModule module was done!", name);
       std::cout << name << "{} Classifier module was done!" << std::endl;
       stopFlag.store(true);
+      buf.status = 1;
       return;
     }
     auto frameBufMessage = backendPtr->pool->read(buf.key);

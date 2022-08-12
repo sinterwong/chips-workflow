@@ -184,44 +184,4 @@ bool ConfigParser::writeJson(std::string const &jsonstr,
   return true;
 }
 
-// Main func begin
-bool ConfigParser::postConfig(std::string const &url, int deviceId,
-                              std::string &result) {
-  CURL *curl = curl_easy_init();
-  struct curl_slist *headers = NULL;
-  // without this 500 error
-  headers =
-      curl_slist_append(headers, "Content-Type:application/json;charset=UTF-8");
-  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-  curl_easy_setopt(curl, CURLOPT_POST, 1); //设置为非0表示本次操作为POST
-  curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-
-  rapidjson::Document doc;
-  doc.SetObject(); // key-value 相当与map
-
-  rapidjson::Document::AllocatorType &allocator =
-      doc.GetAllocator(); //获取分配器
-
-  // Add member
-  doc.AddMember("id", deviceId, allocator);
-
-  rapidjson::StringBuffer buffer;
-  // PrettyWriter是格式化的json，如果是Writer则是换行空格压缩后的json
-  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-  doc.Accept(writer);
-
-  std::string s_out3 = std::string(buffer.GetString());
-
-  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, s_out3.c_str());
-  curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, s_out3.length());
-
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_callback);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
-
-  CURLcode response = curl_easy_perform(curl);
-
-  // end of for
-  curl_easy_cleanup(curl);
-  return true;
-}
 } // namespace utils

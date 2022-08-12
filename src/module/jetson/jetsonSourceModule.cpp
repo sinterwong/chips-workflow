@@ -104,25 +104,27 @@ void JetsonSourceModule::forward(
   assert(inputStream);
   bool ret = inputStream->Capture(&frame, 1000);
 
+  queueMessage sendMessage;
+
   if (!ret) {
     if (!inputStream->IsStreaming()) {
       LogInfo("jetson source:  input steram was done.\n");
+      sendMessage.status = 2;
       stopFlag.store(true);
-      return;
     }
   } else {
     FrameBuf frameBufMessage = makeFrameBuf(frame, opt.height, opt.width);
     frameBufMessage.height = opt.height;
     frameBufMessage.width = opt.width;
     int returnKey = backendPtr->pool->write(frameBufMessage);
-    queueMessage sendMessage;
     sendMessage.frameType = "RGB888";
     sendMessage.height = opt.height;
     sendMessage.width = opt.width;
     sendMessage.key = returnKey;
+    sendMessage.status = 0;
     sendMessage.cameraResult = cameraResult;
-    autoSend(sendMessage);
   }
+  autoSend(sendMessage);
 }
 
 } // namespace module

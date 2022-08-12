@@ -55,6 +55,7 @@ void CallingModule::forward(
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("{} CallingModule module was done!", name);
       std::cout << name << "{} CallingModule module was done!" << std::endl;
+      buf.status = 1;
       stopFlag.store(true);
       return;
     } else if (type == "AlgorithmMessage") {
