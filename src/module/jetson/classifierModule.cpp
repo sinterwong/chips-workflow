@@ -52,7 +52,7 @@ void ClassifierModule::forward(
     auto frameBufMessage = backendPtr->pool->read(buf.key);
     std::shared_ptr<cv::Mat> image =
         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
-    if (type == "FrameMessage") {
+    if (type == "stream") {
       if (count++ < 5) {
         return;
       }
@@ -75,7 +75,7 @@ void ClassifierModule::forward(
            static_cast<float>(region.y + region.height), ret.classResult.second,
            static_cast<float>(ret.classResult.first)}};
       buf.algorithmResult.bboxes.emplace_back(std::move(b));
-    } else if (type == "AlgorithmMessage") {
+    } else if (type == "algorithm") {
       if (buf.algorithmResult.bboxes.size() < 0) {
         return;
       }
@@ -93,7 +93,9 @@ void ClassifierModule::forward(
           cv::Mat croppedImage = (*image)(rect).clone();
 
           cv::cvtColor(croppedImage, croppedImage, cv::COLOR_RGB2BGR);
-          cv::imwrite("/home/wangxt/workspace/projects/flowengine/tests/data/out.jpg", croppedImage);
+          cv::imwrite(
+              "/home/wangxt/workspace/projects/flowengine/tests/data/out.jpg",
+              croppedImage);
           infer::Result ret;
 
           ret.shape = {croppedImage.cols, croppedImage.rows, 3};
@@ -114,4 +116,9 @@ void ClassifierModule::forward(
     autoSend(buf);
   }
 }
+FlowEngineModuleRegister(ClassifierModule, Backend *, std::string const &,
+                         std::string const &, common::AlgorithmConfig const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &);
 } // namespace module

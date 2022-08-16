@@ -1,12 +1,12 @@
 /**
  * @file alarmOutputModule.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-05
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include "alarmOutputModule.h"
@@ -17,18 +17,17 @@
 
 namespace module {
 
-AlarmOutputModule::AlarmOutputModule(Backend *ptr,
-                                   const std::string &initName,
-                                   const std::string &initType, 
-                                   const common::OutputConfig &outputConfig,
-                                   const std::vector<std::string> &recv,
-                                   const std::vector<std::string> &send,
-                                   const std::vector<std::string> &pool)
-    : OutputModule(ptr, initName, initType, outputConfig, recv, send, pool){}
+AlarmOutputModule::AlarmOutputModule(Backend *ptr, const std::string &initName,
+                                     const std::string &initType,
+                                     const common::OutputConfig &outputConfig,
+                                     const std::vector<std::string> &recv,
+                                     const std::vector<std::string> &send,
+                                     const std::vector<std::string> &pool)
+    : OutputModule(ptr, initName, initType, outputConfig, recv, send, pool) {}
 
 bool AlarmOutputModule::postResult(std::string const &url,
-                                  AlarmInfo const &alarmInfo,
-                                  std::string &result) {
+                                   AlarmInfo const &alarmInfo,
+                                   std::string &result) {
 
   CURL *curl = curl_easy_init();
 
@@ -53,7 +52,8 @@ bool AlarmOutputModule::postResult(std::string const &url,
   rapidjson::Value alarm_id(alarmInfo.alarmId.c_str(), allocator);
   rapidjson::Value alarm_detail(alarmInfo.alarmDetails.c_str(), allocator);
   rapidjson::Value camera_ip(alarmInfo.cameraIp.c_str(), allocator);
-  rapidjson::Value algorithm_results(alarmInfo.algorithmResult.c_str(), allocator);
+  rapidjson::Value algorithm_results(alarmInfo.algorithmResult.c_str(),
+                                     allocator);
   doc.AddMember("alarm_file", alarm_file, allocator);
   doc.AddMember("alarm_type", alarm_type, allocator);
   doc.AddMember("alarm_id", alarm_id, allocator);
@@ -94,7 +94,7 @@ bool AlarmOutputModule::postResult(std::string const &url,
 }
 
 bool AlarmOutputModule::writeResult(AlgorithmResult const &rm,
-                                   std::string &result) {
+                                    std::string &result) {
   rapidjson::Document doc;
   doc.SetObject(); // key-value 相当与map
   //获取分配器
@@ -161,18 +161,18 @@ void AlarmOutputModule::forward(
     std::string algorithmInfo;
     writeResult(buf.algorithmResult, algorithmInfo);
 
-    AlarmInfo alarmInfo {
-      buf.cameraResult.heightPixel,
-      buf.cameraResult.widthPixel,
-      buf.cameraResult.cameraId,
-      buf.alarmResult.eventId,
-      buf.alarmResult.alarmVideoDuration,
-      buf.cameraResult.cameraIp,
-      buf.alarmResult.alarmType,
-      buf.alarmResult.alarmFile,
-      buf.alarmResult.alarmId,
-      buf.alarmResult.alarmDetails,
-      algorithmInfo,
+    AlarmInfo alarmInfo{
+        buf.cameraResult.heightPixel,
+        buf.cameraResult.widthPixel,
+        buf.cameraResult.cameraId,
+        buf.alarmResult.eventId,
+        buf.alarmResult.alarmVideoDuration,
+        buf.cameraResult.cameraIp,
+        buf.alarmResult.alarmType,
+        buf.alarmResult.alarmFile,
+        buf.alarmResult.alarmId,
+        buf.alarmResult.alarmDetails,
+        algorithmInfo,
     };
 
     std::string response;
@@ -182,4 +182,10 @@ void AlarmOutputModule::forward(
     }
   }
 }
+
+FlowEngineModuleRegister(AlarmOutputModule, Backend *, std::string const &,
+                         std::string const &, common::OutputConfig const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &);
 } // namespace module

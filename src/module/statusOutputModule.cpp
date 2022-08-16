@@ -90,4 +90,9 @@ void StatusOutputModule::forward(
     }
   }
 }
+FlowEngineModuleRegister(StatusOutputModule, Backend *, std::string const &,
+                         std::string const &, const common::OutputConfig &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &);
 } // namespace module

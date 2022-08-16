@@ -35,7 +35,7 @@ void FrameDifferenceModule::forward(
       buf.status = 1;
       stopFlag.store(true);
       return;
-    } else if (type == "FrameMessage") {
+    } else if (type == "stream") {
       auto frameBufMessage = backendPtr->pool->read(buf.key);
       auto frame =
           std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
@@ -50,4 +50,8 @@ void FrameDifferenceModule::forward(
     }
   }
 }
+FlowEngineModuleRegister(FrameDifferenceModule, Backend *, std::string const &,
+                         std::string const &, std::vector<std::string> const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &);
 } // namespace module

@@ -158,7 +158,7 @@ void RKMediaRTSPModule::forward(
 {
     for (auto&[send, type, buf]: message)
     {
-        assert(type == "FrameMessage");
+        assert(type == "stream");
         auto frameBufMessage = backendPtr->pool->read(buf.key);
 
         assert(height == videoHeight);

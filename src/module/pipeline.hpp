@@ -14,27 +14,16 @@
 
 #include "backend.h"
 #include "boostMessage.h"
-#include "callingModule.h"
 #include "common/common.hpp"
-#include "frameDifferenceModule.h"
-#include "jetson/classifierModule.h"
-#include "jetson/detectModule.h"
-#include "jetson/jetsonSourceModule.h"
 #include "logger/logger.hpp"
 #include "module.hpp"
-#include "alarmOutputModule.h"
 #include "thread_pool.h"
 #include "utils/configParser.hpp"
 // #include "BS_thread_pool.hpp"
 
 #include <algorithm>
-#include <memory>
-#include <thread>
-
 #include <any>
 #include <memory>
-#include <opencv2/opencv.hpp>
-
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -115,7 +104,7 @@ public:
 
   bool initialize(); // 第一次读取配置文件并且启动流资源
 
-  void go(); // 负责定时监控和一直运行下去
+  void run(); // 开始运行
 };
 } // namespace module
 #endif // __METAENGINE_STATUE_CONTROL_H

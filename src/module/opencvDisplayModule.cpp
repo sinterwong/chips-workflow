@@ -16,7 +16,7 @@ OpencvDisplayModule::OpencvDisplayModule(Backend *ptr,
 void OpencvDisplayModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
   for (auto &[send, type, buf] : message) {
-    assert(type == "FrameMessage");
+    assert(type == "stream");
     int height, width;
     height = buf.height;
     width = buf.width;
@@ -28,4 +28,8 @@ void OpencvDisplayModule::forward(
     cv::waitKey(20);
   }
 }
+FlowEngineModuleRegister(OpencvDisplayModule, Backend *, std::string const &,
+                         std::string const &, std::vector<std::string> const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &);
 } // namespace module

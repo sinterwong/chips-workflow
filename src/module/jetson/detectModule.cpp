@@ -52,7 +52,7 @@ void DetectModule::forward(
     auto frameBufMessage = backendPtr->pool->read(buf.key);
     std::shared_ptr<cv::Mat> image =
         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
-    if (type == "FrameMessage") {
+    if (type == "stream") {
       if (count++ < 5) {
         return;
       }
@@ -78,7 +78,7 @@ void DetectModule::forward(
              rbbox.class_confidence, rbbox.class_id}};
         buf.algorithmResult.bboxes.emplace_back(std::move(b));
       }
-    } else if (type == "AlgorithmMessage") {
+    } else if (type == "algorithm") {
       for (int i = 0; i < buf.algorithmResult.bboxes.size(); i++) {
         auto &bbox = buf.algorithmResult.bboxes.at(i);
         if (bbox.first == send) {
@@ -106,4 +106,9 @@ void DetectModule::forward(
     autoSend(buf);
   }
 }
+FlowEngineModuleRegister(DetectModule, Backend *, std::string const &,
+                         std::string const &, common::AlgorithmConfig const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &);
 } // namespace module

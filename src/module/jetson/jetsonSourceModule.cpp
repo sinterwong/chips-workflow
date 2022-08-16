@@ -127,5 +127,9 @@ void JetsonSourceModule::forward(
   }
   autoSend(sendMessage);
 }
-
+FlowEngineModuleRegister(JetsonSourceModule, Backend *, std::string const &,
+                         std::string const &, common::CameraConfig const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &);
 } // namespace module

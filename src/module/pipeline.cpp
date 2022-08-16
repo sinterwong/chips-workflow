@@ -11,13 +11,13 @@
 
 #include "pipeline.hpp"
 #include "module.hpp"
-#include "statusOutputModule.h"
+#include "moduleFactory.hpp"
 #include <algorithm>
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 namespace module {
-using common::ModuleType;
 
 PipelineModule::PipelineModule(std::string const &config_,
                                std::string const &sendUrl_, size_t workers_n)
@@ -29,53 +29,46 @@ PipelineModule::PipelineModule(std::string const &config_,
 
 bool PipelineModule::submitModule(ModuleConfigure const &config,
                                   ParamsConfig const &paramsConfig) {
-  switch (config.type_) {
-  case ModuleType::Detection: { // Detection
-    atm[config.moduleName] = std::shared_ptr<DetectModule>(
-        new DetectModule(&backend, config.moduleName, "AlgorithmMessage",
-                         paramsConfig.GetAlgorithmConfig(), {name}, {}));
-    pool->submit(&DetectModule::go, atm.at(config.moduleName));
+  switch (paramsConfig.GetKind()) {
+  case common::ConfigType::Algorithm: { // Algorithm
+    atm[config.moduleName] = ModuleFactory::createModule<Module>(
+        config.typeName, &backend, config.moduleName, config.ctype,
+        paramsConfig.GetAlgorithmConfig(), std::vector<std::string>{name},
+        std::vector<std::string>(), std::vector<std::string>());
     break;
   }
-  case ModuleType::Classifier: { // Classifier
-    atm[config.moduleName] = std::shared_ptr<ClassifierModule>(
-        new ClassifierModule(&backend, config.moduleName, "AlgorithmMessage",
-                             paramsConfig.GetAlgorithmConfig(), {name}, {}));
-    pool->submit(&ClassifierModule::go, atm.at(config.moduleName));
+  case common::ConfigType::Logic: { // Logic
+    atm[config.moduleName] = ModuleFactory::createModule<Module>(
+        config.typeName, &backend, config.moduleName, config.ctype,
+        paramsConfig.GetLogicConfig(), std::vector<std::string>{name},
+        std::vector<std::string>(), std::vector<std::string>());
     break;
   }
-  case ModuleType::WebStream: { // Stream
-    atm[config.moduleName] = std::shared_ptr<JetsonSourceModule>(
-        new JetsonSourceModule(&backend, config.moduleName, "FrameMessage",
-                               paramsConfig.GetCameraConfig(), {name}, {}));
-    pool->submit(&JetsonSourceModule::go, atm.at(config.moduleName));
+  case common::ConfigType::Output: { // Output
+    atm[config.moduleName] = ModuleFactory::createModule<Module>(
+        config.typeName, &backend, config.moduleName, config.ctype,
+        paramsConfig.GetOutputConfig(), std::vector<std::string>{name},
+        std::vector<std::string>(), std::vector<std::string>());
     break;
   }
-  case ModuleType::AlarmOutput: { // Output
-    atm[config.moduleName] = std::shared_ptr<AlarmOutputModule>(
-        new AlarmOutputModule(&backend, config.moduleName, "OutputMessage",
-                             paramsConfig.GetOutputConfig(), {name}, {}));
-    pool->submit(&AlarmOutputModule::go, atm.at(config.moduleName));
-    break;
-  }
-  case ModuleType::StatusOutput: { // Output
-    atm[config.moduleName] = std::shared_ptr<StatusOutputModule>(
-        new StatusOutputModule(&backend, config.moduleName, "OutputMessage",
-                             paramsConfig.GetOutputConfig(), {name}, {}));
-    pool->submit(&AlarmOutputModule::go, atm.at(config.moduleName));
-    break;
-  }
-  case ModuleType::Calling: { // Calling
-    atm[config.moduleName] = std::shared_ptr<CallingModule>(
-        new CallingModule(&backend, config.moduleName, "LogicMessage",
-                          paramsConfig.GetLogicConfig(), {name}, {}));
-    pool->submit(&CallingModule::go, atm.at(config.moduleName));
+  case common::ConfigType::Stream: { // Stream
+    atm[config.moduleName] = ModuleFactory::createModule<Module>(
+        config.typeName, &backend, config.moduleName, config.ctype,
+        paramsConfig.GetCameraConfig(), std::vector<std::string>{name},
+        std::vector<std::string>(), std::vector<std::string>());
     break;
   }
   default: {
     break;
   }
   }
+
+  if (atm[config.moduleName] == nullptr) {
+    std::cout << config.moduleName << " is nullptr!!!!!!!!!!!!!!!!!!" << std::endl;
+    exit(-1);
+  }
+  
+  pool->submit(&Module::go, atm.at(config.moduleName));
   return true;
 }
 
@@ -145,11 +138,10 @@ bool PipelineModule::startPipeline() {
   // 开始之前 先检查目前存在的模块状态是否已经停止（针对摄像头等外部因素）
   std::unordered_map<std::string, std::shared_ptr<Module>>::iterator iter;
   for (iter = atm.begin(); iter != atm.end();) {
-    if(iter->second->stopFlag.load()) {
+    if (iter->second->stopFlag.load()) {
       // 该模块已经停止
       iter = atm.erase(iter);
-    }
-    else {
+    } else {
       ++iter;
     }
   }
@@ -211,7 +203,7 @@ bool PipelineModule::startPipeline() {
   return true;
 }
 
-void PipelineModule::go() {
+void PipelineModule::run() {
   while (true) {
     startPipeline();
     std::this_thread::sleep_for(std::chrono::seconds(30));

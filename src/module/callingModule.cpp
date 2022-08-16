@@ -45,7 +45,7 @@ void CallingModule::forward(
         outputStream->Close();
         return;
       }
-      if (type != "FrameMessage") {
+      if (type != "stream") {
         // 当前状态只接受FrameMessage消息
         return ;
       }
@@ -58,7 +58,7 @@ void CallingModule::forward(
       buf.status = 1;
       stopFlag.store(true);
       return;
-    } else if (type == "AlgorithmMessage") {
+    } else if (type == "algorithm") {
       // 此处根据 buf.algorithmResult 写吸烟的逻辑并填充 buf.alarmResult 信息
       // 如果符合条件就发送至AlarmOutputModule
       for (int i = 0; i < buf.algorithmResult.bboxes.size(); i++) {
@@ -116,4 +116,10 @@ void CallingModule::forward(
     }
   }
 }
+
+FlowEngineModuleRegister(CallingModule, Backend *, std::string const &,
+                         std::string const &, common::LogicConfig const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &);
 } // namespace module

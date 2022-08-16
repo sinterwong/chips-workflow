@@ -30,5 +30,8 @@ void serialModule::forward(
   //    }
   //    autoSend(buf.SerializeAsString());
 }
-
+FlowEngineModuleRegister(serialModule, Backend *, std::string const &,
+                         std::string const &, std::vector<std::string> const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &);
 } // namespace module

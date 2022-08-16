@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 
   std::shared_ptr<PipelineModule> pipeline(new PipelineModule(
       FLAGS_config_path, FLAGS_result_url, FLAGS_num_workers));
-  pipeline->go();
+  pipeline->run();
   gflags::ShutDownCommandLineFlags();
   FlowEngineLoggerDrop();
   return 0;

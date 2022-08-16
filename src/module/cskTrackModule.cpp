@@ -20,7 +20,7 @@ void cskTrackModule::forward(
       std::cout << name << "{} CSKTrackModule module was done!" << std::endl;
       buf.status = 1;
       return;
-    } else if (type == "FrameMessage") {
+    } else if (type == "stream") {
       if (moduleFlag == init || moduleFlag == tracking) {
         auto frameBufMessage = backendPtr->pool->read(buf.key);
 
@@ -65,4 +65,8 @@ void cskTrackModule::forward(
 cv::Rect cskTrackModule::floatArrayToCvRect(const std::array<float, 4> &a) {
   return cv::Rect(a[0], a[1], a[2], a[3]);
 }
+FlowEngineModuleRegister(cskTrackModule, Backend *, std::string const &,
+                         std::string const &, std::vector<std::string> const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &);
 } // namespace module

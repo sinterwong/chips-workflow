@@ -40,14 +40,14 @@ private:
     std::make_pair("logic", common::ConfigType::Logic),
   };
   // 启动模块的类型
-  std::unordered_map<std::string, common::ModuleType> moduleMapping {
-    std::make_pair("webStream", common::ModuleType::WebStream),
-    std::make_pair("detection", common::ModuleType::Detection),
-    std::make_pair("classifier", common::ModuleType::Classifier),
-    std::make_pair("statusOutput", common::ModuleType::StatusOutput),
-    std::make_pair("alarmOutput", common::ModuleType::AlarmOutput),
-    std::make_pair("calling", common::ModuleType::Calling),
-    std::make_pair("smoking", common::ModuleType::Smokeing)
+  std::unordered_map<std::string, std::string> moduleMapping {
+    std::make_pair("webStream", "JetsonSourceModule"),
+    std::make_pair("detection", "DetectModule"),
+    std::make_pair("classifier", "ClassifierModule"),
+    std::make_pair("statusOutput", "StatusOutputModule"),
+    std::make_pair("alarmOutput", "AlarmOutputModule"),
+    std::make_pair("calling", "CallingModule"),
+    std::make_pair("smoking", "SmokingModule")
   };
 
 

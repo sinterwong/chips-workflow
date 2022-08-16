@@ -32,7 +32,7 @@ enum class ModuleType {
 };
 
 struct ModuleConfigure {
-  ModuleType type_;
+  std::string typeName;
   std::string ctype;
   std::string moduleName; // 模块名称
   std::string sendName;   // 下游模块

@@ -94,4 +94,9 @@ void OpencvCameraModule::afterForward() {
     std::this_thread::sleep_for(std::chrono::milliseconds(60));
   }
 }
+FlowEngineModuleRegister(OpencvCameraModule, Backend *, std::string const &,
+                         std::string const &, std::string const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &);
 } // namespace module

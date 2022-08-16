@@ -1,12 +1,12 @@
 /**
  * @file jetsonOutputModule.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-02
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include "jetsonOutputModule.h"
@@ -30,7 +30,7 @@ JetsonOutputModule::JetsonOutputModule(Backend *ptr, const std::string &uri,
 void JetsonOutputModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
   for (auto &[send, type, buf] : message) {
-    assert(type == "FrameMessage");
+    assert(type == "stream");
     FrameBuf frameBufMessage = backendPtr->pool->read(buf.key);
     auto frame = std::any_cast<uchar3 *>(frameBufMessage.read("uchar3*"));
     // std::cout << (frame == nullptr) << std::endl;
@@ -49,4 +49,9 @@ void JetsonOutputModule::forward(
     }
   }
 }
+FlowEngineModuleRegister(JetsonOutputModule, Backend *, std::string const &,
+                         std::string const &, std::string const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &,
+                         std::vector<std::string> const &);
 } // namespace module

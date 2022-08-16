@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "moduleFactory.hpp"
 #include "backend.h"
 #include "logger/logger.hpp"
 
@@ -65,7 +66,7 @@ public:
 
   virtual void afterForward(){};
 
-  virtual void go() {
+  void go() {
     while (!stopFlag.load()) {
       step();
     }
