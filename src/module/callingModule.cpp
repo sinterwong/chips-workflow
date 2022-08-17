@@ -71,8 +71,7 @@ void CallingModule::forward(
             // 生成本次报警的唯一ID
             buf.alarmResult.alarmVideoDuration = params.videDuration;
             buf.alarmResult.alarmId = generate_hex(16);
-            buf.alarmResult.alarmFile =
-                params.outputDir + "/" + buf.alarmResult.alarmId;
+            buf.alarmResult.alarmFile = params.outputDir + "/" + buf.alarmResult.alarmId;
             buf.alarmResult.alarmDetails = "存在吸烟或打电话";
             buf.alarmResult.alarmType = name;
             buf.alarmResult.eventId = params.eventId;
@@ -91,8 +90,7 @@ void CallingModule::forward(
             }
             drawResult(showImage, buf.algorithmResult);
 
-            std::experimental::filesystem::create_directories(
-                buf.alarmResult.alarmFile);
+            std::experimental::filesystem::create_directories(buf.alarmResult.alarmFile);
             std::string imagePath = buf.alarmResult.alarmFile + "/" +
                                     buf.alarmResult.alarmId + ".jpg";
             cv::imwrite(imagePath, showImage);

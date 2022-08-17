@@ -59,7 +59,7 @@ public:
               const std::vector<std::string> &recv = {},
               const std::vector<std::string> &send = {},
               const std::vector<std::string> &pool = {})
-      : Module(ptr, initName, initType, recv, send, pool) {}
+      : Module(ptr, initName, initType, recv, send, pool), params(params_) {}
   virtual ~LogicModule() {}
 
   bool drawResult(cv::Mat &image, AlgorithmResult const &rm) {
