@@ -58,10 +58,9 @@ bool ConfigParser::parseConfig(
           return false;
         }
         common::ConfigType type_ = typeMapping.at(params["type"].GetString());
-        std::string moduleType = params["sub_type"].GetString();
         ParamsConfig pc;
         ModuleConfigure mc{
-            moduleMapping.at(moduleType), params["type"].GetString(),
+            params["sub_type"].GetString(), params["type"].GetString(),
             params["name"].GetString(), params["sendName"].GetString(),
             params["recvName"].GetString()};
         switch (type_) {
@@ -125,7 +124,7 @@ bool ConfigParser::parseConfig(
           pc = common::LogicConfig{
               params["alarm_output_dir"].GetString(),
               params["event_id"].GetInt(),
-              params["prepare_delay_in_sec"].GetInt(),
+              params["video_duration"].GetInt(),
           };
           break;
         }

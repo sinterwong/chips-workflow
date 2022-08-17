@@ -8,9 +8,9 @@ ADD_DEFINITIONS(-DNX_SERIAL_NUMBER="1423721066487")
 #--------------------------------------------
 # compiler configuration
 SET(CMAKE_CXX_STANDARD 17)
-IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wno-write-strings -Wno-deprecated-declarations")
-ENDIF()
+# IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+#     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wno-write-strings -Wno-deprecated-declarations")
+# ENDIF()
 # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wno-write-strings -Wno-deprecated-declarations")
 
 INCLUDE(cmake/messagecolor.cmake)

@@ -1,0 +1,248 @@
+[
+    {
+        "CityId": 209,
+        "HostId": 62,
+        "Id": 49,
+        "Location": 0,
+        "ProvinceId": 205,
+        "RegionId": 210,
+        "StationId": 0,
+        "cameraIp": "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101",
+        "flowType": "rtsp",
+        "height": 1080,
+        "name": "1bbd21ef-c928-41b3-9da0-d5782313b25a",
+        "recvName": "",
+        "sendName": "stream_status",
+        "sub_type": "JetsonSourceModule",
+        "type": "stream",
+        "videoCode": "h264",
+        "width": 1920
+    },
+    {
+        "event_id": 35,
+        "name": "stream_status",
+        "recvName": "1bbd21ef-c928-41b3-9da0-d5782313b25a",
+        "sendName": "",
+        "sub_type": "StatusOutputModule",
+        "type": "output",
+        "url": "http://localhost:9876/v1/flow/heartbeat"
+    },
+    {
+        "alpha": 255,
+        "attentionClasses": [
+            0
+        ],
+        "batchSize": 1,
+        "beta": 0,
+        "cond_thr": 0.4,
+        "event_id": 35,
+        "inputNames": [
+            "images"
+        ],
+        "inputShape": [
+            640,
+            640,
+            3
+        ],
+        "isScale": true,
+        "modelPath": "/home/wangxt/workspace/projects/flowengine/tests/data/handdetn.engine",
+        "name": "handDet",
+        "nms_thr": 0.45,
+        "numAnchors": 25200,
+        "numClasses": 1,
+        "outputNames": [
+            "output"
+        ],
+        "recvName": "1bbd21ef-c928-41b3-9da0-d5782313b25a",
+        "region": [
+            0,
+            0,
+            0,
+            0
+        ],
+        "sendName": "smokeCls",
+        "sub_type": "DetectModule",
+        "type": "algorithm"
+    },
+    {
+        "alpha": 0,
+        "attentionClasses": [
+            0
+        ],
+        "batchSize": 1,
+        "beta": 0,
+        "cond_thr": 0,
+        "event_id": 35,
+        "inputNames": [
+            "data"
+        ],
+        "inputShape": [
+            128,
+            128,
+            3
+        ],
+        "isScale": false,
+        "modelPath": "/home/wangxt/workspace/projects/flowengine/tests/data/smoke_phone.engine",
+        "name": "smokeCls",
+        "nms_thr": 0,
+        "numAnchors": 0,
+        "numClasses": 3,
+        "outputNames": [
+            "softmax"
+        ],
+        "recvName": "handDet",
+        "region": [
+            0,
+            0,
+            0,
+            0
+        ],
+        "sendName": "calling_29",
+        "sub_type": "ClassifierModule",
+        "type": "algorithm"
+    },
+    {
+        "alarm_output_dir": "temp",
+        "event_id": 35,
+        "name": "calling_29",
+        "recvName": "smokeCls",
+        "sendName": "alarm_01",
+        "sub_type": "CallingModule",
+        "type": "logic",
+        "video_duration": 36
+    },
+    {
+        "event_id": 35,
+        "name": "alarm_01",
+        "recvName": "calling_29",
+        "sendName": "",
+        "sub_type": "AlarmOutputModule",
+        "type": "output",
+        "url": "http://localhost:9876/v1/flow/alarm"
+    }
+]
+
+
+[
+    {
+        "CityId": 209,
+        "HostId": 62,
+        "Id": 49,
+        "Location": 0,
+        "ProvinceId": 205,
+        "RegionId": 210,
+        "StationId": 0,
+        "cameraIp": "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101",
+        "flowType": "rtsp",
+        "height": 1080,
+        "name": "1bbd21ef-c928-41b3-9da0-d5782313b25a",
+        "recvName": "",
+        "sendName": "stream_status",
+        "sub_type": "JetsonSourceModule",
+        "type": "stream",
+        "videoCode": "h264",
+        "width": 1920
+    },
+    {
+        "event_id": 36,
+        "name": "stream_status",
+        "recvName": "1bbd21ef-c928-41b3-9da0-d5782313b25a",
+        "sendName": "",
+        "sub_type": "StatusOutputModule",
+        "type": "output",
+        "url": "http://localhost:9876/v1/flow/heartbeat"
+    },
+    {
+        "alpha": 255,
+        "attentionClasses": [
+            0
+        ],
+        "batchSize": 1,
+        "beta": 0,
+        "cond_thr": 0.4,
+        "event_id": 36,
+        "inputNames": [
+            "images"
+        ],
+        "inputShape": [
+            640,
+            640,
+            3
+        ],
+        "isScale": true,
+        "modelPath": "/home/wangxt/workspace/projects/flowengine/tests/data/handdetn.engine",
+        "name": "handDet",
+        "nms_thr": 0.45,
+        "numAnchors": 25200,
+        "numClasses": 1,
+        "outputNames": [
+            "output"
+        ],
+        "recvName": "1bbd21ef-c928-41b3-9da0-d5782313b25a",
+        "region": [
+            0,
+            0,
+            0,
+            0
+        ],
+        "sendName": "phoneCls",
+        "sub_type": "DetectModule",
+        "type": "algorithm"
+    },
+    {
+        "alpha": 0,
+        "attentionClasses": [
+            0
+        ],
+        "batchSize": 1,
+        "beta": 0,
+        "cond_thr": 0,
+        "event_id": 36,
+        "inputNames": [
+            "data"
+        ],
+        "inputShape": [
+            128,
+            128,
+            3
+        ],
+        "isScale": false,
+        "modelPath": "/home/wangxt/workspace/projects/flowengine/tests/data/smoke_phone.engine",
+        "name": "phoneCls",
+        "nms_thr": 0,
+        "numAnchors": 0,
+        "numClasses": 3,
+        "outputNames": [
+            "softmax"
+        ],
+        "recvName": "handDet",
+        "region": [
+            0,
+            0,
+            0,
+            0
+        ],
+        "sendName": "calling_29",
+        "sub_type": "ClassifierModule",
+        "type": "algorithm"
+    },
+    {
+        "alarm_output_dir": "temp",
+        "event_id": 36,
+        "name": "calling_29",
+        "recvName": "phoneCls",
+        "sendName": "alarm_01",
+        "sub_type": "CallingModule",
+        "type": "logic",
+        "video_duration": 36
+    },
+    {
+        "event_id": 36,
+        "name": "alarm_01",
+        "recvName": "calling_29",
+        "sendName": "",
+        "sub_type": "AlarmOutputModule",
+        "type": "output",
+        "url": "http://localhost:9876/v1/flow/alarm"
+    }
+]

@@ -28,5 +28,7 @@ int main(int argc, char **argv) {
   C c;
   std::cout << c.c << std::endl;
 
+  std::cout << "CPP version: " << __cplusplus << std::endl;
+
   return 0;
 }
