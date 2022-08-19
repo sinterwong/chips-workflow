@@ -27,7 +27,6 @@
 #include <vector>
 
 DEFINE_string(config_path, "", "Specify config path.");
-DEFINE_string(result_url, "", "Specify send result url.");
 DEFINE_int32(num_workers, 5, "Specify number of thread pool .");
 
 using namespace module;
@@ -71,7 +70,7 @@ int main(int argc, char **argv) {
 #endif
 
   std::shared_ptr<PipelineModule> pipeline(new PipelineModule(
-      FLAGS_config_path, FLAGS_result_url, FLAGS_num_workers));
+      FLAGS_config_path, FLAGS_num_workers));
   pipeline->run();
   gflags::ShutDownCommandLineFlags();
   FlowEngineLoggerDrop();

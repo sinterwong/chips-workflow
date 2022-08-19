@@ -30,7 +30,7 @@ private:
   std::shared_ptr<infer::trt::ClassifierInfer> instance;
   int count = 0;
   common::AlgorithmConfig params;
-  cv::Rect region{0, 0, 0, 0};
+  // cv::Rect region{0, 0, 0, 0};
 
 public:
   ClassifierModule(Backend *ptr, const std::string &initName,

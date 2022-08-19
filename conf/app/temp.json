@@ -1,0 +1,150 @@
+{
+  "Pipelines": [
+    {
+      "CameraUUID": "a71a203c-d0aa-4c7f-80c0-6296c997525b",
+      "Name": "phone",
+      "unit_id": 1,
+      "host_id": 1,
+      "event_id": 2,
+      "Pipeline": [
+        {
+          "CityId": 0,
+          "HostId": 1,
+          "Id": 1,
+          "Location": 0,
+          "ProvinceId": 1,
+          "RegionId": 0,
+          "StationId": 0,
+          "cameraIp": "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101",
+          "flowType": "rtsp",
+          "height": 1080,
+          "name": "a71a203c-d0aa-4c7f-80c0-6296c997525b",
+          "page": "1",
+          "recvName": "",
+          "sendName": "handDet",
+          "sub_type": "JetsonSourceModule",
+          "type": "stream",
+          "videoCode": "h264",
+          "width": 1920
+        },
+        {
+          "name": "stream_status",
+          "recvName": "a71a203c-d0aa-4c7f-80c0-6296c997525b",
+          "sendName": "",
+          "sub_type": "StatusOutputModule",
+          "type": "output",
+          "url": "http://192.168.31.54:9876/v1/flow/heartbeat"
+        },
+        {
+          "alpha": 255,
+          "batchSize": 1,
+          "beta": 0,
+          "cond_thr": 0.4,
+          "inputNames": [
+            "images"
+          ],
+          "inputShape": [
+            640,
+            640,
+            3
+          ],
+          "isScale": true,
+          "modelPath": "/home/wangxt/workspace/projects/flowengine/tests/data/handdetn.engine",
+          "name": "handDet",
+          "nms_thr": 0.45,
+          "numAnchors": 25200,
+          "numClasses": 1,
+          "outputNames": [
+            "output"
+          ],
+          "recvName": "a71a203c-d0aa-4c7f-80c0-6296c997525b",
+          
+          "sendName": "phoneCls",
+          "sub_type": "DetectModule",
+          "type": "algorithm"
+        },
+        {
+          "alpha": 0,
+          "batchSize": 1,
+          "beta": 0,
+          "cond_thr": 0,
+          "inputNames": [
+            "data"
+          ],
+          "inputShape": [
+            128,
+            128,
+            3
+          ],
+          "isScale": false,
+          "modelPath": "/home/wangxt/workspace/projects/flowengine/tests/data/smoke_phone.engine",
+          "name": "phoneCls",
+          "nms_thr": 0,
+          "numAnchors": 0,
+          "numClasses": 3,
+          "outputNames": [
+            "softmax"
+          ],
+          "recvName": "handDet",
+          "region": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sendName": "calling_29",
+          "sub_type": "ClassifierModule",
+          "type": "algorithm"
+        },
+        {
+          "alarm_output_dir": "/public/alarm/data",
+          "event_id": 2,
+          "name": "calling_29",
+          "page": "1",
+          "recvName": "phoneCls",
+          "sendName": "",
+          "region": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "attentionClasses": [
+            0
+          ],
+          "sub_type": "CallingModule",
+          "type": "logic",
+          "video_duration": 10
+        },
+        {
+          "name": "alarm_01",
+          "recvName": "calling_29",
+          "sendName": "",
+          "sub_type": "AlarmOutputModule",
+          "type": "output",
+          "url": "http://192.168.31.54:9876/v1/flow/alarm"
+        },
+        {
+          "CityId": 0,
+          "HostId": 1,
+          "Id": 1,
+          "Location": 0,
+          "ProvinceId": 1,
+          "RegionId": 0,
+          "StationId": 0,
+          "cameraIp": "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101",
+          "flowType": "rtsp",
+          "height": 1080,
+          "name": "a71a203c-d0aa-4c7f-80c0-6296c997525b",
+          "page": "1",
+          "recvName": "",
+          "sendName": "stream_status",
+          "sub_type": "JetsonSourceModule",
+          "type": "stream",
+          "videoCode": "h264",
+          "width": 1920
+        }
+      ]
+    }
+  ]
+}

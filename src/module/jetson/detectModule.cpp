@@ -52,11 +52,14 @@ void DetectModule::forward(
     auto frameBufMessage = backendPtr->pool->read(buf.key);
     std::shared_ptr<cv::Mat> image =
         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
-    if (type == "stream") {
+    if (type == "logic") {
       if (count++ < 5) {
         return;
       }
       count = 0;
+      cv::Rect region{buf.logicInfo.region[0], buf.logicInfo.region[1],
+                      buf.logicInfo.region[2] - buf.logicInfo.region[0],
+                      buf.logicInfo.region[3] - buf.logicInfo.region[1]};
       std::shared_ptr<cv::Mat> inferImage;
       if (region.area() != 0) {
         inferImage = std::make_shared<cv::Mat>((*image)(region).clone());

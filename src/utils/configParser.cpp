@@ -87,43 +87,37 @@ bool ConfigParser::parseConfig(
             outputNames.emplace_back(n.GetString());
           }
 
-          // rapidjson::Value &ac = params["attentionClasses"];
-          // std::vector<int> attentionClasses;
-          // for (int i = 0; i < ac.Size(); i ++) {
-          //   rapidjson::Value &n = ac[i];
-          //   attentionClasses.emplace_back(n.GetString());
-          // }
-          // std::move(attentionClasses)
-
-          rapidjson::Value &rg = params["region"];
-          std::array<int, 4> region{rg[0].GetInt(), rg[1].GetInt(),
-                                    rg[2].GetInt(), rg[3].GetInt()};
-
           rapidjson::Value &ins = params["inputShape"];
           std::array<int, 3> inputShape{ins[0].GetInt(), ins[1].GetInt(),
                                         ins[2].GetInt()};
 
           pc = common::AlgorithmConfig{
-              params["modelPath"].GetString(),
-              std::move(inputNames),
-              std::move(outputNames),
-              std::move(inputShape),
-              params["numClasses"].GetInt(),
-              params["numAnchors"].GetInt(),
-              std::move(region),
-              params["cond_thr"].GetFloat(),
-              params["nms_thr"].GetFloat(),
-              params["alpha"].GetFloat(),
-              params["beta"].GetFloat(),
-              params["isScale"].GetBool(),
-              params["batchSize"].GetInt(),
+              params["modelPath"].GetString(), std::move(inputNames),
+              std::move(outputNames),          std::move(inputShape),
+              params["numClasses"].GetInt(),   params["numAnchors"].GetInt(),
+              params["cond_thr"].GetFloat(),   params["nms_thr"].GetFloat(),
+              params["alpha"].GetFloat(),      params["beta"].GetFloat(),
+              params["isScale"].GetBool(),     params["batchSize"].GetInt(),
           };
           break;
         }
         case common::ConfigType::Logic: { // Logic
+          
+          rapidjson::Value &rg = params["region"];
+          std::array<int, 4> region{rg[0].GetInt(), rg[1].GetInt(),
+                                    rg[2].GetInt(), rg[3].GetInt()};
+          rapidjson::Value &ac = params["attentionClasses"];
+          std::vector<int> attentionClasses;
+          for (int i = 0; i < ac.Size(); i++) {
+            rapidjson::Value &n = ac[i];
+            attentionClasses.emplace_back(n.GetInt());
+          }
           pc = common::LogicConfig{
               params["alarm_output_dir"].GetString(),
+              std::move(region),
+              std::move(attentionClasses),
               params["event_id"].GetInt(),
+              params["page"].GetString(),
               params["video_duration"].GetInt(),
           };
           break;

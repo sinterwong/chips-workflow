@@ -15,6 +15,7 @@
 #include <any>
 #include <curl/curl.h>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "messageBus.h"
@@ -35,7 +36,8 @@ struct AlarmInfo {
   int width;                   // 宽
   int cameraId;                // 摄像机 ID
   int eventId;                 // 报警类型Id
-  int prepareDelayInSec;    // 视频录制时间
+  int prepareDelayInSec;       // 视频录制时间
+  std::string page;            // 是否展示报警
   std::string cameraIp;        // 视频流 IP
   std::string alarmType;       // 报警类型
   std::string alarmFile;       // 报警图片(base64)

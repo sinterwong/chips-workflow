@@ -41,6 +41,7 @@ struct CameraResult {
 struct AlarmResult {
   int alarmVideoDuration;   // 报警视频时长（秒）
   int eventId;              // 报警类型的ID（smoke, phone等等）
+  std::string page;         // 是否展示报警
   std::string alarmType;    // 报警类型（smoke, phone等等）
   std::string alarmFile;    // 报警图片路径
   std::string alarmId;      // 报警的唯一标识 uuid
@@ -57,19 +58,29 @@ struct AlgorithmResult {
   std::vector<std::pair<std::string, std::array<float, 9>>>
       polys; // [x1, y1, ..., x4, y4, classid]
 };
+
+/**
+ * @brief 逻辑模块配置
+ */
+struct LogicInfo {
+  std::array<int, 4> region; // [x1, y1, x2, y2]
+  std::vector<int> attentionClasses; // [0, 2, 10...]
+};
+
 /**
  * @brief 传递的消息
  *
  */
 struct queueMessage {
-  int width;
-  int height;
-  int key;
-  int status;
-  std::string send;
-  std::string recv;
+  int width;        // 帧宽
+  int height;       // 帧高
+  int key;          // 帧id
+  int status;       // 上游状态
+  std::string send; // 上游模块名称
+  std::string recv;  
   std::string messageType;
   std::string frameType;
+  LogicInfo logicInfo;
   AlarmResult alarmResult;
   CameraResult cameraResult;
   AlgorithmResult algorithmResult;

@@ -52,6 +52,7 @@ bool AlarmOutputModule::postResult(std::string const &url,
   rapidjson::Value alarm_id(alarmInfo.alarmId.c_str(), allocator);
   rapidjson::Value alarm_detail(alarmInfo.alarmDetails.c_str(), allocator);
   rapidjson::Value camera_ip(alarmInfo.cameraIp.c_str(), allocator);
+  rapidjson::Value page(alarmInfo.page.c_str(), allocator);
   rapidjson::Value algorithm_results(alarmInfo.algorithmResult.c_str(),
                                      allocator);
   doc.AddMember("alarm_file", alarm_file, allocator);
@@ -66,6 +67,7 @@ bool AlarmOutputModule::postResult(std::string const &url,
   doc.AddMember("camera_id", alarmInfo.cameraId, allocator);
   doc.AddMember("width", alarmInfo.width, allocator);
   doc.AddMember("height", alarmInfo.height, allocator);
+  doc.AddMember("page", page, allocator);
   // */
 
   rapidjson::StringBuffer buffer;
@@ -167,6 +169,7 @@ void AlarmOutputModule::forward(
         buf.cameraResult.cameraId,
         buf.alarmResult.eventId,
         buf.alarmResult.alarmVideoDuration,
+        buf.alarmResult.page,
         buf.cameraResult.cameraIp,
         buf.alarmResult.alarmType,
         buf.alarmResult.alarmFile,

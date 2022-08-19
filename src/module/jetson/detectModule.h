@@ -28,7 +28,7 @@ namespace module {
 class DetectModule : public Module {
 private:
   int count = 0;
-  cv::Rect region{0, 0, 0, 0};
+  // cv::Rect region{0, 0, 0, 0};
   common::AlgorithmConfig params;
   std::shared_ptr<infer::trt::DetctionInfer> instance;
 

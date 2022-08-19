@@ -45,24 +45,20 @@ struct AlgorithmConfig {
                   std::vector<std::string> const &inputTensorNames_,
                   std::vector<std::string> const &outputTensorNames_,
                   std::array<int, 3> const &inputShape_, int numClasses_,
-                  int numAnchors_ = 0,
-                  std::array<int, 4> region_ = {0, 0, 0, 0},
-                  float cond_thr_ = 0.3, float nms_thr_ = 0.5,
-                  float alpha_ = 255.0, float beta_ = 0.0, bool isScale_ = true,
-                  int batchSize_ = 1)
+                  int numAnchors_ = 0, float cond_thr_ = 0.3,
+                  float nms_thr_ = 0.5, float alpha_ = 255.0, float beta_ = 0.0,
+                  bool isScale_ = true, int batchSize_ = 1)
       : modelPath(modelPath_), inputTensorNames(std::move(inputTensorNames_)),
         outputTensorNames(std::move(outputTensorNames_)),
         inputShape(std::move(inputShape_)), numClasses(numClasses_),
-        numAnchors(numAnchors_), region(region_), cond_thr(cond_thr_),
-        nms_thr(nms_thr_), alpha(alpha_), beta(beta_), isScale(isScale_),
-        batchSize(batchSize_){};
+        numAnchors(numAnchors_), cond_thr(cond_thr_), nms_thr(nms_thr_),
+        alpha(alpha_), beta(beta_), isScale(isScale_), batchSize(batchSize_){};
   // 算法配置
   std::string modelPath;                      // engine 所在目录
   int numClasses;                             // classes of number
   std::vector<std::string> inputTensorNames;  // input tensor names
   std::vector<std::string> outputTensorNames; // output tensor names
   std::array<int, 3> inputShape;              // 算法需要的输入尺度
-  std::array<int, 4> region;                  // 划定区域
   bool isScale;                               // 是否等比例缩放
   float cond_thr;                             // 置信度阈值
   float nms_thr;                              // NMS 阈值
@@ -93,14 +89,19 @@ struct CameraConfig {
 
 struct LogicConfig {
   LogicConfig() = default;
-  LogicConfig(std::string const &outputDir_, int eventId_,
-              int videoDuration_ = 0)
-      : outputDir(outputDir_), eventId(eventId_), videDuration(videoDuration_) {
-  }
+  LogicConfig(std::string const &outputDir_, std::array<int, 4> const &region_,
+              std::vector<int> const &attentionClasses_, int eventId_,
+              std::string page_, int videoDuration_ = 0)
+      : outputDir(outputDir_), region(region_),
+        attentionClasses(attentionClasses_), eventId(eventId_), page(page_),
+        videDuration(videoDuration_) {}
   ~LogicConfig() {}
   std::string outputDir;
   int eventId;
   int videDuration;
+  std::string page;
+  std::array<int, 4> region;         // 划定区域
+  std::vector<int> attentionClasses; // 划定区域
 };
 
 struct OutputConfig {

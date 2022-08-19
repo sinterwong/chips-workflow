@@ -66,7 +66,7 @@ void CallingModule::forward(
         if (bbox.first == send) {
           // std::cout << "classid: " << bbox.second.at(5) << ", "
           //           << "confidence: " << bbox.second.at(4) << std::endl;
-          if (bbox.second.at(5) != 0 && bbox.second.at(4) > 0.85) { // 存在报警
+          if (bbox.second.at(5) != 0 && bbox.second.at(4) > 0.8) { // 存在报警
 
             // 生成本次报警的唯一ID
             buf.alarmResult.alarmVideoDuration = params.videDuration;
@@ -74,6 +74,7 @@ void CallingModule::forward(
             buf.alarmResult.alarmFile = params.outputDir + "/" + buf.alarmResult.alarmId;
             buf.alarmResult.alarmDetails = "存在吸烟或打电话";
             buf.alarmResult.alarmType = name;
+            buf.alarmResult.page = params.page;
             buf.alarmResult.eventId = params.eventId;
 
             // TODO
@@ -111,6 +112,11 @@ void CallingModule::forward(
           }
         }
       }
+    } else if(type == "stream") {
+      // 配置算法推理时需要用到的信息
+      buf.logicInfo.region = params.region;
+      buf.logicInfo.attentionClasses = params.attentionClasses;
+      autoSend(buf);
     }
   }
 }

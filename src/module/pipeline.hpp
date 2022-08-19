@@ -38,7 +38,6 @@ private:
   std::string type = "ControlMessage";
   std::string config;
   utils::ConfigParser configParser;
-  std::string sendUrl;
   Backend backend{std::unique_ptr<MessageBus>{new BoostMessage()},
                   std::unique_ptr<RouteFramePool>{new RouteFramePool(8)}};
   // std::unique_ptr<thread_pool> pool;
@@ -47,7 +46,7 @@ private:
 
 private:
   /**
-   * @brief 提交模块到进程池
+   * @brief 提交模块到线程池
    *
    * @param config
    * @param paramsConfig
@@ -97,8 +96,7 @@ private:
   }
 
 public:
-  PipelineModule(std::string const &config_, std::string const &sendUrl_,
-                 size_t workers_n);
+  PipelineModule(std::string const &config_, size_t workers_n);
 
   ~PipelineModule() { terminate(); }
 
