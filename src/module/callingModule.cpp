@@ -64,9 +64,9 @@ void CallingModule::forward(
       for (int i = 0; i < buf.algorithmResult.bboxes.size(); i++) {
         auto &bbox = buf.algorithmResult.bboxes.at(i);
         if (bbox.first == send) {
-          std::cout << "classid: " << bbox.second.at(5) << ", "
-                    << "confidence: " << bbox.second.at(4) << std::endl;
-          if (bbox.second.at(5) != 0) { // 存在报警
+          // std::cout << "classid: " << bbox.second.at(5) << ", "
+          //           << "confidence: " << bbox.second.at(4) << std::endl;
+          if (bbox.second.at(5) != 0 && bbox.second.at(4) > 0.85) { // 存在报警
 
             // 生成本次报警的唯一ID
             buf.alarmResult.alarmVideoDuration = params.videDuration;
