@@ -57,12 +57,14 @@ bool ConfigParser::parseConfig(
               "parseJson: Params doesn't contain type, please check!");
           return false;
         }
-        common::ConfigType type_ = typeMapping.at(params["type"].GetString());
+        std::string type = params["type"].GetString();
+        common::ConfigType type_ = typeMapping.at(type);
         ParamsConfig pc;
-        ModuleConfigure mc{
-            params["sub_type"].GetString(), params["type"].GetString(),
-            params["name"].GetString(), params["sendName"].GetString(),
-            params["recvName"].GetString()};
+        
+        ModuleConfigure mc{params["sub_type"].GetString(), type,
+                           params["name"].GetString(),
+                           params["sendName"].GetString(),
+                           params["recvName"].GetString()};
         switch (type_) {
         case common::ConfigType::Stream: { // Stream
           pc = common::CameraConfig{
@@ -102,15 +104,21 @@ bool ConfigParser::parseConfig(
           break;
         }
         case common::ConfigType::Logic: { // Logic
-          
-          rapidjson::Value &rg = params["region"];
-          std::array<int, 4> region{rg[0].GetInt(), rg[1].GetInt(),
-                                    rg[2].GetInt(), rg[3].GetInt()};
-          rapidjson::Value &ac = params["attentionClasses"];
+          std::array<int, 4> region{0, 0, 0, 0};
+          if (params.HasMember("region")) {
+            rapidjson::Value &rg = params["region"];
+            region[0] = rg[0].GetInt();
+            region[1] = rg[1].GetInt();
+            region[2] = rg[2].GetInt();
+            region[3] = rg[3].GetInt();
+          }
           std::vector<int> attentionClasses;
-          for (int i = 0; i < ac.Size(); i++) {
-            rapidjson::Value &n = ac[i];
-            attentionClasses.emplace_back(n.GetInt());
+          if (params.HasMember("attentionClasses")) {
+            rapidjson::Value &ac = params["attentionClasses"];
+            for (int i = 0; i < ac.Size(); i++) {
+              rapidjson::Value &n = ac[i];
+              attentionClasses.emplace_back(n.GetInt());
+            }
           }
           pc = common::LogicConfig{
               params["alarm_output_dir"].GetString(),

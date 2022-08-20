@@ -60,6 +60,7 @@ bool AlarmOutputModule::postResult(std::string const &url,
   doc.AddMember("alarm_id", alarm_id, allocator);
   doc.AddMember("alarm_detail", alarm_detail, allocator);
   doc.AddMember("camera_ip", camera_ip, allocator);
+  doc.AddMember("page", page, allocator);
   doc.AddMember("algorithm_results", algorithm_results, allocator);
   // --------------------
   doc.AddMember("prepare_delay_in_sec", alarmInfo.prepareDelayInSec, allocator);
@@ -67,7 +68,6 @@ bool AlarmOutputModule::postResult(std::string const &url,
   doc.AddMember("camera_id", alarmInfo.cameraId, allocator);
   doc.AddMember("width", alarmInfo.width, allocator);
   doc.AddMember("height", alarmInfo.height, allocator);
-  doc.AddMember("page", page, allocator);
   // */
 
   rapidjson::StringBuffer buffer;

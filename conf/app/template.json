@@ -1,0 +1,50 @@
+[
+  {
+    "type": "stream",
+    "name": "foo_stream",
+    "recv_name": "",
+    "send_name": "logic_calling_29"
+  },
+  {
+    "type": "stream",
+    "name": "foo_stream",
+    "recv_name": "",
+    "send_name": "output_stream_status"
+  },
+  {
+    "type": "logic",
+    "name": "logic_calling_29",
+    "recv_name": "foo_stream",
+    "send_name": "algorithm_handDet"
+  },
+  {
+    "type": "algorithm",
+    "name": "algorithm_handDet",
+    "recv_name": "logic_calling_29",
+    "send_name": "algorithm_phoneCls"
+  },
+  {
+    "type": "algorithm",
+    "name": "algorithm_phoneCls",
+    "recv_name": "algorithm_handDet",
+    "send_name": "logic_calling_29"
+  },
+  {
+    "type": "logic",
+    "name": "logic_calling_29",
+    "recv_name": "algorithm_phoneCls",
+    "send_name": "output_alarm_01"
+  },
+  {
+    "type": "output",
+    "name": "output_alarm_01",
+    "recv_name": "logic_calling_29",
+    "send_name": ""
+  },
+  {
+    "type": "output",
+    "name": "output_stream_status",
+    "recv_name": "foo_stream",
+    "send_name": ""
+  }
+]

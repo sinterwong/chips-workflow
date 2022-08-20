@@ -154,22 +154,11 @@ bool PipelineModule::startPipeline() {
   std::vector<ModuleConfigure> moduleRelations;
   // run 起来所有模块并且制作所有需要关联的模块, 后续可能会有所扩展
   for (auto &pipeline : pipelines) {
-    // std::string streamName;
     for (auto &config : pipeline) {
       currentModules.push_back(config.first.moduleName);
-      // if (config.first.ctype == "stream") {
-      //   streamName = config.first.moduleName;
-      // }
       moduleRelations.push_back(config.first);
       if (atm.find(config.first.moduleName) == atm.end()) {
         submitModule(config.first, config.second);
-        // 逻辑模块因为需要写出视频, 因此也需要关联上stream
-        // if (config.first.ctype == "logic") {
-        //   ModuleConfigure mc{config.first};
-        //   mc.sendName = "";
-        //   mc.recvName = streamName;
-        //   moduleRelations.emplace_back(mc);
-        // }
       }
     }
   }

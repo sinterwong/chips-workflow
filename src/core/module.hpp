@@ -9,9 +9,9 @@
 #include <memory>
 #include <vector>
 
-#include "moduleFactory.hpp"
 #include "backend.h"
 #include "logger/logger.hpp"
+#include "moduleFactory.hpp"
 
 namespace module {
 class Module {
@@ -104,6 +104,29 @@ public:
 
     forward(message);
     afterForward();
+  }
+
+  /**
+   * @brief 不向指定类型的模块发送
+   * 
+   * @param buf 
+   * @param types_ 
+   * @return true 
+   * @return false 
+   */
+  bool sendWithoutTypes(queueMessage const &buf, std::vector<std::string> const& types_) {
+    bool ret = false;
+    for (auto &target : sendModule) {
+      std::string type = target.substr(0, target.find("_"));
+      auto iter = std::find(types_.begin(), types_.end(), type);
+      if (iter != types_.end()) {
+        // 意味着在不发送的列表中找到了该类型
+        continue;
+      }
+      auto temp = backendPtr->message->send(name, target, type, buf);
+      ret = ret and temp;
+    }
+    return ret;
   }
 
   bool autoSend(const queueMessage &buf) {
