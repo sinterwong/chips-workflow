@@ -4,8 +4,7 @@ That is a temp description.
 
 # Prerequisites
 - CMake 3.1+ installed.
-- Use a C++14 compiler(C++11 is optional).
-- boost 1.7+ installed.
+- Use a C++17 compiler(C++11 and C++14 is optional).
 - protobuf 3.20+ installed.
 - opencv 4.2+ installed.
 - fmt installed.

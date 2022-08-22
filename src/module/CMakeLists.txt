@@ -26,7 +26,6 @@ IF(TARGET_HARDWARE STREQUAL jetson)
                                 ${PROJECT_INCLUDE_DIR}/infer
                                 ${PROJECT_INCLUDE_DIR}/jetson-utils
                                 ${OpenCV_INCLUDE_DIRS}
-                                ${Boost_INCLUDE_DIRS}
                                 ${Protobuf_INCLUDE_DIR}
                                 ${CUDA_INCLUDE_DIRS}
                                 ${CURL_INCLUDE_DIR}
@@ -71,13 +70,13 @@ FOREACH(include ${MODULE_LIB_HEAD})
 	CONFIGURE_FILE(${include} ${PROJECT_INCLUDE_DIR}/module/${TARGET_HARDWARE} COPYONLY)
 ENDFOREACH()
 
-INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/include/module
-    FILES_MATCHING
-    PATTERN "*.h"
-    PATTERN "*.hpp" EXCLUDE
-    PATTERN "CMakeLists.txt" EXCLUDE
-)
+# INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#     DESTINATION ${CMAKE_INSTALL_PREFIX}/include/module
+#     FILES_MATCHING
+#     PATTERN "*.h"
+#     PATTERN "*.hpp" EXCLUDE
+#     PATTERN "CMakeLists.txt" EXCLUDE
+# )
 
 INSTALL(TARGETS module
     ARCHIVE DESTINATION lib

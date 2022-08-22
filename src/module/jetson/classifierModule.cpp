@@ -96,9 +96,9 @@ void ClassifierModule::forward(
           cv::Mat croppedImage = (*image)(rect).clone();
 
           cv::cvtColor(croppedImage, croppedImage, cv::COLOR_RGB2BGR);
-          cv::imwrite(
-              "/home/wangxt/workspace/projects/flowengine/tests/data/out.jpg",
-              croppedImage);
+          // cv::imwrite(
+          //     "/home/wangxt/workspace/projects/flowengine/tests/data/out.jpg",
+          //     croppedImage);
           infer::Result ret;
 
           ret.shape = {croppedImage.cols, croppedImage.rows, 3};
