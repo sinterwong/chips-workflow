@@ -31,6 +31,16 @@ void CallingModule::forward(
     return;
   }
   for (auto &[send, type, buf] : message) {
+    if (type == "ControlMessage") {
+      // FLOWENGINE_LOGGER_INFO("{} CallingModule module was done!", name);
+      std::cout << name << "{} CallingModule module was done!" << std::endl;
+      buf.status = 1;
+      stopFlag.store(true);
+      if (outputStream && outputStream->IsStreaming()) {
+        outputStream->Close();
+      }
+      return;
+    }
     if (isRecord) {
       // 正处于保存视频状态
       FrameBuf frameBufMessage = backendPtr->pool->read(buf.key);
@@ -53,16 +63,11 @@ void CallingModule::forward(
 
       return;
     }
-    if (type == "ControlMessage") {
-      // FLOWENGINE_LOGGER_INFO("{} CallingModule module was done!", name);
-      std::cout << name << "{} CallingModule module was done!" << std::endl;
-      buf.status = 1;
-      stopFlag.store(true);
-      return;
-    } else if (type == "algorithm") {
+
+    if (type == "algorithm") {
       // 此处根据 buf.algorithmResult 写吸烟的逻辑并填充 buf.alarmResult 信息
       // 如果符合条件就发送至AlarmOutputModule
-      /* TODO 模拟报警 
+      /* TODO 模拟报警
       if (rand() % 800 <= 1) {
         // 生成本次报警的唯一ID
         buf.alarmResult.alarmVideoDuration = params.videDuration;
@@ -94,10 +99,9 @@ void CallingModule::forward(
         std::experimental::filesystem::create_directories(
             buf.alarmResult.alarmFile);
         std::string imagePath =
-            buf.alarmResult.alarmFile + "/" + buf.alarmResult.alarmId + ".jpg";
-        cv::imwrite(imagePath, showImage);
-        autoSend(buf);
-        if (params.videDuration > 0) {
+            buf.alarmResult.alarmFile + "/" + buf.alarmResult.alarmId +
+      ".jpg"; cv::imwrite(imagePath, showImage); autoSend(buf); if
+      (params.videDuration > 0) {
           // 需要保存视频，在这里初始化
           videoOptions opt;
           opt.resource = buf.alarmResult.alarmFile + "/" +
@@ -105,18 +109,18 @@ void CallingModule::forward(
           opt.height = buf.height;
           opt.width = buf.width;
           opt.frameRate = 25;
-          outputStream = std::unique_ptr<videoOutput>(videoOutput::Create(opt));
-          isRecord = true;
+          outputStream =
+      std::unique_ptr<videoOutput>(videoOutput::Create(opt)); isRecord = true;
           frameCount = params.videDuration * 25; // 总共需要保存的帧数
         }
       }
-      */ 
+      */
       for (int i = 0; i < buf.algorithmResult.bboxes.size(); i++) {
         auto &bbox = buf.algorithmResult.bboxes.at(i);
         if (bbox.first == send) {
           // std::cout << "classid: " << bbox.second.at(5) << ", "
           //           << "confidence: " << bbox.second.at(4) << std::endl;
-          if (bbox.second.at(5) != 0 && bbox.second.at(4) > 0.8) { // 存在报警
+          if (bbox.second.at(5) != 0 && bbox.second.at(4) > 0.93) { // 存在报警
             // 生成本次报警的唯一ID
             buf.alarmResult.alarmVideoDuration = params.videDuration;
             buf.alarmResult.alarmId = generate_hex(16);

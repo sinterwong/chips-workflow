@@ -117,8 +117,8 @@ public:
   bool sendWithoutTypes(queueMessage const &buf, std::vector<std::string> const& types_) {
     bool ret = false;
     for (auto &target : sendModule) {
-      std::string type = target.substr(0, target.find("_"));
-      auto iter = std::find(types_.begin(), types_.end(), type);
+      std::string sendtype_ = target.substr(0, target.find("_"));
+      auto iter = std::find(types_.begin(), types_.end(), sendtype_);
       if (iter != types_.end()) {
         // 意味着在不发送的列表中找到了该类型
         continue;
