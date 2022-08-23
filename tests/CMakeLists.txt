@@ -3,10 +3,6 @@ PROJECT(Tests)
 
 INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}
-    ${PROJECT_INCLUDE_DIR}/core
-    ${PROJECT_INCLUDE_DIR}/infer
-    ${PROJECT_INCLUDE_DIR}/module
-    ${3RDPARTY_DIR}/spdlog/include
     ${COMMON_INCLUDE_DIR}
     ${FREETYPE_INCLUDE_DIR}
     ${FREETYPE_INCLUDE_DIR}/freetype2
@@ -41,6 +37,7 @@ LINK_LIBRARIES(
     infer_cu
     module
     module_logger 
+    license
     nvinfer 
     nvparsers 
     nvonnxparser 
