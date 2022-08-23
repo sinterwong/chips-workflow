@@ -32,7 +32,7 @@ protected:
   int frameCount = 0;
   std::unique_ptr<videoOutput> outputStream;
   common::LogicConfig params;           // 逻辑参数
-  utils::ImageConverter imageConverter; // mat to base64
+  // utils::ImageConverter imageConverter; // mat to base64
 
   inline unsigned int random_char() {
     std::random_device rd;
@@ -62,14 +62,28 @@ public:
       : Module(ptr, initName, initType, recv, send, pool), params(params_) {}
   virtual ~LogicModule() {}
 
-  bool drawResult(cv::Mat &image, AlgorithmResult const &rm) {
+  inline bool drawBox(cv::Mat &image,
+                      std::pair<std::string, std::array<float, 6>> const &bbox,
+                      cv::Scalar const &scalar = {0, 0, 255}) {
+    cv::Rect rect(bbox.second[0], bbox.second[1],
+                  bbox.second[2] - bbox.second[0],
+                  bbox.second[3] - bbox.second[1]);
+    cv::rectangle(image, rect, cv::Scalar(0, 0, 255), 2);
+    cv::putText(image, bbox.first, cv::Point(rect.x, rect.y - 1),
+                cv::FONT_HERSHEY_PLAIN, 1.2, 2);
+    return true;
+  }
+
+  inline bool drawResult(cv::Mat &image, AlgorithmResult const &rm) {
     for (auto &bbox : rm.bboxes) {
       cv::Rect rect(bbox.second[0], bbox.second[1],
                     bbox.second[2] - bbox.second[0],
                     bbox.second[3] - bbox.second[1]);
-      cv::rectangle(image, rect, cv::Scalar(255, 255, 0), 2);
-      cv::putText(image, bbox.first, cv::Point(rect.x, rect.y - 1),
-                  cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(255, 0, 255), 2);
+      if (bbox.first == name) {
+        cv::rectangle(image, rect, cv::Scalar(0, 0, 255), 2);
+        cv::putText(image, bbox.first, cv::Point(rect.x, rect.y - 1),
+                    cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(255, 0, 255), 2);
+      }
     }
 
     for (auto &poly : rm.polys) {

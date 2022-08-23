@@ -1,15 +1,15 @@
 /**
- * @file CallingModule.cpp
+ * @file extinguisherModule.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief
+ * @brief 
  * @version 0.1
- * @date 2022-07-31
- *
+ * @date 2022-08-23
+ * 
  * @copyright Copyright (c) 2022
- *
+ * 
  */
 
-#include "callingModule.h"
+#include "extinguisherModule.h"
 #include <cstdlib>
 #include <experimental/filesystem>
 #include <sys/stat.h>
@@ -17,7 +17,7 @@
 
 namespace module {
 
-CallingModule::CallingModule(Backend *ptr, const std::string &initName,
+ExtinguisherModule::ExtinguisherModule(Backend *ptr, const std::string &initName,
                              const std::string &initType,
                              const common::LogicConfig &logicConfig,
                              const std::vector<std::string> &recv,
@@ -25,15 +25,15 @@ CallingModule::CallingModule(Backend *ptr, const std::string &initName,
                              const std::vector<std::string> &pool)
     : LogicModule(ptr, initName, initType, logicConfig, recv, send, pool) {}
 
-void CallingModule::forward(
+void ExtinguisherModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
   if (recvModule.empty()) {
     return;
   }
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      // FLOWENGINE_LOGGER_INFO("{} CallingModule module was done!", name);
-      std::cout << name << "{} CallingModule module was done!" << std::endl;
+      // FLOWENGINE_LOGGER_INFO("{} ExtinguisherModule module was done!", name);
+      std::cout << name << "{} ExtinguisherModule module was done!" << std::endl;
       buf.status = 1;
       stopFlag.store(true);
       if (outputStream && outputStream->IsStreaming()) {
@@ -65,68 +65,20 @@ void CallingModule::forward(
     }
 
     if (type == "algorithm") {
-      // 此处根据 buf.algorithmResult 写吸烟的逻辑并填充 buf.alarmResult 信息
+      // 此处根据 buf.algorithmResult 信息判断是否存在灭火器
       // 如果符合条件就发送至AlarmOutputModule
-      /* TODO 模拟报警
-      if (rand() % 800 <= 1) {
-        // 生成本次报警的唯一ID
-        buf.alarmResult.alarmVideoDuration = params.videDuration;
-        buf.alarmResult.alarmId = generate_hex(16);
-        buf.alarmResult.alarmFile =
-            params.outputDir + "/" + buf.alarmResult.alarmId;
-        buf.alarmResult.alarmDetails = "存在吸烟或打电话";
-        buf.alarmResult.alarmType = name;
-        buf.alarmResult.page = params.page;
-        buf.alarmResult.eventId = params.eventId;
-
-        // TODO
-        // 临时画个图（后续根据前端参数来决定返回的图片是否带有画图标记）
-        FrameBuf frameBufMessage = backendPtr->pool->read(buf.key);
-        auto frame = std::any_cast<std::shared_ptr<cv::Mat>>(
-            frameBufMessage.read("Mat"));
-        if (frame->empty()) {
-          return;
-        }
-        cv::Mat showImage = frame->clone();
-        if (buf.frameType == "RGB888") {
-          cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
-        }
-        cv::rectangle(
-            showImage,
-            cv::Rect{rand() % 500, rand() % 500, rand() % 300, rand() % 300},
-            cv::Scalar(255, 255, 0), 2);
-
-        std::experimental::filesystem::create_directories(
-            buf.alarmResult.alarmFile);
-        std::string imagePath =
-            buf.alarmResult.alarmFile + "/" + buf.alarmResult.alarmId +
-      ".jpg"; cv::imwrite(imagePath, showImage); autoSend(buf); if
-      (params.videDuration > 0) {
-          // 需要保存视频，在这里初始化
-          videoOptions opt;
-          opt.resource = buf.alarmResult.alarmFile + "/" +
-                         buf.alarmResult.alarmId + ".mp4";
-          opt.height = buf.height;
-          opt.width = buf.width;
-          opt.frameRate = 25;
-          outputStream =
-      std::unique_ptr<videoOutput>(videoOutput::Create(opt)); isRecord = true;
-          frameCount = params.videDuration * 25; // 总共需要保存的帧数
-        }
-      }
-      */
       for (int i = 0; i < buf.algorithmResult.bboxes.size(); i++) {
         auto &bbox = buf.algorithmResult.bboxes.at(i);
         if (bbox.first == send) {
           // std::cout << "classid: " << bbox.second.at(5) << ", "
           //           << "confidence: " << bbox.second.at(4) << std::endl;
-          if (bbox.second.at(5) != 0 && bbox.second.at(4) > 0.93) { // 存在报警
+          if (bbox.second.at(5) != 5 && bbox.second.at(4) > 0.93) { // 存在报警
             // 生成本次报警的唯一ID
             buf.alarmResult.alarmVideoDuration = params.videDuration;
             buf.alarmResult.alarmId = generate_hex(16);
             buf.alarmResult.alarmFile =
                 params.outputDir + "/" + buf.alarmResult.alarmId;
-            buf.alarmResult.alarmDetails = "存在吸烟或打电话";
+            buf.alarmResult.alarmDetails = "不存在灭火器";
             buf.alarmResult.alarmType = name;
             buf.alarmResult.page = params.page;
             buf.alarmResult.eventId = params.eventId;
@@ -143,21 +95,21 @@ void CallingModule::forward(
             if (buf.frameType == "RGB888") {
               cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
             }
+
             // 记录当前的框为报警框
             std::pair<std::string, std::array<float, 6>> b{bbox};
             b.first = name;
             // 单独画出报警框
             drawBox(showImage, b);
-            // 画出所有结果
-            // drawResult(showImage, buf.algorithmResult);
             buf.algorithmResult.bboxes.emplace_back(b);
+
             std::experimental::filesystem::create_directories(
                 buf.alarmResult.alarmFile);
             std::string imagePath = buf.alarmResult.alarmFile + "/" +
                                     buf.alarmResult.alarmId + ".jpg";
-            // 输出alarm image
             cv::imwrite(imagePath, showImage);
             autoSend(buf);
+
             if (params.videDuration > 0) {
               // 需要保存视频，在这里初始化
               videoOptions opt;
@@ -185,7 +137,7 @@ void CallingModule::forward(
   }
 }
 
-FlowEngineModuleRegister(CallingModule, Backend *, std::string const &,
+FlowEngineModuleRegister(ExtinguisherModule, Backend *, std::string const &,
                          std::string const &, common::LogicConfig const &,
                          std::vector<std::string> const &,
                          std::vector<std::string> const &,

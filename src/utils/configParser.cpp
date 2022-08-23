@@ -10,6 +10,7 @@
  */
 
 #include "configParser.hpp"
+#include "logger/logger.hpp"
 #include <utility>
 #include <vector>
 
@@ -60,11 +61,10 @@ bool ConfigParser::parseConfig(
         std::string type = params["type"].GetString();
         common::ConfigType type_ = typeMapping.at(type);
         ParamsConfig pc;
-        
-        ModuleConfigure mc{params["sub_type"].GetString(), type,
-                           params["name"].GetString(),
-                           params["sendName"].GetString(),
-                           params["recvName"].GetString()};
+
+        ModuleConfigure mc{
+            params["sub_type"].GetString(), type, params["name"].GetString(),
+            params["sendName"].GetString(), params["recvName"].GetString()};
         switch (type_) {
         case common::ConfigType::Stream: { // Stream
           pc = common::CameraConfig{
