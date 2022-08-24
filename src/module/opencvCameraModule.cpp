@@ -80,8 +80,8 @@ void OpencvCameraModule::forward(
 
     queueMessage sendMessage;
     sendMessage.frameType = "BGA888";
-    sendMessage.height = frame->rows;
-    sendMessage.width = frame->cols;
+    sendMessage.cameraResult.heightPixel = frame->rows;
+    sendMessage.cameraResult.widthPixel = frame->cols;
     sendMessage.key = returnKey;
     autoSend(sendMessage);
   } else {

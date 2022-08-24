@@ -18,7 +18,6 @@ void cskTrackModule::forward(
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
       std::cout << name << "{} CSKTrackModule module was done!" << std::endl;
-      buf.status = 1;
       return;
     } else if (type == "stream") {
       if (moduleFlag == init || moduleFlag == tracking) {

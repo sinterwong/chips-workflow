@@ -108,13 +108,14 @@ public:
 
   /**
    * @brief 不向指定类型的模块发送
-   * 
-   * @param buf 
-   * @param types_ 
-   * @return true 
-   * @return false 
+   *
+   * @param buf
+   * @param types_
+   * @return true
+   * @return false
    */
-  bool sendWithoutTypes(queueMessage const &buf, std::vector<std::string> const& types_) {
+  bool sendWithoutTypes(queueMessage const &buf,
+                        std::vector<std::string> const &types_) {
     bool ret = false;
     for (auto &target : sendModule) {
       std::string sendtype_ = target.substr(0, target.find("_"));
@@ -125,6 +126,20 @@ public:
       }
       auto temp = backendPtr->message->send(name, target, type, buf);
       ret = ret and temp;
+    }
+    return ret;
+  }
+  bool sendWithTypes(queueMessage const &buf,
+                     std::vector<std::string> const &types_) {
+    bool ret = false;
+    for (auto &target : sendModule) {
+      std::string sendtype_ = target.substr(0, target.find("_"));
+      auto iter = std::find(types_.begin(), types_.end(), sendtype_);
+      if (iter != types_.end()) {
+        // 意味着在不发送的列表中找到了该类型
+        auto temp = backendPtr->message->send(name, target, type, buf);
+        ret = ret and temp;
+      }
     }
     return ret;
   }

@@ -46,7 +46,6 @@ void DetectModule::forward(
       // FLOWENGINE_LOGGER_INFO("{} DetectModule module was done!", name);
       std::cout << name << "{} Detection module was done!" << std::endl;
       stopFlag.store(true);
-      buf.status = 1;
       return;
     }
     auto frameBufMessage = backendPtr->pool->read(buf.key);

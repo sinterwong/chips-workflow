@@ -21,7 +21,7 @@
 #include <cmath>
 #include <memory>
 
-#define IMAGE_MAX_SIZE 2560 * 1440 * 3
+#define IMAGE_MAX_SIZE 1200 * 1200 * 3
 
 namespace infer {
 namespace trt {

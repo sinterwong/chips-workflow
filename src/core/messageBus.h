@@ -28,6 +28,7 @@
 struct CameraResult {
   int widthPixel;        // 视频宽度
   int heightPixel;       // 视频高度
+  int frameRate;         // 帧数
   int cameraId;          // 摄像机唯一ID
   std::string videoCode; // 视频编码类型
   std::string flowType;  // 流协议类型
@@ -72,8 +73,6 @@ struct LogicInfo {
  *
  */
 struct queueMessage {
-  int width;        // 帧宽
-  int height;       // 帧高
   int key;          // 帧id
   int status;       // 上游状态
   std::string send; // 上游模块名称
