@@ -99,6 +99,17 @@ public:
 
     return true;
   }
+
+  inline bool initOutputStream(std::string const &uri, int height, int width, int frameRate=24) {
+    // 需要保存视频，在这里初始化
+    videoOptions opt;
+    opt.resource = uri;
+    opt.height = height;
+    opt.width = width;
+    opt.frameRate = frameRate;
+    outputStream = std::unique_ptr<videoOutput>(videoOutput::Create(opt));
+    return outputStream != nullptr;
+  } 
 };
 } // namespace module
 #endif // __METAENGINE_LOGIC_MODULE_H_

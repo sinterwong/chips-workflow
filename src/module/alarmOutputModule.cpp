@@ -152,7 +152,6 @@ void AlarmOutputModule::forward(
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("{} AlarmOutputModule module was done!", name);
       std::cout << name << "{} AlarmOutputModule module was done!" << std::endl;
-      buf.status = 1;
       stopFlag.store(true);
       return;
     }

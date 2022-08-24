@@ -18,8 +18,8 @@ void OpencvDisplayModule::forward(
   for (auto &[send, type, buf] : message) {
     assert(type == "stream");
     int height, width;
-    height = buf.height;
-    width = buf.width;
+    height = buf.cameraResult.heightPixel;
+    width = buf.cameraResult.widthPixel;
 
     auto frameBufMessage = backendPtr->pool->read(buf.key);
     auto framePtr = std::any_cast<cv::Mat>(frameBufMessage.read("Mat"));

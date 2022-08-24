@@ -115,12 +115,11 @@ void JetsonSourceModule::forward(
     }
   } else {
     FrameBuf frameBufMessage = makeFrameBuf(frame, opt.height, opt.width);
-    frameBufMessage.height = opt.height;
-    frameBufMessage.width = opt.width;
     int returnKey = backendPtr->pool->write(frameBufMessage);
     sendMessage.frameType = "RGB888";
-    sendMessage.height = opt.height;
-    sendMessage.width = opt.width;
+    sendMessage.cameraResult.heightPixel = inputStream->GetHeight();
+    sendMessage.cameraResult.widthPixel = inputStream->GetWidth();
+    sendMessage.cameraResult.frameRate = inputStream->GetFrameRate();
     sendMessage.key = returnKey;
     sendMessage.status = 0;
     sendMessage.cameraResult = cameraResult;

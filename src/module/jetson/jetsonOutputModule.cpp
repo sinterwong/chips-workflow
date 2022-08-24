@@ -34,9 +34,9 @@ void JetsonOutputModule::forward(
     FrameBuf frameBufMessage = backendPtr->pool->read(buf.key);
     auto frame = std::any_cast<uchar3 *>(frameBufMessage.read("uchar3*"));
     // std::cout << (frame == nullptr) << std::endl;
-    outputStream->Render(frame, buf.width, buf.height);
+    outputStream->Render(frame, buf.cameraResult.widthPixel, buf.cameraResult.heightPixel);
     char str[256];
-    sprintf(str, "Video Viewer (%ux%u)", buf.width, buf.height);
+    sprintf(str, "Video Viewer (%ux%u)", buf.cameraResult.widthPixel, buf.cameraResult.heightPixel);
     // update status bar
     outputStream->SetStatus(str);
     // count ++;

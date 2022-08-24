@@ -1,5 +1,5 @@
 /**
- * @file CallingModule.cpp
+ * @file SmokingModule.cpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
@@ -9,7 +9,7 @@
  *
  */
 
-#include "callingModule.h"
+#include "smokingModule.h"
 #include <cstdlib>
 #include <experimental/filesystem>
 #include <sys/stat.h>
@@ -17,7 +17,7 @@
 
 namespace module {
 
-CallingModule::CallingModule(Backend *ptr, const std::string &initName,
+SmokingModule::SmokingModule(Backend *ptr, const std::string &initName,
                              const std::string &initType,
                              const common::LogicConfig &logicConfig,
                              const std::vector<std::string> &recv,
@@ -32,15 +32,15 @@ CallingModule::CallingModule(Backend *ptr, const std::string &initName,
  *
  * @param message
  */
-void CallingModule::forward(
+void SmokingModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
   if (recvModule.empty()) {
     return;
   }
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      // FLOWENGINE_LOGGER_INFO("{} CallingModule module was done!", name);
-      std::cout << name << "{} CallingModule module was done!" << std::endl;
+      // FLOWENGINE_LOGGER_INFO("{} SmokingModule module was done!", name);
+      std::cout << name << "{} SmokingModule module was done!" << std::endl;
       stopFlag.store(true);
       if (outputStream && outputStream->IsStreaming()) {
         outputStream->Close();
@@ -78,13 +78,13 @@ void CallingModule::forward(
         if (bbox.first == send) {
           // std::cout << "classid: " << bbox.second.at(5) << ", "
           //           << "confidence: " << bbox.second.at(4) << std::endl;
-          if (bbox.second.at(5) == 1 && bbox.second.at(4) > 0.93) { // 存在报警
+          if (bbox.second.at(5) == 2 && bbox.second.at(4) > 0.93) { // 存在报警
             // 生成本次报警的唯一ID
             buf.alarmResult.alarmVideoDuration = params.videDuration;
             buf.alarmResult.alarmId = generate_hex(16);
             buf.alarmResult.alarmFile =
                 params.outputDir + "/" + buf.alarmResult.alarmId;
-            buf.alarmResult.alarmDetails = "存在打电话行为";
+            buf.alarmResult.alarmDetails = "存在吸烟行为";
             buf.alarmResult.alarmType = name;
             buf.alarmResult.page = params.page;
             buf.alarmResult.eventId = params.eventId;
@@ -141,7 +141,7 @@ void CallingModule::forward(
   }
 }
 
-FlowEngineModuleRegister(CallingModule, Backend *, std::string const &,
+FlowEngineModuleRegister(SmokingModule, Backend *, std::string const &,
                          std::string const &, common::LogicConfig const &,
                          std::vector<std::string> const &,
                          std::vector<std::string> const &,
