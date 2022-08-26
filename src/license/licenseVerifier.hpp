@@ -20,6 +20,8 @@ namespace fe_license {
 #define LICENSE_FILE "licenseB"
 #define MESSAGE_FILE "licenseC"
 
+#define PRE_VERIFY_NUM 13
+
 /**
  * @brief   Get the Device-Tree Serial-Number of current device.
  * @param[in] dstID File Name of dstID

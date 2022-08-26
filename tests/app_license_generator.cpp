@@ -89,3 +89,4 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
+// ./app_license_generator privateKey licenseA 1423721066487 licenseB 1000 /etc/apt/.config licenseC

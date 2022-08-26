@@ -10,11 +10,6 @@
 #include <sys/ioctl.h>
 
 namespace fe_license {
-#define PUBLIC_KEY "licenseA"
-#define LICENSE_FILE "licenseB"
-#define MESSAGE_FILE "licenseC"
-#define PRE_VERIFY_NUM 13
-
 //#define MACHINE_ID_FILE "/etc/machine-id"
 /*
  * Using XOR Encrypt Algorithm to Check Trial Times
