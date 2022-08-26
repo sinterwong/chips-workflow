@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
     }
   #endif
   */
-
+// /*
   srand(time(0));
   // Read Conf File
   // Read Conf File
@@ -97,7 +97,6 @@ int main(int argc, char **argv) {
 
   int ret = fe_license::checkLicense("licenseA", "licenseB", "licenseC",
                                      dstIDFile.c_str());
-  std::cout << ret << std::endl;
   if (ret != 0) {
     // Check Trial
     int trailRet = fe_license::checkTrial(trialFile.c_str());
@@ -109,6 +108,7 @@ int main(int argc, char **argv) {
     }
     return ret;
   }
+// */
   std::shared_ptr<PipelineModule> pipeline(
       new PipelineModule(FLAGS_config_path, FLAGS_num_workers));
 

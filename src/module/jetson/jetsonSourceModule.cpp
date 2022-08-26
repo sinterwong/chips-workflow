@@ -56,7 +56,7 @@ FrameBuf makeFrameBuf(uchar3 *image, int height, int width) {
              {std::make_pair("void*", getPtrBuffer),
               std::make_pair("Mat", getMatBuffer),
               std::make_pair("uchar3*", getUchar3Buffer)},
-             delBuffer, std::make_tuple(height, width, 3, UINT8));
+             delBuffer, std::make_tuple(width, height, 3, UINT8));
   return temp;
 }
 
@@ -114,7 +114,7 @@ void JetsonSourceModule::forward(
       stopFlag.store(true);
     }
   } else {
-    FrameBuf frameBufMessage = makeFrameBuf(frame, opt.height, opt.width);
+    FrameBuf frameBufMessage = makeFrameBuf(frame, inputStream->GetHeight(), inputStream->GetWidth());
     int returnKey = backendPtr->pool->write(frameBufMessage);
     sendMessage.frameType = "RGB888";
     sendMessage.cameraResult.heightPixel = inputStream->GetHeight();

@@ -78,7 +78,7 @@ void SmokingModule::forward(
         if (bbox.first == send) {
           // std::cout << "classid: " << bbox.second.at(5) << ", "
           //           << "confidence: " << bbox.second.at(4) << std::endl;
-          if (bbox.second.at(5) == 2 && bbox.second.at(4) > 0.93) { // 存在报警
+          if (bbox.second.at(5) == 2 && bbox.second.at(4) > 0.8) { // 存在报警
             // 生成本次报警的唯一ID
             buf.alarmResult.alarmVideoDuration = params.videDuration;
             buf.alarmResult.alarmId = generate_hex(16);
