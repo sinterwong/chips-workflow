@@ -76,7 +76,13 @@ JetsonSourceModule::JetsonSourceModule(
     LogError("jetson source:  failed to create input stream\n");
     exit(-1);
   }
-  setCameraResult(_params);
+  cameraResult = CameraResult{static_cast<int>(inputStream->GetWidth()),
+                              static_cast<int>(inputStream->GetHeight()),
+                              static_cast<int>(inputStream->GetFrameRate()),
+                              _params.cameraId,
+                              _params.videoCode,
+                              _params.flowType,
+                              _params.cameraIp};
 }
 
 void JetsonSourceModule::step() {
@@ -114,15 +120,13 @@ void JetsonSourceModule::forward(
       stopFlag.store(true);
     }
   } else {
-    FrameBuf frameBufMessage = makeFrameBuf(frame, inputStream->GetHeight(), inputStream->GetWidth());
+    FrameBuf frameBufMessage =
+        makeFrameBuf(frame, inputStream->GetHeight(), inputStream->GetWidth());
     int returnKey = backendPtr->pool->write(frameBufMessage);
     sendMessage.frameType = "RGB888";
-    sendMessage.cameraResult.heightPixel = inputStream->GetHeight();
-    sendMessage.cameraResult.widthPixel = inputStream->GetWidth();
-    sendMessage.cameraResult.frameRate = inputStream->GetFrameRate();
     sendMessage.key = returnKey;
-    sendMessage.status = 0;
     sendMessage.cameraResult = cameraResult;
+    sendMessage.status = 0;
   }
   autoSend(sendMessage);
 }

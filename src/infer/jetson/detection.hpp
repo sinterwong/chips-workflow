@@ -10,29 +10,23 @@
  */
 #ifndef __INFERENCE_DETECTION_H_
 #define __INFERENCE_DETECTION_H_
-#include "inference.h"
 #include "jetson/trt_inference.hpp"
 
 namespace infer {
 namespace trt {
-class DetctionInfer : public TRTInference {
+class DetectionInfer : public TRTInference {
   //!
   //! \brief construction
   //!
 public:
-  DetctionInfer(const common::AlgorithmConfig &_param) : TRTInference(_param) {}
+  DetectionInfer(const common::AlgorithmConfig &_param)
+      : TRTInference(_param) {}
 
-private:
-  //!
-  //! \brief Verifies that the output is correct and prints it
-  //!
-  virtual bool verifyOutput(Result const &) const override;
-
+protected:
   //!
   //! \brief Postprocessing that the output is correct and prints it
   //!
-  virtual bool processOutput(BufferManager const &,
-                             Result &) const override;
+  virtual bool processOutput(BufferManager const &, Result &) const override;
 
   static inline bool compare(DetectionResult const &a,
                              DetectionResult const &b) {
@@ -41,9 +35,16 @@ private:
 
   float iou(std::array<float, 4> const &, std::array<float, 4> const &) const;
 
-  void nms(std::vector<DetectionResult> &, float *) const;
+  virtual void
+  generateBoxes(std::unordered_map<int, std::vector<DetectionResult>> &,
+                BufferManager const &) const = 0;
 
-  void renderOriginShape(std::vector<DetectionResult> &results, std::array<int, 3> const &shape) const;
+  virtual void
+  nms(std::vector<DetectionResult> &,
+      std::unordered_map<int, std::vector<DetectionResult>> &) const;
+
+  virtual void renderOriginShape(std::vector<DetectionResult> &results,
+                                 std::array<int, 3> const &shape) const;
 
   int DETECTION_SIZE = sizeof(DetectionResult) / sizeof(float);
 };

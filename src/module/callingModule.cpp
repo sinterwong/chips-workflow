@@ -47,11 +47,7 @@ void CallingModule::forward(
       }
       return;
     }
-    if (isRecord) {
-      if (type != "stream") {
-        // 当前状态只接受FrameMessage消息
-        return;
-      }
+    if (isRecord && type == "stream") {
       // 正处于保存视频状态
       FrameBuf frameBufMessage = backendPtr->pool->read(buf.key);
       auto frame = std::any_cast<uchar3 *>(frameBufMessage.read("uchar3*"));
@@ -67,7 +63,7 @@ void CallingModule::forward(
         frameCount = 0;
         outputStream->Close();
       }
-      return;
+      continue;
     }
 
     if (type == "algorithm") {
@@ -115,14 +111,17 @@ void CallingModule::forward(
                                     buf.alarmResult.alarmId + ".jpg";
             // 输出alarm image
             cv::imwrite(imagePath, showImage);
-            autoSend(buf);
             sendWithTypes(buf, {"output"});
-            if (params.videDuration > 0 &&
-                initOutputStream(buf.alarmResult.alarmFile + "/" +
-                                     buf.alarmResult.alarmId + ".mp4",
-                                 buf.cameraResult.heightPixel,
-                                 buf.cameraResult.widthPixel,
-                                 buf.cameraResult.frameRate)) {
+            if (params.videDuration > 0) {
+              // 需要保存视频，在这里初始化
+              videoOptions opt;
+              opt.resource = buf.alarmResult.alarmFile + "/" +
+                             buf.alarmResult.alarmId + ".mp4";
+              opt.height = buf.cameraResult.heightPixel;
+              opt.width = buf.cameraResult.widthPixel;
+              opt.frameRate = buf.cameraResult.frameRate;
+              outputStream =
+                  std::unique_ptr<videoOutput>(videoOutput::Create(opt));
               isRecord = true;
               frameCount = params.videDuration *
                            buf.cameraResult.frameRate; // 总共需要保存的帧数
