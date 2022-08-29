@@ -81,22 +81,22 @@ private:
   virtual bool processOutput(BufferManager const &, Result &) const;
 
 private:
-  //!< The TensorRT engine used to run the network
-  std::shared_ptr<nvinfer1::ICudaEngine> mEngine{nullptr};
-  //!< The TensorRT execution context
-  UniquePtr<nvinfer1::IExecutionContext> context{nullptr};
-  //!< The dimensions of the input to the network.
-  Dims inputDims;
-  //!< The dimensions of the output to the network.
-  Dims outputDims;
-
   uint8_t *imageHost = nullptr;
   uint8_t *imageDevice = nullptr;
   // Create stream
   cudaStream_t processStream;
 
 protected:
-  common::AlgorithmConfig mParams; //!< The parameters for the sample.
+  //!< The TensorRT engine used to run the network
+  std::shared_ptr<nvinfer1::ICudaEngine> mEngine{nullptr};
+  //!< The TensorRT execution context
+  UniquePtr<nvinfer1::IExecutionContext> context{nullptr};
+  //!< The parameters for the sample.
+  common::AlgorithmConfig mParams;
+  //!< The dimensions of the input to the network.
+  std::vector<Dims> inputDims;
+  //!< The dimensions of the output to the network.
+  std::vector<Dims> outputDims;
 };
 } // namespace trt
 } // namespace infer

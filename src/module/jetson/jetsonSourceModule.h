@@ -33,8 +33,7 @@ FrameBuf makeFrameBuf(uchar3 *, int, int);
 class JetsonSourceModule : public Module {
 private:
   std::unique_ptr<videoSource> inputStream;
-  // videoSource *inputStream;
-
+  
   uchar3 *frame = nullptr;
 
   int count = 0;
@@ -42,16 +41,6 @@ private:
   videoOptions opt;
 
   CameraResult cameraResult;
-
-private:
-  inline void setCameraResult(common::CameraConfig const & config) {
-    cameraResult.widthPixel = config.widthPixel;
-    cameraResult.heightPixel = config.heightPixel;
-    cameraResult.videoCode = config.videoCode;
-    cameraResult.flowType = config.flowType;
-    cameraResult.cameraIp = config.cameraIp;
-    cameraResult.cameraId = config.cameraId;
-  }
 
 public:
   JetsonSourceModule(Backend *ptr,

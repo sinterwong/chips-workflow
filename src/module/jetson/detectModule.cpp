@@ -8,15 +8,10 @@
  * @copyright Copyright (c) 2022
  *
  */
-
 #include "jetson/detectModule.h"
-#include "backend.h"
-#include "inference.h"
-#include <cassert>
-#include <memory>
-#include <opencv2/core/mat.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <utility>
+#include "jetson/assdDet.hpp"
+#include "jetson/yoloDet.hpp"
+
 
 namespace module {
 
@@ -29,7 +24,7 @@ DetectModule::DetectModule(Backend *ptr, const std::string &initName,
     : Module(ptr, initName, initType, recv, send, pool),
       params(std::move(_params)) {
 
-  instance = std::make_shared<infer::trt::DetctionInfer>(params);
+  instance = std::make_shared<infer::trt::YoloDet>(params);
   instance->initialize();
 }
 

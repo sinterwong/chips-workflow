@@ -30,7 +30,7 @@ private:
   int count = 0;
   // cv::Rect region{0, 0, 0, 0};
   common::AlgorithmConfig params;
-  std::shared_ptr<infer::trt::DetctionInfer> instance;
+  std::shared_ptr<infer::trt::DetectionInfer> instance;
 
 public:
   DetectModule(Backend *ptr, const std::string &initName,

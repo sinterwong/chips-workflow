@@ -47,8 +47,9 @@ bool ClassifierInfer::processOutput(BufferManager const &buffers,
                                     Result &result) const {
   float *hostOutputBuffer =
       static_cast<float *>(buffers.getHostBuffer(mParams.outputTensorNames[0]));
-  result.classResult =
-      std::move(softmax_argmax(hostOutputBuffer, mParams.numClasses));
+  
+  assert(outputDims[0].nbDims == 2);
+  result.classResult = std::move(softmax_argmax(hostOutputBuffer, outputDims[0].d[1]));
   return true;
 };
 
