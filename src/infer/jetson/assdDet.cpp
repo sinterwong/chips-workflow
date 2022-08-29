@@ -9,6 +9,7 @@
  *
  */
 #include "jetson/assdDet.hpp"
+#include <cassert>
 
 namespace infer {
 namespace trt {
@@ -21,31 +22,32 @@ void AssdDet::generateBoxes(
   for (int i = 0; i < mParams.outputTensorNames.size(); ++i) {
     float *output = static_cast<float *>(
         buffers.getHostBuffer(mParams.outputTensorNames[i]));
-
-    int fea_w = 241;
-    int fea_h = 135;
+    
+    assert(outputDims[i].nbDims == 4);
+    int fea_h = outputDims[i].d[2];
+    int fea_w = outputDims[i].d[3];
 
     int fea_spacial_size = fea_w * fea_h;
     for (int y = 0; y < fea_h; y++) {
       for (int x = 0; x < fea_w; x++) {
         int k = y * fea_w + x;
-        float center_start = receptive_field_center_start[0];
-        float stride = receptive_field_stride[0];
+        float center_start = receptive_field_center_start[i];
+        float stride = receptive_field_stride[i];
 
         if (output[k] > mParams.cond_thr) {
           float RF_center_x = center_start + stride * float(x);
           float RF_center_y = center_start + stride * float(y);
           float x1 =
-              RF_center_x - output[1 * fea_spacial_size + k] * RF_half[0];
+              RF_center_x - output[1 * fea_spacial_size + k] * RF_half[i];
 
           float y1 =
-              RF_center_y - output[2 * fea_spacial_size + k] * RF_half[0];
+              RF_center_y - output[2 * fea_spacial_size + k] * RF_half[i];
 
           float x2 =
-              RF_center_x - output[3 * fea_spacial_size + k] * RF_half[0];
+              RF_center_x - output[3 * fea_spacial_size + k] * RF_half[i];
 
           float y2 =
-              RF_center_y - output[4 * fea_spacial_size + k] * RF_half[0];
+              RF_center_y - output[4 * fea_spacial_size + k] * RF_half[i];
 
           float re_x1 = std::min(x1, x2);
           float re_y1 = std::min(y1, y2);

@@ -93,6 +93,10 @@ protected:
   UniquePtr<nvinfer1::IExecutionContext> context{nullptr};
   //!< The parameters for the sample.
   common::AlgorithmConfig mParams;
+  //!< The dimensions of the input to the network.
+  std::vector<Dims> inputDims;
+  //!< The dimensions of the output to the network.
+  std::vector<Dims> outputDims;
 };
 } // namespace trt
 } // namespace infer

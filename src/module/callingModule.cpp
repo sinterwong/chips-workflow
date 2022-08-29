@@ -47,7 +47,9 @@ void CallingModule::forward(
       }
       return;
     }
-    if (isRecord && type == "stream") {
+    if (isRecord) {
+      if (type != "stream")
+        continue;
       // 正处于保存视频状态
       FrameBuf frameBufMessage = backendPtr->pool->read(buf.key);
       auto frame = std::any_cast<uchar3 *>(frameBufMessage.read("uchar3*"));

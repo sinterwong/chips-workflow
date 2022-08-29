@@ -81,7 +81,6 @@ bool TRTInference::initialize() {
     FLOWENGINE_LOGGER_WARN("CudaEngine is failed!");
     return false;
   }
-  std::cout << mEngine->getBindingDimensions(0) << std::endl;
   delete[] trtModelStream; // 创建完engine就没什么用了
 
   context =
@@ -90,11 +89,16 @@ bool TRTInference::initialize() {
     FLOWENGINE_LOGGER_WARN("ExecutionContext is failed!");
     return false;
   }
-  // inputDims = {mParams.batchSize, mParams.inputShape[2],
-  // mParams.inputShape[0], mParams.inputShape[1]}; outputDims =
-  // {mParams.batchSize, mParams.numAnchors, mParams.numClasses + 5};
-  // context->setBindingDimensions(0, inputDims); std::cout <<
-  // context->getBindingDimensions(0) << std::endl;
+
+  // set the input and output dims
+  for (auto &name : mParams.inputTensorNames) {
+    auto index = mEngine->getBindingIndex(name.c_str());
+    inputDims.push_back(mEngine->getBindingDimensions(index));
+  }
+  for (auto &name : mParams.outputTensorNames) {
+    auto index = mEngine->getBindingIndex(name.c_str());
+    outputDims.push_back(mEngine->getBindingDimensions(index));
+  }
   return true;
 }
 

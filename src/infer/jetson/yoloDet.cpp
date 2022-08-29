@@ -19,16 +19,15 @@ void YoloDet::generateBoxes(
     std::unordered_map<int, std::vector<DetectionResult>> &m,
     BufferManager const &buffers) const {
 
-  // TODO get output dims by index or name
-  // assert(context != nullptr);
-  // auto dims = context->getBindingDimensions(i);
-  // mEngine->getBindingIndex(const char *name)
+
   for (int i = 0; i < mParams.outputTensorNames.size(); ++i) {
     float *output = static_cast<float *>(
         buffers.getHostBuffer(mParams.outputTensorNames[i]));
 
-    int num = mParams.numClasses + 5;
-    for (int i = 0; i < mParams.numAnchors * num; i += num) {
+    assert(outputDims[i].nbDims == 3);
+    int numAnchors = outputDims[i].d[1];
+    int num = numAnchors + 5;
+    for (int i = 0; i < numAnchors * num; i += num) {
       if (output[i + 4] <= mParams.cond_thr)
         continue;
       DetectionResult det;
