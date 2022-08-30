@@ -34,9 +34,12 @@ private:
   generateBoxes(std::unordered_map<int, std::vector<DetectionResult>> &,
                 BufferManager const &) const override;
 
-  std::vector<float> receptive_field_center_start = {7, 7, 7};
-  std::vector<float> receptive_field_stride = {8, 8, 8};
-  std::vector<float> RF_half = {55.5, 71.5, 79.5};
+  // std::vector<float> receptive_field_center_start = {7, 7, 7};
+  // std::vector<float> receptive_field_stride = {8, 8, 8};
+  // std::vector<float> RF_half = {55.5, 71.5, 79.5};
+  std::vector<float> receptive_field_center_start = {12, 20, 28, 36};
+  std::vector<float> receptive_field_stride = {4, 8, 8, 8};
+  std::vector<float> RF_half = {38.5, 45.5, 55.5, 79.5};
 };
 } // namespace trt
 } // namespace infer

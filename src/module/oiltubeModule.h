@@ -1,16 +1,16 @@
 /**
- * @file CallingModule.h
+ * @file oiltubeModule.h
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief 
  * @version 0.1
- * @date 2022-06-05
+ * @date 2022-08-30
  * 
  * @copyright Copyright (c) 2022
  * 
  */
 
-#ifndef __METAENGINE_CALLING_MODULE_H_
-#define __METAENGINE_CALLING_MODULE_H_
+#ifndef __METAENGINE_OILTUBE_MODULE_H_
+#define __METAENGINE_OILTUBE_MODULE_H_
 
 #include <any>
 #include <memory>
@@ -21,21 +21,21 @@
 #include "logicModule.h"
 
 namespace module {
-class CallingModule : public LogicModule {
+class OiltubeModule : public LogicModule {
 
 public:
-  CallingModule(Backend *ptr,
+  OiltubeModule(Backend *ptr,
                    const std::string &initName, 
                    const std::string &initType, 
                    const common::LogicConfig &logicConfig,
                    const std::vector<std::string> &recv = {},
                    const std::vector<std::string> &send = {},
                    const std::vector<std::string> &pool = {});
-  ~CallingModule() {}
+  ~OiltubeModule() {}
 
   virtual void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
                    message) override;
   
 };
 } // namespace module
-#endif // __METAENGINE_CALLING_MODULE_H_
+#endif // __METAENGINE_Oiltube_MODULE_H_

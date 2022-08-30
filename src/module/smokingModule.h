@@ -1,5 +1,5 @@
 /**
- * @file SmokingModule.h
+ * @file smokingModule.h
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief 
  * @version 0.1
@@ -33,7 +33,7 @@ public:
                    const std::vector<std::string> &pool = {});
   ~SmokingModule() {}
 
-  void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
+  virtual void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
                    message) override;
   
 };

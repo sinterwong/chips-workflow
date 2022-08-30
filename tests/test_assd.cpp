@@ -1,9 +1,9 @@
 #include "inference.h"
 #include "jetson/assdDet.hpp"
 #include "jetson/detection.hpp"
+#include <gflags/gflags.h>
 #include <memory>
 #include <opencv2/imgcodecs.hpp>
-#include <gflags/gflags.h>
 
 DEFINE_string(image_path, "", "Specify config path.");
 DEFINE_string(model_path, "", "Specify model path.");
@@ -19,29 +19,28 @@ int main(int argc, char **argv) {
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-  cv::Mat image = cv::imread(FLAGS_image_path);
-
   std::vector<std::string> inputNames = {"data"};
-  std::vector<std::string> outputNames = {"output2_conv3", "output3_conv3",
-                                          "output4_conv3"};
+  // std::vector<std::string> outputNames = {"output2_conv3", "output3_conv3",
+  //                                         "output4_conv3"};
+  std::vector<std::string> outputNames = {"conv10_3", "conv13_3", "conv15_3"};
   std::array<int, 3> inputShape{FLAGS_input_width, FLAGS_input_height, 3};
   common::AlgorithmConfig params{FLAGS_model_path,
                                  std::move(inputNames),
                                  std::move(outputNames),
                                  std::move(inputShape),
-                                 1,
-                                 0,
                                  0.4,
                                  0.4,
                                  0,
                                  0,
-                                 false,
+                                 true,
                                  1};
   std::shared_ptr<DetectionInfer> det = std::make_shared<AssdDet>(params);
   det->initialize();
 
+  cv::Mat image = cv::imread(FLAGS_image_path);
+
   infer::Result result;
-  result.shape = {95, 191};
+  result.shape = {image.cols, image.rows};
   det->infer(image.data, result);
   for (auto &bbox : result.detResults) {
     cv::Rect rect(bbox.bbox[0], bbox.bbox[1], bbox.bbox[2] - bbox.bbox[0],
@@ -55,9 +54,9 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-/* 
-./test_assd --image_path=/home/wangxt/workspace/projects/flowengine/tests/data/person.jpg \
-            --model_path=/home/wangxt/workspace/projects/flowengine/tests/data/M-01-01-0001-oil_head_head.onnx \
-            --input_height=191 \
-            --input_width=95
+/*
+./test_assd
+--image_path=../../../tests/data/pedestrian.jpg
+--model_path=../../../tests/data/model/assd_shoulder.engine --input_height=543
+--input_width=967
 */

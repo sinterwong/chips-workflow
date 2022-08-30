@@ -119,7 +119,5 @@ int main(int argc, char **argv) {
 }
 
 /*
-./test_pipe
---config_path=/home/wangxt/workspace/projects/flowengine/conf/app/config.json
---num_workers=http://114.242.23.39:9400/v1/internal/receive_alarm
+ ./app_flowengine --config_path=/public/agent/conf/agent.json --num_workers=24
 */

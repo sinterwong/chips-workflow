@@ -26,7 +26,7 @@ void YoloDet::generateBoxes(
 
     assert(outputDims[i].nbDims == 3);
     int numAnchors = outputDims[i].d[1];
-    int num = numAnchors + 5;
+    int num = outputDims[i].d[2];
     for (int i = 0; i < numAnchors * num; i += num) {
       if (output[i + 4] <= mParams.cond_thr)
         continue;

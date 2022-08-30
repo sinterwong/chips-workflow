@@ -33,7 +33,7 @@ public:
                    const std::vector<std::string> &pool = {});
   ~ExtinguisherModule() {}
 
-  void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
+  virtual void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
                    message) override;
   
 };
