@@ -12,7 +12,6 @@
 #include "jetson/assdDet.hpp"
 #include "jetson/yoloDet.hpp"
 
-
 namespace module {
 
 DetectModule::DetectModule(Backend *ptr, const std::string &initName,
@@ -24,7 +23,13 @@ DetectModule::DetectModule(Backend *ptr, const std::string &initName,
     : Module(ptr, initName, initType, recv, send, pool),
       params(std::move(_params)) {
 
-  instance = std::make_shared<infer::trt::YoloDet>(params);
+  if (params.algorithmSerial == "yolo") {
+    instance = std::make_shared<infer::trt::YoloDet>(params);
+  } else if (params.algorithmSerial == "assd") {
+    instance = std::make_shared<infer::trt::AssdDet>(params);
+  } else {
+    FLOWENGINE_LOGGER_ERROR("Error algorithm serial {}", params.algorithmSerial);
+  }
   instance->initialize();
 }
 
@@ -59,6 +64,9 @@ void DetectModule::forward(
         inferImage = std::make_shared<cv::Mat>((*image)(region).clone());
       } else {
         inferImage = image;
+      }
+      if (params.algorithmSerial == "assd") {
+        cv::cvtColor(*inferImage, *inferImage, cv::COLOR_RGB2BGR);
       }
       infer::Result ret;
       ret.shape = {inferImage->cols, inferImage->rows, 3};

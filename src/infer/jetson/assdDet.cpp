@@ -10,6 +10,7 @@
  */
 #include "jetson/assdDet.hpp"
 #include <cassert>
+#include <string>
 
 namespace infer {
 namespace trt {
@@ -22,10 +23,23 @@ void AssdDet::generateBoxes(
   for (int i = 0; i < mParams.outputTensorNames.size(); ++i) {
     float *output = static_cast<float *>(
         buffers.getHostBuffer(mParams.outputTensorNames[i]));
-    
+
     assert(outputDims[i].nbDims == 4);
     int fea_h = outputDims[i].d[2];
     int fea_w = outputDims[i].d[3];
+
+    /*CHECK score map with opencv*/
+    /*
+    cv::Mat temp_score_map = cv::Mat(fea_h, fea_w, CV_8UC1);
+    for (int i = 0; i < fea_h; i++) {
+      for (int j = 0; j < fea_w; j++) {
+        int k = i * fea_w + j + fea_h * fea_w;
+        temp_score_map.at<uchar>(i, j) = (uchar)(*(output + k) * 255);
+      }
+    }
+    cv::resize(temp_score_map, temp_score_map, cv::Size(1280, 720));
+    cv::imwrite("score_map" + std::to_string(i) + ".jpg", temp_score_map);
+    */
 
     int fea_spacial_size = fea_w * fea_h;
     for (int y = 0; y < fea_h; y++) {

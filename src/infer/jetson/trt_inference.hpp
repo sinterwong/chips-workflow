@@ -86,11 +86,12 @@ private:
   // Create stream
   cudaStream_t processStream;
 
-protected:
+private:
   //!< The TensorRT engine used to run the network
   std::shared_ptr<nvinfer1::ICudaEngine> mEngine{nullptr};
   //!< The TensorRT execution context
   UniquePtr<nvinfer1::IExecutionContext> context{nullptr};
+protected:
   //!< The parameters for the sample.
   common::AlgorithmConfig mParams;
   //!< The dimensions of the input to the network.

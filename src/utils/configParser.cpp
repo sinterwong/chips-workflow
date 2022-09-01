@@ -94,11 +94,17 @@ bool ConfigParser::parseConfig(
                                         ins[2].GetInt()};
 
           pc = common::AlgorithmConfig{
-              params["modelPath"].GetString(), std::move(inputNames),
-              std::move(outputNames),          std::move(inputShape),
-              params["cond_thr"].GetFloat(),   params["nms_thr"].GetFloat(),
-              params["alpha"].GetFloat(),      params["beta"].GetFloat(),
-              params["isScale"].GetBool(),     params["batchSize"].GetInt(),
+              params["modelPath"].GetString(),
+              std::move(inputNames),
+              std::move(outputNames),
+              std::move(inputShape),
+              params["algo_serial"].GetString(),
+              params["cond_thr"].GetFloat(),
+              params["nms_thr"].GetFloat(),
+              params["alpha"].GetFloat(),
+              params["beta"].GetFloat(),
+              params["isScale"].GetBool(),
+              params["batchSize"].GetInt(),
           };
           break;
         }
@@ -120,14 +126,12 @@ bool ConfigParser::parseConfig(
             }
           }
 
-          pc = common::LogicConfig{
-              params["alarm_output_dir"].GetString(),
-              std::move(region),
-              std::move(attentionClasses),
-              params["event_id"].GetInt(),
-              params["page"].GetString(),
-              params["video_duration"].GetInt()
-          };
+          pc = common::LogicConfig{params["alarm_output_dir"].GetString(),
+                                   std::move(region),
+                                   std::move(attentionClasses),
+                                   params["event_id"].GetInt(),
+                                   params["page"].GetString(),
+                                   params["video_duration"].GetInt()};
           break;
         }
         case common::ConfigType::Output: { // Output

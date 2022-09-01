@@ -164,8 +164,13 @@ bool TRTInference::processInput(void *inputs, BufferManager const &buffers,
   cv::Mat chw_image;
 
   hwc_to_chw(image, chw_image);
+
+  // cv::Mat temp;
+  // chw_to_hwc(chw_image, temp);
+
+  // cv::imwrite("output.jpg", temp);
   
-  memcpy(imageHost, chw_image.data, resized_size + 1);
+  memcpy(imageHost, chw_image.data, resized_size);
 
   // copy data to device memory
   CHECK(cudaMemcpyAsync(imageDevice, imageHost, resized_size,

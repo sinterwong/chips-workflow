@@ -44,18 +44,21 @@ struct AlgorithmConfig {
   AlgorithmConfig(std::string const &modelPath_,
                   std::vector<std::string> const &inputTensorNames_,
                   std::vector<std::string> const &outputTensorNames_,
-                  std::array<int, 3> const &inputShape_, float cond_thr_ = 0.3,
+                  std::array<int, 3> const &inputShape_,
+                  std::string const &algorithmSerial_, float cond_thr_ = 0.3,
                   float nms_thr_ = 0.5, float alpha_ = 255.0, float beta_ = 0.0,
                   bool isScale_ = true, int batchSize_ = 1)
       : modelPath(modelPath_), inputTensorNames(std::move(inputTensorNames_)),
         outputTensorNames(std::move(outputTensorNames_)),
-        inputShape(std::move(inputShape_)), cond_thr(cond_thr_),
+        inputShape(std::move(inputShape_)),
+        algorithmSerial(std::move(algorithmSerial_)), cond_thr(cond_thr_),
         nms_thr(nms_thr_), alpha(alpha_), beta(beta_), isScale(isScale_),
         batchSize(batchSize_){};
   // 算法配置
   std::string modelPath;                      // engine 所在目录
   std::vector<std::string> inputTensorNames;  // input tensor names
   std::vector<std::string> outputTensorNames; // output tensor names
+  std::string algorithmSerial;                // 算法系列
   std::array<int, 3> inputShape;              // 算法需要的输入尺度
   bool isScale;                               // 是否等比例缩放
   float cond_thr;                             // 置信度阈值

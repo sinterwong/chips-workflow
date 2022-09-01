@@ -64,15 +64,14 @@
           "modelPath": "/opt/deploy/models/handdetn.engine",
           "name": "algorithm_handDet_1660981094167",
           "nms_thr": 0.45,
-          "numAnchors": 25200,
-          "numClasses": 1,
           "outputNames": [
             "output"
           ],
           "recvName": "logic_calling_29_3_1660981094258",
           "sendName": "algorithm_phoneCls_1660981094253",
           "sub_type": "DetectModule",
-          "type": "algorithm"
+          "type": "algorithm",
+          "algo_serial": "yolo"
         },
         {
           "alpha": 0,
@@ -91,15 +90,14 @@
           "modelPath": "/opt/deploy/models/smoke_phone.engine",
           "name": "algorithm_phoneCls_1660981094253",
           "nms_thr": 0,
-          "numAnchors": 0,
-          "numClasses": 3,
           "outputNames": [
             "softmax"
           ],
           "recvName": "algorithm_handDet_1660981094167",
           "sendName": "logic_calling_29_3_1660981094258",
           "sub_type": "ClassifierModule",
-          "type": "algorithm"
+          "type": "algorithm",
+          "algo_serial": "resnet"
         },
         {
           "alarm_output_dir": "/public/alarm/data",
@@ -202,15 +200,14 @@
           "modelPath": "/opt/deploy/models/dogcat.engine",
           "name": "algorithm_extinguisherCls_1660981094167",
           "nms_thr": 0,
-          "numAnchors": 0,
-          "numClasses": 2,
           "outputNames": [
             "output"
           ],
           "recvName": "logic_extinguisher_3_1660981094258",
           "sendName": "logic_extinguisher_3_1660981094258",
           "sub_type": "ClassifierModule",
-          "type": "algorithm"
+          "type": "algorithm",
+          "algo_serial": "resnet"
         },
         {
           "alarm_output_dir": "/public/alarm/data",

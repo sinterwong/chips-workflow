@@ -9,7 +9,7 @@
           "height": 1080,
           "name": "stream_615328e4-45e4-47d8-a04f-3b7612bba74e",
           "recvName": "",
-          "sendName": "logic_calling_5_1661830987269",
+          "sendName": "logic_helmet_5_1661996691485",
           "sub_type": "JetsonSourceModule",
           "type": "stream",
           "videoCode": "h264",
@@ -30,87 +30,100 @@
         },
         {
           "alarm_output_dir": "/public/alarm/data",
-          "event_id": 2,
+          "event_id": 7,
           "height": "1920",
-          "name": "logic_calling_5_1661830987269",
+          "name": "logic_helmet_5_1661996691485",
           "page": "1",
           "recvName": "stream_615328e4-45e4-47d8-a04f-3b7612bba74e",
-          "sendName": "algorithm_handDet_1661830987179",
-          "sub_type": "CallingModule",
+          "region": [
+            25,
+            33,
+            1880,
+            1044
+          ],
+          "sendName": "algorithm_headDet_1661996691410",
+          "sub_type": "HelmetModule",
           "type": "logic",
           "video_duration": 10,
           "width": "1080"
         },
         {
-          "alpha": 255,
+          "algo_serial": "assd",
+          "alpha": 0,
           "batchSize": 1,
           "beta": 0,
           "cond_thr": 0.4,
           "inputNames": [
-            "images"
+            "data"
           ],
           "inputShape": [
-            640,
-            640,
+            967,
+            543,
             3
           ],
-          "isScale": true,
-          "modelPath": "/opt/deploy/models/handdetn.engine",
-          "name": "algorithm_handDet_1661830987179",
+          "isScale": false,
+          "modelPath": "/opt/deploy/models/headdet_assd.engine",
+          "name": "algorithm_headDet_1661996691410",
           "nms_thr": 0.45,
-          "numAnchors": 25200,
-          "numClasses": 1,
           "outputNames": [
-            "output"
+            "conv10_3",
+            "conv13_3",
+            "conv15_3",
+            "conv16_3"
           ],
-          "recvName": "logic_calling_5_1661830987269",
-          "sendName": "algorithm_phoneCls_1661830987185",
+          "recvName": "logic_helmet_5_1661996691485",
+          "sendName": "algorithm_helmetCls_1661996691404",
           "sub_type": "DetectModule",
           "type": "algorithm"
         },
         {
-          "alpha": 0,
+          "algo_serial": "resnet",
+          "alpha": 127.5,
           "batchSize": 1,
-          "beta": 0,
+          "beta": 1,
           "cond_thr": 0,
           "inputNames": [
             "data"
           ],
           "inputShape": [
-            128,
-            128,
+            112,
+            112,
             3
           ],
           "isScale": false,
-          "modelPath": "/opt/deploy/models/smoke_phone.engine",
-          "name": "algorithm_phoneCls_1661830987185",
+          "modelPath": "/opt/deploy/models/helmet.engine",
+          "name": "algorithm_helmetCls_1661996691404",
           "nms_thr": 0,
-          "numAnchors": 0,
-          "numClasses": 3,
           "outputNames": [
             "softmax"
           ],
-          "recvName": "algorithm_handDet_1661830987179",
-          "sendName": "logic_calling_5_1661830987269",
+          "recvName": "algorithm_headDet_1661996691410",
+          "sendName": "logic_helmet_5_1661996691485",
           "sub_type": "ClassifierModule",
           "type": "algorithm"
         },
         {
           "alarm_output_dir": "/public/alarm/data",
-          "event_id": 2,
+          "event_id": 7,
           "height": "1920",
-          "name": "logic_calling_5_1661830987269",
+          "name": "logic_helmet_5_1661996691485",
           "page": "1",
-          "recvName": "algorithm_phoneCls_1661830987185",
+          "recvName": "algorithm_helmetCls_1661996691404",
+          "region": [
+            25,
+            33,
+            1880,
+            1044
+          ],
           "sendName": "output_alarm_01_1661749862688",
-          "sub_type": "CallingModule",
+          "sub_type": "HelmetModule",
           "type": "logic",
           "video_duration": 10,
           "width": "1080"
         },
         {
           "name": "output_alarm_01_1661749862688",
-          "recvName": "logic_calling_5_1661830987269",
+          "recvName": "logic_helmet_5_1661996691485",
           "sendName": "",
           "sub_type": "AlarmOutputModule",
           "type": "output",
