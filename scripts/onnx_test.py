@@ -152,15 +152,15 @@ def non_max_suppression(prediction, conf_thres=0.2, iou_thres=0.45, classes=None
 
 
 def assd_test():
-    model_path = "/home/wangxt/workspace/projects/flowengine/tests/data/assd_shoulder.onnx"
+    model_path = "/home/wangxt/workspace/projects/flowengine/tests/data/model/assd_shoulder.onnx"
     im_path = "/home/wangxt/workspace/projects/flowengine/tests/data/pedestrian.jpg"
     session = onnxruntime.InferenceSession(model_path)
     input_name = get_input_name(session)
     output_name = get_output_name(session)
 
-    RF_half = [38.5, 45.5, 55.5, 79.5]
-    receptive_field_stride = [4, 8, 8, 8]
-    receptive_field_stride_start = [12, 20, 28, 36]
+    RF_half = [55.5, 71.5, 79.5]
+    receptive_field_stride = [8, 8, 8]
+    receptive_field_stride_start = [7, 7, 7]
     score_threshold = 0.4
     iou_threshold = 0.4
 
@@ -169,7 +169,7 @@ def assd_test():
     data, rw, rh = preprocessing(img, (967, 543), False, 0, 0)
     input_feed = get_input_feed(input_name, data)
     forward_start = cv2.getTickCount()
-    outputs = session.run(output_name, input_feed=input_feed)
+    outputs = session.run(output_name, input_feed=input_feed)[1:]
     forward_end = cv2.getTickCount()
     print("推理耗时：{}s".format((forward_end - forward_start) / cv2.getTickFrequency()))
 
@@ -192,7 +192,9 @@ def assd_test():
             x2 = np.max([xx1, xx2])
             y1 = np.min([yy1, yy2])
             y2 = np.max([yy1, yy2])
-            bboxes.append([x1, y1, x2 - x1, y2 - y1, score_map[bi[0], bi[1]], 1.0])
+            w = x2 - x1
+            h = y2 - y1
+            bboxes.append([x1 + w / 2.0, y1 + h / 2.0, w, h, score_map[bi[0], bi[1]], 1.0])
 
     bboxes = np.array([bboxes])
     out = non_max_suppression(bboxes, score_threshold, iou_threshold)[0]

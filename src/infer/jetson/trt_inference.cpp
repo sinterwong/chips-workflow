@@ -24,32 +24,33 @@
 
 namespace infer {
 namespace trt {
-void hwc_to_chw(cv::InputArray &src, cv::OutputArray &dst) {
-  const int src_h = src.rows();
-  const int src_w = src.cols();
-  const int src_c = src.channels();
-
-  cv::Mat hw_c = src.getMat().reshape(1, src_h * src_w);
-
-  const std::array<int, 3> dims = {src_c, src_h, src_w};
-  dst.create(3, &dims[0], CV_MAKETYPE(src.depth(), 1));
-  cv::Mat dst_1d = dst.getMat().reshape(1, {src_c, src_h, src_w});
-
-  cv::transpose(hw_c, dst_1d);
+template <typename T>
+void chw_to_hwc(T *chw_data, T *hwc_data, int channel, int height, int width) {
+  int wc = width * channel;
+  int index = 0;
+  for (int c = 0; c < channel; c++) {
+    for (int h = 0; h < height; h++) {
+      for (int w = 0; w < width; w++) {
+        hwc_data[h * wc + w * channel + c] = chw_data[index];
+        index++;
+      }
+    }
+  }
 }
 
-void chw_to_hwc(cv::InputArray &src, cv::OutputArray &dst) {
-  const auto &src_size = src.getMat().size;
-  const int src_c = src_size[0];
-  const int src_h = src_size[1];
-  const int src_w = src_size[2];
-
-  auto c_hw = src.getMat().reshape(0, {src_c, src_h * src_w});
-
-  dst.create(src_h, src_w, CV_MAKETYPE(src.depth(), src_c));
-  cv::Mat dst_1d = dst.getMat().reshape(src_c, {src_h, src_w});
-
-  cv::transpose(c_hw, dst_1d);
+template <typename T>
+void hwc_to_chw(T *chw_data, T *hwc_data, int channel, int height, int width) {
+  int wc = width * channel;
+  int wh = width * height;
+  int index = 0;
+  for (int h = 0; h < height; h++) {
+    for (int w = 0; w < width; w++) {
+      for (int c = 0; c < channel; c++) {
+        chw_data[c * wh + h * width + w] = hwc_data[index];
+        index++;
+      }
+    }
+  }
 }
 
 bool TRTInference::initialize() {
@@ -161,25 +162,21 @@ bool TRTInference::processInput(void *inputs, BufferManager const &buffers,
   }
   int resized_size = image.cols * image.rows * image.channels();
 
-  cv::Mat chw_image;
-
-  hwc_to_chw(image, chw_image);
-
-  // cv::Mat temp;
-  // chw_to_hwc(chw_image, temp);
-
+  hwc_to_chw(imageHost, image.data, image.channels(), image.rows, image.cols);
+  // cv::Mat temp = cv::Mat::zeros(image.rows, image.cols, CV_8UC3);
+  // 保存CHW图像（9宫格灰图）
+  // hwc_to_chw(temp.data, image.data, image.channels(), image.rows, image.cols);
   // cv::imwrite("output.jpg", temp);
-  
-  memcpy(imageHost, chw_image.data, resized_size);
 
   // copy data to device memory
   CHECK(cudaMemcpyAsync(imageDevice, imageHost, resized_size,
                         cudaMemcpyHostToDevice, processStream));
-  strandard_image(imageDevice, deviceInputBuffer, resized_size, mParams.alpha, mParams.beta, processStream);
+  strandard_image(imageDevice, deviceInputBuffer, resized_size, mParams.alpha,
+                  mParams.beta, processStream);
 
   // if batch_size > 1
-  // int size_image_dst = mParams.inputShape[0] * mParams.inputShape[1] * mParams.inputShape[2]; 
-  // deviceInputBuffer += size_image_dst;
+  // int size_image_dst = mParams.inputShape[0] * mParams.inputShape[1] *
+  // mParams.inputShape[2]; deviceInputBuffer += size_image_dst;
   // */
 
   /*

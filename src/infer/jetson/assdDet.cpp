@@ -33,11 +33,11 @@ void AssdDet::generateBoxes(
     cv::Mat temp_score_map = cv::Mat(fea_h, fea_w, CV_8UC1);
     for (int i = 0; i < fea_h; i++) {
       for (int j = 0; j < fea_w; j++) {
-        int k = i * fea_w + j + fea_h * fea_w;
+        int k = i * fea_w + j;
         temp_score_map.at<uchar>(i, j) = (uchar)(*(output + k) * 255);
       }
     }
-    cv::resize(temp_score_map, temp_score_map, cv::Size(1280, 720));
+    // cv::resize(temp_score_map, temp_score_map, cv::Size(1280, 720));
     cv::imwrite("score_map" + std::to_string(i) + ".jpg", temp_score_map);
     */
 
@@ -81,6 +81,12 @@ void AssdDet::generateBoxes(
           det.class_id = 0;
           det.bbox = {cx, cy, w, h};
           det.class_confidence = output[k];
+
+          if (m.count(det.class_id) == 0) {
+            // 目前还没有该类别，需要初始化一下
+            m.emplace(det.class_id, std::vector<DetectionResult>());
+          }
+          m[det.class_id].push_back(det);
         }
       }
     }
