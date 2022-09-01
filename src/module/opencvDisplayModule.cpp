@@ -9,9 +9,8 @@ OpencvDisplayModule::OpencvDisplayModule(Backend *ptr,
                                          const std::string &initName,
                                          const std::string &initType,
                                          const std::vector<std::string> &recv,
-                                         const std::vector<std::string> &send,
-                                         const std::vector<std::string> &pool)
-    : Module(ptr, initName, initType, recv, send, pool) {}
+                                         const std::vector<std::string> &send    )
+    : Module(ptr, initName, initType, recv, send) {}
 
 void OpencvDisplayModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
@@ -30,6 +29,5 @@ void OpencvDisplayModule::forward(
 }
 FlowEngineModuleRegister(OpencvDisplayModule, Backend *, std::string const &,
                          std::string const &, std::vector<std::string> const &,
-                         std::vector<std::string> const &,
                          std::vector<std::string> const &);
 } // namespace module

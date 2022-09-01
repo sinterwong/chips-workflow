@@ -29,8 +29,7 @@ public:
                    const std::string &initType, 
                    const common::LogicConfig &logicConfig,
                    const std::vector<std::string> &recv = {},
-                   const std::vector<std::string> &send = {},
-                   const std::vector<std::string> &pool = {});
+                   const std::vector<std::string> &send = {}    );
   ~HelmetModule() {}
 
   virtual void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>

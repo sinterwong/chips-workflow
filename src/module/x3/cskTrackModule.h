@@ -35,8 +35,7 @@ public:
   cskTrackModule(Backend *ptr, const std::string &initName,
                  const std::string &initType,
                  const std::vector<std::string> &recv = {},
-                 const std::vector<std::string> &send = {},
-                 const std::vector<std::string> &pool = {});
+                 const std::vector<std::string> &send = {}  );
 
   ~cskTrackModule();
 

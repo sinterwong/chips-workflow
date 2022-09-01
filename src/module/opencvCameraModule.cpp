@@ -43,9 +43,8 @@ OpencvCameraModule::OpencvCameraModule(Backend *ptr, const std::string &file,
                                        const std::string &initName,
                                        const std::string &initType,
                                        const std::vector<std::string> &recv,
-                                       const std::vector<std::string> &send,
-                                       const std::vector<std::string> &pool)
-    : Module(ptr, initName, initType, recv, send, pool) {
+                                       const std::vector<std::string> &send  )
+    : Module(ptr, initName, initType, recv, send) {
   readFile = true;
   fileName = file;
   cameraNumber = -1;
@@ -57,9 +56,8 @@ OpencvCameraModule::OpencvCameraModule(Backend *ptr, const int capNumber,
                                        const std::string &initName,
                                        const std::string &initType,
                                        const std::vector<std::string> &recv,
-                                       const std::vector<std::string> &send,
-                                       const std::vector<std::string> &pool)
-    : Module(ptr, initName, initType, recv, send, pool) {
+                                       const std::vector<std::string> &send  )
+    : Module(ptr, initName, initType, recv, send) {
   readFile = false;
   fileName = "";
   cameraNumber = capNumber;
@@ -96,7 +94,6 @@ void OpencvCameraModule::afterForward() {
 }
 FlowEngineModuleRegister(OpencvCameraModule, Backend *, std::string const &,
                          std::string const &, std::string const &,
-                         std::vector<std::string> const &,
                          std::vector<std::string> const &,
                          std::vector<std::string> const &);
 } // namespace module

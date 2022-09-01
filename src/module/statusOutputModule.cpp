@@ -17,9 +17,8 @@ namespace module {
 StatusOutputModule::StatusOutputModule(
     Backend *ptr, const std::string &initName, const std::string &initType,
     const common::OutputConfig &outputConfig_,
-    const std::vector<std::string> &recv, const std::vector<std::string> &send,
-    const std::vector<std::string> &pool)
-    : OutputModule(ptr, initName, initType, outputConfig_, recv, send, pool) {}
+    const std::vector<std::string> &recv, const std::vector<std::string> &send)
+    : OutputModule(ptr, initName, initType, outputConfig_, recv, send) {}
 
 bool StatusOutputModule::postResult(std::string const &url,
                                     StatusInfo const &statusInfo,
@@ -92,7 +91,6 @@ void StatusOutputModule::forward(
 }
 FlowEngineModuleRegister(StatusOutputModule, Backend *, std::string const &,
                          std::string const &, const common::OutputConfig &,
-                         std::vector<std::string> const &,
                          std::vector<std::string> const &,
                          std::vector<std::string> const &);
 } // namespace module

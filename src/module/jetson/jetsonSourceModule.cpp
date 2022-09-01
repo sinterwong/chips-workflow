@@ -63,8 +63,8 @@ FrameBuf makeFrameBuf(uchar3 *image, int height, int width) {
 JetsonSourceModule::JetsonSourceModule(
     Backend *ptr, const std::string &initName, const std::string &initType,
     const common::CameraConfig &_params, const std::vector<std::string> &recv,
-    const std::vector<std::string> &send, const std::vector<std::string> &pool)
-    : Module(ptr, initName, initType, recv, send, pool) {
+    const std::vector<std::string> &send)
+    : Module(ptr, initName, initType, recv, send) {
 
   opt.height = _params.heightPixel;
   opt.width = _params.widthPixel;
@@ -132,7 +132,6 @@ void JetsonSourceModule::forward(
 }
 FlowEngineModuleRegister(JetsonSourceModule, Backend *, std::string const &,
                          std::string const &, common::CameraConfig const &,
-                         std::vector<std::string> const &,
                          std::vector<std::string> const &,
                          std::vector<std::string> const &);
 } // namespace module

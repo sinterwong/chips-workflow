@@ -53,8 +53,7 @@ public:
                     const std::string &initType,
                     const common::OutputConfig &outputConfig,
                     const std::vector<std::string> &recv = {},
-                    const std::vector<std::string> &send = {},
-                    const std::vector<std::string> &pool = {});
+                    const std::vector<std::string> &send = {});
   ~AlarmOutputModule() {}
 
   void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>

@@ -20,8 +20,6 @@ protected:
 
   std::string name;
 
-  std::vector<std::string> framePool;
-
   std::string type;
 
   std::unordered_map<std::string, int> hash;
@@ -39,14 +37,12 @@ public:
 
   Module(Backend *ptr, const std::string &initName, const std::string &initType,
          const std::vector<std::string> &recv = {},
-         const std::vector<std::string> &send = {},
-         const std::vector<std::string> &pool = {}) {
+         const std::vector<std::string> &send = {}) {
     backendPtr = ptr;
     name = initName;
     type = initType;
     recvModule = recv;
     sendModule = send;
-    framePool = pool;
 
     stopFlag.store(false);
     backendPtr->message->registered(name);

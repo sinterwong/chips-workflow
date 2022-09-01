@@ -57,9 +57,8 @@ public:
   LogicModule(Backend *ptr, const std::string &initName,
               const std::string &initType, const common::LogicConfig &params_,
               const std::vector<std::string> &recv = {},
-              const std::vector<std::string> &send = {},
-              const std::vector<std::string> &pool = {})
-      : Module(ptr, initName, initType, recv, send, pool), params(params_) {}
+              const std::vector<std::string> &send = {})
+      : Module(ptr, initName, initType, recv, send), params(params_) {}
   virtual ~LogicModule() {}
 
   inline bool drawBox(cv::Mat &image,

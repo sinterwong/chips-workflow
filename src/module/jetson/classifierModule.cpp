@@ -25,9 +25,8 @@ ClassifierModule::ClassifierModule(Backend *ptr, const std::string &initName,
                                    const std::string &initType,
                                    const common::AlgorithmConfig &_params,
                                    const std::vector<std::string> &recv,
-                                   const std::vector<std::string> &send,
-                                   const std::vector<std::string> &pool)
-    : Module(ptr, initName, initType, recv, send, pool), params(_params) {
+                                   const std::vector<std::string> &send)
+    : Module(ptr, initName, initType, recv, send), params(_params) {
 
   instance = std::make_shared<infer::trt::ClassifierInfer>(params);
   instance->initialize();
@@ -120,7 +119,6 @@ void ClassifierModule::forward(
 }
 FlowEngineModuleRegister(ClassifierModule, Backend *, std::string const &,
                          std::string const &, common::AlgorithmConfig const &,
-                         std::vector<std::string> const &,
                          std::vector<std::string> const &,
                          std::vector<std::string> const &);
 } // namespace module

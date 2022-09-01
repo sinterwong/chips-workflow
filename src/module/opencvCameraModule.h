@@ -35,14 +35,12 @@ public:
   OpencvCameraModule(Backend *ptr, const std::string &fileName,
                      const std::string &initName, const std::string &initType,
                      const std::vector<std::string> &recv = {},
-                     const std::vector<std::string> &send = {},
-                     const std::vector<std::string> &pool = {});
+                     const std::vector<std::string> &send = {}      );
 
   OpencvCameraModule(Backend *ptr, const int capNumber,
                      const std::string &initName, const std::string &initType,
                      const std::vector<std::string> &recv = {},
-                     const std::vector<std::string> &send = {},
-                     const std::vector<std::string> &pool = {});
+                     const std::vector<std::string> &send = {}      );
 
   void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
                    message) override;

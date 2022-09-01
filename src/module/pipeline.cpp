@@ -33,28 +33,28 @@ bool PipelineModule::submitModule(ModuleConfigure const &config,
     atm[config.moduleName] = ModuleFactory::createModule<Module>(
         config.typeName, &backend, config.moduleName, config.ctype,
         paramsConfig.GetAlgorithmConfig(), std::vector<std::string>{name},
-        std::vector<std::string>(), std::vector<std::string>());
+        std::vector<std::string>());
     break;
   }
   case common::ConfigType::Logic: { // Logic
     atm[config.moduleName] = ModuleFactory::createModule<Module>(
         config.typeName, &backend, config.moduleName, config.ctype,
         paramsConfig.GetLogicConfig(), std::vector<std::string>{name},
-        std::vector<std::string>(), std::vector<std::string>());
+        std::vector<std::string>());
     break;
   }
   case common::ConfigType::Output: { // Output
     atm[config.moduleName] = ModuleFactory::createModule<Module>(
         config.typeName, &backend, config.moduleName, config.ctype,
         paramsConfig.GetOutputConfig(), std::vector<std::string>{name},
-        std::vector<std::string>(), std::vector<std::string>());
+        std::vector<std::string>());
     break;
   }
   case common::ConfigType::Stream: { // Stream
     atm[config.moduleName] = ModuleFactory::createModule<Module>(
         config.typeName, &backend, config.moduleName, config.ctype,
         paramsConfig.GetCameraConfig(), std::vector<std::string>{name},
-        std::vector<std::string>(), std::vector<std::string>());
+        std::vector<std::string>());
     break;
   }
   default: {
@@ -63,10 +63,11 @@ bool PipelineModule::submitModule(ModuleConfigure const &config,
   }
 
   if (atm[config.moduleName] == nullptr) {
-    std::cout << config.moduleName << " is nullptr!!!!!!!!!!!!!!!!!!" << std::endl;
+    std::cout << config.moduleName << " is nullptr!!!!!!!!!!!!!!!!!!"
+              << std::endl;
     exit(-1);
   }
-  
+
   pool->submit(&Module::go, atm.at(config.moduleName));
   return true;
 }

@@ -43,9 +43,8 @@ public:
                const std::string &initType,
                const common::OutputConfig &outputConfig_,
                const std::vector<std::string> &recv = {},
-               const std::vector<std::string> &send = {},
-               const std::vector<std::string> &pool = {})
-      : Module(ptr, initName, initType, recv, send, pool),
+               const std::vector<std::string> &send = {})
+      : Module(ptr, initName, initType, recv, send),
         config(std::move(outputConfig_)) {}
   ~OutputModule() {}
 };

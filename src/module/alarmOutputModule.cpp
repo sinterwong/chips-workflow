@@ -21,9 +21,8 @@ AlarmOutputModule::AlarmOutputModule(Backend *ptr, const std::string &initName,
                                      const std::string &initType,
                                      const common::OutputConfig &outputConfig,
                                      const std::vector<std::string> &recv,
-                                     const std::vector<std::string> &send,
-                                     const std::vector<std::string> &pool)
-    : OutputModule(ptr, initName, initType, outputConfig, recv, send, pool) {}
+                                     const std::vector<std::string> &send)
+    : OutputModule(ptr, initName, initType, outputConfig, recv, send) {}
 
 bool AlarmOutputModule::postResult(std::string const &url,
                                    AlarmInfo const &alarmInfo,
@@ -187,7 +186,6 @@ void AlarmOutputModule::forward(
 
 FlowEngineModuleRegister(AlarmOutputModule, Backend *, std::string const &,
                          std::string const &, common::OutputConfig const &,
-                         std::vector<std::string> const &,
                          std::vector<std::string> const &,
                          std::vector<std::string> const &);
 } // namespace module

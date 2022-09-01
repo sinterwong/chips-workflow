@@ -9,9 +9,8 @@ namespace module {
 serialModule::serialModule(Backend *ptr, const std::string &initName,
                            const std::string &initType,
                            const std::vector<std::string> &recv,
-                           const std::vector<std::string> &send,
-                           const std::vector<std::string> &pool)
-    : Module(ptr, initName, initType, recv, send, pool) {}
+                           const std::vector<std::string> &send)
+    : Module(ptr, initName, initType, recv, send) {}
 
 void serialModule::forward(
     std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
@@ -32,6 +31,5 @@ void serialModule::forward(
 }
 FlowEngineModuleRegister(serialModule, Backend *, std::string const &,
                          std::string const &, std::vector<std::string> const &,
-                         std::vector<std::string> const &,
                          std::vector<std::string> const &);
 } // namespace module

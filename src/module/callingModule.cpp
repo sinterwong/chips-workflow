@@ -21,9 +21,8 @@ CallingModule::CallingModule(Backend *ptr, const std::string &initName,
                              const std::string &initType,
                              const common::LogicConfig &logicConfig,
                              const std::vector<std::string> &recv,
-                             const std::vector<std::string> &send,
-                             const std::vector<std::string> &pool)
-    : LogicModule(ptr, initName, initType, logicConfig, recv, send, pool) {}
+                             const std::vector<std::string> &send)
+    : LogicModule(ptr, initName, initType, logicConfig, recv, send) {}
 
 /**
  * @brief
@@ -152,7 +151,6 @@ void CallingModule::forward(
 
 FlowEngineModuleRegister(CallingModule, Backend *, std::string const &,
                          std::string const &, common::LogicConfig const &,
-                         std::vector<std::string> const &,
                          std::vector<std::string> const &,
                          std::vector<std::string> const &);
 } // namespace module

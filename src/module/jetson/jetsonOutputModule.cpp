@@ -15,9 +15,8 @@ JetsonOutputModule::JetsonOutputModule(Backend *ptr, const std::string &uri,
                                        const std::string &initName,
                                        const std::string &initType,
                                        const std::vector<std::string> &recv,
-                                       const std::vector<std::string> &send,
-                                       const std::vector<std::string> &pool)
-    : Module(ptr, initName, initType, recv, send, pool) {
+                                       const std::vector<std::string> &send  )
+    : Module(ptr, initName, initType, recv, send) {
   opt.resource = uri;
   outputStream = std::unique_ptr<videoOutput>(videoOutput::Create(opt));
   // outputStream = videoOutput::Create(opt);
@@ -51,7 +50,6 @@ void JetsonOutputModule::forward(
 }
 FlowEngineModuleRegister(JetsonOutputModule, Backend *, std::string const &,
                          std::string const &, std::string const &,
-                         std::vector<std::string> const &,
                          std::vector<std::string> const &,
                          std::vector<std::string> const &);
 } // namespace module
