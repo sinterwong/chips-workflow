@@ -31,7 +31,8 @@ protected:
   bool isRecord = false; // 是否是保存视频状态
   int frameCount = 0;
   std::unique_ptr<videoOutput> outputStream;
-  common::LogicConfig params;           // 逻辑参数
+  common::LogicConfig params; // 逻辑参数
+  retBox alarmBox;
   // utils::ImageConverter imageConverter; // mat to base64
 
   inline unsigned int random_char() {
@@ -61,8 +62,7 @@ public:
       : Module(ptr, initName, initType, recv, send), params(params_) {}
   virtual ~LogicModule() {}
 
-  inline bool drawBox(cv::Mat &image,
-                      std::pair<std::string, std::array<float, 6>> const &bbox,
+  inline bool drawBox(cv::Mat &image, retBox const &bbox,
                       cv::Scalar const &scalar = {0, 0, 255}) {
     cv::Rect rect(bbox.second[0], bbox.second[1],
                   bbox.second[2] - bbox.second[0],
@@ -98,6 +98,8 @@ public:
 
     return true;
   }
+
+  inline void bboxScaling(retBox const &bbox) {}
 };
 } // namespace module
 #endif // __METAENGINE_LOGIC_MODULE_H_

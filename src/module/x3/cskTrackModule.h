@@ -39,7 +39,7 @@ public:
 
   ~cskTrackModule();
 
-  void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
+  void forward(std::vector<forwardMessage>
                    message) override;
 };
 }

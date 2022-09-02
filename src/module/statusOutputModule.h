@@ -31,20 +31,19 @@ struct StatusInfo {
 class StatusOutputModule : public OutputModule {
 private:
   int count = 0;
+
 public:
   StatusOutputModule(Backend *ptr, const std::string &initName,
-                   const std::string &initType,
-                   const common::OutputConfig &outputConfig,
-                   const std::vector<std::string> &recv = {},
-                   const std::vector<std::string> &send = {}    );
+                     const std::string &initType,
+                     const common::OutputConfig &outputConfig,
+                     const std::vector<std::string> &recv = {},
+                     const std::vector<std::string> &send = {});
   ~StatusOutputModule() {}
 
-  void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
-                   message) override;
+  virtual void forward(std::vector<forwardMessage> message) override;
 
   bool postResult(std::string const &url, StatusInfo const &resultInfo,
                   std::string &result);
-
 };
 } // namespace module
 #endif // __METAENGINE_SEND_STATUS_OUTPUT_H_

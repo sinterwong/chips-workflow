@@ -56,8 +56,7 @@ public:
                     const std::vector<std::string> &send = {});
   ~AlarmOutputModule() {}
 
-  void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
-                   message) override;
+  virtual void forward(std::vector<forwardMessage> message) override;
 
   bool postResult(std::string const &url, AlarmInfo const &resultInfo,
                   std::string &result);

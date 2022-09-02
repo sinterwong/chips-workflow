@@ -1,12 +1,12 @@
 /**
  * @file jetsonOutputModule.h
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-02
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #ifndef __METAENGINE_JETSON_OUTPUT_H
@@ -35,14 +35,13 @@ public:
   JetsonOutputModule(Backend *ptr, const std::string &uri,
                      const std::string &initName, const std::string &initType,
                      const std::vector<std::string> &recv = {},
-                     const std::vector<std::string> &send = {}      );
+                     const std::vector<std::string> &send = {});
   ~JetsonOutputModule() {
     // delete outputStream;
     // outputStream = nullptr;
   }
 
-  void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
-                   message) override;
+  virtual void forward(std::vector<forwardMessage> message) override;
 };
 } // namespace module
 #endif // __METAENGINE_JETSON_OUTPUT_H

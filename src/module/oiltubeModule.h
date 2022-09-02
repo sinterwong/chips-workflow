@@ -1,12 +1,12 @@
 /**
  * @file oiltubeModule.h
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-08-30
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #ifndef __METAENGINE_OILTUBE_MODULE_H_
@@ -24,17 +24,14 @@ namespace module {
 class OiltubeModule : public LogicModule {
 
 public:
-  OiltubeModule(Backend *ptr,
-                   const std::string &initName, 
-                   const std::string &initType, 
-                   const common::LogicConfig &logicConfig,
-                   const std::vector<std::string> &recv = {},
-                   const std::vector<std::string> &send = {}    );
+  OiltubeModule(Backend *ptr, const std::string &initName,
+                const std::string &initType,
+                const common::LogicConfig &logicConfig,
+                const std::vector<std::string> &recv = {},
+                const std::vector<std::string> &send = {});
   ~OiltubeModule() {}
 
-  virtual void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
-                   message) override;
-  
+  virtual void forward(std::vector<forwardMessage> message) override;
 };
 } // namespace module
 #endif // __METAENGINE_Oiltube_MODULE_H_

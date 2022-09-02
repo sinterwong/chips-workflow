@@ -60,10 +60,12 @@ FrameBuf makeFrameBuf(uchar3 *image, int height, int width) {
   return temp;
 }
 
-JetsonSourceModule::JetsonSourceModule(
-    Backend *ptr, const std::string &initName, const std::string &initType,
-    const common::CameraConfig &_params, const std::vector<std::string> &recv,
-    const std::vector<std::string> &send)
+JetsonSourceModule::JetsonSourceModule(Backend *ptr,
+                                       const std::string &initName,
+                                       const std::string &initType,
+                                       const common::CameraConfig &_params,
+                                       const std::vector<std::string> &recv,
+                                       const std::vector<std::string> &send)
     : Module(ptr, initName, initType, recv, send) {
 
   opt.height = _params.heightPixel;
@@ -97,8 +99,7 @@ void JetsonSourceModule::step() {
   afterForward();
 }
 
-void JetsonSourceModule::forward(
-    std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
+void JetsonSourceModule::forward(std::vector<forwardMessage> message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("{} JetsonSourceModule module was done!", name);

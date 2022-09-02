@@ -54,7 +54,7 @@ RKMediaVOModule::~RKMediaVOModule()
 }
 
 void RKMediaVOModule::forward(
-        std::vector<std::tuple<std::string, std::string, queueMessage>> message)
+        std::vector<forwardMessage> message)
 {
     bool ret;
     for (auto&[send, type, buf]: message)

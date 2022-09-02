@@ -21,9 +21,10 @@ namespace module {
 
 PipelineModule::PipelineModule(std::string const &config_, size_t workers_n)
     : config(config_) {
-  pool = std::unique_ptr<thread_pool>(new thread_pool());
+  pool = std::unique_ptr<thread_pool>{std::make_unique<thread_pool>()};
   pool->start(workers_n);
-  // pool = std::unique_ptr<BS::thread_pool>(new BS::thread_pool(workers_n));
+  // pool =
+  // std::unique_ptr<BS::thread_pool>(std::make_unique(BS::thread_pool(workers_n)));
 }
 
 bool PipelineModule::submitModule(ModuleConfigure const &config,

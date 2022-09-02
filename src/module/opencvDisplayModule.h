@@ -5,27 +5,24 @@
 #ifndef METAENGINE_OPENCVDISPLAYMODULE_H
 #define METAENGINE_OPENCVDISPLAYMODULE_H
 
-#include <opencv2/opencv.hpp>
 #include "frameMessage.pb.h"
 #include "module.hpp"
+#include <opencv2/opencv.hpp>
 
 #define DIRECT true
 
 namespace module {
-class OpencvDisplayModule : public Module
-{
+class OpencvDisplayModule : public Module {
 protected:
-    cv::Mat frame;
+  cv::Mat frame;
 
 public:
-    OpencvDisplayModule(Backend *ptr,
-                        const std::string &initName,
-                        const std::string &initType,
-                        const std::vector<std::string> &recv = {},
-                        const std::vector<std::string> &send = {}         );
+  OpencvDisplayModule(Backend *ptr, const std::string &initName,
+                      const std::string &initType,
+                      const std::vector<std::string> &recv = {},
+                      const std::vector<std::string> &send = {});
 
-    void
-    forward(std::vector<std::tuple<std::string, std::string, queueMessage>> message) override;
+  virtual void forward(std::vector<forwardMessage> message) override;
 };
-}
-#endif //METAENGINE_OPENCVDISPLAYMODULE_H
+} // namespace module
+#endif // METAENGINE_OPENCVDISPLAYMODULE_H

@@ -7,21 +7,18 @@
 
 #include <cstring>
 
+#include "backend.h"
 #include "frameMessage.pb.h"
 #include "module.hpp"
-#include "backend.h"
 namespace module {
-class serialModule : public Module
-{
+class serialModule : public Module {
 public:
-    serialModule(Backend *ptr,
-                 const std::string &initName,
-                 const std::string &initType,
-                 const std::vector <std::string> &recv = {},
-                 const std::vector <std::string> &send = {});
-    void
-    forward(std::vector<std::tuple<std::string, std::string, queueMessage>> message) override;
+  serialModule(Backend *ptr, const std::string &initName,
+               const std::string &initType,
+               const std::vector<std::string> &recv = {},
+               const std::vector<std::string> &send = {});
+  virtual void forward(std::vector<forwardMessage> message) override;
 };
 
-}
-#endif //METAENGINE_SERIALMODULE_H
+} // namespace module
+#endif // METAENGINE_SERIALMODULE_H

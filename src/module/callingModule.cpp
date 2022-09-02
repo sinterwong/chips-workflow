@@ -31,8 +31,7 @@ CallingModule::CallingModule(Backend *ptr, const std::string &initName,
  *
  * @param message
  */
-void CallingModule::forward(
-    std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
+void CallingModule::forward(std::vector<forwardMessage> message) {
   if (recvModule.empty()) {
     return;
   }
@@ -77,7 +76,7 @@ void CallingModule::forward(
         }
         // std::cout << "classid: " << bbox.second.at(5) << ", "
         //           << "confidence: " << bbox.second.at(4) << std::endl;
-        if (bbox.second.at(5) == 1 && bbox.second.at(4) > 0.93) { 
+        if (bbox.second.at(5) == 1 && bbox.second.at(4) > 0.93) {
           // 存在报警
           // 生成本次报警的唯一ID
           buf.alarmResult.alarmVideoDuration = params.videDuration;
@@ -108,13 +107,16 @@ void CallingModule::forward(
           }
 
           // 记录当前的框为报警框
-          std::pair<std::string, std::array<float, 6>> b{bbox};
-          b.first = name;
+          alarmBox = bbox;
+          alarmBox.first = name.substr(1, name.find("_"));
+          // 报警框放大
+
+          alarmBox.second.at(0);
           // 单独画出报警框
-          drawBox(showImage, b);
+          drawBox(showImage, alarmBox);
           // 画出所有结果
           // drawResult(showImage, buf.algorithmResult);
-          buf.algorithmResult.bboxes.emplace_back(b);
+          buf.algorithmResult.bboxes.emplace_back(alarmBox);
           std::experimental::filesystem::create_directories(
               buf.alarmResult.alarmFile);
           std::string imagePath = buf.alarmResult.alarmFile + "/" +

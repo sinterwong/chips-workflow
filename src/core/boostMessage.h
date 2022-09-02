@@ -12,16 +12,16 @@
 // #include <boost/pool/pool.hpp>
 #include <condition_variable>
 
-// #include "concurrentqueue.h"
-#include "blockingconcurrentqueue.h"
+#include "concurrentqueue.h"
+// #include "blockingconcurrentqueue.h"
 #include "concurrentqueue.h"
 #include "messageBus.h"
 
 class BoostMessage : public MessageBus {
 protected:
   std::unordered_map<std::string, int> name2Queue;
-  std::vector<std::shared_ptr<moodycamel::BlockingConcurrentQueue<queueMessage>>> socketRecv;
-  // std::vector<std::shared_ptr<moodycamel::ConcurrentQueue<queueMessage>>> socketRecv;
+  // std::vector<std::shared_ptr<moodycamel::BlockingConcurrentQueue<queueMessage>>> socketRecv;
+  std::vector<std::shared_ptr<moodycamel::ConcurrentQueue<queueMessage>>> socketRecv;
 
 public:
   BoostMessage();

@@ -38,8 +38,8 @@ private:
   std::string type = "ControlMessage";
   std::string config;
   utils::ConfigParser configParser;
-  Backend backend{std::unique_ptr<MessageBus>{new BoostMessage()},
-                  std::unique_ptr<RouteFramePool>{new RouteFramePool(8)}};
+  Backend backend{std::make_unique<BoostMessage>(),
+                  std::make_unique<RouteFramePool>(8)};
   // std::unique_ptr<thread_pool> pool;
   std::unique_ptr<thread_pool> pool;
   std::unordered_map<std::string, std::shared_ptr<Module>> atm;

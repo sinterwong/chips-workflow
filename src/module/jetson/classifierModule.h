@@ -1,12 +1,12 @@
 /**
  * @file classifierModule.h
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-18
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #ifndef __METAENGINE_CLASSIFIER_MODULE_H_
@@ -17,8 +17,8 @@
 #include <string>
 #include <utility>
 
-#include "common/common.hpp"
 #include "backend.h"
+#include "common/common.hpp"
 #include "frameMessage.pb.h"
 #include "inference.h"
 #include "jetson/classifier.hpp"
@@ -34,14 +34,14 @@ private:
 
 public:
   ClassifierModule(Backend *ptr, const std::string &initName,
-               const std::string &initType, const common::AlgorithmConfig &_params,
-               const std::vector<std::string> &recv = {},
-               const std::vector<std::string> &send = {});
+                   const std::string &initType,
+                   const common::AlgorithmConfig &_params,
+                   const std::vector<std::string> &recv = {},
+                   const std::vector<std::string> &send = {});
 
   ~ClassifierModule();
 
-  void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
-                   message) override;
+  void forward(std::vector<forwardMessage> message) override;
 };
 } // namespace module
 #endif // __METAENGINE_CLASSIFIER_MODULE_H_

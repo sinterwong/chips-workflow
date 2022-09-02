@@ -1,12 +1,12 @@
 /**
  * @file frameDifferenceModule.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-15
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include "frameDifferenceModule.h"
@@ -25,8 +25,7 @@ FrameDifferenceModule::FrameDifferenceModule(
 
 FrameDifferenceModule::~FrameDifferenceModule() {}
 
-void FrameDifferenceModule::forward(
-    std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
+void FrameDifferenceModule::forward(std::vector<forwardMessage> message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("FreameDifference module was done!");

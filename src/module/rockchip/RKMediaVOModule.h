@@ -68,7 +68,7 @@ public:
     ~RKMediaVOModule();
 
     void
-    forward(std::vector<std::tuple<std::string, std::string, queueMessage>> message) override;
+    forward(std::vector<forwardMessage> message) override;
 };
 
 

@@ -145,8 +145,7 @@ bool AlarmOutputModule::writeResult(AlgorithmResult const &rm,
   return true;
 }
 
-void AlarmOutputModule::forward(
-    std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
+void AlarmOutputModule::forward(std::vector<forwardMessage> message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("{} AlarmOutputModule module was done!", name);
@@ -162,18 +161,12 @@ void AlarmOutputModule::forward(
     writeResult(buf.algorithmResult, algorithmInfo);
 
     AlarmInfo alarmInfo{
-        buf.cameraResult.heightPixel,
-        buf.cameraResult.widthPixel,
-        buf.cameraResult.cameraId,
-        buf.alarmResult.eventId,
-        buf.alarmResult.alarmVideoDuration,
-        buf.alarmResult.page,
-        buf.cameraResult.cameraIp,
-        buf.alarmResult.alarmType,
-        buf.alarmResult.alarmFile,
-        buf.alarmResult.alarmId,
-        buf.alarmResult.alarmDetails,
-        algorithmInfo,
+        buf.cameraResult.heightPixel,       buf.cameraResult.widthPixel,
+        buf.cameraResult.cameraId,          buf.alarmResult.eventId,
+        buf.alarmResult.alarmVideoDuration, buf.alarmResult.page,
+        buf.cameraResult.cameraIp,          buf.alarmResult.alarmType,
+        buf.alarmResult.alarmFile,          buf.alarmResult.alarmId,
+        buf.alarmResult.alarmDetails,       algorithmInfo,
     };
 
     std::string response;

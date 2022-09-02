@@ -31,8 +31,7 @@ ExtinguisherModule::ExtinguisherModule(Backend *ptr,
  *
  * @param message
  */
-void ExtinguisherModule::forward(
-    std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
+void ExtinguisherModule::forward(std::vector<forwardMessage> message) {
   if (recvModule.empty()) {
     return;
   }
@@ -107,7 +106,7 @@ void ExtinguisherModule::forward(
           }
 
           // 记录当前的框为报警框
-          std::pair<std::string, std::array<float, 6>> b{bbox};
+          retBox b{bbox};
           b.first = name;
           // 单独画出报警框
           drawBox(showImage, b);

@@ -1,12 +1,12 @@
 /**
  * @file helmetModule.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-09-01
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include "helmetModule.h"
@@ -18,10 +18,10 @@
 namespace module {
 
 HelmetModule::HelmetModule(Backend *ptr, const std::string &initName,
-                             const std::string &initType,
-                             const common::LogicConfig &logicConfig,
-                             const std::vector<std::string> &recv,
-                             const std::vector<std::string> &send)
+                           const std::string &initType,
+                           const common::LogicConfig &logicConfig,
+                           const std::vector<std::string> &recv,
+                           const std::vector<std::string> &send)
     : LogicModule(ptr, initName, initType, logicConfig, recv, send) {}
 
 /**
@@ -31,8 +31,7 @@ HelmetModule::HelmetModule(Backend *ptr, const std::string &initName,
  *
  * @param message
  */
-void HelmetModule::forward(
-    std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
+void HelmetModule::forward(std::vector<forwardMessage> message) {
   if (recvModule.empty()) {
     return;
   }
@@ -77,7 +76,7 @@ void HelmetModule::forward(
         }
         std::cout << "classid: " << bbox.second.at(5) << ", "
                   << "confidence: " << bbox.second.at(4) << std::endl;
-        if (bbox.second.at(5) == 1 && bbox.second.at(4) > 0.8) { 
+        if (bbox.second.at(5) == 1 && bbox.second.at(4) > 0.8) {
           // 存在报警
           // 生成本次报警的唯一ID
           buf.alarmResult.alarmVideoDuration = params.videDuration;
@@ -108,7 +107,7 @@ void HelmetModule::forward(
           }
 
           // 记录当前的框为报警框
-          std::pair<std::string, std::array<float, 6>> b{bbox};
+          retBox b{bbox};
           b.first = name;
           // 单独画出报警框
           // drawBox(showImage, b);

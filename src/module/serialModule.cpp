@@ -12,8 +12,7 @@ serialModule::serialModule(Backend *ptr, const std::string &initName,
                            const std::vector<std::string> &send)
     : Module(ptr, initName, initType, recv, send) {}
 
-void serialModule::forward(
-    std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
+void serialModule::forward(std::vector<forwardMessage> message) {
   // tutorial::FrameMessage buf;
   //    char ch = getchar();
   //    tutorial::FrameMessage buf;

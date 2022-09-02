@@ -16,10 +16,16 @@
 #include <utility>
 #include <vector>
 
-// #include <boost/pool/object_pool.hpp>
-// #include <boost/pool/pool.hpp>
-
-// #include "basicMessage.pb.h"
+/**
+ * @brief bbox result type
+ * 
+ */
+using retBox = std::pair<std::string, std::array<float, 6>>;
+/**
+ * @brief poly result type
+ * 
+ */
+using retPoly = std::pair<std::string, std::array<float, 9>>;
 
 /**
  * @brief 报警时的摄像头信息
@@ -54,17 +60,15 @@ struct AlarmResult {
  * @todo 这里的vector线程不安全 未来需要替换
  */
 struct AlgorithmResult {
-  std::vector<std::pair<std::string, std::array<float, 6>>>
-      bboxes; // [x1, y1, x2, y2, confidence, classid]
-  std::vector<std::pair<std::string, std::array<float, 9>>>
-      polys; // [x1, y1, ..., x4, y4, classid]
+  std::vector<retBox> bboxes; // [x1, y1, x2, y2, confidence, classid]
+  std::vector<retPoly> polys; // [x1, y1, ..., x4, y4, classid]
 };
 
 /**
  * @brief 逻辑模块配置
  */
 struct LogicInfo {
-  std::array<int, 4> region; // [x1, y1, x2, y2]
+  std::array<int, 4> region;         // [x1, y1, x2, y2]
   std::vector<int> attentionClasses; // [0, 2, 10...]
 };
 
@@ -76,7 +80,7 @@ struct queueMessage {
   int key;          // 帧id
   int status;       // 上游状态
   std::string send; // 上游模块名称
-  std::string recv;  
+  std::string recv;
   std::string messageType;
   std::string frameType;
   LogicInfo logicInfo;
@@ -94,7 +98,7 @@ protected:
   std::unordered_set<std::string> pool;
 
 public:
-  enum returnFlag {
+  enum class returnFlag {
     null,
     mapNotFind,
     successWithEmpty,

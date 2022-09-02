@@ -1,12 +1,12 @@
 /**
  * @file helmetModule.h
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-09-01
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #ifndef __METAENGINE_HELMET_MODULE_H_
@@ -24,17 +24,14 @@ namespace module {
 class HelmetModule : public LogicModule {
 
 public:
-  HelmetModule(Backend *ptr,
-                   const std::string &initName, 
-                   const std::string &initType, 
-                   const common::LogicConfig &logicConfig,
-                   const std::vector<std::string> &recv = {},
-                   const std::vector<std::string> &send = {}    );
+  HelmetModule(Backend *ptr, const std::string &initName,
+               const std::string &initType,
+               const common::LogicConfig &logicConfig,
+               const std::vector<std::string> &recv = {},
+               const std::vector<std::string> &send = {});
   ~HelmetModule() {}
 
-  virtual void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
-                   message) override;
-  
+  virtual void forward(std::vector<forwardMessage> message) override;
 };
 } // namespace module
 #endif // __METAENGINE_HELMET_MODULE_H_

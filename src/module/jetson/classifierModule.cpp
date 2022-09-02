@@ -34,8 +34,7 @@ ClassifierModule::ClassifierModule(Backend *ptr, const std::string &initName,
 
 ClassifierModule::~ClassifierModule() {}
 
-void ClassifierModule::forward(
-    std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
+void ClassifierModule::forward(std::vector<forwardMessage> message) {
   if (!instance) {
     std::cout << "instance is not init!!!" << std::endl;
     return;
@@ -69,12 +68,12 @@ void ClassifierModule::forward(
       if (!instance->infer(inferImage->data, ret)) {
         continue;
       }
-      std::pair<std::string, std::array<float, 6>> b = {
-          name,
-          {static_cast<float>(region.x), static_cast<float>(region.y),
-           static_cast<float>(region.x + region.width),
-           static_cast<float>(region.y + region.height), ret.classResult.second,
-           static_cast<float>(ret.classResult.first)}};
+      retBox b = {name,
+                  {static_cast<float>(region.x), static_cast<float>(region.y),
+                   static_cast<float>(region.x + region.width),
+                   static_cast<float>(region.y + region.height),
+                   ret.classResult.second,
+                   static_cast<float>(ret.classResult.first)}};
       buf.algorithmResult.bboxes.emplace_back(std::move(b));
     } else if (type == "algorithm") {
       if (buf.algorithmResult.bboxes.size() < 0) {
@@ -104,11 +103,10 @@ void ClassifierModule::forward(
           if (!instance->infer(croppedImage.data, ret)) {
             continue;
           }
-          std::pair<std::string, std::array<float, 6>> b = {
-              name,
-              {bbox.second[0], bbox.second[1], bbox.second[2], bbox.second[3],
-               ret.classResult.second,
-               static_cast<float>(ret.classResult.first)}};
+          retBox b = {name,
+                      {bbox.second[0], bbox.second[1], bbox.second[2],
+                       bbox.second[3], ret.classResult.second,
+                       static_cast<float>(ret.classResult.first)}};
 
           buf.algorithmResult.bboxes.emplace_back(b);
         }

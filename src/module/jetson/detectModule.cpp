@@ -19,23 +19,22 @@ DetectModule::DetectModule(Backend *ptr, const std::string &initName,
                            const common::AlgorithmConfig &_params,
                            const std::vector<std::string> &recv,
                            const std::vector<std::string> &send)
-    : Module(ptr, initName, initType, recv, send),
-      params(std::move(_params)) {
+    : Module(ptr, initName, initType, recv, send), params(std::move(_params)) {
 
   if (params.algorithmSerial == "yolo") {
     instance = std::make_shared<infer::trt::YoloDet>(params);
   } else if (params.algorithmSerial == "assd") {
     instance = std::make_shared<infer::trt::AssdDet>(params);
   } else {
-    FLOWENGINE_LOGGER_ERROR("Error algorithm serial {}", params.algorithmSerial);
+    FLOWENGINE_LOGGER_ERROR("Error algorithm serial {}",
+                            params.algorithmSerial);
   }
   instance->initialize();
 }
 
 DetectModule::~DetectModule() {}
 
-void DetectModule::forward(
-    std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
+void DetectModule::forward(std::vector<forwardMessage> message) {
   if (!instance) {
     std::cout << "instance is not init!!!" << std::endl;
     return;
@@ -74,12 +73,11 @@ void DetectModule::forward(
       }
 
       for (auto &rbbox : ret.detResults) {
-        // std::pair<std::string, std::array<float, 6>> b{}
-        std::pair<std::string, std::array<float, 6>> b = {
-            name,
-            {rbbox.bbox[0] + region.x, rbbox.bbox[1] + region.y,
-             rbbox.bbox[2] + region.x, rbbox.bbox[3] + region.y,
-             rbbox.class_confidence, rbbox.class_id}};
+        // retBox b{}
+        retBox b = {name,
+                    {rbbox.bbox[0] + region.x, rbbox.bbox[1] + region.y,
+                     rbbox.bbox[2] + region.x, rbbox.bbox[3] + region.y,
+                     rbbox.class_confidence, rbbox.class_id}};
         buf.algorithmResult.bboxes.emplace_back(std::move(b));
       }
     } else if (type == "algorithm") {
@@ -97,7 +95,7 @@ void DetectModule::forward(
             continue;
           }
           for (auto &rbbox : ret.detResults) {
-            std::pair<std::string, std::array<float, 6>> b = {
+            retBox b = {
                 name,
                 {rbbox.bbox[0] + bbox.second[0], rbbox.bbox[1] + bbox.second[1],
                  rbbox.bbox[2] + bbox.second[0], rbbox.bbox[3] + bbox.second[1],

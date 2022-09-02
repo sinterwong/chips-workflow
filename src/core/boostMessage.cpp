@@ -10,7 +10,7 @@
 #include <thread>
 
 MessageBus::returnFlag BoostMessageCheakEmpty(
-    const std::shared_ptr<moodycamel::BlockingConcurrentQueue<queueMessage>> &q) {
+    const std::shared_ptr<moodycamel::ConcurrentQueue<queueMessage>> &q) {
   if (q->size_approx() == 0)
     return MessageBus::returnFlag::successWithEmpty;
   else
@@ -22,7 +22,7 @@ BoostMessage::BoostMessage() {}
 bool BoostMessage::registered(std::string name) {
   std::cout << "Create module: " << name << std::endl;
   socketRecv.emplace_back(
-      std::make_shared<moodycamel::BlockingConcurrentQueue<queueMessage>>(16));
+      std::make_shared<moodycamel::ConcurrentQueue<queueMessage>>(16));
 
   int location = socketRecv.size() - 1;
   name2Queue.insert(std::make_pair(name, location));

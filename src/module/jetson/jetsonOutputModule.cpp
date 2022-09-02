@@ -15,7 +15,7 @@ JetsonOutputModule::JetsonOutputModule(Backend *ptr, const std::string &uri,
                                        const std::string &initName,
                                        const std::string &initType,
                                        const std::vector<std::string> &recv,
-                                       const std::vector<std::string> &send  )
+                                       const std::vector<std::string> &send)
     : Module(ptr, initName, initType, recv, send) {
   opt.resource = uri;
   outputStream = std::unique_ptr<videoOutput>(videoOutput::Create(opt));
@@ -26,16 +26,17 @@ JetsonOutputModule::JetsonOutputModule(Backend *ptr, const std::string &uri,
   }
 }
 
-void JetsonOutputModule::forward(
-    std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
+void JetsonOutputModule::forward(std::vector<forwardMessage> message) {
   for (auto &[send, type, buf] : message) {
     assert(type == "stream");
     FrameBuf frameBufMessage = backendPtr->pool->read(buf.key);
     auto frame = std::any_cast<uchar3 *>(frameBufMessage.read("uchar3*"));
     // std::cout << (frame == nullptr) << std::endl;
-    outputStream->Render(frame, buf.cameraResult.widthPixel, buf.cameraResult.heightPixel);
+    outputStream->Render(frame, buf.cameraResult.widthPixel,
+                         buf.cameraResult.heightPixel);
     char str[256];
-    sprintf(str, "Video Viewer (%ux%u)", buf.cameraResult.widthPixel, buf.cameraResult.heightPixel);
+    sprintf(str, "Video Viewer (%ux%u)", buf.cameraResult.widthPixel,
+            buf.cameraResult.heightPixel);
     // update status bar
     outputStream->SetStatus(str);
     // count ++;

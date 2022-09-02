@@ -43,7 +43,7 @@ OpencvCameraModule::OpencvCameraModule(Backend *ptr, const std::string &file,
                                        const std::string &initName,
                                        const std::string &initType,
                                        const std::vector<std::string> &recv,
-                                       const std::vector<std::string> &send  )
+                                       const std::vector<std::string> &send)
     : Module(ptr, initName, initType, recv, send) {
   readFile = true;
   fileName = file;
@@ -56,7 +56,7 @@ OpencvCameraModule::OpencvCameraModule(Backend *ptr, const int capNumber,
                                        const std::string &initName,
                                        const std::string &initType,
                                        const std::vector<std::string> &recv,
-                                       const std::vector<std::string> &send  )
+                                       const std::vector<std::string> &send)
     : Module(ptr, initName, initType, recv, send) {
   readFile = false;
   fileName = "";
@@ -65,8 +65,7 @@ OpencvCameraModule::OpencvCameraModule(Backend *ptr, const int capNumber,
   cap = cv::VideoCapture(cameraNumber);
 }
 
-void OpencvCameraModule::forward(
-    std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
+void OpencvCameraModule::forward(std::vector<forwardMessage> message) {
   assert(cap.isOpened());
   frame = std::make_shared<cv::Mat>();
   ret = cap.read(*frame);

@@ -31,8 +31,7 @@ SmokingModule::SmokingModule(Backend *ptr, const std::string &initName,
  *
  * @param message
  */
-void SmokingModule::forward(
-    std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
+void SmokingModule::forward(std::vector<forwardMessage> message) {
   if (recvModule.empty()) {
     return;
   }
@@ -77,7 +76,7 @@ void SmokingModule::forward(
         }
         // std::cout << "classid: " << bbox.second.at(5) << ", "
         //           << "confidence: " << bbox.second.at(4) << std::endl;
-        if (bbox.second.at(5) == 1 && bbox.second.at(4) > 0.93) { 
+        if (bbox.second.at(5) == 1 && bbox.second.at(4) > 0.93) {
           // 存在报警
           // 生成本次报警的唯一ID
           buf.alarmResult.alarmVideoDuration = params.videDuration;
@@ -108,7 +107,7 @@ void SmokingModule::forward(
           }
 
           // 记录当前的框为报警框
-          std::pair<std::string, std::array<float, 6>> b{bbox};
+          retBox b{bbox};
           b.first = name;
           // 单独画出报警框
           drawBox(showImage, b);

@@ -1,12 +1,12 @@
 /**
  * @file frameDifferenceModule.h
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-15
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #ifndef __METAENGINE_FRAME_DIFFERENCE_MODULE_H
@@ -32,12 +32,11 @@ public:
   FrameDifferenceModule(Backend *ptr, const std::string &initName,
                         const std::string &initType,
                         const std::vector<std::string> &recv = {},
-                        const std::vector<std::string> &send = {}         );
+                        const std::vector<std::string> &send = {});
 
   ~FrameDifferenceModule();
 
-  void forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
-                   message) override;
+  virtual void forward(std::vector<forwardMessage> message) override;
 };
 } // namespace module
 #endif // __METAENGINE_FRAME_DIFFERENCE_MODULE_H

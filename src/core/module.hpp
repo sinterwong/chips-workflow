@@ -14,6 +14,8 @@
 #include "moduleFactory.hpp"
 
 namespace module {
+using forwardMessage = std::tuple<std::string, std::string, queueMessage>;
+
 class Module {
 protected:
   Backend *backendPtr;
@@ -24,7 +26,7 @@ protected:
 
   std::unordered_map<std::string, int> hash;
 
-  std::vector<std::tuple<std::string, std::string, queueMessage>> message;
+  std::vector<forwardMessage> message;
 
   bool loop;
 
@@ -56,9 +58,7 @@ public:
 
   virtual void beforeForward(){};
 
-  virtual void
-  forward(std::vector<std::tuple<std::string, std::string, queueMessage>>
-              message) = 0;
+  virtual void forward(std::vector<forwardMessage> message) = 0;
 
   virtual void afterForward(){};
 
@@ -80,7 +80,7 @@ public:
         std::string Msend, Mtype;
         queueMessage Mbyte;
         backendPtr->message->recv(name, flag, Msend, Mtype, Mbyte, true);
-#ifdef Debug
+#ifdef _DEBUG
         assert(flag == MessageBus::returnFlag::successWithMore ||
                flag == MessageBus::returnFlag::successWithEmpty);
 #endif

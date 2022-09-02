@@ -1,12 +1,12 @@
 /**
  * @file oiltubeModule.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-08-30
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include "oiltubeModule.h"
@@ -16,12 +16,11 @@
 #include <unistd.h>
 namespace module {
 
-OiltubeModule::OiltubeModule(Backend *ptr,
-                                       const std::string &initName,
-                                       const std::string &initType,
-                                       const common::LogicConfig &logicConfig,
-                                       const std::vector<std::string> &recv,
-                                       const std::vector<std::string> &send)
+OiltubeModule::OiltubeModule(Backend *ptr, const std::string &initName,
+                             const std::string &initType,
+                             const common::LogicConfig &logicConfig,
+                             const std::vector<std::string> &recv,
+                             const std::vector<std::string> &send)
     : LogicModule(ptr, initName, initType, logicConfig, recv, send) {}
 
 /**
@@ -31,16 +30,14 @@ OiltubeModule::OiltubeModule(Backend *ptr,
  *
  * @param message
  */
-void OiltubeModule::forward(
-    std::vector<std::tuple<std::string, std::string, queueMessage>> message) {
+void OiltubeModule::forward(std::vector<forwardMessage> message) {
   if (recvModule.empty()) {
     return;
   }
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("{} OiltubeModule module was done!", name);
-      std::cout << name << "{} OiltubeModule module was done!"
-                << std::endl;
+      std::cout << name << "{} OiltubeModule module was done!" << std::endl;
       stopFlag.store(true);
       return;
     }
@@ -107,7 +104,7 @@ void OiltubeModule::forward(
           }
 
           // 记录当前的框为报警框
-          std::pair<std::string, std::array<float, 6>> b{bbox};
+          retBox b{bbox};
           b.first = name;
           // 单独画出报警框
           drawBox(showImage, b);
