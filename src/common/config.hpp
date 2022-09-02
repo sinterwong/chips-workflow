@@ -21,15 +21,6 @@
 namespace common {
 
 enum class ConfigType { Algorithm, Stream, Output, Logic, None };
-enum class ModuleType {
-  Detection = 0,
-  Classifier,
-  WebStream,
-  AlarmOutput,
-  StatusOutput,
-  Calling,
-  Smokeing
-};
 
 struct ModuleConfigure {
   std::string typeName;

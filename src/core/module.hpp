@@ -80,10 +80,10 @@ public:
         std::string Msend, Mtype;
         queueMessage Mbyte;
         backendPtr->message->recv(name, flag, Msend, Mtype, Mbyte, true);
-#ifdef _DEBUG
-        assert(flag == MessageBus::returnFlag::successWithMore ||
-               flag == MessageBus::returnFlag::successWithEmpty);
-#endif
+// #ifdef _DEBUG
+//         assert(flag == MessageBus::returnFlag::successWithMore ||
+//                flag == MessageBus::returnFlag::successWithEmpty);
+// #endif
         auto iter = hash.find(Msend);
         if (iter == hash.end()) {
           hash.insert(std::make_pair(Msend, message.size()));

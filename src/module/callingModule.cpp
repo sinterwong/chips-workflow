@@ -11,7 +11,6 @@
 
 #include "callingModule.h"
 #include <cstdlib>
-#include <experimental/filesystem>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -38,7 +37,7 @@ void CallingModule::forward(std::vector<forwardMessage> message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("{} CallingModule module was done!", name);
-      std::cout << name << "{} CallingModule module was done!" << std::endl;
+      std::cout << name << "CallingModule module was done!" << std::endl;
       stopFlag.store(true);
       if (outputStream && outputStream->IsStreaming()) {
         outputStream->Close();
@@ -46,22 +45,9 @@ void CallingModule::forward(std::vector<forwardMessage> message) {
       return;
     }
     if (isRecord) {
-      if (type != "stream")
-        continue;
-      // 正处于保存视频状态
-      FrameBuf frameBufMessage = backendPtr->pool->read(buf.key);
-      auto frame = std::any_cast<uchar3 *>(frameBufMessage.read("uchar3*"));
-      outputStream->Render(frame, buf.cameraResult.widthPixel,
-                           buf.cameraResult.heightPixel);
-      char str[256];
-      sprintf(str, "Video Viewer (%ux%u)", buf.cameraResult.widthPixel,
-              buf.cameraResult.heightPixel);
-      // update status bar
-      outputStream->SetStatus(str);
-      if (!outputStream->IsStreaming() || --frameCount <= 0) {
-        isRecord = false;
-        frameCount = 0;
-        outputStream->Close();
+      if (type == "stream") {
+        recordVideo(buf.key, buf.cameraResult.widthPixel,
+                    buf.cameraResult.heightPixel);
       }
       continue;
     }
@@ -76,67 +62,16 @@ void CallingModule::forward(std::vector<forwardMessage> message) {
         }
         // std::cout << "classid: " << bbox.second.at(5) << ", "
         //           << "confidence: " << bbox.second.at(4) << std::endl;
-        if (bbox.second.at(5) == 1 && bbox.second.at(4) > 0.93) {
-          // 存在报警
-          // 生成本次报警的唯一ID
-          buf.alarmResult.alarmVideoDuration = params.videDuration;
-          buf.alarmResult.alarmId = generate_hex(16);
-          buf.alarmResult.alarmFile =
-              params.outputDir + "/" + buf.alarmResult.alarmId;
-          buf.alarmResult.alarmDetails = "存在打电话行为";
-          buf.alarmResult.alarmType = name;
-          buf.alarmResult.page = params.page;
-          buf.alarmResult.eventId = params.eventId;
+        if (bbox.second.at(5) == 2 && bbox.second.at(4) > 0.8) {
+          // 生成报警信息和报警图
+          generateAlarm(buf, "存在打电话行为", bbox);
 
-          // TODO
-          cv::Mat showImage;
-          FrameBuf frameBufMessage = backendPtr->pool->read(buf.key);
-          auto frame = std::any_cast<std::shared_ptr<cv::Mat>>(
-              frameBufMessage.read("Mat"));
-          if (frame->empty()) {
-            break;
-          }
-          if (params.isDraw) {
-            // 临时画个图（后续根据前端参数来决定返回的图片是否带有画图标记）
-            showImage = frame->clone();
-            if (buf.frameType == "RGB888") {
-              cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
-            }
-          } else {
-            showImage = *frame;
-          }
-
-          // 记录当前的框为报警框
-          alarmBox = bbox;
-          alarmBox.first = name.substr(1, name.find("_"));
-          // 报警框放大
-
-          alarmBox.second.at(0);
-          // 单独画出报警框
-          drawBox(showImage, alarmBox);
-          // 画出所有结果
-          // drawResult(showImage, buf.algorithmResult);
-          buf.algorithmResult.bboxes.emplace_back(alarmBox);
-          std::experimental::filesystem::create_directories(
-              buf.alarmResult.alarmFile);
-          std::string imagePath = buf.alarmResult.alarmFile + "/" +
-                                  buf.alarmResult.alarmId + ".jpg";
-          // 输出alarm image
-          cv::imwrite(imagePath, showImage);
+          // 发送至后端
           sendWithTypes(buf, {"output"});
+
+          // 保存视频
           if (params.videDuration > 0) {
-            // 需要保存视频，在这里初始化
-            videoOptions opt;
-            opt.resource = buf.alarmResult.alarmFile + "/" +
-                           buf.alarmResult.alarmId + ".mp4";
-            opt.height = buf.cameraResult.heightPixel;
-            opt.width = buf.cameraResult.widthPixel;
-            opt.frameRate = buf.cameraResult.frameRate;
-            outputStream =
-                std::unique_ptr<videoOutput>(videoOutput::Create(opt));
-            isRecord = true;
-            frameCount = params.videDuration *
-                         buf.cameraResult.frameRate; // 总共需要保存的帧数
+            initRecord(buf);
           }
         }
         break;

@@ -13,7 +13,9 @@
 #define __METAENGINE_LOGIC_MODULE_H_
 
 #include <any>
+#include <experimental/filesystem>
 #include <memory>
+#include <opencv2/core/types.hpp>
 #include <opencv2/opencv.hpp>
 #include <random>
 #include <sstream>
@@ -28,11 +30,12 @@
 namespace module {
 class LogicModule : public Module {
 protected:
-  bool isRecord = false; // 是否是保存视频状态
-  int frameCount = 0;
-  std::unique_ptr<videoOutput> outputStream;
-  common::LogicConfig params; // 逻辑参数
-  retBox alarmBox;
+  bool isRecord = false;                     // 是否是保存视频状态
+  int frameCount = 0;                        // 保存帧数
+  int drawTimes = 0;                         // 视频上画的次数
+  std::unique_ptr<videoOutput> outputStream; // 输出流
+  common::LogicConfig params;                // 逻辑参数
+  retBox alarmBox;                           // 报警作图框
   // utils::ImageConverter imageConverter; // mat to base64
 
   inline unsigned int random_char() {
@@ -63,26 +66,22 @@ public:
   virtual ~LogicModule() {}
 
   inline bool drawBox(cv::Mat &image, retBox const &bbox,
-                      cv::Scalar const &scalar = {0, 0, 255}) {
+                      cv::Scalar const &scalar = {0, 0, 255}) const {
     cv::Rect rect(bbox.second[0], bbox.second[1],
                   bbox.second[2] - bbox.second[0],
                   bbox.second[3] - bbox.second[1]);
-    cv::rectangle(image, rect, cv::Scalar(0, 0, 255), 2);
+    cv::rectangle(image, rect, scalar, 2);
     cv::putText(image, bbox.first, cv::Point(rect.x, rect.y - 1),
-                cv::FONT_HERSHEY_PLAIN, 1.2, 2);
+                cv::FONT_HERSHEY_PLAIN, 2, {255, 255, 255});
     return true;
   }
 
-  inline bool drawResult(cv::Mat &image, AlgorithmResult const &rm) {
+  inline bool drawResult(cv::Mat &image, AlgorithmResult const &rm) const {
     for (auto &bbox : rm.bboxes) {
-      cv::Rect rect(bbox.second[0], bbox.second[1],
-                    bbox.second[2] - bbox.second[0],
-                    bbox.second[3] - bbox.second[1]);
-      if (bbox.first == name) {
-        cv::rectangle(image, rect, cv::Scalar(0, 0, 255), 2);
-        cv::putText(image, bbox.first, cv::Point(rect.x, rect.y - 1),
-                    cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(255, 0, 255), 2);
-      }
+      drawBox(image, bbox,
+              cv::Scalar{static_cast<double>(rand() % 255),
+                         static_cast<double>(rand() % 255),
+                         static_cast<double>(rand() % 255)});
     }
 
     for (auto &poly : rm.polys) {
@@ -100,6 +99,92 @@ public:
   }
 
   inline void bboxScaling(retBox const &bbox) {}
+
+  inline void initRecord(queueMessage const &buf) {
+    videoOptions opt;
+    opt.resource =
+        buf.alarmResult.alarmFile + "/" + buf.alarmResult.alarmId + ".mp4";
+    opt.height = buf.cameraResult.heightPixel;
+    opt.width = buf.cameraResult.widthPixel;
+    opt.frameRate = buf.cameraResult.frameRate;
+    outputStream = std::unique_ptr<videoOutput>(videoOutput::Create(opt));
+    isRecord = true;
+    frameCount =
+        params.videDuration * buf.cameraResult.frameRate; // 总共需要保存的帧数
+    drawTimes = floor(frameCount / 3);
+  }
+
+  inline void recordVideo(int key, int width, int height) {
+    FrameBuf frameBufMessage = backendPtr->pool->read(key);
+    uchar3 *frame;
+    if (drawTimes-- > 0) {
+      auto image =
+          std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
+      drawBox(*image, alarmBox, cv::Scalar{255, 0, 0});
+      frame = reinterpret_cast<uchar3 *>(image->data);
+    } else {
+      frame = std::any_cast<uchar3 *>(frameBufMessage.read("uchar3*"));
+    }
+
+    outputStream->Render(frame, width, height);
+    char str[256];
+    sprintf(str, "Video Viewer (%ux%u)", width, height);
+    // update status bar
+    outputStream->SetStatus(str);
+    if (!outputStream->IsStreaming() || --frameCount <= 0) {
+      isRecord = false;
+      frameCount = 0;
+      drawTimes = 0;
+      outputStream->Close();
+    }
+  }
+
+  inline void generateAlarm(queueMessage &buf, std::string const &detail,
+                            retBox const &bbox) {
+    // 生成本次报警的唯一ID
+    buf.alarmResult.alarmVideoDuration = params.videDuration;
+    buf.alarmResult.alarmId = generate_hex(16);
+    buf.alarmResult.alarmFile =
+        params.outputDir + "/" + buf.alarmResult.alarmId;
+    buf.alarmResult.alarmDetails = detail;
+    buf.alarmResult.alarmType = name;
+    buf.alarmResult.page = params.page;
+    buf.alarmResult.eventId = params.eventId;
+
+    // TODO
+    cv::Mat showImage;
+    FrameBuf frameBufMessage = backendPtr->pool->read(buf.key);
+    auto frame =
+        std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
+    if (params.isDraw) {
+      // 临时画个图（后续根据前端参数来决定返回的图片是否带有画图标记）
+      showImage = frame->clone();
+      if (buf.frameType == "RGB888") {
+        cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
+      }
+    } else {
+      showImage = *frame;
+    }
+
+    // 记录当前的框为报警框
+    alarmBox = bbox;
+    auto pos = name.find("_");
+    alarmBox.first =
+        name.substr(pos + 1).substr(0, name.substr(pos + 1).find("_"));
+    // TODO 报警框放大
+
+    // 单独画出报警框
+    drawBox(showImage, alarmBox);
+    // 画出所有结果
+    // drawResult(showImage, buf.algorithmResult);
+    buf.algorithmResult.bboxes.push_back(alarmBox);
+    std::experimental::filesystem::create_directories(
+        buf.alarmResult.alarmFile);
+    std::string imagePath =
+        buf.alarmResult.alarmFile + "/" + buf.alarmResult.alarmId + ".jpg";
+    // 输出alarm image
+    cv::imwrite(imagePath, showImage);
+  }
 };
 } // namespace module
 #endif // __METAENGINE_LOGIC_MODULE_H_
