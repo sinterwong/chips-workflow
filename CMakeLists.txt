@@ -33,7 +33,7 @@ ENDIF()
 # Set default build to debug
 #--------------------------------------------
 IF(NOT CMAKE_BUILD_TYPE)
-    SET(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose Release or Debug" FORCE)
+    SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose Release or Debug" FORCE)
 ENDIF()
 
 IF(NOT TARGET_OS)

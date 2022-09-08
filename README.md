@@ -4,11 +4,9 @@ That is a temp description.
 
 # Prerequisites
 - CMake 3.1+ installed.
-- Use a C++17 compiler(C++11 and C++14 is optional).
+- Use a C++17 standard.
 - protobuf 3.20+ installed.
 - opencv 4.2+ installed.
-- fmt installed.
-- freetype installed.
 - openssl installed.
 
 # Build & Install
@@ -23,10 +21,8 @@ $ make -j4
 $ make install DESTDIR={your_destination} (optional)
 ```
 # Test
-## Startup config server
-  ```bash
-  ```
 ## Run flow
   ```bash
+  cd ${INSTALL_ROOT}/bin
+  ./app_flowengine --config_path=your_config.json --num_workers=16
   ```
-  
