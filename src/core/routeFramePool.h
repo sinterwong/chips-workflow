@@ -1,6 +1,13 @@
-//
-// Created by Wallel on 2022/2/16.
-//
+/**
+ * @file routeFramePool.h
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.2
+ * @date 2022-07-20
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 
 #ifndef METAENGINE_ROUTEFRAMEPOOL_H
 #define METAENGINE_ROUTEFRAMEPOOL_H
@@ -12,9 +19,6 @@
 #include <iostream>
 #include <map>
 #include <vector>
-
-// #include <boost/pool/pool.hpp>
-// #include <boost/thread.hpp>
 #include <shared_mutex>
 
 enum frameDataType {
@@ -61,9 +65,7 @@ public:
 
 class RouteFramePool : public FramePool {
 protected:
-  // boost::pool<> framePool = boost::pool<>(sizeof(char));
   std::vector<FrameBuf> routeArray;
-  // boost::shared_mutex routeMutex;
   std::shared_mutex routeMutex;
   int size, key;
 
@@ -72,12 +74,6 @@ protected:
 public:
   RouteFramePool(int maxSize = 2, int width = 1920, int height = 1080,
                  int channel = 3);
-
-  // RouteFramePool(RouteFramePool &&other);
-
-  // RouteFramePool(RouteFramePool &other);
-
-  // RouteFramePool &operator=(RouteFramePool &&other);
 
   ~RouteFramePool();
 
