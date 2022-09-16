@@ -6,15 +6,14 @@ ADD_DEFINITIONS(-DNX_SERIAL_NUMBER="1423721066487")
 #--------------------------------------------
 # Project setting
 #--------------------------------------------
-# compiler configuration
-SET(CMAKE_CXX_STANDARD 17)
-# IF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-#     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wno-write-strings -Wno-deprecated-declarations")
-# ENDIF()
-# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wno-write-strings -Wno-deprecated-declarations")
-
 INCLUDE(cmake/messagecolor.cmake)
 INCLUDE(cmake/utils.cmake)
+
+#--------------------------------------------
+# Set compilation options
+#--------------------------------------------
+INCLUDE(cmake/toolchain_options.cmake)
+
 FLOWENGINE_APP_EXTRACT_VERSION()
 
 PROJECT(FlowEngine VERSION ${FLOWENGINE_APP_VERSION} LANGUAGES CXX)
@@ -53,11 +52,8 @@ MESSAGE(STATUS "Your target arch : ${TARGET_ARCH}")
 MESSAGE(STATUS "Your target hardware : ${TARGET_HARDWARE}")
 
 MESSAGE(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
-#--------------------------------------------
-# Set compilation options
-#--------------------------------------------
+
 MESSAGE(INFO "--------------------------------")
-INCLUDE(cmake/toolchain_options.cmake)
 INCLUDE(cmake/load_3rdparty.cmake)
 MESSAGE(INFO "--------------------------------")
 
