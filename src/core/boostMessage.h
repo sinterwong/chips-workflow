@@ -1,7 +1,13 @@
-//
-// Created by Wallel on 2022/1/30.
-//
-
+/**
+ * @file boostMessage.h
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.2
+ * @date 2022-08-05
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #ifndef FLOWCORE_BOOSTMESSAGE_H
 #define FLOWCORE_BOOSTMESSAGE_H
 
@@ -9,18 +15,15 @@
 #include <unordered_map>
 #include <vector>
 
-// #include <boost/pool/pool.hpp>
 #include <condition_variable>
 
 #include "concurrentqueue.h"
-// #include "blockingconcurrentqueue.h"
 #include "concurrentqueue.h"
 #include "messageBus.h"
 
 class BoostMessage : public MessageBus {
 protected:
   std::unordered_map<std::string, int> name2Queue;
-  // std::vector<std::shared_ptr<moodycamel::BlockingConcurrentQueue<queueMessage>>> socketRecv;
   std::vector<std::shared_ptr<moodycamel::ConcurrentQueue<queueMessage>>> socketRecv;
 
 public:

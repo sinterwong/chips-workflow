@@ -1,6 +1,13 @@
-//
-// Created by Wallel on 2022/2/1.
-//
+/**
+ * @file backend.h
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.2
+ * @date 2022-08-11
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 
 #ifndef FLOWCORE_BACKEND_H
 #define FLOWCORE_BACKEND_H

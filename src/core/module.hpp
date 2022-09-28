@@ -1,6 +1,13 @@
-//
-// Created by Wallel on 2022/2/1.
-//
+/**
+ * @file module.hpp
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.3
+ * @date 2022-09-05
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 
 #ifndef FLOWCORE_MODULE_HPP
 #define FLOWCORE_MODULE_HPP
