@@ -128,8 +128,8 @@ void JetsonSourceModule::forward(std::vector<forwardMessage> message) {
     sendMessage.key = returnKey;
     sendMessage.cameraResult = cameraResult;
     sendMessage.status = 0;
+    autoSend(sendMessage);
   }
-  autoSend(sendMessage);
 }
 FlowEngineModuleRegister(JetsonSourceModule, Backend *, std::string const &,
                          std::string const &, common::CameraConfig const &,
