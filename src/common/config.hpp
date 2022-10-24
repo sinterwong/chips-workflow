@@ -41,9 +41,9 @@ struct AlgorithmConfig {
                   bool isScale_ = true, int batchSize_ = 1)
       : modelPath(modelPath_), inputTensorNames(std::move(inputTensorNames_)),
         outputTensorNames(std::move(outputTensorNames_)),
-        inputShape(std::move(inputShape_)),
-        algorithmSerial(std::move(algorithmSerial_)), cond_thr(cond_thr_),
-        nms_thr(nms_thr_), alpha(alpha_), beta(beta_), isScale(isScale_),
+        algorithmSerial(std::move(algorithmSerial_)),
+        inputShape(std::move(inputShape_)), isScale(isScale_),
+        cond_thr(cond_thr_), nms_thr(nms_thr_), alpha(alpha_), beta(beta_),
         batchSize(batchSize_){};
   // 算法配置
   std::string modelPath;                      // engine 所在目录
@@ -63,9 +63,9 @@ struct CameraConfig {
   CameraConfig(std::string const &name_, std::string const &videoCode_,
                std::string const &flowType_, std::string const &cameraIp_,
                int widthPixel_, int heightPixel_, int cameraId_)
-      : cameraName(name_), videoCode(videoCode_), flowType(flowType_),
-        cameraIp(cameraIp_), widthPixel(widthPixel_), heightPixel(heightPixel_),
-        cameraId(cameraId_) {}
+      : widthPixel(widthPixel_), heightPixel(heightPixel_), cameraId(cameraId_),
+        cameraName(name_), videoCode(videoCode_), flowType(flowType_),
+        cameraIp(cameraIp_) {}
   CameraConfig() = default;
   ~CameraConfig() {}
   // 摄像机配置
@@ -83,9 +83,9 @@ struct LogicConfig {
   LogicConfig(std::string const &outputDir_, std::array<int, 4> const &region_,
               std::vector<int> const &attentionClasses_, int eventId_,
               std::string page_, int videoDuration_ = 0, float threshold_ = 0.9)
-      : outputDir(outputDir_), region(region_),
-        attentionClasses(attentionClasses_), eventId(eventId_), page(page_),
-        videDuration(videoDuration_), threshold(threshold_) {}
+      : outputDir(outputDir_), eventId(eventId_),
+        videDuration(videoDuration_), page(page_), region(region_),
+        attentionClasses(attentionClasses_), threshold(threshold_) {}
   ~LogicConfig() {}
   std::string outputDir;
   int eventId;

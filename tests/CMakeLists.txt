@@ -8,6 +8,10 @@ INCLUDE_DIRECTORIES(
     ${Protobuf_INCLUDE_DIR}
     ${OPENSSL_INCLUDE_DIR}
     ${CURL_INCLUDE_DIR}
+    ${DNN_PATH}/include
+    ${APPSDK_PATH}/include
+    ${APPSDK_PATH}/include/vio
+    ${APPSDK_PATH}/include/libmm
 )
 
 LINK_DIRECTORIES(
@@ -15,7 +19,14 @@ LINK_DIRECTORIES(
     ${OpenCV_LIBRARY_DIR}
     ${CURL_LIBRARY_DIR}
     ${OPENSSL_LIBRARY_DIR}
+    ${DNN_LIB_PATH}
+    ${APPSDK_PATH}/lib
+    ${APPSDK_PATH}/lib/hbbpu
+    ${APPSDK_PATH}/lib/hbmedia
 )
+
+SET(JETSON_LIBS jetson_infer jetson_infer_cu jetson_module nvinfer nvparsers nvonnxparser nvinfer_plugin)
+SET(X3_LIBS x3_infer x3_module)
 
 LINK_LIBRARIES(
     ${OpenCV_LIBS}
@@ -26,15 +37,11 @@ LINK_LIBRARIES(
     pthread
     spdlog
     core
-    infer
-    infer_cu
     module
     module_logger 
     license
-    nvinfer 
-    nvparsers 
-    nvonnxparser 
-    nvinfer_plugin
+    ${X3_LIBS}
+    ${JETSON_LIBS}
 )
 
 FILE(GLOB APP_SOURCES *.cpp)

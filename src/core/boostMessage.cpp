@@ -3,7 +3,6 @@
 //
 
 #include "boostMessage.h"
-#include "frameMessage.pb.h"
 #include "logger/logger.hpp"
 #include <memory>
 #include <mutex>

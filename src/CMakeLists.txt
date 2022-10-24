@@ -10,7 +10,7 @@ ADD_SUBDIRECTORY(logger)
 ADD_SUBDIRECTORY(utils)
 ADD_SUBDIRECTORY(core)
 ADD_SUBDIRECTORY(infer)
-ADD_SUBDIRECTORY(license)
+# ADD_SUBDIRECTORY(license)
 ADD_SUBDIRECTORY(module)
 
 # transfer all headers to the include directory 

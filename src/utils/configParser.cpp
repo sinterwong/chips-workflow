@@ -36,7 +36,7 @@ bool ConfigParser::parseConfig(
       return false;
     }
 
-    for (int i = 0; i < pipelines.Size(); i++) {
+    for (int i = 0; i < static_cast<int>(pipelines.Size()); i++) {
       rapidjson::Value &e = pipelines[i];
       if (!e.IsObject()) {
         continue;
@@ -47,7 +47,7 @@ bool ConfigParser::parseConfig(
         return false;
       }
       std::vector<std::pair<ModuleConfigure, ParamsConfig>> pipe;
-      for (int p = 0; p < pipeline.Size(); p++) {
+      for (int p = 0; p < static_cast<int>(pipeline.Size()); p++) {
 
         rapidjson::Value &params = pipeline[p];
         if (!params.IsObject()) {
@@ -77,14 +77,14 @@ bool ConfigParser::parseConfig(
         case common::ConfigType::Algorithm: { // Algorithm
           rapidjson::Value &in = params["inputNames"];
           std::vector<std::string> inputNames;
-          for (int i = 0; i < in.Size(); i++) {
+          for (int i = 0; i < static_cast<int>(in.Size()); i++) {
             rapidjson::Value &n = in[i];
             inputNames.emplace_back(n.GetString());
           }
 
           rapidjson::Value &out = params["outputNames"];
           std::vector<std::string> outputNames;
-          for (int i = 0; i < out.Size(); i++) {
+          for (int i = 0; i < static_cast<int>(out.Size()); i++) {
             rapidjson::Value &n = out[i];
             outputNames.emplace_back(n.GetString());
           }
@@ -120,7 +120,7 @@ bool ConfigParser::parseConfig(
           std::vector<int> attentionClasses;
           if (params.HasMember("attentionClasses")) {
             rapidjson::Value &ac = params["attentionClasses"];
-            for (int i = 0; i < ac.Size(); i++) {
+            for (int i = 0; i < static_cast<int>(ac.Size()); i++) {
               rapidjson::Value &n = ac[i];
               attentionClasses.emplace_back(n.GetInt());
             }
