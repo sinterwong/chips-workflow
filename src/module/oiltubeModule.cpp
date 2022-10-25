@@ -10,6 +10,7 @@
  */
 
 #include "oiltubeModule.h"
+#include <cstddef>
 #include <cstdlib>
 #include <experimental/filesystem>
 #include <sys/stat.h>
@@ -53,7 +54,7 @@ void OiltubeModule::forward(std::vector<forwardMessage> message) {
     if (type == "algorithm") {
       // 此处根据 buf.algorithmResult 写吸烟的逻辑并填充 buf.alarmResult 信息
       // 如果符合条件就发送至AlarmOutputModule
-      for (int i = 0; i < buf.algorithmResult.bboxes.size(); i++) {
+      for (size_t i = 0; i < buf.algorithmResult.bboxes.size(); i++) {
         auto &bbox = buf.algorithmResult.bboxes.at(i);
         if (bbox.first != send) {
           continue;

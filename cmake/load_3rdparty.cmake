@@ -224,6 +224,8 @@ ENDMACRO()
 
 MACRO(LOAD_X3)
     # define dnn lib path
+    LOAD_OPENSSL()
+    LOAD_CURL()
     SET(DNN_PATH "~/.horizon/ddk/xj3_aarch64/dnn/")
     SET(APPSDK_PATH "~/.horizon/ddk/xj3_aarch64/appsdk/appuser/")
     SET(DNN_LIB_PATH ${DNN_PATH}/lib)

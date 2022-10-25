@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 PROJECT(Tests)
-
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations")
 INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}
     ${COMMON_INCLUDE_DIR}
@@ -25,14 +25,22 @@ LINK_DIRECTORIES(
     ${APPSDK_PATH}/lib/hbmedia
 )
 
-SET(JETSON_LIBS jetson_infer jetson_infer_cu jetson_module nvinfer nvparsers nvonnxparser nvinfer_plugin)
-SET(X3_LIBS x3_infer x3_module)
+IF(TARGET_HARDWARE STREQUAL "x3")
+    MESSAGE(STATUS "Loading X3 dependent libraries")
+    SET(CHIPS_DEPAND_LIBS x3_infer x3_module)
+ELSEIF(TARGET_HARDWARE EQUAL "jetson")
+    MESSAGE(STATUS "Loading Jetson dependent libraries")
+    SET(CHIPS_DEPAND_LIBS jetson_infer jetson_infer_cu jetson_module nvinfer nvparsers nvonnxparser nvinfer_plugin)
+ELSE()
+    SET(CHIPS_DEPAND_LIBS)
+ENDIF()
 
 LINK_LIBRARIES(
     ${OpenCV_LIBS}
     ${Protobuf_LIBRARY}
     ${CURL_LIBS}
     ${OPENSSL_LIBS}
+    ${CHIPS_DEPAND_LIBS}
     gflags::gflags
     pthread
     spdlog
@@ -40,8 +48,6 @@ LINK_LIBRARIES(
     module
     module_logger 
     license
-    ${X3_LIBS}
-    ${JETSON_LIBS}
 )
 
 FILE(GLOB APP_SOURCES *.cpp)

@@ -87,7 +87,7 @@ bool FrameDifference::moveDetect(const cv::Mat &temp, const cv::Mat &frame,
                    2); //在result上绘制轮廓
   // 7.查找正外接矩形
   std::vector<cv::Rect> boundRect(contours.size());
-  for (int i = 0; i < contours.size(); i++) {
+  for (size_t i = 0; i < contours.size(); i++) {
     boundRect[i] = cv::boundingRect(contours[i]);
     retBox bbox = {
         name,

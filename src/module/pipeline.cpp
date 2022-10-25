@@ -132,7 +132,7 @@ void PipelineModule::stopModule(std::string const &moduleName) {
   backend.message->send(name, moduleName, type, queueMessage());
 
   // 从atm中删除对象
-  int num = atm.erase(moduleName);
+  atm.erase(moduleName);
 }
 
 bool PipelineModule::startPipeline() {
