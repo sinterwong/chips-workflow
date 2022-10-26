@@ -109,8 +109,9 @@ public:
     opt.frameRate = buf.cameraResult.frameRate;
     outputStream = std::unique_ptr<videoOutput>(videoOutput::Create(opt));
     isRecord = true;
+    int frameRate = buf.cameraResult.frameRate > 0 ? buf.cameraResult.frameRate : 30;
     frameCount =
-        params.videDuration * buf.cameraResult.frameRate; // 总共需要保存的帧数
+        params.videDuration * frameRate; // 总共需要保存的帧数
     drawTimes = floor(frameCount / 3);
   }
 
