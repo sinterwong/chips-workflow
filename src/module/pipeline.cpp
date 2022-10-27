@@ -87,6 +87,11 @@ bool PipelineModule::parseConfigs(
     FLOWENGINE_LOGGER_INFO("config parse: parseParams is failed!");
     return false;
   }
+
+  if (!configParser.writeJson("{}", path)) {
+    FLOWENGINE_LOGGER_INFO("config parse: clean json file is failed!");
+    return false;
+  }
   return true;
 }
 
