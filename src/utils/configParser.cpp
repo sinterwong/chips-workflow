@@ -11,6 +11,7 @@
 
 #include "configParser.hpp"
 #include "logger/logger.hpp"
+#include <fstream>
 #include <utility>
 #include <vector>
 
@@ -22,7 +23,7 @@ bool ConfigParser::parseConfig(
         &pipelinesConfigs) {
   rapidjson::Document d;
   if (d.Parse(jsonstr).HasParseError()) {
-    // FLOWENGINE_LOGGER_ERROR("parseJson: parse error!");
+    FLOWENGINE_LOGGER_ERROR("parseJson: parse error: ", d.GetParseError());
     return false;
   }
   if (!d.IsObject()) {
@@ -154,23 +155,13 @@ bool ConfigParser::parseConfig(
 }
 
 bool ConfigParser::readFile(std::string const &filename, std::string &result) {
-  FILE *fp = fopen(filename.c_str(), "rb");
-  if (!fp) {
-    FLOWENGINE_LOGGER_ERROR("open failed! file: {}", filename);
+  std::ifstream input_file(filename);
+  if (!input_file.is_open()) {
+    FLOWENGINE_LOGGER_INFO("Could not open the file - '{}'", filename);
     return false;
   }
-
-  char *buf = new char[1024 * 16];
-  int n = fread(buf, 1, 1024 * 16, fp);
-  fclose(fp);
-
-  if (n >= 0) {
-    result.append(buf, 0, n);
-  }
-  delete[] buf;
-  // std::string temp = "{\"code\": 200,\"msg\": \"SUCCESS\"}";
-  std::string temp = "{}";
-  writeJson(temp, filename);
+  result = std::string((std::istreambuf_iterator<char>(input_file)),
+                       std::istreambuf_iterator<char>());
   return true;
 }
 
