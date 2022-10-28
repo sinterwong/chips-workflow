@@ -59,6 +59,11 @@ void ClassifierModule::forward(std::vector<forwardMessage> message) {
                       buf.logicInfo.region[3] - buf.logicInfo.region[1]};
       std::shared_ptr<cv::Mat> inferImage;
       if (region.area() != 0) {
+        if (region.width + region.x > image->cols ||
+            region.height + region.y > image->rows) {
+          std::cout << "error region!" << std::endl;
+          return;
+        }
         inferImage = std::make_shared<cv::Mat>((*image)(region).clone());
       } else {
         inferImage = image;

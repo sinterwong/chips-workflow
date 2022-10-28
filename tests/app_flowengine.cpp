@@ -109,8 +109,7 @@ int main(int argc, char **argv) {
     return ret;
   }
 #endif
-  std::shared_ptr<PipelineModule> pipeline(
-      new PipelineModule(FLAGS_config_path, FLAGS_num_workers));
+  std::shared_ptr<PipelineModule> pipeline(std::make_shared<PipelineModule>(FLAGS_config_path, FLAGS_num_workers));
 
   pipeline->run();
   gflags::ShutDownCommandLineFlags();
