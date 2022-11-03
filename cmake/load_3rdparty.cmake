@@ -226,9 +226,27 @@ MACRO(LOAD_X3)
     # define dnn lib path
     LOAD_OPENSSL()
     LOAD_CURL()
-    SET(DNN_PATH "~/.horizon/ddk/xj3_aarch64/dnn/")
-    SET(APPSDK_PATH "~/.horizon/ddk/xj3_aarch64/appsdk/appuser/")
+    SET(DNN_PATH "/root/.horizon/ddk/xj3_aarch64/dnn/")
+    SET(APPSDK_PATH "/root/.horizon/ddk/xj3_aarch64/appsdk/appuser/")
     SET(DNN_LIB_PATH ${DNN_PATH}/lib)
     SET(BPU_libs dnn cnn_intf hbrt_bernoulli_aarch64)
     SET(HB_MEDIA_libs vio hbmedia avcodec avformat avutil)
+    INCLUDE_DIRECTORIES(
+        ${DNN_PATH}/include
+        ${APPSDK_PATH}/include
+        ${APPSDK_PATH}/include/vio
+        ${APPSDK_PATH}/include/libmm
+    )
+    LINK_DIRECTORIES(
+        ${DNN_LIB_PATH}
+        ${APPSDK_PATH}/lib
+        ${APPSDK_PATH}/lib/hbbpu
+        ${APPSDK_PATH}/lib/hbmedia
+    )
+    LINK_LIBRARIES(
+        ${BPU_libs}
+        ${HB_MEDIA_libs}
+        rt
+        dl
+    )
 ENDMACRO()
