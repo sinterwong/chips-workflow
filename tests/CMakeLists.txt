@@ -4,6 +4,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations -Wno-
 INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}
     ${PROJECT_INCLUDE_DIR}/core
+    ${PROJECT_INCLUDE_DIR}/infer
     ${COMMON_INCLUDE_DIR}
     ${OpenCV_INCLUDE_DIRS}
     ${Protobuf_INCLUDE_DIR}
@@ -24,7 +25,7 @@ LINK_DIRECTORIES(
     ${APPSDK_PATH}/lib/hbbpu
     ${APPSDK_PATH}/lib/hbmedia
 )
-SET(FE_LIBS core license module module_logger)
+SET(FE_LIBS core license module module_logger infer)
 IF(TARGET_HARDWARE STREQUAL "x3")
     MESSAGE(STATUS "Loading X3 dependent libraries")
     SET(CHIPS_DEPAND_LIBS x3_infer x3_module ${BPU_libs} ${HB_MEDIA_libs} rt dl)

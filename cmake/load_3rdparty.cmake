@@ -37,6 +37,8 @@ MACRO(LOAD_BOOST)
 ENDMACRO()
 
 MACRO(LOAD_OPENCV)
+    SET(OPENCV_HOME ${3RDPARTY_DIR}/opencv)
+    LIST(APPEND CMAKE_PREFIX_PATH ${OPENCV_HOME}/lib/cmake)
     FIND_PACKAGE(OpenCV CONFIG REQUIRED opencv_core opencv_highgui opencv_video opencv_imgcodecs opencv_imgproc)
     IF(OpenCV_INCLUDE_DIRS)
         MESSAGE(STATUS "Opencv library status:")
@@ -224,6 +226,7 @@ ENDMACRO()
 
 MACRO(LOAD_X3)
     # define dnn lib path
+    LOAD_OPENCV()
     LOAD_OPENSSL()
     LOAD_CURL()
     SET(DNN_PATH "/root/.horizon/ddk/xj3_aarch64/dnn/")

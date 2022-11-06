@@ -16,6 +16,7 @@
 #include "messageBus.h"
 #include "x3_vio_vdec.hpp"
 #include "x3_vio_vp.hpp"
+#include <opencv2/core/mat.hpp>
 #include <type_traits>
 
 namespace module {
@@ -93,6 +94,40 @@ void SunriseDecoderModule::step() {
   afterForward();
 }
 
+void SunriseDecoderModule::delBuffer(std::vector<std::any> &list) {
+  assert(list.size() == 1);
+  assert(list[0].has_value());
+  assert(list[0].type() == typeid(VIDEO_FRAME_S *));
+  list.clear();
+}
+
+std::any SunriseDecoderModule::getFrameInfo(std::vector<std::any> &list,
+                                            FrameBuf *buf) {
+  assert(list.size() == 1);
+  assert(list[0].has_value());
+  assert(list[0].type() == typeid(VIDEO_FRAME_S *));
+  return reinterpret_cast<void *>(std::any_cast<VIDEO_FRAME_S *>(list[0]));
+}
+
+std::any SunriseDecoderModule::getMatBuffer(std::vector<std::any> &list,
+                                            FrameBuf *buf) {
+  assert(list.size() == 1);
+  assert(list[0].has_value());
+  assert(list[0].type() == typeid(VIDEO_FRAME_S *));
+  // auto const frameInfo = std::any_cast<VIDEO_FRAME_S *>(list[0]);
+  // cv::Mat frame(720,1280, CV_8UC3); //I am reading NV12 format from a camera
+  // cv::Mat rgb;
+  // cvtColor(yuv,rgb,CV_YUV2RGB_NV12);
+  // //  The resolution of rgb after conversion is 480X720
+  // cvtColor(yuv,rgb,CV_YCrCb2RGB);
+  // // frameInfo->stVFrame.vir_ptr
+  void* data = nullptr;
+  std::shared_ptr<cv::Mat> mat =
+      std::make_shared<cv::Mat>(buf->height, buf->width, CV_8UC3, data);
+  // cv::cvtColor(*mat, *mat, cv::COLOR_BGR2RGB);
+  return mat;
+}
+
 void SunriseDecoderModule::forward(std::vector<forwardMessage> message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
@@ -144,6 +179,10 @@ void SunriseDecoderModule::forward(std::vector<forwardMessage> message) {
                             vdec_chn_info.m_vdec_chn_id, error);
   } else {
     queueMessage sendMessage;
+    // FrameBuf frameBufMessage = makeFrameBuf(
+    //     stFrameInfo, inputStream->GetHeight(), inputStream->GetWidth());
+    // int returnKey = backendPtr->pool->write(frameBufMessage);
+
     FLOWENGINE_LOGGER_INFO("Send the frame message!");
     // 必要步骤
     HB_VDEC_ReleaseFrame(vdec_chn_info.m_vdec_chn_id, &stFrameInfo);

@@ -47,9 +47,7 @@ private:
   // 获取解码之后的数据
   VIDEO_FRAME_S stFrameInfo;
 
-  // 帧数记录
-  int count = 0;
-  // 索引
+  // 帧数索引
   int mmz_index = 0;
   // 流拉取状态
   int error;
@@ -139,9 +137,7 @@ public:
 
   void delBuffer(std::vector<std::any> &);
 
-  std::any getPtrBuffer(std::vector<std::any> &, FrameBuf *);
-
-  std::any getBuffer(std::vector<std::any> &, FrameBuf *);
+  std::any getFrameInfo(std::vector<std::any> &, FrameBuf *);
 
   std::any getMatBuffer(std::vector<std::any> &list, FrameBuf *buf);
 };
