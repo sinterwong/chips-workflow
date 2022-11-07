@@ -31,6 +31,12 @@ struct Result {
   std::array<int, 3> shape;
 };
 
+// 模型装载后可以获取模型的基础信息供外界使用
+struct ModelInfo{
+  int output_count;  // 输出的个数
+  std::vector<std::vector<int>> outputShapes;  // 输出的尺度
+};
+
 } // namespace infer
 
 #endif

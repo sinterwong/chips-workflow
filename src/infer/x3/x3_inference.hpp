@@ -34,17 +34,17 @@
 
 namespace infer {
 namespace x3 {
-class X3Inference : public Inference {
+class AlgoInference : public Inference {
 public:
   //!
   //! \brief construction
   //!
-  X3Inference(const common::AlgorithmConfig &_param) : mParams(_param) {}
+  AlgoInference(const common::AlgorithmConfig &_param) : mParams(_param) {}
 
   //!
   //! \brief destruction
   //!
-  ~X3Inference() { terminate(); }
+  ~AlgoInference() { terminate(); }
   //!
   //! \brief initialize the network
   //!
@@ -53,7 +53,7 @@ public:
   //!
   //! \brief Runs the inference engine
   //!
-  virtual bool infer(void *, Result &) override;
+  virtual bool infer(void *, void **) override;
 
   //!
   //! \brief ProcessInput that the input is correct for infer
@@ -61,15 +61,11 @@ public:
   bool processInput(void *) override;
 
   //!
-  //! \brief Postprocessing that the output is correct and prints it
+  //! \brief Outside can get model information after model initialize
   //!
-  virtual bool processOutput(void *, Result &) const override;
+  virtual void getModelInfo(ModelInfo &) const override;
 
-  //!
-  //! \brief Verifies that the output is correct and prints it
-  //!
-  virtual bool verifyOutput(Result const &) const;
-
+private:
   //!
   //! \brief Release the resource
   //!
@@ -86,8 +82,8 @@ public:
     }
 
     // 释放handle
-    // HB_CHECK_SUCCESS(hbDNNReleaseTask(task_handle), "hbDNNReleaseTask failed");
-    // HB_CHECK_SUCCESS(hbDNNRelease(dnn_handle),
+    // HB_CHECK_SUCCESS(hbDNNReleaseTask(task_handle), "hbDNNReleaseTask
+    // failed"); HB_CHECK_SUCCESS(hbDNNRelease(dnn_handle),
     //                  "hbDNNRelease dnn_handle failed");
     HB_CHECK_SUCCESS(hbDNNRelease(packed_dnn_handle),
                      "hbDNNRelease packed_dnn_handle failed");
@@ -95,17 +91,17 @@ public:
     return 0;
   }
 
-protected:
+private:
   //!< The parameters for the sample.
   common::AlgorithmConfig mParams;
   // 准备输入数据（用于存放yuv数据）
   hbDNNTensor input_tensor;
   // resize后送给bpu运行的图像
   hbDNNTensor input_tensor_resized;
-  
+
   // output
-  int output_count;
   hbDNNTensor *output;
+  int output_count;
   std::vector<std::vector<int>> outputShapes;
   // dnn_handle
   hbDNNHandle_t dnn_handle;

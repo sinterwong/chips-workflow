@@ -9,32 +9,43 @@
  *
  */
 
-#ifndef __INFERENCE_X3_DETECTION_H_
-#define __INFERENCE_X3_DETECTION_H_
-#include "x3_inference.hpp"
+#ifndef __INFERENCE_VISION_DETECTION_H_
+#define __INFERENCE_VISION_DETECTION_H_
+#include "vision.hpp"
+#include <unordered_map>
 #include <vector>
 
 namespace infer {
-namespace x3 {
-class X3DetectionInfer : public X3Inference {
+namespace vision {
+
+class Detection : public Vision {
   //!
   //! \brief construction
   //!
 public:
-  X3DetectionInfer(const common::AlgorithmConfig &_param)
-      : X3Inference(_param) {}
+  Detection(const common::AlgorithmConfig &_param) : Vision(_param) {}
 
-protected:
+  //!
+  //! \brief ProcessInput that the input is correct for infer
+  //!
+  virtual bool processInput(void *) const override;
+
   //!
   //! \brief Postprocessing that the output is correct and prints it
   //!
   virtual bool processOutput(void *, Result &) const override;
 
+  //!
+  //! \brief verifyOutput that the result is correct for infer
+  //!
+  virtual bool verifyOutput(Result const &) const override;
+
+protected:
   virtual void
   generateBoxes(std::unordered_map<int, std::vector<DetectionResult>> &,
                 void *) const = 0;
 };
-} // namespace x3
+} // namespace vision
 } // namespace infer
 
 #endif

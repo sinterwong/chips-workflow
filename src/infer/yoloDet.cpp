@@ -1,30 +1,32 @@
-
 /**
  * @file yoloDet.cpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
- * @date 2022-08-28
+ * @date 2022-11-07
  *
  * @copyright Copyright (c) 2022
  *
  */
-#include "x3_yolo.hpp"
+#include "yoloDet.hpp"
+#include <algorithm>
 #include <cassert>
+#include <cstring>
 #include <vector>
 
 namespace infer {
-namespace x3 {
+namespace vision {
 
 void YoloDet::generateBoxes(
-    std::unordered_map<int, std::vector<DetectionResult>> &m, void *buffer) const {
+    std::unordered_map<int, std::vector<DetectionResult>> &m,
+    void *buffer) const {
   // TODO output的信息还需要强化一下，比如说做一个结构体什么的
   float *output = reinterpret_cast<float *>(buffer);
   // std::cout << "outputShapes size: " << outputShapes.size() << std::endl;
-  // std::cout << "outputShapes[0] size: " << outputShapes[0].size() << std::endl;
-  assert(outputShapes[0].size() == 4);
-  int numAnchors = outputShapes.at(0).at(1);
-  int num = outputShapes.at(0).at(2);
+  // std::cout << "outputShapes[0] size: " << outputShapes[0].size() <<
+  // std::endl;
+  int numAnchors = modelInfo.outputShapes[0].at(1);
+  int num = modelInfo.outputShapes[0].at(2);
   for (int i = 0; i < numAnchors * num; i += num) {
     if (output[i + 4] <= mParams.cond_thr)
       continue;
@@ -40,7 +42,5 @@ void YoloDet::generateBoxes(
   }
 }
 
-bool YoloDet::verifyOutput(Result const &result) const { return true; }
-
-} // namespace x3
+} // namespace vision
 } // namespace infer

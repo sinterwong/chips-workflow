@@ -2,14 +2,14 @@
 /**
  * @file x3_detection.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-11-04
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
-#include "x3_detection.hpp"
+#include "detection.hpp"
 #include "infer_utils.hpp"
 #include <algorithm>
 #include <array>
@@ -17,14 +17,21 @@
 #include <vector>
 
 namespace infer {
-namespace x3 {
+namespace vision {
 
-bool X3DetectionInfer::processOutput(void *output, Result &result) const {
+bool Detection::processInput(void *) const {
+  // 后面可以根据需求，实现基于opencv的预处理，比如resize和图片类型转换（bgr->rgb,
+  // bgr->nv12, nv12->bgr..)
+  return true;
+}
+
+bool Detection::processOutput(void *output, Result &result) const {
   std::unordered_map<int, std::vector<DetectionResult>> cls2bbox;
   generateBoxes(cls2bbox, output);
   utils::nms(result.detResults, cls2bbox, mParams.nms_thr);
   // rect 还原成原始大小
-  utils::renderOriginShape(result.detResults, result.shape, mParams.inputShape, mParams.isScale);
+  utils::renderOriginShape(result.detResults, result.shape, mParams.inputShape,
+                           mParams.isScale);
   std::vector<DetectionResult>::iterator it = result.detResults.begin();
   // 清除掉不符合要求的框
   for (; it != result.detResults.end();) {
@@ -36,6 +43,10 @@ bool X3DetectionInfer::processOutput(void *output, Result &result) const {
       ++it;
   }
   return true;
-};
-} // namespace x3
+}
+
+bool Detection::verifyOutput(Result const &) const {
+  return true;
+}
+} // namespace vision
 } // namespace infer

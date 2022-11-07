@@ -11,6 +11,7 @@
 #ifndef __INFERENCE_H_
 #define __INFERENCE_H_
 #include "infer_common.hpp"
+#include <array>
 
 namespace infer {
 
@@ -25,7 +26,7 @@ public:
   //!
   //! \brief Runs the inference engine with input of void*
   //!
-  virtual bool infer(void *, Result &) = 0;
+  virtual bool infer(void *, void **) = 0;
 
   //!
   //! \brief ProcessInput that the input is correct for infer
@@ -33,9 +34,9 @@ public:
   virtual bool processInput(void *) = 0;
 
   //!
-  //! \brief Postprocessing that the output is correct and prints it
+  //! \brief Outside can get model information after model initialize
   //!
-  virtual bool processOutput(void *, Result &) const = 0;
+  virtual void getModelInfo(ModelInfo &) const = 0;
 };
 } // namespace infer
 #endif

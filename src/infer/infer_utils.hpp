@@ -13,6 +13,7 @@
 #define __INFERENCE_UTILS_H_
 #include "infer_common.hpp"
 #include <array>
+#include <opencv2/opencv.hpp>
 #include <unordered_map>
 #include <vector>
 
@@ -30,6 +31,18 @@ void nms(std::vector<DetectionResult> &,
 void renderOriginShape(std::vector<DetectionResult> &results,
                        std::array<int, 3> const &shape,
                        std::array<int, 3> const &inputShape, bool isScale);
+
+template <typename T>
+void chw_to_hwc(T *chw_data, T *hwc_data, int channel, int height, int width);
+
+template <typename T>
+void hwc_to_chw(T *chw_data, T *hwc_data, int channel, int height, int width);
+
+bool resizeInput(cv::Mat &image, bool isScale, std::array<int, 2> &dstShape);
+
+void BGR2YUV(const cv::Mat bgrImg, cv::Mat &y, cv::Mat &u, cv::Mat &v);
+
+void YUV2BGR(const cv::Mat y, const cv::Mat u, const cv::Mat v, cv::Mat &bgrImg);
 
 } // namespace utils
 } // namespace infer

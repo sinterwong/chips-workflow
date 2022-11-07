@@ -25,7 +25,7 @@
 namespace infer {
 namespace x3 {
 
-bool X3Inference::initialize() {
+bool AlgoInference::initialize() {
   // 加载模型
   char const *model_path = mParams.modelPath.c_str();
   HB_CHECK_SUCCESS(hbDNNInitializeFromFiles(&packed_dnn_handle, &model_path, 1),
@@ -110,7 +110,7 @@ bool X3Inference::initialize() {
   return true;
 }
 
-bool X3Inference::infer(void *inputs, Result &result) {
+bool AlgoInference::infer(void *inputs, void** outputs) {
   VIDEO_FRAME_S *stFrameInfo = reinterpret_cast<VIDEO_FRAME_S *>(inputs);
   // NV12 是 YUV420SP 格式
   input_tensor.sysMem[0].virAddr = stFrameInfo->stVFrame.vir_ptr[0];
@@ -136,7 +136,7 @@ bool X3Inference::infer(void *inputs, Result &result) {
       input_tensor.properties.validShape; // 已满足跨距对齐要求，直接赋值
 
   if (!processInput(nullptr)) {
-    FLOWENGINE_LOGGER_ERROR("[X3Inference::infer]: process input error!");
+    FLOWENGINE_LOGGER_ERROR("[AlgoInference::infer]: process input error!");
     return false;
   }
 
@@ -144,8 +144,9 @@ bool X3Inference::infer(void *inputs, Result &result) {
   hbDNNInferCtrlParam infer_ctrl_param;
   hbDNNTaskHandle_t infer_task_handle = nullptr;
   HB_DNN_INITIALIZE_INFER_CTRL_PARAM(&infer_ctrl_param);
-  HB_CHECK_SUCCESS(hbDNNInfer(&infer_task_handle, &output, &input_tensor_resized,
-                              dnn_handle, &infer_ctrl_param),
+  HB_CHECK_SUCCESS(hbDNNInfer(&infer_task_handle, &output,
+                              &input_tensor_resized, dnn_handle,
+                              &infer_ctrl_param),
                    "infer hbDNNInfer failed");
 
   // 等待任务结束
@@ -153,18 +154,15 @@ bool X3Inference::infer(void *inputs, Result &result) {
                    "infer hbDNNWaitTaskDone failed");
   // 释放推理task
   HB_CHECK_SUCCESS(hbDNNReleaseTask(infer_task_handle),
-                       "infer hbDNNReleaseTask failed");
+                   "infer hbDNNReleaseTask failed");
   // 解析模型输出
   hbSysFlushMem(&(output->sysMem[0]), HB_SYS_MEM_CACHE_INVALIDATE);
-  void *out = reinterpret_cast<void *>(output->sysMem[0].virAddr);
-  if (!processOutput(out, result)) {
-    FLOWENGINE_LOGGER_ERROR("process output error!");
-    return false;
-  }
+  *outputs = output->sysMem[0].virAddr;
+  // outputs = reinterpret_cast<void *>(output->sysMem[0].virAddr);
   return true;
 }
 
-bool X3Inference::processInput(void *) {
+bool AlgoInference::processInput(void *) {
 
   hbDNNResizeCtrlParam ctrl;
   hbDNNTaskHandle_t resize_task_handle;
@@ -175,15 +173,15 @@ bool X3Inference::processInput(void *) {
   HB_CHECK_SUCCESS(hbDNNWaitTaskDone(resize_task_handle, 0),
                    "hbDNNWaitTaskDone failed");
   HB_CHECK_SUCCESS(hbDNNReleaseTask(resize_task_handle),
-                       "hbDNNReleaseTask failed");
+                   "hbDNNReleaseTask failed");
 
   return true;
 }
 
-bool X3Inference::processOutput(void *output, Result &result) const {
-  return true;
+void AlgoInference::getModelInfo(ModelInfo &info) const {
+  info.output_count = output_count;
+  info.outputShapes = outputShapes;
 }
 
-bool X3Inference::verifyOutput(Result const &) const { return true; }
 } // namespace x3
 } // namespace infer
