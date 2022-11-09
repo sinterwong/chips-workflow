@@ -15,6 +15,9 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include "common/common.hpp"
+
+using common::ColorType;
 
 /**
  * @brief bbox result type
@@ -82,7 +85,7 @@ struct queueMessage {
   std::string send; // 上游模块名称
   std::string recv;
   std::string messageType;
-  std::string frameType;
+  ColorType frameType;
   LogicInfo logicInfo;
   AlarmResult alarmResult;
   CameraResult cameraResult;

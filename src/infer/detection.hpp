@@ -28,7 +28,7 @@ public:
   //!
   //! \brief ProcessInput that the input is correct for infer
   //!
-  virtual bool processInput(void *) const override;
+  virtual bool processInput(cv::Mat const &input, void **output, common::ColorType, common::ColorType) const override;
 
   //!
   //! \brief Postprocessing that the output is correct and prints it

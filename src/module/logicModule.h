@@ -166,7 +166,7 @@ public:
     if (params.isDraw) {
       // 临时画个图（后续根据前端参数来决定返回的图片是否带有画图标记）
       showImage = frame->clone();
-      if (buf.frameType == "RGB888") {
+      if (buf.frameType == ColorType::RGB888) {
         cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
       }
     } else {

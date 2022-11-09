@@ -11,6 +11,7 @@
 
 #include "x3_inference.hpp"
 #include "dnn/hb_dnn.h"
+#include "hb_type.h"
 #include "logger/logger.hpp"
 #include <algorithm>
 #include <array>
@@ -110,28 +111,30 @@ bool AlgoInference::initialize() {
   return true;
 }
 
-bool AlgoInference::infer(void *inputs, void** outputs) {
-  VIDEO_FRAME_S *stFrameInfo = reinterpret_cast<VIDEO_FRAME_S *>(inputs);
+bool AlgoInference::infer(FrameInfo const &input, void** outputs) {
+
+  hb_char** data =  reinterpret_cast<hb_char**>(input.data);
+  // VIDEO_FRAME_S *stFrameInfo = reinterpret_cast<VIDEO_FRAME_S *>(inputs);
   // NV12 是 YUV420SP 格式
-  input_tensor.sysMem[0].virAddr = stFrameInfo->stVFrame.vir_ptr[0];
-  // input_tensor.sysMem[0].phyAddr = stFrameInfo->stVFrame.phy_ptr[0];
+  // input_tensor.sysMem[0].virAddr = stFrameInfo->stVFrame.vir_ptr[0];
+  input_tensor.sysMem[0].virAddr = data[0];
   input_tensor.sysMem[0].memSize =
-      stFrameInfo->stVFrame.height * stFrameInfo->stVFrame.width;
+      input.shape.at(1) * input.shape.at(0);
 
   // 填充 input_tensor.data_ext 成员变量， UV 分量
-  input_tensor.sysMem[1].virAddr = stFrameInfo->stVFrame.vir_ptr[1];
-  // input_tensor.sysMem[1].phyAddr = stFrameInfo->stVFrame.phy_ptr[1];
+  // input_tensor.sysMem[1].virAddr = stFrameInfo->stVFrame.vir_ptr[1];
+  input_tensor.sysMem[1].virAddr = data[0] + input.shape.at(1) * input.shape.at(0);
   input_tensor.sysMem[1].memSize =
-      stFrameInfo->stVFrame.height * stFrameInfo->stVFrame.width / 2;
+      input.shape.at(1) * input.shape.at(0) / 2;
 
   // HB_DNN_IMG_TYPE_NV12_SEPARATE 类型的 layout 为 (1, 3, h, w)
   input_tensor.properties.validShape.numDimensions = 4;
   input_tensor.properties.validShape.dimensionSize[0] = 1; // N
   input_tensor.properties.validShape.dimensionSize[1] = 3; // C
   input_tensor.properties.validShape.dimensionSize[2] =
-      stFrameInfo->stVFrame.height; // H
+      input.shape.at(1); // H
   input_tensor.properties.validShape.dimensionSize[3] =
-      stFrameInfo->stVFrame.width; // W
+      input.shape.at(0); // W
   input_tensor.properties.alignedShape =
       input_tensor.properties.validShape; // 已满足跨距对齐要求，直接赋值
 

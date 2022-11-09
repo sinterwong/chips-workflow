@@ -26,7 +26,7 @@ public:
   //!
   //! \brief Runs the inference engine with input of void*
   //!
-  virtual bool infer(void *, void **) = 0;
+  virtual bool infer(FrameInfo const &, void **) = 0;
 
   //!
   //! \brief ProcessInput that the input is correct for infer

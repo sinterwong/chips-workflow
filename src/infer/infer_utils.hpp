@@ -44,6 +44,10 @@ void BGR2YUV(const cv::Mat bgrImg, cv::Mat &y, cv::Mat &u, cv::Mat &v);
 
 void YUV2BGR(const cv::Mat y, const cv::Mat u, const cv::Mat v, cv::Mat &bgrImg);
 
+void YV12toNV12(const cv::Mat& input, cv::Mat& output);
+
+void RGB2NV12(cv::Mat const &input, cv::Mat &output);
+
 } // namespace utils
 } // namespace infer
 #endif

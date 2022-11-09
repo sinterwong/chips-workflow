@@ -1,6 +1,6 @@
 #include "backend.h"
 #include "boostMessage.h"
-#include "module/x3/sunriseDecoderModule.h"
+#include "module/x3/streamGenerator.h"
 
 #include "gflags/gflags.h"
 DEFINE_string(video, "", "Specify the video uri.");
@@ -21,10 +21,10 @@ int main(int argc, char **argv) {
       1920,
       1080,
       0};
-  std::shared_ptr<module::SunriseDecoderModule> decoder;
-  decoder = std::make_shared<module::SunriseDecoderModule>(&backend, "SunriseDecoder", "stream", cameraConfig);
+  std::shared_ptr<module::StreamGenerator> decoder;
+  decoder = std::make_shared<module::StreamGenerator>(&backend, "SunriseDecoder", "stream", cameraConfig);
 
-  std::thread th1(&module::SunriseDecoderModule::go, decoder);
+  std::thread th1(&module::StreamGenerator::go, decoder);
   th1.join();
 
   FlowEngineLoggerDrop();

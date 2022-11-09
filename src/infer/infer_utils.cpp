@@ -10,8 +10,10 @@
  */
 
 #include "infer_utils.hpp"
+#include "core/messageBus.h"
 #include <algorithm>
 #include <array>
+#include <opencv2/imgproc.hpp>
 namespace infer {
 namespace utils {
 float iou(std::array<float, 4> const &lbox, std::array<float, 4> const &rbox) {
@@ -146,6 +148,56 @@ void YUV2BGR(const cv::Mat y, const cv::Mat u, const cv::Mat v,
   cv::merge(inChannels, yuvImg);
 
   cv::cvtColor(yuvImg, bgrImg, cv::COLOR_YUV2BGR);
+}
+
+void YV12toNV12(cv::Mat const &input, cv::Mat &output) {
+  int width = input.cols;
+  int height = input.rows * 2 / 3;
+  int stride =
+      (int)input.step[0]; // Rows bytes stride - in most cases equal to width
+
+  input.copyTo(output);
+
+  // Y Channel
+  //  YYYYYYYYYYYYYYYY
+  //  YYYYYYYYYYYYYYYY
+  //  YYYYYYYYYYYYYYYY
+  //  YYYYYYYYYYYYYYYY
+  //  YYYYYYYYYYYYYYYY
+  //  YYYYYYYYYYYYYYYY
+
+  // V Input channel
+  //  VVVVVVVV
+  //  VVVVVVVV
+  //  VVVVVVVV
+  cv::Mat inV =
+      cv::Mat(cv::Size(width / 2, height / 2), CV_8UC1,
+              (unsigned char *)input.data + stride * height,
+              stride / 2); // Input V color channel (in YV12 V is above U).
+
+  // U Input channel
+  //  UUUUUUUU
+  //  UUUUUUUU
+  //  UUUUUUUU
+  cv::Mat inU =
+      cv::Mat(cv::Size(width / 2, height / 2), CV_8UC1,
+              (unsigned char *)input.data + stride * height +
+                  (stride / 2) * (height / 2),
+              stride / 2); // Input V color channel (in YV12 U is below V).
+
+  for (int row = 0; row < height / 2; row++) {
+    for (int col = 0; col < width / 2; col++) {
+      output.at<uchar>(height + row, 2 * col) = inU.at<uchar>(row, col);
+      output.at<uchar>(height + row, 2 * col + 1) = inV.at<uchar>(row, col);
+    }
+  }
+}
+
+// template<typename common::ColorType Src=common::ColorType::RGB888>
+void RGB2NV12(cv::Mat const &input, cv::Mat &output) {
+  cv::Mat temp;
+  cv::cvtColor(input, temp, cv::COLOR_RGB2YUV_YV12);
+  YV12toNV12(temp, output);
 }
 
 } // namespace utils

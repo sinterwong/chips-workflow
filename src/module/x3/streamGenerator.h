@@ -1,5 +1,5 @@
 /**
- * @file sunriseDecoderModule.h
+ * @file StreamGenerator.h
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
@@ -33,7 +33,7 @@ extern "C" {
 #endif /* __cplusplus */
 namespace module {
 
-class SunriseDecoderModule : public Module {
+class StreamGenerator : public Module {
 private:
   // ffmpeg context
   AVFormatContext *avContext = nullptr;
@@ -120,13 +120,13 @@ private:
   }
 
 public:
-  SunriseDecoderModule(Backend *ptr, const std::string &initName,
+  StreamGenerator(Backend *ptr, const std::string &initName,
                        const std::string &initType,
                        const common::CameraConfig &_params,
                        const std::vector<std::string> &recv = {},
                        const std::vector<std::string> &send = {});
 
-  ~SunriseDecoderModule() {
+  ~StreamGenerator() {
     if (avContext)
       avformat_close_input(&avContext);
   }
@@ -135,11 +135,13 @@ public:
 
   void step() override;
 
-  void delBuffer(std::vector<std::any> &);
+  static void delBuffer(std::vector<std::any> &);
 
-  std::any getFrameInfo(std::vector<std::any> &, FrameBuf *);
+  // std::any getFrameInfo(std::vector<std::any> &, FrameBuf *);
 
-  std::any getMatBuffer(std::vector<std::any> &list, FrameBuf *buf);
+  // std::any getMatBuffer(std::vector<std::any> &list, FrameBuf *buf);
+
+  // std::any getPtrBuffer(std::vector<std::any> &list, FrameBuf *buf);
 };
 } // namespace module
 #endif // __METAENGINE_JETSON_SOURCE_H

@@ -7,6 +7,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/types_c.h>
 #include "yoloDet.hpp"
 #include "infer_utils.hpp"
 #if TARGET_PLATFORM == x3
@@ -58,18 +59,31 @@ int main(int argc, char **argv) {
   VIDEO_FRAME_S frameInfo;
 
   cv::Mat image = cv::imread(FLAGS_image_path);
+  cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+  
+  // cv::Mat yv12;
+  // cv::cvtColor(image, yv12, cv::COLOR_RGB2YUV_YV12);
+  // cv::Mat temp;
+  // cv::cvtColor(yv12, temp, CV_YUV2BGR_YV12);
+  // cv::imwrite("temp.jpg", temp); // only for test
 
-  cv::Mat y, u, v;
-  cv::Mat dst;
-  utils::BGR2YUV(image, y, u, v);
+  cv::Mat nv12;
+  utils::RGB2NV12(image, nv12);
+  cv::Mat picBGR;
+  cv::cvtColor(nv12, picBGR, CV_YUV2BGR_NV12);
+  cv::imwrite("test.jpg", picBGR); // only for test
+  // FLOWENGINE_LOGGER_INFO("Saved the test image");
 
   frameInfo.stVFrame.height = image.rows;
   frameInfo.stVFrame.width = image.cols;
-  frameInfo.stVFrame.vir_ptr[0] = reinterpret_cast<hb_char*>(y.data);
-  frameInfo.stVFrame.vir_ptr[1] = reinterpret_cast<hb_char*>(u.data);
+  frameInfo.stVFrame.vir_ptr[0] = reinterpret_cast<hb_char*>(nv12.data);
   
   void* output = nullptr;
-  if (!instance->infer(&frameInfo, &output)) {
+  FrameInfo input;
+  input.data = reinterpret_cast<void**>(frameInfo.stVFrame.vir_ptr);
+  input.shape = {image.cols, image.rows, 3};
+  
+  if (!instance->infer(input, &output)) {
     FLOWENGINE_LOGGER_ERROR("infer is failed!");
     return -1;
   }

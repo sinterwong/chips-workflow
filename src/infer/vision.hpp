@@ -22,6 +22,7 @@
 #ifndef __INFER_VISION_H_
 #define __INFER_VISION_H_
 #include "infer_common.hpp"
+#include <opencv2/core/mat.hpp>
 
 namespace infer {
 namespace vision {
@@ -35,7 +36,7 @@ public:
   //!
   //! \brief ProcessInput that the input is correct for infer
   //!
-  virtual bool processInput(void *) const = 0;
+  virtual bool processInput(cv::Mat const &, void **, common::ColorType, common::ColorType) const = 0;
 
   //!
   //! \brief ProcessInput that the input is correct for infer

@@ -1,5 +1,5 @@
 /**
- * @file sunriseDecoderModule.cpp
+ * @file StreamGenerator.cpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
@@ -8,19 +8,27 @@
  * @copyright Copyright (c) 2022
  *
  */
-#include "sunriseDecoderModule.h"
+#include "streamGenerator.h"
+#include "hb_comm_video.h"
 #include "hb_common.h"
+#include "hb_type.h"
 #include "hb_vdec.h"
 #include "hb_vp_api.h"
 #include "logger/logger.hpp"
 #include "messageBus.h"
 #include "x3_vio_vdec.hpp"
 #include "x3_vio_vp.hpp"
-#include <opencv2/core/mat.hpp>
+#include <any>
+#include <array>
+#include <cstddef>
+#include <memory>
+#include <opencv2/imgproc/types_c.h>
+#include <opencv2/opencv.hpp>
+#include <sys/types.h>
 #include <type_traits>
 
 namespace module {
-SunriseDecoderModule::SunriseDecoderModule(Backend *ptr,
+StreamGenerator::StreamGenerator(Backend *ptr,
                                            const std::string &initName,
                                            const std::string &initType,
                                            const common::CameraConfig &_params,
@@ -82,7 +90,7 @@ SunriseDecoderModule::SunriseDecoderModule(Backend *ptr,
   }
 }
 
-void SunriseDecoderModule::step() {
+void StreamGenerator::step() {
   message.clear();
   hash.clear();
   loop = false;
@@ -94,14 +102,14 @@ void SunriseDecoderModule::step() {
   afterForward();
 }
 
-void SunriseDecoderModule::delBuffer(std::vector<std::any> &list) {
+ void StreamGenerator::delBuffer(std::vector<std::any> &list) {
   assert(list.size() == 1);
   assert(list[0].has_value());
   assert(list[0].type() == typeid(VIDEO_FRAME_S *));
   list.clear();
 }
 
-std::any SunriseDecoderModule::getFrameInfo(std::vector<std::any> &list,
+std::any getFrameInfo(std::vector<std::any> &list,
                                             FrameBuf *buf) {
   assert(list.size() == 1);
   assert(list[0].has_value());
@@ -109,30 +117,54 @@ std::any SunriseDecoderModule::getFrameInfo(std::vector<std::any> &list,
   return reinterpret_cast<void *>(std::any_cast<VIDEO_FRAME_S *>(list[0]));
 }
 
-std::any SunriseDecoderModule::getMatBuffer(std::vector<std::any> &list,
+std::any getMatBuffer(std::vector<std::any> &list,
                                             FrameBuf *buf) {
   assert(list.size() == 1);
   assert(list[0].has_value());
   assert(list[0].type() == typeid(VIDEO_FRAME_S *));
-  // auto const frameInfo = std::any_cast<VIDEO_FRAME_S *>(list[0]);
-  // cv::Mat frame(720,1280, CV_8UC3); //I am reading NV12 format from a camera
-  // cv::Mat rgb;
-  // cvtColor(yuv,rgb,CV_YUV2RGB_NV12);
-  // //  The resolution of rgb after conversion is 480X720
-  // cvtColor(yuv,rgb,CV_YCrCb2RGB);
-  // // frameInfo->stVFrame.vir_ptr
-  void* data = nullptr;
+  auto frameInfo = std::any_cast<VIDEO_FRAME_S*>(list[0]);
+  // 设置初始化即将放入opencv的数据
+  // size_t const size = buf->height * buf->width;
+  // std::vector<u_char> data(size + size / 2, 0);
+  // std::cout << static_cast<int>(frameInfo->stVFrame.vir_ptr[0][800]) << std::endl;
+  // data.insert(data.end(), frameInfo->stVFrame.vir_ptr[0], frameInfo->stVFrame.vir_ptr[0] + size);
+  // data.insert(data.end(), frameInfo->stVFrame.vir_ptr[1], frameInfo->stVFrame.vir_ptr[1] + (size / 2));
+  cv::Mat picYV12 = cv::Mat(frameInfo->stVFrame.height * 3 / 2,
+                            frameInfo->stVFrame.width, CV_8UC1, frameInfo->stVFrame.vir_ptr[0]);
+  cv::Mat picRGB;
+  cv::cvtColor(picYV12, picRGB, CV_YUV2RGB_NV12);
+  // cv::imwrite("test.jpg", picRGB); // only for test
+  // FLOWENGINE_LOGGER_INFO("Saved the test image");
+
   std::shared_ptr<cv::Mat> mat =
-      std::make_shared<cv::Mat>(buf->height, buf->width, CV_8UC3, data);
+      std::make_shared<cv::Mat>(std::move(picRGB));
   // cv::cvtColor(*mat, *mat, cv::COLOR_BGR2RGB);
   return mat;
 }
 
-void SunriseDecoderModule::forward(std::vector<forwardMessage> message) {
+std::any getPtrBuffer(std::vector<std::any> &list, FrameBuf *buf) {
+  assert(list.size() == 1);
+  assert(list[0].has_value());
+  assert(list[0].type() == typeid(VIDEO_FRAME_S *));
+  auto frameInfo = std::any_cast<VIDEO_FRAME_S *>(list[0]);
+  return reinterpret_cast<void *>(frameInfo->stVFrame.vir_ptr[0]);
+}
+
+FrameBuf makeFrameBuf(VIDEO_FRAME_S *frameInfo, int height, int width) {
+  FrameBuf temp;
+  temp.write({std::make_any<VIDEO_FRAME_S*>(frameInfo)},
+             {std::make_pair("void*", getPtrBuffer),
+              std::make_pair("Mat", getMatBuffer)},
+             &StreamGenerator::delBuffer, std::make_tuple(width, height, 3, UINT8));
+  return temp;
+}
+
+
+void StreamGenerator::forward(std::vector<forwardMessage> message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("{} JetsonSourceModule module was done!", name);
-      std::cout << name << "{} SunriseDecoderModule module was done!"
+      std::cout << name << "{} StreamGenerator module was done!"
                 << std::endl;
       stopFlag.store(true);
       return;
@@ -179,16 +211,26 @@ void SunriseDecoderModule::forward(std::vector<forwardMessage> message) {
                             vdec_chn_info.m_vdec_chn_id, error);
   } else {
     queueMessage sendMessage;
-    // FrameBuf frameBufMessage = makeFrameBuf(
-    //     stFrameInfo, inputStream->GetHeight(), inputStream->GetWidth());
-    // int returnKey = backendPtr->pool->write(frameBufMessage);
+    FrameBuf frameBufMessage = makeFrameBuf(
+        &stFrameInfo, stFrameInfo.stVFrame.height, stFrameInfo.stVFrame.width);
+    int returnKey = backendPtr->pool->write(frameBufMessage);
+    
+    // // TODO test
+    // std::shared_ptr<cv::Mat> image =
+    //     std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
+    // // TODO test
 
+    sendMessage.frameType = ColorType::NV12;
+    sendMessage.key = returnKey;
+    sendMessage.cameraResult = cameraResult;
+    sendMessage.status = 0;
+    // autoSend(sendMessage);
     FLOWENGINE_LOGGER_INFO("Send the frame message!");
     // 必要步骤
     HB_VDEC_ReleaseFrame(vdec_chn_info.m_vdec_chn_id, &stFrameInfo);
   }
 }
-FlowEngineModuleRegister(SunriseDecoderModule, Backend *, std::string const &,
+FlowEngineModuleRegister(StreamGenerator, Backend *, std::string const &,
                          std::string const &, common::CameraConfig const &,
                          std::vector<std::string> const &,
                          std::vector<std::string> const &);

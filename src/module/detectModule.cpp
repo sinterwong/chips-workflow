@@ -69,15 +69,16 @@ void DetectModule::forward(std::vector<forwardMessage> message) {
       } else {
         inferImage = image;
       }
-      if (params.algorithmSerial == "assd") {
-        cv::cvtColor(*inferImage, *inferImage, cv::COLOR_RGB2BGR);
-      }
-      void* output = nullptr;
-      if (!instance->infer(inferImage->data, &output)) {
-        continue;
-      }
       infer::Result ret;
       ret.shape = {inferImage->cols, inferImage->rows, 3};
+      void* output = nullptr;
+      infer::FrameInfo frame;
+      frame.data = reinterpret_cast<void**>(&inferImage->data);
+      frame.shape = ret.shape;
+      if (!instance->infer(frame, &output)) {
+        continue;
+      }
+      
       detector->processOutput(output, ret);
 
       for (auto &rbbox : ret.detResults) {
@@ -97,12 +98,16 @@ void DetectModule::forward(std::vector<forwardMessage> message) {
                         static_cast<int>(bbox.second[2] - bbox.second[0]),
                         static_cast<int>(bbox.second[3] - bbox.second[1])};
           cv::Mat croppedImage = (*image)(rect).clone();
-          void* output = nullptr;
-          if (!instance->infer(croppedImage.data, &output)) {
-            continue;
-          }
           infer::Result ret;
           ret.shape = {croppedImage.cols, croppedImage.rows, 3};
+          infer::FrameInfo frame;
+          frame.data = reinterpret_cast<void**>(&croppedImage.data);
+          frame.shape = ret.shape;
+          void* output = nullptr;
+          if (!instance->infer(frame, &output)) {
+            continue;
+          }
+          
           detector->processOutput(output, ret);
           for (auto &rbbox : ret.detResults) {
             retBox b = {
