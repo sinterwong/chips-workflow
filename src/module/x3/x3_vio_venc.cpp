@@ -1073,7 +1073,7 @@ int x3_venc_set_bitrate(int VeChn, int bitrate) {
   VENC_RC_ATTR_S vencRcAttr;
   FLOWENGINE_LOGGER_INFO("bitrate = {}", bitrate);
 
-  HB_CHECK_SUCCESS(HB_VENC_GetRcParam(VeChn, &vencRcAttr),
+  VIDEO_CHECK_SUCCESS(HB_VENC_GetRcParam(VeChn, &vencRcAttr),
                    "HB_VENC_GetRcParam failed");
   switch (vencRcAttr.enRcMode) {
   case VENC_RC_MODE_H264CBR: {
@@ -1087,7 +1087,7 @@ int x3_venc_set_bitrate(int VeChn, int bitrate) {
   default:
     break;
   }
-  HB_CHECK_SUCCESS(HB_VENC_SetRcParam(VeChn, &vencRcAttr),
+  VIDEO_CHECK_SUCCESS(HB_VENC_SetRcParam(VeChn, &vencRcAttr),
                    "HB_VENC_SetRcParam failed.");
   return ret;
 }

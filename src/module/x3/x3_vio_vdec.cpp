@@ -18,30 +18,30 @@
 #include "x3_vio_vdec.hpp"
 
 int x3_vdec_init(VDEC_CHN vdecChn, VDEC_CHN_ATTR_S *vdecChnAttr) {
-  HB_CHECK_SUCCESS(HB_VDEC_CreateChn(vdecChn, vdecChnAttr),
+  VIDEO_CHECK_SUCCESS(HB_VDEC_CreateChn(vdecChn, vdecChnAttr),
                    "HB_VDEC_CreateChn failed");
-  HB_CHECK_SUCCESS(HB_VDEC_SetChnAttr(vdecChn, vdecChnAttr),
+  VIDEO_CHECK_SUCCESS(HB_VDEC_SetChnAttr(vdecChn, vdecChnAttr),
                    "HB_VDEC_SetChnAttr failed"); // config
   FLOWENGINE_LOGGER_INFO("ok!");
   return 0;
 }
 
 int x3_vdec_start(VDEC_CHN vdecChn) {
-  HB_CHECK_SUCCESS(HB_VDEC_StartRecvStream(vdecChn),
+  VIDEO_CHECK_SUCCESS(HB_VDEC_StartRecvStream(vdecChn),
                    "HB_VDEC_StartRecvStream failed");
   FLOWENGINE_LOGGER_INFO("ok!");
   return 0;
 }
 
 int x3_vdec_stop(VDEC_CHN vdecChn) {
-  HB_CHECK_SUCCESS(HB_VDEC_StopRecvStream(vdecChn),
+  VIDEO_CHECK_SUCCESS(HB_VDEC_StopRecvStream(vdecChn),
                    "HB_VDEC_StopRecvStream failed");
   FLOWENGINE_LOGGER_INFO("ok!");
   return 0;
 }
 
 int x3_vdec_deinit(VDEC_CHN vdecChn) {
-  HB_CHECK_SUCCESS(HB_VDEC_DestroyChn(vdecChn), "HB_VDEC_ReleaseFrame failed");
+  VIDEO_CHECK_SUCCESS(HB_VDEC_DestroyChn(vdecChn), "HB_VDEC_ReleaseFrame failed");
   FLOWENGINE_LOGGER_INFO("ok!");
   return 0;
 }

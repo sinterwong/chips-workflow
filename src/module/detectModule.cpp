@@ -12,6 +12,8 @@
 #include "infer/yoloDet.hpp"
 #include "x3/x3_inference.hpp"
 #include <cstddef>
+#include <memory>
+#include <opencv2/core/mat.hpp>
 
 namespace module {
 
@@ -27,7 +29,7 @@ DetectModule::DetectModule(Backend *ptr, const std::string &initName,
 
   infer::ModelInfo modelInfo;
   instance->getModelInfo(modelInfo);
-  
+
   if (params.algorithmSerial == "yolo") {
     detector = std::make_shared<infer::vision::YoloDet>(params, modelInfo);
   } else if (params.algorithmSerial == "assd") {
@@ -53,8 +55,38 @@ void DetectModule::forward(std::vector<forwardMessage> message) {
       return;
     }
     auto frameBufMessage = backendPtr->pool->read(buf.key);
+
+    // TODO test stream
+    if (type == "stream") {
+      auto data = std::any_cast<void **>(frameBufMessage.read("void**"));
+      auto image = std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
+
+      infer::Result ret;
+      ret.shape = {buf.cameraResult.widthPixel, buf.cameraResult.heightPixel,
+                   3};
+      void *output = nullptr;
+      infer::FrameInfo frame;
+      frame.data = data;
+      frame.shape = ret.shape;
+
+      if (!instance->infer(frame, &output)) {
+        continue;
+      }
+      detector->processOutput(output, ret);
+      FLOWENGINE_LOGGER_INFO("number of result: {}", ret.detResults.size());
+      for (auto &bbox : ret.detResults) {
+        cv::Rect rect(bbox.bbox[0], bbox.bbox[1], bbox.bbox[2] - bbox.bbox[0],
+                      bbox.bbox[3] - bbox.bbox[1]);
+        cv::rectangle(*image, rect, cv::Scalar(0, 0, 255), 2);
+      }
+      cv::cvtColor(*image, *image, cv::COLOR_RGB2BGR);
+      cv::imwrite("test_yolo_out.jpg", *image);
+      return;
+    }
+
     std::shared_ptr<cv::Mat> image =
         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
+
     if (type == "logic") {
       if (count++ < 5) {
         return;
@@ -71,14 +103,14 @@ void DetectModule::forward(std::vector<forwardMessage> message) {
       }
       infer::Result ret;
       ret.shape = {inferImage->cols, inferImage->rows, 3};
-      void* output = nullptr;
+      void *output = nullptr;
       infer::FrameInfo frame;
-      frame.data = reinterpret_cast<void**>(&inferImage->data);
+      frame.data = reinterpret_cast<void **>(&inferImage->data);
       frame.shape = ret.shape;
       if (!instance->infer(frame, &output)) {
         continue;
       }
-      
+
       detector->processOutput(output, ret);
 
       for (auto &rbbox : ret.detResults) {
@@ -101,13 +133,13 @@ void DetectModule::forward(std::vector<forwardMessage> message) {
           infer::Result ret;
           ret.shape = {croppedImage.cols, croppedImage.rows, 3};
           infer::FrameInfo frame;
-          frame.data = reinterpret_cast<void**>(&croppedImage.data);
+          frame.data = reinterpret_cast<void **>(&croppedImage.data);
           frame.shape = ret.shape;
-          void* output = nullptr;
+          void *output = nullptr;
           if (!instance->infer(frame, &output)) {
             continue;
           }
-          
+
           detector->processOutput(output, ret);
           for (auto &rbbox : ret.detResults) {
             retBox b = {

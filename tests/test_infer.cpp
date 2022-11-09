@@ -2,9 +2,13 @@
 #include "gflags/gflags.h"
 #include "hb_comm_video.h"
 #include "logger/logger.hpp"
+#include <algorithm>
+#include <cstddef>
 #include <iostream>
 #include <memory>
 #include <opencv2/core.hpp>
+#include <opencv2/core/types.hpp>
+#include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/types_c.h>
@@ -69,14 +73,33 @@ int main(int argc, char **argv) {
 
   cv::Mat nv12;
   utils::RGB2NV12(image, nv12);
-  cv::Mat picBGR;
-  cv::cvtColor(nv12, picBGR, CV_YUV2BGR_NV12);
-  cv::imwrite("test.jpg", picBGR); // only for test
+  // cv::Mat picBGR;
+  // cv::cvtColor(nv12, picBGR, CV_YUV2BGR_NV12);
+  // cv::imwrite("test.jpg", picBGR); // only for test
   // FLOWENGINE_LOGGER_INFO("Saved the test image");
+  // cv::Mat channel[2];
+  // cv::split(nv12, channel);
+  // cv::Mat y = channel[0];
+  // cv::Mat uv = channel[1];
+  std::cout << "nv12.cols: " << nv12.cols << ", " << "nv12.rows: " << nv12.rows << std::endl;
+  cv::imwrite("nv12.png", nv12);
+
+  std::cout << "image.cols: " << image.cols << ", " << "image.rows: " << image.rows << std::endl;
+  cv::Mat y = nv12(cv::Rect(0, 0, image.cols, image.rows)).clone();
+  cv::Mat uv = nv12(cv::Rect(0, image.rows, nv12.cols, nv12.rows - image.rows)).clone();
+  cv::imwrite("y.png", y);
+  cv::imwrite("uv.png", uv);
 
   frameInfo.stVFrame.height = image.rows;
   frameInfo.stVFrame.width = image.cols;
-  frameInfo.stVFrame.vir_ptr[0] = reinterpret_cast<hb_char*>(nv12.data);
+  frameInfo.stVFrame.vir_ptr[0] = reinterpret_cast<hb_char*>(y.data);
+  frameInfo.stVFrame.vir_ptr[1] = reinterpret_cast<hb_char*>(uv.data);
+  // frameInfo.stVFrame.vir_ptr[1] = reinterpret_cast<hb_char*>(uv.data);
+
+  // for (int i = 0; i < image.rows * image.cols; i ++) {
+  //   std::cout << static_cast<int>(frameInfo.stVFrame.vir_ptr[0][i]) << ", ";
+  // }
+  // std::cout << std::endl;
   
   void* output = nullptr;
   FrameInfo input;

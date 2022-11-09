@@ -18,7 +18,7 @@
 #include "vio/hb_vps_api.h"
 #include <string>
 
-#define HB_CHECK_SUCCESS(value, errmsg)                                        \
+#define VIDEO_CHECK_SUCCESS(value, errmsg)                                        \
   do {                                                                         \
     /*value can be call of function*/                                          \
     int ret_code = value;                                                      \

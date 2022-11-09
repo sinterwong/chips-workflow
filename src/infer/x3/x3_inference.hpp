@@ -76,10 +76,10 @@ private:
     //                  "hbSysFreeMem input_tensor.sysMem[0] failed!");
     HB_CHECK_SUCCESS(hbSysFreeMem(&(input_tensor_resized.sysMem[0])),
                      "hbSysFreeMem input_tensor_resized.sysMem[0] failed!");
-    for (int i = 0; i < output_count; i++) {
-      HB_CHECK_SUCCESS(hbSysFreeMem(&(output[i].sysMem[0])),
-                       "hbSysFreeMem output.sysMem[0] failed!");
-    }
+    // for (int i = 0; i < output_count; i++) {
+    //   HB_CHECK_SUCCESS(hbSysFreeMem(&(output[i].sysMem[0])),
+    //                    "hbSysFreeMem output.sysMem[0] failed!");
+    // }
 
     // 释放handle
     // HB_CHECK_SUCCESS(hbDNNReleaseTask(task_handle), "hbDNNReleaseTask

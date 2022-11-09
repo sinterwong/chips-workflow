@@ -54,6 +54,8 @@ bool AlgoInference::initialize() {
   input_tensor_resized.properties.tensorLayout = HB_DNN_LAYOUT_NCHW;
   input_tensor_resized.properties.tensorType = HB_DNN_IMG_TYPE_NV12_SEPARATE;
 
+  std::cout << "input shape: " << mParams.inputShape.at(1) << ", " << mParams.inputShape.at(0) << std::endl;
+
   input_tensor_resized.sysMem[0].memSize =
       mParams.inputShape.at(1) * mParams.inputShape.at(0);
   hbSysMem &itr_mem0 = input_tensor_resized.sysMem[0];
@@ -123,9 +125,14 @@ bool AlgoInference::infer(FrameInfo const &input, void** outputs) {
 
   // 填充 input_tensor.data_ext 成员变量， UV 分量
   // input_tensor.sysMem[1].virAddr = stFrameInfo->stVFrame.vir_ptr[1];
-  input_tensor.sysMem[1].virAddr = data[0] + input.shape.at(1) * input.shape.at(0);
-  input_tensor.sysMem[1].memSize =
-      input.shape.at(1) * input.shape.at(0) / 2;
+  input_tensor.sysMem[1].virAddr = data[1];
+  input_tensor.sysMem[1].memSize = input.shape.at(0) * input.shape.at(1) / 2;
+
+  // unsigned char* temp = reinterpret_cast<unsigned char*>(input_tensor.sysMem[1].virAddr);
+  // for (int i = 0; i < input.shape.at(0) * input.shape.at(1) / 2; i ++) {
+  //   std::cout << static_cast<int>(temp[i]) << ", ";
+  // }
+  // std::cout << std::endl;
 
   // HB_DNN_IMG_TYPE_NV12_SEPARATE 类型的 layout 为 (1, 3, h, w)
   input_tensor.properties.validShape.numDimensions = 4;
