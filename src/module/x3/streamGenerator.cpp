@@ -21,6 +21,7 @@
 #include <any>
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <opencv2/imgproc/types_c.h>
 #include <opencv2/opencv.hpp>
@@ -127,11 +128,34 @@ std::any getMatBuffer(std::vector<std::any> &list, FrameBuf *buf) {
   // frameInfo->stVFrame.vir_ptr[0] + size); data.insert(data.end(),
   // frameInfo->stVFrame.vir_ptr[1], frameInfo->stVFrame.vir_ptr[1] + (size /
   // 2));
-  cv::Mat picYV12 =
+
+  // TODO test nv12 for distinction with opencv
+  // cv::Mat temp_y =
+  //     cv::Mat(frameInfo->stVFrame.height, frameInfo->stVFrame.width, CV_8UC1,
+  //             frameInfo->stVFrame.vir_ptr[0]);
+  // cv::Mat temp_uv =
+  //     cv::Mat(frameInfo->stVFrame.height / 2, frameInfo->stVFrame.width,
+  //             CV_8UC1, frameInfo->stVFrame.vir_ptr[1]);
+  // cv::Mat temp_nv12 =
+  //     cv::Mat(frameInfo->stVFrame.height * 3 / 2, frameInfo->stVFrame.width,
+  //             CV_8UC1, frameInfo->stVFrame.vir_ptr[0]);
+  // cv::imwrite("temp_y.png", temp_y);
+  // cv::imwrite("temp_uv.png", temp_uv);
+  // cv::imwrite("temp_nv12.png", temp_nv12);
+  // for (size_t i = 0; i < frameInfo->stVFrame.height * frameInfo->stVFrame.width; i ++) {
+  //   std::cout << +frameInfo->stVFrame.vir_ptr[0][i] << ", ";
+  // }
+  // std::cout << std::endl;
+  // std::cout << "stVFrame.height: " << frameInfo->stVFrame.height << ", "
+  //           << "stVFrame.width: " << frameInfo->stVFrame.width << std::endl;
+  // exit(-1);
+
+  cv::Mat picNV12 =
       cv::Mat(frameInfo->stVFrame.height * 3 / 2, frameInfo->stVFrame.width,
               CV_8UC1, frameInfo->stVFrame.vir_ptr[0]);
+  
   cv::Mat picRGB;
-  cv::cvtColor(picYV12, picRGB, CV_YUV2RGB_NV12);
+  cv::cvtColor(picNV12, picRGB, CV_YUV2RGB_NV12);
   // cv::imwrite("test.jpg", picRGB); // only for test
   // FLOWENGINE_LOGGER_INFO("Saved the test image");
 
@@ -189,7 +213,7 @@ void StreamGenerator::forward(std::vector<forwardMessage> message) {
     error = HB_VDEC_SendStream(vdec_chn_info.m_vdec_chn_id, &pstStream, 200);
     if (error) {
       FLOWENGINE_LOGGER_ERROR("HB_VDEC_SendStream chn{} failed, ret: {}",
-                             vdec_chn_info.m_vdec_chn_id, error);
+                              vdec_chn_info.m_vdec_chn_id, error);
       return;
     }
     if (avContext) {
@@ -219,14 +243,12 @@ void StreamGenerator::forward(std::vector<forwardMessage> message) {
   } else {
     queueMessage sendMessage;
     FrameBuf frameBufMessage = makeFrameBuf(
-        &stFrameInfo, stFrameInfo.stVFrame.height,
-        stFrameInfo.stVFrame.width);
+        &stFrameInfo, stFrameInfo.stVFrame.height, stFrameInfo.stVFrame.width);
     int returnKey = backendPtr->pool->write(frameBufMessage);
 
-    // // TODO test
-    // std::shared_ptr<cv::Mat> image =
-    //     std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
-    // // TODO test
+    // TODO test
+    std::shared_ptr<cv::Mat> image =
+        std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
 
     sendMessage.frameType = ColorType::NV12;
     sendMessage.key = returnKey;

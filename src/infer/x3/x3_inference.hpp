@@ -32,6 +32,8 @@
     }                                                                          \
   } while (0);
 
+#define MAX_SIZE 2560 * 1440
+
 namespace infer {
 namespace x3 {
 class AlgoInference : public Inference {
@@ -107,6 +109,9 @@ private:
   hbDNNHandle_t dnn_handle;
   // 加载模型handle
   hbPackedDNNHandle_t packed_dnn_handle;
+  // 用于储存输入数据
+  uint64_t mmz_paddr[2];
+  char *mmz_vaddr[2];
 };
 } // namespace x3
 } // namespace infer

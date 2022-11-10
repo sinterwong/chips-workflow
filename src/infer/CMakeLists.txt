@@ -41,6 +41,7 @@ ELSEIF(TARGET_HARDWARE STREQUAL x3)
         ${APPSDK_PATH}/lib/hbmedia
     )
     INCLUDE_DIRECTORIES(
+        ${OpenCV_INCLUDE_DIRS}
         ${DNN_PATH}/include
         ${APPSDK_PATH}/include
         ${APPSDK_PATH}/include/vio
@@ -49,7 +50,7 @@ ELSEIF(TARGET_HARDWARE STREQUAL x3)
     FILE(GLOB_RECURSE NN_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.h)
     FILE(GLOB_RECURSE NN_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.c)
     ADD_LIBRARY(x3_infer SHARED ${NN_LIB_SRC} ${NN_LIB_HEAD})
-    TARGET_LINK_LIBRARIES(x3_infer ${BPU_libs} ${HB_MEDIA_libs} rt dl infer)
+    TARGET_LINK_LIBRARIES(x3_infer ${OpenCV_LIBS} ${BPU_libs} ${HB_MEDIA_libs} rt dl infer)
     LIST(APPEND INFER_LIBS x3_infer)
 ELSE()
     MESSAGE(WARNING "No platform specified!")

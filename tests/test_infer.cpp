@@ -1,7 +1,10 @@
 #include "common/common.hpp"
 #include "gflags/gflags.h"
 #include "hb_comm_video.h"
+#include "hb_type.h"
+#include "infer_utils.hpp"
 #include "logger/logger.hpp"
+#include "yoloDet.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <iostream>
@@ -10,10 +13,8 @@
 #include <opencv2/core/types.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/types_c.h>
-#include "yoloDet.hpp"
-#include "infer_utils.hpp"
+#include <opencv2/opencv.hpp>
 #if TARGET_PLATFORM == x3
 #include "x3/x3_inference.hpp"
 using namespace infer::x3;
@@ -49,8 +50,9 @@ int main(int argc, char **argv) {
                                  0,
                                  false,
                                  1};
-  
-  std::shared_ptr<AlgoInference> instance = std::make_shared<AlgoInference>(params);
+
+  std::shared_ptr<AlgoInference> instance =
+      std::make_shared<AlgoInference>(params);
   if (!instance->initialize()) {
     FLOWENGINE_LOGGER_ERROR("YoloDet initialization is failed!");
     return -1;
@@ -58,54 +60,54 @@ int main(int argc, char **argv) {
 
   ModelInfo info;
   instance->getModelInfo(info);
-  std::shared_ptr<vision::YoloDet> det = std::make_shared<vision::YoloDet>(params, info);
+  std::shared_ptr<vision::YoloDet> det =
+      std::make_shared<vision::YoloDet>(params, info);
 
   VIDEO_FRAME_S frameInfo;
+  memset(&frameInfo, 0, sizeof(VIDEO_FRAME_S));
 
   cv::Mat image = cv::imread(FLAGS_image_path);
   cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
-  
-  // cv::Mat yv12;
-  // cv::cvtColor(image, yv12, cv::COLOR_RGB2YUV_YV12);
-  // cv::Mat temp;
-  // cv::cvtColor(yv12, temp, CV_YUV2BGR_YV12);
-  // cv::imwrite("temp.jpg", temp); // only for test
 
   cv::Mat nv12;
   utils::RGB2NV12(image, nv12);
-  // cv::Mat picBGR;
-  // cv::cvtColor(nv12, picBGR, CV_YUV2BGR_NV12);
-  // cv::imwrite("test.jpg", picBGR); // only for test
-  // FLOWENGINE_LOGGER_INFO("Saved the test image");
-  // cv::Mat channel[2];
-  // cv::split(nv12, channel);
-  // cv::Mat y = channel[0];
-  // cv::Mat uv = channel[1];
-  std::cout << "nv12.cols: " << nv12.cols << ", " << "nv12.rows: " << nv12.rows << std::endl;
-  cv::imwrite("nv12.png", nv12);
-
-  std::cout << "image.cols: " << image.cols << ", " << "image.rows: " << image.rows << std::endl;
-  cv::Mat y = nv12(cv::Rect(0, 0, image.cols, image.rows)).clone();
-  cv::Mat uv = nv12(cv::Rect(0, image.rows, nv12.cols, nv12.rows - image.rows)).clone();
-  cv::imwrite("y.png", y);
-  cv::imwrite("uv.png", uv);
+  // std::cout << "nv12.cols: " << nv12.cols << ", "
+  //           << "nv12.rows: " << nv12.rows << std::endl;
+  // cv::imwrite("nv12.png", nv12);
+  // std::cout << "image.cols: " << image.cols << ", "
+  //           << "image.rows: " << image.rows << std::endl;
+  // cv::Mat y = nv12(cv::Rect(0, 0, image.cols, image.rows)).clone();
+  // cv::Mat uv =
+  //     nv12(cv::Rect(0, image.rows, nv12.cols, nv12.rows - image.rows)).clone();
+  // cv::imwrite("y.png", y);
+  // cv::imwrite("uv.png", uv);
 
   frameInfo.stVFrame.height = image.rows;
   frameInfo.stVFrame.width = image.cols;
-  frameInfo.stVFrame.vir_ptr[0] = reinterpret_cast<hb_char*>(y.data);
-  frameInfo.stVFrame.vir_ptr[1] = reinterpret_cast<hb_char*>(uv.data);
-  // frameInfo.stVFrame.vir_ptr[1] = reinterpret_cast<hb_char*>(uv.data);
+  frameInfo.stVFrame.size = image.rows * image.cols * 3 / 2;
+  frameInfo.stVFrame.vir_ptr[0] = reinterpret_cast<hb_char *>(nv12.data);
+  frameInfo.stVFrame.vir_ptr[1] =
+      reinterpret_cast<hb_char *>(nv12.data) + (image.rows * image.cols);
+  cv::Mat picNV12 = cv::Mat(image.rows * 3 / 2, image.cols, CV_8UC1,
+                            frameInfo.stVFrame.vir_ptr[0]);
+  cv::Mat temp_y = cv::Mat(image.rows, image.cols, CV_8UC1,
+                            frameInfo.stVFrame.vir_ptr[0]);
+  cv::Mat temp_uv = cv::Mat(image.rows / 2, image.cols, CV_8UC1,
+                            frameInfo.stVFrame.vir_ptr[1]);
+  cv::imwrite("nv12_finial.png", picNV12);
+  cv::imwrite("y_finial.png", temp_y);
+  cv::imwrite("uv_finial.png", temp_uv);
 
   // for (int i = 0; i < image.rows * image.cols; i ++) {
   //   std::cout << static_cast<int>(frameInfo.stVFrame.vir_ptr[0][i]) << ", ";
   // }
   // std::cout << std::endl;
-  
-  void* output = nullptr;
+
+  void *output = nullptr;
   FrameInfo input;
-  input.data = reinterpret_cast<void**>(frameInfo.stVFrame.vir_ptr);
+  input.data = reinterpret_cast<void **>(frameInfo.stVFrame.vir_ptr);
   input.shape = {image.cols, image.rows, 3};
-  
+
   if (!instance->infer(input, &output)) {
     FLOWENGINE_LOGGER_ERROR("infer is failed!");
     return -1;
@@ -121,6 +123,7 @@ int main(int argc, char **argv) {
                   bbox.bbox[3] - bbox.bbox[1]);
     cv::rectangle(image, rect, cv::Scalar(0, 0, 255), 2);
   }
+  cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
   cv::imwrite("test_yolo_out.jpg", image);
 
   gflags::ShutDownCommandLineFlags();
