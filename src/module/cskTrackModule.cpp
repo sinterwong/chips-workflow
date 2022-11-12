@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/3/1.
-//
-
 #include "cskTrackModule.h"
 namespace module {
 cskTrackModule::cskTrackModule(Backend *ptr, const std::string &initName,

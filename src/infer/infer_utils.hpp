@@ -12,6 +12,7 @@
 #ifndef __INFERENCE_UTILS_H_
 #define __INFERENCE_UTILS_H_
 #include "infer_common.hpp"
+#include "opencv2/imgproc.hpp"
 #include <array>
 #include <opencv2/opencv.hpp>
 #include <unordered_map>
@@ -44,9 +45,17 @@ void BGR2YUV(const cv::Mat bgrImg, cv::Mat &y, cv::Mat &u, cv::Mat &v);
 
 void YUV2BGR(const cv::Mat y, const cv::Mat u, const cv::Mat v, cv::Mat &bgrImg);
 
+void NV12toRGB(cv::Mat &nv12, cv::Mat &output);
+
 void YV12toNV12(const cv::Mat& input, cv::Mat& output);
 
 void RGB2NV12(cv::Mat const &input, cv::Mat &output);
+
+bool cropImage(cv::Mat const &input, cv::Mat &output, common::ColorType type);
+
+// TODO split nv12 -> y u v
+
+// TODO rect nv12 -> calling to split nv12 to y u v and rect y u v separately, merge the result to new Mat
 
 } // namespace utils
 } // namespace infer

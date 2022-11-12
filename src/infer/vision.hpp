@@ -29,7 +29,7 @@ namespace vision {
 
 class Vision {
 public:
-  Vision(common::AlgorithmConfig const &_param) : mParams(_param) {}
+  Vision(const common::AlgorithmConfig &_param, ModelInfo const &_info) : mParams(_param), modelInfo(_info) {}
 
   virtual ~Vision(){};
 
@@ -51,6 +51,10 @@ public:
 protected:
   //!< The parameters for the sample.
   common::AlgorithmConfig mParams;
+
+  //!< The information of model.
+  ModelInfo modelInfo;
+
 };
 } // namespace vision
 } // namespace infer

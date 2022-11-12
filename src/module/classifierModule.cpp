@@ -1,64 +1,60 @@
 /**
- * @file detectModule.cpp
+ * @file classifierModule.cpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
- * @date 2022-06-03
+ * @date 2022-07-18
  *
  * @copyright Copyright (c) 2022
  *
  */
-#include "detectModule.h"
-#include "infer/yoloDet.hpp"
-#include "infer/infer_utils.hpp"
+
+#include "classifierModule.h"
+#include "backend.h"
+#include "classifier.hpp"
+#include "infer_utils.hpp"
+#include "inference.h"
+#include "logger/logger.hpp"
+#include <cassert>
 #include <cstddef>
 #include <memory>
 #include <opencv2/core/mat.hpp>
+#include <opencv2/imgcodecs.hpp>
 
 namespace module {
 
-DetectModule::DetectModule(Backend *ptr, const std::string &initName,
-                           const std::string &initType,
-                           const common::AlgorithmConfig &_params,
-                           const std::vector<std::string> &recv,
-                           const std::vector<std::string> &send)
-    : Module(ptr, initName, initType, recv, send), params(std::move(_params)) {
+ClassifierModule::ClassifierModule(Backend *ptr, const std::string &initName,
+                                   const std::string &initType,
+                                   const common::AlgorithmConfig &_params,
+                                   const std::vector<std::string> &recv,
+                                   const std::vector<std::string> &send)
+    : Module(ptr, initName, initType, recv, send), params(_params) {
 
   instance = std::make_shared<AlgoInference>(params);
   instance->initialize();
 
   infer::ModelInfo modelInfo;
   instance->getModelInfo(modelInfo);
-
-  if (params.algorithmSerial == "yolo") {
-    detector = std::make_shared<infer::vision::YoloDet>(params, modelInfo);
-  } else if (params.algorithmSerial == "assd") {
-    // instance = std::make_shared<infer::trt::AssdDet>(params);
-  } else {
-    FLOWENGINE_LOGGER_ERROR("Error algorithm serial {}",
-                            params.algorithmSerial);
-  }
+  classifier = std::make_shared<infer::vision::Classifier>(params, modelInfo);
 }
 
-DetectModule::~DetectModule() {}
+ClassifierModule::~ClassifierModule() {}
 
-void DetectModule::forward(std::vector<forwardMessage> message) {
+void ClassifierModule::forward(std::vector<forwardMessage> message) {
   if (!instance) {
     std::cout << "instance is not init!!!" << std::endl;
     return;
   }
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      // FLOWENGINE_LOGGER_INFO("{} DetectModule module was done!", name);
-      std::cout << name << "{} Detection module was done!" << std::endl;
+      // FLOWENGINE_LOGGER_INFO("{} ClassifierModule module was done!", name);
+      std::cout << name << "{} Classifier module was done!" << std::endl;
       stopFlag.store(true);
       return;
     }
     auto frameBufMessage = backendPtr->pool->read(buf.key);
-
     std::shared_ptr<cv::Mat> image =
         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
-
     if (type == "logic") {
       if (count++ < 5) {
         return;
@@ -82,21 +78,19 @@ void DetectModule::forward(std::vector<forwardMessage> message) {
       if (!instance->infer(frame, &output)) {
         continue;
       }
-
-      detector->processOutput(output, ret);
-
-      for (auto &rbbox : ret.detResults) {
-        // retBox b{}
-        retBox b = {name,
-                    {rbbox.bbox[0] + region.x, rbbox.bbox[1] + region.y,
-                     rbbox.bbox[2] + region.x, rbbox.bbox[3] + region.y,
-                     rbbox.class_confidence, rbbox.class_id}};
-        buf.algorithmResult.bboxes.emplace_back(std::move(b));
-      }
+      classifier->processOutput(output, ret);
+      retBox b = {name,
+                  {static_cast<float>(region.x), static_cast<float>(region.y),
+                   static_cast<float>(region.x + region.width),
+                   static_cast<float>(region.y + region.height),
+                   ret.classResult.second,
+                   static_cast<float>(ret.classResult.first)}};
+      buf.algorithmResult.bboxes.emplace_back(std::move(b));
     } else if (type == "algorithm") {
       std::shared_ptr<cv::Mat> inferImage;
       for (size_t i = 0; i < buf.algorithmResult.bboxes.size(); i++) {
         auto &bbox = buf.algorithmResult.bboxes.at(i);
+
         if (bbox.first == send) {
           cv::Rect rect{static_cast<int>(bbox.second[0]),
                         static_cast<int>(bbox.second[1]),
@@ -112,22 +106,20 @@ void DetectModule::forward(std::vector<forwardMessage> message) {
           if (!instance->infer(frame, &output)) {
             continue;
           }
-          detector->processOutput(output, ret);
-          for (auto &rbbox : ret.detResults) {
-            retBox b = {
-                name,
-                {rbbox.bbox[0] + bbox.second[0], rbbox.bbox[1] + bbox.second[1],
-                 rbbox.bbox[2] + bbox.second[0], rbbox.bbox[3] + bbox.second[1],
-                 rbbox.class_confidence, rbbox.class_id}};
-            buf.algorithmResult.bboxes.emplace_back(std::move(b));
-          }
+          classifier->processOutput(output, ret);
+          retBox b = {name,
+                      {bbox.second[0], bbox.second[1], bbox.second[2],
+                       bbox.second[3], ret.classResult.second,
+                       static_cast<float>(ret.classResult.first)}};
+
+          buf.algorithmResult.bboxes.emplace_back(b);
         }
       }
     }
     autoSend(buf);
   }
 }
-FlowEngineModuleRegister(DetectModule, Backend *, std::string const &,
+FlowEngineModuleRegister(ClassifierModule, Backend *, std::string const &,
                          std::string const &, common::AlgorithmConfig const &,
                          std::vector<std::string> const &,
                          std::vector<std::string> const &);

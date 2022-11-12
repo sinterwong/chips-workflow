@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/3/1.
-//
-
 #ifndef METAENGINE_CSKTRACKMODULE_H
 #define METAENGINE_CSKTRACKMODULE_H
 

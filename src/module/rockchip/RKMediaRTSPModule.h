@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/2/28.
-//
-
 #ifndef METAENGINE_RKMEDIARTSPMODULE_H
 #define METAENGINE_RKMEDIARTSPMODULE_H
 

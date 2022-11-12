@@ -1,5 +1,5 @@
 /**
- * @file x3_detection.hpp
+ * @file detection.hpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
@@ -23,7 +23,7 @@ class Detection : public Vision {
   //! \brief construction
   //!
 public:
-  Detection(const common::AlgorithmConfig &_param) : Vision(_param) {}
+  Detection(const common::AlgorithmConfig &_param, ModelInfo const &_info) : Vision(_param, _info) {}
 
   //!
   //! \brief ProcessInput that the input is correct for infer

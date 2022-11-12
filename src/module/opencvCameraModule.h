@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/2/22.
-//
-
 #ifndef METAENGINE_OPENCVCAMERAMODULE_H
 #define METAENGINE_OPENCVCAMERAMODULE_H
 

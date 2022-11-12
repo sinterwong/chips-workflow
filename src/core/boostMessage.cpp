@@ -1,6 +1,14 @@
-//
-// Created by Wallel on 2022/1/30.
-//
+/**
+ * @file boostMessage.cpp
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2022-07-13
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 
 #include "boostMessage.h"
 #include "logger/logger.hpp"

@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/2/28.
-//
-
 #include "RKMediaVOModule.h"
 
 RKMediaVOModule::RKMediaVOModule(Backend *ptr,

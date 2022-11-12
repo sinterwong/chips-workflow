@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/3/15.
-//
-
 #include "RKMediaFramePool.h"
 
 void delRKMediaBuffer(std::vector<std::any> list)

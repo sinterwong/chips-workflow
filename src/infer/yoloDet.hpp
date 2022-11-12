@@ -23,13 +23,12 @@ class YoloDet : public Detection {
   //!
 public:
   YoloDet(const common::AlgorithmConfig &_param, ModelInfo const &info)
-      : Detection(_param), modelInfo(info) {}
+      : Detection(_param, info){}
 
 private:
   virtual void
   generateBoxes(std::unordered_map<int, std::vector<DetectionResult>> &,
                 void *) const override;
-  ModelInfo modelInfo;
 };
 } // namespace vision
 } // namespace infer

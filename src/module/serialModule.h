@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/3/10.
-//
-
 #ifndef METAENGINE_SERIALMODULE_H
 #define METAENGINE_SERIALMODULE_H
 

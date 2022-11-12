@@ -14,6 +14,8 @@
 #include <algorithm>
 #include <array>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/imgproc/types_c.h>
+#include <type_traits>
 namespace infer {
 namespace utils {
 float iou(std::array<float, 4> const &lbox, std::array<float, 4> const &rbox) {
@@ -198,6 +200,36 @@ void RGB2NV12(cv::Mat const &input, cv::Mat &output) {
   cv::Mat temp;
   cv::cvtColor(input, temp, cv::COLOR_RGB2YUV_YV12);
   YV12toNV12(temp, output);
+}
+
+void NV12toRGB(cv::Mat &nv12, cv::Mat &output) {
+  cv::cvtColor(nv12, output, CV_YUV2RGB_NV12);
+}
+
+bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect const &rect) {
+  output = input(rect).clone();
+  return true;
+}
+
+bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect const &rect,
+               common::ColorType type) {
+  switch (type) {
+  case common::ColorType::RGB888:
+  case common::ColorType::BGR888: {
+    return crop(input, output, rect);
+    break;
+  }
+  case common::ColorType::NV12: {
+    // TODO 等实现了nv12专门的crop后替换此处的转换，目前的开销是不可接受的
+    cv::Mat temp;
+    RGB2NV12(input, temp);
+    crop(temp, output, rect);
+    RGB2NV12(output, output); 
+    return true;
+    break;
+  }
+  }
+  return true;
 }
 
 } // namespace utils

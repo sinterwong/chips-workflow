@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/2/22.
-//
-
 #include "opencvCameraModule.h"
 
 namespace module {

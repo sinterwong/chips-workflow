@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/3/10.
-//
-
 #include "serialModule.h"
 // #include "frameMessage.pb.h"
 

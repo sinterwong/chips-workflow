@@ -153,14 +153,7 @@ std::any getMatBuffer(std::vector<std::any> &list, FrameBuf *buf) {
   cv::Mat picNV12 =
       cv::Mat(frameInfo->stVFrame.height * 3 / 2, frameInfo->stVFrame.width,
               CV_8UC1, frameInfo->stVFrame.vir_ptr[0]);
-  
-  cv::Mat picRGB;
-  cv::cvtColor(picNV12, picRGB, CV_YUV2RGB_NV12);
-  // cv::imwrite("test.jpg", picRGB); // only for test
-  // FLOWENGINE_LOGGER_INFO("Saved the test image");
-
-  std::shared_ptr<cv::Mat> mat = std::make_shared<cv::Mat>(std::move(picRGB));
-  // cv::cvtColor(*mat, *mat, cv::COLOR_BGR2RGB);
+  std::shared_ptr<cv::Mat> mat = std::make_shared<cv::Mat>(std::move(picNV12));
   return mat;
 }
 
