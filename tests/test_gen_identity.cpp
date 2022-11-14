@@ -15,7 +15,7 @@ unsigned int random_char() {
 
 std::string generate_hex(const unsigned int len) {
     std::stringstream ss;
-    for (auto i = 0; i < len; i++) {
+    for (auto i = 0; i < static_cast<int>(len); i++) {
         const auto rc = random_char();
         std::stringstream hexstream;
         hexstream << std::hex << rc;

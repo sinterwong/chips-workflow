@@ -88,6 +88,10 @@ bool AlarmOutputModule::postResult(std::string const &url,
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 
   CURLcode response = curl_easy_perform(curl);
+  if (!response) {
+    std::cout << "[AlarmOutputModule]: curl_easy_perform error code: " << response << std::endl;
+    return false;
+  }
 
   // end of for
   curl_easy_cleanup(curl);
@@ -103,7 +107,7 @@ bool AlarmOutputModule::writeResult(AlgorithmResult const &rm,
 
   if (!rm.bboxes.empty()) {
     rapidjson::Value bboxes(rapidjson::kArrayType);
-    for (int i = 0; i < rm.bboxes.size(); i++) {
+    for (int i = 0; i < static_cast<int>(rm.bboxes.size()); i++) {
       // create a bbox object
       rapidjson::Value bbox;
       bbox.SetObject();
@@ -122,7 +126,7 @@ bool AlarmOutputModule::writeResult(AlgorithmResult const &rm,
 
   if (!rm.polys.empty()) {
     rapidjson::Value polys(rapidjson::kArrayType);
-    for (int i = 0; i < rm.polys.size(); i++) {
+    for (int i = 0; i < static_cast<int>(rm.polys.size()); i++) {
       // create a bbox object
       rapidjson::Value polygon;
       // create coord array (x1, y1, x2, y2)

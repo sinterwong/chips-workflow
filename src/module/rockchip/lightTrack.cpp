@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2021/12/27.
-//
-
 #include "lightTrack.h"
 
 inline float sigmoid(float x) { return 1 / (1 + std::exp(-x)); }

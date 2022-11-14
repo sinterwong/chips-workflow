@@ -1,56 +1,64 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
+PROJECT(FlowEngineInfer LANGUAGES C CXX)
 
+FILE(GLOB INFER_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
 FILE(GLOB INFER_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 
+INCLUDE_DIRECTORIES(
+    ${3RDPARTY_DIR}/spdlog/include
+    ${PROJECT_INCLUDE_DIR}
+    ${PROJECT_INCLUDE_DIR}/infer
+)
+
+LINK_LIBRARIES(module_logger)
+ADD_LIBRARY(infer SHARED ${INFER_LIB_SRC})
+SET(INFER_LIBS infer)
+
 IF(TARGET_HARDWARE STREQUAL jetson)
-    # 0: no-simd; 1: sse-Intel; 2: neon-TX2;
-    SET(SIMD 2)
-    MESSAGE(STATUS "use neon-TX2 to compile")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -flto -march=armv8-a+crypto -mcpu=cortex-a57+crypto")
-    ADD_DEFINITIONS(-DUSE_SIMD)
-    ADD_DEFINITIONS(-DUSE_JETSON)
-    # if(SIMD EQUAL 1)
-    # message(STATUS "use sse-Intel to compile")
-    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4")
-    # add_definitions(-DUSE_SIMD)
-    # elseif(SIMD EQUAL 2)
-    
-    # elseif(SIMD EQUAL 0)
-    #     message(STATUS "no-simd to compile")
-    # endif()
-    
     LINK_DIRECTORIES(
         ${CUDA_LIBRARY_DIR}
-        # ${FMT_LIBRARY_DIR}
     )
     FILE(GLOB NN_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.h)
     FILE(GLOB NN_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET_HARDWARE}/*.c)
     FILE(GLOB NN_LIB_CU_SRC ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.cu)
-    ADD_LIBRARY(infer SHARED  ${NN_LIB_SRC})
-    CUDA_ADD_LIBRARY(infer_cu SHARED  ${NN_LIB_CU_SRC})
-    TARGET_INCLUDE_DIRECTORIES(infer_cu PUBLIC 
-                                ${3RDPARTY_DIR}/spdlog/include
-                                ${PROJECT_INCLUDE_DIR}
-                                ${PROJECT_INCLUDE_DIR}/infer 
+    ADD_LIBRARY(jetson_infer SHARED ${NN_LIB_SRC})
+    TARGET_INCLUDE_DIRECTORIES(jetson_infer PUBLIC 
                                 ${OpenCV_INCLUDE_DIRS}
                                 ${CUDA_INCLUDE_DIRS}
     )
-    TARGET_INCLUDE_DIRECTORIES(infer PUBLIC 
-                                ${3RDPARTY_DIR}/spdlog/include
-                                ${PROJECT_INCLUDE_DIR}
-                                ${PROJECT_INCLUDE_DIR}/infer
+    CUDA_ADD_LIBRARY(jetson_infer_cu SHARED ${NN_LIB_CU_SRC})
+    TARGET_INCLUDE_DIRECTORIES(jetson_infer_cu PUBLIC 
                                 ${OpenCV_INCLUDE_DIRS}
                                 ${CUDA_INCLUDE_DIRS}
     )
-    TARGET_LINK_LIBRARIES(infer ${OpenCV_LIBS} ${CUDA_LIBS} module_logger infer_cu nvinfer nvparsers nvonnxparser nvinfer_plugin)
+    TARGET_LINK_LIBRARIES(jetson_infer ${INFER_DEPENDENT_LIBS} ${OpenCV_LIBS} ${CUDA_LIBS} jetson_infer_cu  nvinfer nvparsers nvonnxparser nvinfer_plugin infer)
+    LIST(APPEND INFER_LIBS jetson_infer jetson_infer_cu)
+ELSEIF(TARGET_HARDWARE STREQUAL x3)
+    LINK_DIRECTORIES(
+        ${DNN_LIB_PATH}
+        ${APPSDK_PATH}/lib
+        ${APPSDK_PATH}/lib/hbbpu
+        ${APPSDK_PATH}/lib/hbmedia
+    )
+    INCLUDE_DIRECTORIES(
+        ${OpenCV_INCLUDE_DIRS}
+        ${DNN_PATH}/include
+        ${APPSDK_PATH}/include
+        ${APPSDK_PATH}/include/vio
+        ${APPSDK_PATH}/include/libmm
+    )
+    FILE(GLOB_RECURSE NN_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.h)
+    FILE(GLOB_RECURSE NN_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.c)
+    ADD_LIBRARY(x3_infer SHARED ${NN_LIB_SRC} ${NN_LIB_HEAD})
+    TARGET_LINK_LIBRARIES(x3_infer ${OpenCV_LIBS} ${BPU_libs} ${HB_MEDIA_libs} rt dl infer)
+    LIST(APPEND INFER_LIBS x3_infer)
 ELSE()
-    MESSAGE(FATAL_ERROR "No platform specified!")
+    MESSAGE(WARNING "No platform specified!")
 ENDIF()
-
 
 # transfer all headers to the include directory 
 FILE(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR}/infer)
-FOREACH(include ${INFER_LIB_HEAD})
+FOREACH(include ${INFER_LIB_HEAD}) 
 	MESSAGE("-- Copying ${include}")
 	CONFIGURE_FILE(${include} ${PROJECT_INCLUDE_DIR}/infer COPYONLY)
 ENDFOREACH()
@@ -70,7 +78,7 @@ ENDFOREACH()
 #     PATTERN "CMakeLists.txt" EXCLUDE
 # )
 
-INSTALL(TARGETS infer infer_cu
+INSTALL(TARGETS ${INFER_LIBS}
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION bin)

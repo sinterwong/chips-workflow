@@ -37,6 +37,8 @@ MACRO(LOAD_BOOST)
 ENDMACRO()
 
 MACRO(LOAD_OPENCV)
+    SET(OPENCV_HOME ${3RDPARTY_DIR}/opencv)
+    LIST(APPEND CMAKE_PREFIX_PATH ${OPENCV_HOME}/lib/cmake)
     FIND_PACKAGE(OpenCV CONFIG REQUIRED opencv_core opencv_highgui opencv_video opencv_imgcodecs opencv_imgproc)
     IF(OpenCV_INCLUDE_DIRS)
         MESSAGE(STATUS "Opencv library status:")
@@ -212,4 +214,42 @@ MACRO(LOAD_TENGINE)
     ELSE()
         MESSAGE(FATAL_ERROR "TENGINE_LIBS not found!")
     ENDIF()
+ENDMACRO()
+
+MACRO(LOAD_Jetson)
+    LOAD_CUDA()
+    LOAD_PROTOBUF()
+    LOAD_OPENCV()
+    LOAD_OPENSSL()
+    LOAD_CURL()
+ENDMACRO()
+
+MACRO(LOAD_X3)
+    # define dnn lib path
+    LOAD_OPENCV()
+    LOAD_OPENSSL()
+    LOAD_CURL()
+    SET(DNN_PATH "/root/.horizon/ddk/xj3_aarch64/dnn/")
+    SET(APPSDK_PATH "/root/.horizon/ddk/xj3_aarch64/appsdk/appuser/")
+    SET(DNN_LIB_PATH ${DNN_PATH}/lib)
+    SET(BPU_libs dnn cnn_intf hbrt_bernoulli_aarch64)
+    SET(HB_MEDIA_libs vio hbmedia avcodec avformat avutil)
+    INCLUDE_DIRECTORIES(
+        ${DNN_PATH}/include
+        ${APPSDK_PATH}/include
+        ${APPSDK_PATH}/include/vio
+        ${APPSDK_PATH}/include/libmm
+    )
+    LINK_DIRECTORIES(
+        ${DNN_LIB_PATH}
+        ${APPSDK_PATH}/lib
+        ${APPSDK_PATH}/lib/hbbpu
+        ${APPSDK_PATH}/lib/hbmedia
+    )
+    LINK_LIBRARIES(
+        ${BPU_libs}
+        ${HB_MEDIA_libs}
+        rt
+        dl
+    )
 ENDMACRO()

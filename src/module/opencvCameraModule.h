@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/2/22.
-//
-
 #ifndef METAENGINE_OPENCVCAMERAMODULE_H
 #define METAENGINE_OPENCVCAMERAMODULE_H
 
@@ -10,8 +6,8 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 
-#include "basicMessage.pb.h"
-#include "frameMessage.pb.h"
+// #include "basicMessage.pb.h"
+// #include "frameMessage.pb.h"
 #include "module.hpp"
 
 namespace module {
@@ -29,7 +25,7 @@ private:
   cv::VideoCapture cap;
   std::shared_ptr<cv::Mat> frame;
   bool ret;
-  tutorial::FrameMessage buf;
+  // tutorial::FrameMessage buf;
 
 public:
   OpencvCameraModule(Backend *ptr, const std::string &fileName,

@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/3/15.
-//
-
 #ifndef METAENGINE_RKMEDIAFRAMEPOOL_H
 #define METAENGINE_RKMEDIAFRAMEPOOL_H
 

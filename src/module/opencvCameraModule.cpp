@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/2/22.
-//
-
 #include "opencvCameraModule.h"
 
 namespace module {
@@ -76,7 +72,7 @@ void OpencvCameraModule::forward(std::vector<forwardMessage> message) {
     int returnKey = backendPtr->pool->write(frameBufMessage);
 
     queueMessage sendMessage;
-    sendMessage.frameType = "BGA888";
+    sendMessage.frameType = ColorType::BGR888;
     sendMessage.cameraResult.heightPixel = frame->rows;
     sendMessage.cameraResult.widthPixel = frame->cols;
     sendMessage.key = returnKey;

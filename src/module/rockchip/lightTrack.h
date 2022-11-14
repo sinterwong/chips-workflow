@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2021/12/27.
-//
-
 #ifndef LIGHTTRACK_MNN_LIGHTTRACK_H
 #define LIGHTTRACK_MNN_LIGHTTRACK_H
 

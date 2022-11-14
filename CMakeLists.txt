@@ -1,25 +1,15 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 SET(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-ADD_DEFINITIONS(-DNX_SERIAL_NUMBER="1423721066487")
-
 #--------------------------------------------
 # Project setting
 #--------------------------------------------
 INCLUDE(cmake/messagecolor.cmake)
 INCLUDE(cmake/utils.cmake)
-
-#--------------------------------------------
-# Set compilation options
-#--------------------------------------------
-INCLUDE(cmake/toolchain_options.cmake)
-
 FLOWENGINE_APP_EXTRACT_VERSION()
-
-PROJECT(FlowEngine VERSION ${FLOWENGINE_APP_VERSION} LANGUAGES CXX)
+PROJECT(FlowEngine VERSION ${FLOWENGINE_APP_VERSION} LANGUAGES C CXX)
 
 OPTION(BUILD_TESTS "Build with tests" ON)
-
 MESSAGE(INFO "--------------------------------")
 MESSAGE(STATUS "Build FlowEngine: ${FLOWENGINE_APP_VERSION}")
 MESSAGE(STATUS "Build with tests: ${BUILD_TESTS}")
@@ -32,7 +22,7 @@ ENDIF()
 # Set default build to debug
 #--------------------------------------------
 IF(NOT CMAKE_BUILD_TYPE)
-    SET(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose Release or Debug" FORCE)
+    SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose Release or Debug" FORCE)
 ENDIF()
 
 IF(NOT TARGET_OS)
@@ -44,7 +34,7 @@ IF(NOT TARGET_ARCH)
 ENDIF()
 
 IF(NOT TARGET_HARDWARE)
-    SET(TARGET_HARDWARE jetson)  # [none/rv1126/jetson]
+    SET(TARGET_HARDWARE none)  # [none/x3/jetson]
 ENDIF()
 
 MESSAGE(STATUS "Your target os : ${TARGET_OS}")
@@ -53,27 +43,30 @@ MESSAGE(STATUS "Your target hardware : ${TARGET_HARDWARE}")
 
 MESSAGE(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 
+#--------------------------------------------
+# Set compilation options
+#--------------------------------------------
 MESSAGE(INFO "--------------------------------")
+INCLUDE(cmake/toolchain_options.cmake)
 INCLUDE(cmake/load_3rdparty.cmake)
-MESSAGE(INFO "--------------------------------")
-
 MESSAGE(INFO "Loading 3rdparty libraries")
-# LOAD_FMT()
-# MESSAGE(INFO "--------------------------------")
-# LOAD_FREETYPE()
-# MESSAGE(INFO "--------------------------------")
-# LOAD_BOOST()
-# MESSAGE(INFO "--------------------------------")
-LOAD_PROTOBUF()
+
+IF(TARGET_HARDWARE STREQUAL "x3")
+    MESSAGE(STATUS "Loading X3 dependent libraries")
+    LOAD_X3()
+ELSEIF(TARGET_HARDWARE EQUAL "jetson")
+    MESSAGE(STATUS "Loading Jetson dependent libraries")
+    LOAD_Jetson()
+ELSE()
+    IF(WITH_MNN_ENGINE)
+        MESSAGE(INFO "--------------------------------")
+        MESSAGE(STATUS "Using MNN: on")
+        LOAD_MNN()
+    ENDIF()
+    MESSAGE(WARNING "No TARGET_HARDWARE specified!")
+ENDIF()
+ADD_DEFINITIONS(-DTARGET_PLATFORM=${TARGET_HARDWARE})
 MESSAGE(INFO "--------------------------------")
-LOAD_OPENCV()
-MESSAGE(INFO "--------------------------------")
-LOAD_OPENSSL()
-MESSAGE(INFO "--------------------------------")
-LOAD_CURL()
-MESSAGE(INFO "--------------------------------")
-# LOAD_FFMPEG()
-# MESSAGE(INFO "--------------------------------")
 
 SET(PROJECT_OUTPUT_DIR  ${PROJECT_BINARY_DIR}/${TARGET_ARCH})
 SET(PROJECT_INCLUDE_DIR ${PROJECT_OUTPUT_DIR}/include)
@@ -88,23 +81,6 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/lib)
 SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/lib)
 
-IF(TARGET_HARDWARE STREQUAL jetson)
-    MESSAGE(INFO "--------------------------------")
-    MESSAGE(STATUS "On Jetson")
-    LOAD_CUDA()
-ENDIF()
-
-IF(WITH_MNN_ENGINE)
-    MESSAGE(INFO "--------------------------------")
-    MESSAGE(STATUS "Using MNN: on")
-    LOAD_MNN()
-ENDIF()
-
-IF(WITH_TENGINE_ENGINE)
-    MESSAGE(INFO "--------------------------------")
-    MESSAGE(STATUS "Using Tengine: on")
-    LOAD_TENGINE()
-ENDIF()
 MESSAGE(INFO "3rdparty libraries has loaded.")
 #--------------------------------------------
 # Build 3rdparty

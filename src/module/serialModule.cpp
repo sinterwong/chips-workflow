@@ -1,9 +1,5 @@
-//
-// Created by Wallel on 2022/3/10.
-//
-
 #include "serialModule.h"
-#include "frameMessage.pb.h"
+// #include "frameMessage.pb.h"
 
 namespace module {
 serialModule::serialModule(Backend *ptr, const std::string &initName,

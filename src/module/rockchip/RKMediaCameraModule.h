@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/2/16.
-//
-
 #ifndef METAENGINE_RKMEDIACAMERAMODULE_H
 #define METAENGINE_RKMEDIACAMERAMODULE_H
 

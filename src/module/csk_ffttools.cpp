@@ -1,7 +1,3 @@
-//
-// Created by wallel on 2020/9/2.
-//
-
 #include "csk_ffttools.hpp"
 namespace CSK {
 namespace FFTTools {

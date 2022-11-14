@@ -21,6 +21,11 @@
 #define _FLOWENGINE_COMMON_COMMON_HPP_
 
 namespace common {
+/**
+ * @brief 颜色类型
+ * 
+ */
+enum class ColorType { RGB888 = 0, BGR888, NV12 };
 
 } // namespace common
 #endif

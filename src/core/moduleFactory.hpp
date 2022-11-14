@@ -16,7 +16,7 @@
 
 #ifndef FlowEngineModuleRegister
 #define FlowEngineModuleRegister(X, ...)                                       \
-  int __type##X = ModuleFactory::registerModule(                         \
+  int __type##X = ModuleFactory::registerModule(                               \
       #X, (void *)(&__createModule<X, __VA_ARGS__>));
 #endif
 
@@ -29,8 +29,8 @@ class ModuleFactory {
 public:
   template <typename BaseClass, typename... ArgType>
   static std::shared_ptr<BaseClass> createModule(std::string const &className,
-                                              ArgType... args) {
-    typedef std::shared_ptr<BaseClass> (*_CreateFactory)(ArgType...);
+                                                 ArgType... args) {
+    using _CreateFactory = std::shared_ptr<BaseClass> (*)(ArgType...);
 
     auto &_funcMap = _GetStaticFuncMap();
     auto iFind = _funcMap.find(className);

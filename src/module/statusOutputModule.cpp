@@ -62,6 +62,10 @@ bool StatusOutputModule::postResult(std::string const &url,
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 
   CURLcode response = curl_easy_perform(curl);
+  if (!response) {
+    std::cout << "[AlarmOutputModule]: curl_easy_perform error code: " << response << std::endl;
+    return false;
+  }
 
   // end of for
   curl_easy_cleanup(curl);

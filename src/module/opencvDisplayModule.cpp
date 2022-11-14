@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/2/22.
-//
-
 #include "opencvDisplayModule.h"
 
 namespace module {
@@ -15,9 +11,9 @@ OpencvDisplayModule::OpencvDisplayModule(Backend *ptr,
 void OpencvDisplayModule::forward(std::vector<forwardMessage> message) {
   for (auto &[send, type, buf] : message) {
     assert(type == "stream");
-    int height, width;
-    height = buf.cameraResult.heightPixel;
-    width = buf.cameraResult.widthPixel;
+    // int height, width;
+    // height = buf.cameraResult.heightPixel;
+    // width = buf.cameraResult.widthPixel;
 
     auto frameBufMessage = backendPtr->pool->read(buf.key);
     auto framePtr = std::any_cast<cv::Mat>(frameBufMessage.read("Mat"));

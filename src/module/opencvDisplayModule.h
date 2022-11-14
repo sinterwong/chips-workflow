@@ -1,11 +1,7 @@
-//
-// Created by Wallel on 2022/2/22.
-//
-
 #ifndef METAENGINE_OPENCVDISPLAYMODULE_H
 #define METAENGINE_OPENCVDISPLAYMODULE_H
 
-#include "frameMessage.pb.h"
+// #include "frameMessage.pb.h"
 #include "module.hpp"
 #include <opencv2/opencv.hpp>
 
