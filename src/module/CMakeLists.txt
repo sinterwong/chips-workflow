@@ -14,24 +14,21 @@ INCLUDE_DIRECTORIES(${3RDPARTY_DIR}/spdlog/include
                         ${PROJECT_INCLUDE_DIR}/infer
                         ${CURL_INCLUDE_DIR})
 
-LINK_LIBRARIES(stdc++fs core module_logger utils ${CURL_LIBS})
+LINK_LIBRARIES(stdc++fs core module_logger infer utils ${CURL_LIBS})
 ADD_LIBRARY(module SHARED ${SWMODULE_LIB_SRC})
 SET(MODULE_LIBS module)
 
 IF(TARGET_HARDWARE STREQUAL jetson)
-    LINK_DIRECTORIES(
-        ${CUDA_LIBRARY_DIR}
+    INCLUDE_DIRECTORIES(
+        ${PROJECT_INCLUDE_DIR}/jetson-utils
+        ${OpenCV_INCLUDE_DIRS}
+        ${Protobuf_INCLUDE_DIR}
+        ${CUDA_INCLUDE_DIRS}
     )
     FILE(GLOB_RECURSE MODULE_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.h)
     FILE(GLOB_RECURSE MODULE_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.c)
     ADD_LIBRARY(jetson_module SHARED ${MODULE_LIB_SRC})
-    TARGET_INCLUDE_DIRECTORIES(jetson_module PUBLIC 
-                                ${PROJECT_INCLUDE_DIR}/jetson-utils
-                                ${OpenCV_INCLUDE_DIRS}
-                                ${Protobuf_INCLUDE_DIR}
-                                ${CUDA_INCLUDE_DIRS}
-    )
-    TARGET_LINK_LIBRARIES(jetson_module jetson_infer jetson_infer_cu jetson-utils ${CUDA_LIBS})
+    TARGET_LINK_LIBRARIES(jetson_module jetson_infer jetson_infer_cu jetson-utils)
     LIST(APPEND MODULE_LIBS jetson_module)
 ELSEIF(TARGET_HARDWARE STREQUAL x3)
     FILE(GLOB_RECURSE MODULE_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.h)

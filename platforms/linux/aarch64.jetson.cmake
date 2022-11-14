@@ -1,7 +1,7 @@
 MESSAGE(STATUS "Configure Cross Compiler")
 
-SET(CMAKE_SYSTEM_NAME Linux)
-SET(CMAKE_SYSTEM_PROCESSOR arm)
+# SET(CMAKE_SYSTEM_NAME Linux)  # 加上之后找不到CUDA 我也不知道为啥
+SET(CMAKE_SYSTEM_PROCESSOR aarch64)
 SET(TARGET_OS linux)
 SET(TARGET_ARCH aarch64)
 SET(TARGET_HARDWARE jetson)
@@ -16,7 +16,7 @@ SET(CMAKE_CXX_COMPILER     ${TOOLCHAIN_ROOTDIR}/g++)
 # 0: no-simd; 1: sse-Intel; 2: neon-TX2;
 SET(SIMD 2)
 MESSAGE(STATUS "use neon-TX2 to compile")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -ffast-math -flto -march=armv8-a+crypto -mcpu=cortex-a57+crypto")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -ffast-math -flto -march=armv8-a+crypto -mcpu=cortex-a57+crypto")
 ADD_DEFINITIONS(-DUSE_SIMD)
 ADD_DEFINITIONS(-DUSE_JETSON)
 

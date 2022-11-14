@@ -25,5 +25,4 @@ logs/
 cmake-build-debug/
 cmake-build-debug-remote-host/
 tests/data
-.vscode/
 .cache

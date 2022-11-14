@@ -23,6 +23,7 @@
 #define __INFER_VISION_H_
 #include "infer_common.hpp"
 #include <opencv2/core/mat.hpp>
+#include <opencv4/opencv2/imgproc.hpp>
 
 namespace infer {
 namespace vision {

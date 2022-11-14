@@ -9,9 +9,7 @@
  *
  */
 
-#include "jetsonSourceModule.h"
-#include "messageBus.h"
-#include <mutex>
+#include "streamGenerator.h"
 #include <opencv2/imgproc.hpp>
 
 namespace module {
@@ -60,7 +58,7 @@ FrameBuf makeFrameBuf(uchar3 *image, int height, int width) {
   return temp;
 }
 
-JetsonSourceModule::JetsonSourceModule(Backend *ptr,
+StreamGenerator::StreamGenerator(Backend *ptr,
                                        const std::string &initName,
                                        const std::string &initType,
                                        const common::CameraConfig &_params,
@@ -87,7 +85,7 @@ JetsonSourceModule::JetsonSourceModule(Backend *ptr,
                               _params.cameraIp};
 }
 
-void JetsonSourceModule::step() {
+void StreamGenerator::step() {
   message.clear();
   hash.clear();
   loop = false;
@@ -99,10 +97,10 @@ void JetsonSourceModule::step() {
   afterForward();
 }
 
-void JetsonSourceModule::forward(std::vector<forwardMessage> message) {
+void StreamGenerator::forward(std::vector<forwardMessage> message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      // FLOWENGINE_LOGGER_INFO("{} JetsonSourceModule module was done!", name);
+      // FLOWENGINE_LOGGER_INFO("{} StreamGenerator module was done!", name);
       std::cout << name << "{} JetsonSource module was done!" << std::endl;
       inputStream->Close();
       stopFlag.store(true);
@@ -124,14 +122,14 @@ void JetsonSourceModule::forward(std::vector<forwardMessage> message) {
     FrameBuf frameBufMessage =
         makeFrameBuf(frame, inputStream->GetHeight(), inputStream->GetWidth());
     int returnKey = backendPtr->pool->write(frameBufMessage);
-    sendMessage.frameType = "RGB888";
+    sendMessage.frameType = ColorType::RGB888;
     sendMessage.key = returnKey;
     sendMessage.cameraResult = cameraResult;
     sendMessage.status = 0;
     autoSend(sendMessage);
   }
 }
-FlowEngineModuleRegister(JetsonSourceModule, Backend *, std::string const &,
+FlowEngineModuleRegister(StreamGenerator, Backend *, std::string const &,
                          std::string const &, common::CameraConfig const &,
                          std::vector<std::string> const &,
                          std::vector<std::string> const &);

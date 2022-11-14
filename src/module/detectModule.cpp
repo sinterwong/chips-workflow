@@ -69,7 +69,7 @@ void DetectModule::forward(std::vector<forwardMessage> message) {
                       buf.logicInfo.region[3] - buf.logicInfo.region[1]};
       std::shared_ptr<cv::Mat> inferImage;
       if (region.area() != 0) {
-        infer::utils::cropImage(*image, *inferImage, buf.frameType);
+        infer::utils::cropImage(*image, *inferImage, region, buf.frameType);
       } else {
         inferImage = image;
       }
@@ -102,7 +102,7 @@ void DetectModule::forward(std::vector<forwardMessage> message) {
                         static_cast<int>(bbox.second[1]),
                         static_cast<int>(bbox.second[2] - bbox.second[0]),
                         static_cast<int>(bbox.second[3] - bbox.second[1])};
-          infer::utils::cropImage(*image, *inferImage, buf.frameType);
+          infer::utils::cropImage(*image, *inferImage, rect, buf.frameType);
           infer::Result ret;
           ret.shape = {inferImage->cols, inferImage->rows, 3};
           infer::FrameInfo frame;

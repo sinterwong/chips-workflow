@@ -5,11 +5,13 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}
     ${PROJECT_INCLUDE_DIR}/core
     ${PROJECT_INCLUDE_DIR}/infer
+    ${PROJECT_INCLUDE_DIR}/jetson-utils
     ${COMMON_INCLUDE_DIR}
     ${OpenCV_INCLUDE_DIRS}
     ${Protobuf_INCLUDE_DIR}
     ${OPENSSL_INCLUDE_DIR}
     ${CURL_INCLUDE_DIR}
+    ${CUDA_INCLUDE_DIRS}
     ${DNN_PATH}/include
     ${APPSDK_PATH}/include
     ${APPSDK_PATH}/include/vio
@@ -29,14 +31,13 @@ SET(FE_LIBS core license module module_logger infer)
 IF(TARGET_HARDWARE STREQUAL "x3")
     MESSAGE(STATUS "Loading X3 dependent libraries")
     SET(CHIPS_DEPAND_LIBS x3_infer x3_module ${BPU_libs} ${HB_MEDIA_libs} rt dl)
-ELSEIF(TARGET_HARDWARE EQUAL "jetson")
+ELSEIF(TARGET_HARDWARE STREQUAL "jetson")
     MESSAGE(STATUS "Loading Jetson dependent libraries")
-    SET(CHIPS_DEPAND_LIBS jetson_infer jetson_infer_cu jetson_module nvinfer nvparsers nvonnxparser nvinfer_plugin)
+    SET(CHIPS_DEPAND_LIBS jetson_infer jetson_infer_cu jetson_module jetson-utils nvinfer nvparsers nvonnxparser nvinfer_plugin ${CUDA_CUDART_LIBRARY})
 ELSE()
     SET(CHIPS_DEPAND_LIBS)
 ENDIF()
 LIST(APPEND FE_LIBS ${CHIPS_DEPAND_LIBS})
-
 LINK_LIBRARIES(
     ${OpenCV_LIBS}
     ${Protobuf_LIBRARY}

@@ -21,12 +21,12 @@
 #include "backend.h"
 #include "common/common.hpp"
 #include "classifier.hpp"
-#if TARGET_PLATFORM == x3
+#if (TARGET_PLATFORM == 0)
 #include "x3/x3_inference.hpp"
 using namespace infer::x3;
-#elif TARGET_PLATFORM == jetson
+#elif (TARGET_PLATFORM == 1)
 #include "jetson/trt_inference.hpp"
-using namespace infer::jetson;
+using namespace infer::trt;
 #endif
 #include "module.hpp"
 namespace module {

@@ -15,23 +15,16 @@ ADD_LIBRARY(infer SHARED ${INFER_LIB_SRC})
 SET(INFER_LIBS infer)
 
 IF(TARGET_HARDWARE STREQUAL jetson)
-    LINK_DIRECTORIES(
-        ${CUDA_LIBRARY_DIR}
+    INCLUDE_DIRECTORIES(
+        ${OpenCV_INCLUDE_DIRS}
+        ${CUDA_INCLUDE_DIRS}
     )
     FILE(GLOB NN_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.h)
     FILE(GLOB NN_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET_HARDWARE}/*.c)
     FILE(GLOB NN_LIB_CU_SRC ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.cu)
     ADD_LIBRARY(jetson_infer SHARED ${NN_LIB_SRC})
-    TARGET_INCLUDE_DIRECTORIES(jetson_infer PUBLIC 
-                                ${OpenCV_INCLUDE_DIRS}
-                                ${CUDA_INCLUDE_DIRS}
-    )
     CUDA_ADD_LIBRARY(jetson_infer_cu SHARED ${NN_LIB_CU_SRC})
-    TARGET_INCLUDE_DIRECTORIES(jetson_infer_cu PUBLIC 
-                                ${OpenCV_INCLUDE_DIRS}
-                                ${CUDA_INCLUDE_DIRS}
-    )
-    TARGET_LINK_LIBRARIES(jetson_infer ${INFER_DEPENDENT_LIBS} ${OpenCV_LIBS} ${CUDA_LIBS} jetson_infer_cu  nvinfer nvparsers nvonnxparser nvinfer_plugin infer)
+    TARGET_LINK_LIBRARIES(jetson_infer jetson_infer_cu infer nvinfer nvparsers nvonnxparser nvinfer_plugin ${OpenCV_LIBS})
     LIST(APPEND INFER_LIBS jetson_infer jetson_infer_cu)
 ELSEIF(TARGET_HARDWARE STREQUAL x3)
     LINK_DIRECTORIES(

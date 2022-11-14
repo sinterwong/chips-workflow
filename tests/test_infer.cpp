@@ -1,7 +1,5 @@
 #include "common/common.hpp"
 #include "gflags/gflags.h"
-#include "hb_comm_video.h"
-#include "hb_type.h"
 #include "infer_utils.hpp"
 #include "logger/logger.hpp"
 #include "yoloDet.hpp"
@@ -15,12 +13,14 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgproc/types_c.h>
 #include <opencv2/opencv.hpp>
-#if TARGET_PLATFORM == x3
+#if (TARGET_PLATFORM == 0)
 #include "x3/x3_inference.hpp"
 using namespace infer::x3;
-#elif TARGET_PLATFORM == jetson
+#include "hb_comm_video.h"
+#include "hb_type.h"
+#elif (TARGET_PLATFORM == 1)
 #include "jetson/trt_inference.hpp"
-using namespace infer::jetson;
+using namespace infer::trt;
 #endif
 
 using namespace infer;
@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
   instance->getModelInfo(info);
   std::shared_ptr<vision::YoloDet> det =
       std::make_shared<vision::YoloDet>(params, info);
-
+  /*
   VIDEO_FRAME_S frameInfo;
   memset(&frameInfo, 0, sizeof(VIDEO_FRAME_S));
 
@@ -125,6 +125,7 @@ int main(int argc, char **argv) {
   }
   cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
   cv::imwrite("test_yolo_out.jpg", image);
+  */
 
   gflags::ShutDownCommandLineFlags();
   // FlowEngineLoggerDrop();

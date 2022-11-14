@@ -17,7 +17,6 @@
 #include <vector>
 
 #include "common/common.hpp"
-#include "frameMessage.pb.h"
 #include "logger/logger.hpp"
 #include "messageBus.h"
 #include "module.hpp"
@@ -30,7 +29,7 @@ std::any getPtrBuffer(std::vector<std::any> &, FrameBuf *);
 std::any getBuffer(std::vector<std::any> &, FrameBuf *);
 FrameBuf makeFrameBuf(uchar3 *, int, int);
 
-class JetsonSourceModule : public Module {
+class StreamGenerator : public Module {
 private:
   std::unique_ptr<videoSource> inputStream;
 
@@ -43,13 +42,13 @@ private:
   CameraResult cameraResult;
 
 public:
-  JetsonSourceModule(Backend *ptr, const std::string &initName,
+  StreamGenerator(Backend *ptr, const std::string &initName,
                      const std::string &initType,
                      const common::CameraConfig &_params,
                      const std::vector<std::string> &recv = {},
                      const std::vector<std::string> &send = {});
 
-  ~JetsonSourceModule() {}
+  ~StreamGenerator() {}
 
   virtual void forward(std::vector<forwardMessage> message) override;
 

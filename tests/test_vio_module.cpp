@@ -3,9 +3,9 @@
 #include "module.hpp"
 #include "module/detectModule.h"
 #include "moduleFactory.hpp"
-#if TARGET_PLATFORM == x3
+#if (TARGET_PLATFORM == 0)
 #include "module/x3/streamGenerator.h"
-#elif TARGET_PLATFORM == jetson
+#elif (TARGET_PLATFORM == 1)
 #include "module/jetson/streamGenerator.h"
 #endif
 #include "gflags/gflags.h"

@@ -55,7 +55,7 @@ public:
   //!
   //! \brief Runs the inference engine
   //!
-  virtual bool infer(FrameInfo const &, void **) override;
+  virtual bool infer(FrameInfo &, void **) override;
 
   //!
   //! \brief ProcessInput that the input is correct for infer

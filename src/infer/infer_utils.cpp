@@ -78,34 +78,6 @@ void renderOriginShape(std::vector<DetectionResult> &results,
   }
 }
 
-template <typename T>
-void chw_to_hwc(T *chw_data, T *hwc_data, int channel, int height, int width) {
-  int wc = width * channel;
-  int index = 0;
-  for (int c = 0; c < channel; c++) {
-    for (int h = 0; h < height; h++) {
-      for (int w = 0; w < width; w++) {
-        hwc_data[h * wc + w * channel + c] = chw_data[index];
-        index++;
-      }
-    }
-  }
-}
-
-template <typename T>
-void hwc_to_chw(T *chw_data, T *hwc_data, int channel, int height, int width) {
-  int wh = width * height;
-  int index = 0;
-  for (int h = 0; h < height; h++) {
-    for (int w = 0; w < width; w++) {
-      for (int c = 0; c < channel; c++) {
-        chw_data[c * wh + h * width + w] = hwc_data[index];
-        index++;
-      }
-    }
-  }
-}
-
 bool resizeInput(cv::Mat &image, bool isScale, std::array<int, 2> &dstShape) {
   if (isScale) {
     int height = image.rows;

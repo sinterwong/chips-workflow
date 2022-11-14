@@ -140,7 +140,7 @@ bool AlgoInference::initialize() {
   return true;
 }
 
-bool AlgoInference::infer(FrameInfo const &input, void **outputs) {
+bool AlgoInference::infer(FrameInfo &input, void **outputs) {
   int height = input.shape.at(1);
   int width = input.shape.at(0);
   hb_char **data = reinterpret_cast<hb_char **>(input.data);

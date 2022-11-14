@@ -10,16 +10,17 @@
  */
 #ifndef __INFERENCE_ASSD_DETECTION_H_
 #define __INFERENCE_ASSD_DETECTION_H_
-#include "jetson/detection.hpp"
+#include "detection.hpp"
 
 namespace infer {
-namespace trt {
-class AssdDet : public DetectionInfer {
+namespace vision {
+class AssdDet : public Detection {
   //!
   //! \brief construction
   //!
 public:
-  AssdDet(const common::AlgorithmConfig &_param) : DetectionInfer(_param) {}
+  AssdDet(const common::AlgorithmConfig &_param, ModelInfo const &info)
+      : Detection(_param, info){}
 
 private:
   //!
@@ -32,7 +33,7 @@ private:
   //!
   virtual void
   generateBoxes(std::unordered_map<int, std::vector<DetectionResult>> &,
-                BufferManager const &) const override;
+                void *) const override;
 
   std::vector<float> receptive_field_center_start = {7, 7, 7};
   std::vector<float> receptive_field_stride = {8, 8, 8};
