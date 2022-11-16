@@ -74,8 +74,8 @@ void YV12toNV12(const cv::Mat &input, cv::Mat &output);
 
 void RGB2NV12(cv::Mat const &input, cv::Mat &output);
 
-bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect const &rect,
-               common::ColorType type);
+bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect &rect,
+               common::ColorType type, float sr=0.0);
 
 // TODO split nv12 -> y u v
 

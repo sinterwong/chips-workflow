@@ -35,6 +35,7 @@ private:
   int count = 0;
   common::AlgorithmConfig params;
   std::shared_ptr<AlgoInference> instance;
+  infer::ModelInfo modelInfo;
   std::shared_ptr<infer::vision::Classifier> classifier;
 
 public:

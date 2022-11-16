@@ -99,7 +99,7 @@ bool AlgoInference::infer(FrameInfo &inputs, void **outputs) {
   // Memcpy from device output buffers to host output buffers
   buffers->copyOutputToHost();
 
-  float **output = reinterpret_cast<float **>(outputs);
+  float** output = reinterpret_cast<float**>(*outputs);
   for (int i = 0; i < mParams.outputTensorNames.size(); ++i) {
     output[i] = static_cast<float *>(
         buffers->getHostBuffer(mParams.outputTensorNames[i]));
@@ -111,7 +111,8 @@ bool AlgoInference::processInput(void *inputs) {
   float *deviceInputBuffer = static_cast<float *>(
       buffers->getDeviceBuffer(mParams.inputTensorNames[0])); // explicit batch
   auto inputData = reinterpret_cast<FrameInfo *>(inputs);
-  cv::Mat image{inputData->shape[1], inputData->shape[0], CV_8UC3, inputs};
+  cv::Mat image{inputData->shape[1], inputData->shape[0], CV_8UC3, *inputData->data};
+  // cv::imwrite("temp_out.jpg", image);
 
   int image_size = image.cols * image.rows * image.channels();
 

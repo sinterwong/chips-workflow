@@ -35,7 +35,7 @@ public:
   //!
   //! \brief Postprocessing that the output is correct and prints it
   //!
-  virtual bool processOutput(void *, Result &) const override;
+  virtual bool processOutput(void **, Result &) const override;
 
   //!
   //! \brief verifyOutput that the result is correct for infer

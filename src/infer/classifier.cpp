@@ -24,8 +24,8 @@ bool Classifier::processInput(cv::Mat const &input, void **output, common::Color
   return true;
 }
 
-bool Classifier::processOutput(void *output, Result &result) const {
-  float *out = reinterpret_cast<float *>(output);
+bool Classifier::processOutput(void **output, Result &result) const {
+  float *out = reinterpret_cast<float *>(output[0]);
   
   int numClasses = modelInfo.outputShapes[0].at(1);
   result.classResult = softmax_argmax(out, numClasses);

@@ -42,7 +42,7 @@ public:
   //!
   //! \brief ProcessInput that the input is correct for infer
   //!
-  virtual bool processOutput(void *, Result &) const = 0;
+  virtual bool processOutput(void **, Result &) const = 0;
 
   //!
   //! \brief verifyOutput that the result is correct for infer

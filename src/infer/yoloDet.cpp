@@ -19,9 +19,9 @@ namespace vision {
 
 void YoloDet::generateBoxes(
     std::unordered_map<int, std::vector<DetectionResult>> &m,
-    void *buffer) const {
+    void **outputs) const {
   // TODO output的信息还需要强化一下，比如说做一个结构体什么的
-  float *output = reinterpret_cast<float *>(buffer);
+  float *output = reinterpret_cast<float *>(outputs[0]);
   // std::cout << "outputShapes size: " << outputShapes.size() << std::endl;
   // std::cout << "outputShapes[0] size: " << outputShapes[0].size() <<
   // std::endl;

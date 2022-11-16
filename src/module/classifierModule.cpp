@@ -71,14 +71,15 @@ void ClassifierModule::forward(std::vector<forwardMessage> message) {
       }
       infer::Result ret;
       ret.shape = {inferImage->cols, inferImage->rows, 3};
-      void *output = nullptr;
+      void *outputs[modelInfo.output_count];
+      void *output = reinterpret_cast<void *>(outputs);
       infer::FrameInfo frame;
       frame.data = reinterpret_cast<void **>(&inferImage->data);
       frame.shape = ret.shape;
       if (!instance->infer(frame, &output)) {
         continue;
       }
-      classifier->processOutput(output, ret);
+      classifier->processOutput(&output, ret);
       retBox b = {name,
                   {static_cast<float>(region.x), static_cast<float>(region.y),
                    static_cast<float>(region.x + region.width),
@@ -102,11 +103,12 @@ void ClassifierModule::forward(std::vector<forwardMessage> message) {
           infer::FrameInfo frame;
           frame.data = reinterpret_cast<void **>(&inferImage->data);
           frame.shape = ret.shape;
-          void *output = nullptr;
+          void *outputs[modelInfo.output_count];
+          void *output = reinterpret_cast<void *>(outputs);
           if (!instance->infer(frame, &output)) {
             continue;
           }
-          classifier->processOutput(output, ret);
+          classifier->processOutput(&output, ret);
           retBox b = {name,
                       {bbox.second[0], bbox.second[1], bbox.second[2],
                        bbox.second[3], ret.classResult.second,

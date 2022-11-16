@@ -56,19 +56,23 @@ int main(int argc, char **argv) {
   }
   infer::ModelInfo info;
   instance->getModelInfo(info);
-  std::shared_ptr<YoloDet> det = std::make_shared<YoloDet>(params, info);
+  std::shared_ptr<AssdDet> det = std::make_shared<AssdDet>(params, info);
 
   // TODO 根据不同平台，给出不同的类型
   cv::Mat image = cv::imread(FLAGS_image_path);
+  // cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 
   infer::Result ret;
   ret.shape = {image.cols, image.rows, 3};
   infer::FrameInfo frame;
   frame.data = reinterpret_cast<void **>(&image.data);
   frame.shape = ret.shape;
-  void *output = nullptr;
+  void *outputs[info.output_count];
+  void *output = reinterpret_cast<void *>(outputs);
   instance->infer(frame, &output);
-  det->processOutput(output, ret);
+  float** out = reinterpret_cast<float**>(output);
+  std::cout << "test: " << out[0][0] << std::endl;
+  det->processOutput(&output, ret);
   FLOWENGINE_LOGGER_INFO("number of result: {}", ret.detResults.size());
   for (auto &bbox : ret.detResults) {
     cv::Rect rect(bbox.bbox[0], bbox.bbox[1], bbox.bbox[2] - bbox.bbox[0],

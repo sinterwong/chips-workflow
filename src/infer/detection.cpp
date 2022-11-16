@@ -25,7 +25,7 @@ bool Detection::processInput(cv::Mat const &input, void **output, common::ColorT
   return true;
 }
 
-bool Detection::processOutput(void *output, Result &result) const {
+bool Detection::processOutput(void **output, Result &result) const {
   std::unordered_map<int, std::vector<DetectionResult>> cls2bbox;
   generateBoxes(cls2bbox, output);
   utils::nms(result.detResults, cls2bbox, mParams.nms_thr);

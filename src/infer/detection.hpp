@@ -33,7 +33,7 @@ public:
   //!
   //! \brief Postprocessing that the output is correct and prints it
   //!
-  virtual bool processOutput(void *, Result &) const override;
+  virtual bool processOutput(void **, Result &) const override;
 
   //!
   //! \brief verifyOutput that the result is correct for infer
@@ -43,7 +43,7 @@ public:
 protected:
   virtual void
   generateBoxes(std::unordered_map<int, std::vector<DetectionResult>> &,
-                void *) const = 0;
+                void **) const = 0;
 };
 } // namespace vision
 } // namespace infer

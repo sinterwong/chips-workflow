@@ -27,7 +27,6 @@ DetectModule::DetectModule(Backend *ptr, const std::string &initName,
   instance = std::make_shared<AlgoInference>(params);
   instance->initialize();
 
-  infer::ModelInfo modelInfo;
   instance->getModelInfo(modelInfo);
 
   if (params.algorithmSerial == "yolo") {
@@ -75,7 +74,8 @@ void DetectModule::forward(std::vector<forwardMessage> message) {
       }
       infer::Result ret;
       ret.shape = {inferImage->cols, inferImage->rows, 3};
-      void *output = nullptr;
+      void *outputs[modelInfo.output_count];
+      void *output = reinterpret_cast<void *>(outputs);
       infer::FrameInfo frame;
       frame.data = reinterpret_cast<void **>(&inferImage->data);
       frame.shape = ret.shape;
@@ -83,7 +83,7 @@ void DetectModule::forward(std::vector<forwardMessage> message) {
         continue;
       }
 
-      detector->processOutput(output, ret);
+      detector->processOutput(&output, ret);
 
       for (auto &rbbox : ret.detResults) {
         // retBox b{}
@@ -108,11 +108,12 @@ void DetectModule::forward(std::vector<forwardMessage> message) {
           infer::FrameInfo frame;
           frame.data = reinterpret_cast<void **>(&inferImage->data);
           frame.shape = ret.shape;
-          void *output = nullptr;
+          void *outputs[modelInfo.output_count];
+          void *output = reinterpret_cast<void *>(outputs);
           if (!instance->infer(frame, &output)) {
             continue;
           }
-          detector->processOutput(output, ret);
+          detector->processOutput(&output, ret);
           for (auto &rbbox : ret.detResults) {
             retBox b = {
                 name,
