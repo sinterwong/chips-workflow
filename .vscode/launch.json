@@ -11,9 +11,11 @@
               //  "--config_path=/home/wangxt/workspace/projects/flowengine/build/agent.json",
               //  "--num_workers=64",
                "--image_path=/home/wangxt/workspace/projects/flowengine/tests/data/pedestrian.jpg",
-               "--model_path=/home/wangxt/workspace/projects/flowengine/tests/data/model/assd_shoulder.engine",
-               "--input_height=543",
-               "--input_width=967",
+               "--model_path=/home/wangxt/workspace/projects/flowengine/tests/data/model/yolov5s.engine",
+              //  "--model_path=/home/wangxt/workspace/projects/flowengine/tests/data/model/assd_shoulder.engine",
+               "--atype=yolo",
+               "--input_height=640",  // 543, 640
+               "--input_width=640",   // 967, 640
               ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",

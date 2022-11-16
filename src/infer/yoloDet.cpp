@@ -9,6 +9,7 @@
  *
  */
 #include "yoloDet.hpp"
+#include "logger/logger.hpp"
 #include <algorithm>
 #include <cassert>
 #include <cstring>
@@ -20,25 +21,30 @@ namespace vision {
 void YoloDet::generateBoxes(
     std::unordered_map<int, std::vector<DetectionResult>> &m,
     void **outputs) const {
-  // TODO output的信息还需要强化一下，比如说做一个结构体什么的
-  float *output = reinterpret_cast<float *>(outputs[0]);
-  // std::cout << "outputShapes size: " << outputShapes.size() << std::endl;
-  // std::cout << "outputShapes[0] size: " << outputShapes[0].size() <<
-  // std::endl;
-  int numAnchors = modelInfo.outputShapes[0].at(1);
-  int num = modelInfo.outputShapes[0].at(2);
-  for (int i = 0; i < numAnchors * num; i += num) {
-    if (output[i + 4] <= mParams.cond_thr)
-      continue;
-    DetectionResult det;
-    det.class_id = std::distance(
-        output + i + 5, std::max_element(output + i + 5, output + i + num));
-    int real_idx = i + 5 + det.class_id;
-    det.det_confidence = output[real_idx];
-    memcpy(&det, &output[i], 5 * sizeof(float));
-    if (m.count(det.class_id) == 0)
-      m.emplace(det.class_id, std::vector<DetectionResult>());
-    m[det.class_id].push_back(det);
+  float **output = reinterpret_cast<float **>(*outputs);
+  for (int i = 0; i < modelInfo.output_count; ++i) {
+    int numAnchors = modelInfo.outputShapes[i].at(1);
+    int num = modelInfo.outputShapes[i].at(2);
+    for (int j = 0; j < numAnchors * num; j += num) {
+      if (output[i][j + 4] <= mParams.cond_thr)
+        continue;
+      // std::cout << output[i][j + 0] << ", "
+      //           << output[i][j + 1] << ", "
+      //           << output[i][j + 2] << ", "
+      //           << output[i][j + 3] << ", "
+      //           << output[i][j + 4] << ", "
+      //           << output[i][j + 5] << std::endl;
+      DetectionResult det;
+      det.class_id = std::distance(
+          output[i] + j + 5,
+          std::max_element(output[i] + j + 5, output[i] + j + num));
+      int real_idx = j + 5 + det.class_id;
+      det.det_confidence = output[i][real_idx];
+      memcpy(&det, &output[i][j], 5 * sizeof(float));
+      if (m.count(det.class_id) == 0)
+        m.emplace(det.class_id, std::vector<DetectionResult>());
+      m[det.class_id].push_back(det);
+    }
   }
 }
 

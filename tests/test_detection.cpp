@@ -21,6 +21,7 @@ using namespace infer::vision;
 
 DEFINE_string(image_path, "", "Specify config path.");
 DEFINE_string(model_path, "", "Specify model path.");
+DEFINE_string(atype, "assd", "Specify algorithim type.");
 DEFINE_int32(input_height, 335, "Specify input height.");
 DEFINE_int32(input_width, 335, "Specify input width.");
 
@@ -31,22 +32,37 @@ int main(int argc, char **argv) {
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-  std::vector<std::string> inputNames = {"data"};
-  // std::vector<std::string> outputNames = {"output2_conv3", "output3_conv3",
-  //                                         "output4_conv3"};
-  std::vector<std::string> outputNames = {"conv13_3", "conv15_3", "conv16_3"};
+  // TODO 根据不同平台，给出不同的类型
+  cv::Mat image = cv::imread(FLAGS_image_path);
+
+  std::vector<std::string> inputNames;
+  std::vector<std::string> outputNames;
+  float alpha = 0;
+  bool isScale = false;
+  if (FLAGS_atype == "yolo") {
+    inputNames = {"images"};
+    outputNames = {"output"};
+    alpha = 255.0;
+    isScale = true;
+    cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+  } else if (FLAGS_atype == "assd") {
+    inputNames = {"data"};
+    outputNames = {"conv13_3", "conv15_3", "conv16_3"};
+  } else {
+    return -1;
+  }
 
   std::array<int, 3> inputShape{FLAGS_input_width, FLAGS_input_height, 3};
   common::AlgorithmConfig params{FLAGS_model_path,
                                  std::move(inputNames),
                                  std::move(outputNames),
                                  std::move(inputShape),
-                                 "assd",
+                                 FLAGS_atype, // yolo, assd
+                                 0.3,
                                  0.4,
-                                 0.4,
+                                 alpha,
                                  0,
-                                 0,
-                                 false,
+                                 isScale,
                                  1};
   std::shared_ptr<AlgoInference> instance =
       std::make_shared<AlgoInference>(params);
@@ -56,11 +72,14 @@ int main(int argc, char **argv) {
   }
   infer::ModelInfo info;
   instance->getModelInfo(info);
-  std::shared_ptr<AssdDet> det = std::make_shared<AssdDet>(params, info);
-
-  // TODO 根据不同平台，给出不同的类型
-  cv::Mat image = cv::imread(FLAGS_image_path);
-  // cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+  std::shared_ptr<Detection> det;
+  if (FLAGS_atype == "yolo") {
+    det = std::make_shared<YoloDet>(params, info);
+  } else if (FLAGS_atype == "assd") {
+    det = std::make_shared<AssdDet>(params, info);
+  } else {
+    return -1;
+  }
 
   infer::Result ret;
   ret.shape = {image.cols, image.rows, 3};
@@ -70,7 +89,7 @@ int main(int argc, char **argv) {
   void *outputs[info.output_count];
   void *output = reinterpret_cast<void *>(outputs);
   instance->infer(frame, &output);
-  float** out = reinterpret_cast<float**>(output);
+  float **out = reinterpret_cast<float **>(output);
   std::cout << "test: " << out[0][0] << std::endl;
   det->processOutput(&output, ret);
   FLOWENGINE_LOGGER_INFO("number of result: {}", ret.detResults.size());
