@@ -12,20 +12,19 @@
 #ifndef __METAENGINE_DETECT_MODULE_H_
 #define __METAENGINE_DETECT_MODULE_H_
 
-#include <array>
 #include <memory>
-#include <opencv2/opencv.hpp>
 #include <string>
-#include <utility>
 
 #include "backend.h"
 #include "common/common.hpp"
 #include "detection.hpp"
-#include "yoloDet.hpp"
 #if (TARGET_PLATFORM == 0)
 #include "x3/x3_inference.hpp"
 using namespace infer::x3;
 #elif (TARGET_PLATFORM == 1)
+#include "jetson/trt_inference.hpp"
+using namespace infer::trt;
+#elif (TARGET_PLATFORM == 2)
 #include "jetson/trt_inference.hpp"
 using namespace infer::trt;
 #endif
@@ -43,9 +42,7 @@ private:
 public:
   DetectModule(Backend *ptr, const std::string &initName,
                const std::string &initType,
-               const common::AlgorithmConfig &_params,
-               const std::vector<std::string> &recv = {},
-               const std::vector<std::string> &send = {});
+               const common::AlgorithmConfig &_params);
 
   ~DetectModule();
 

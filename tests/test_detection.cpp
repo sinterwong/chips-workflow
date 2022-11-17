@@ -1,15 +1,9 @@
-#include "assdDet.hpp"
 #include "detection.hpp"
 #include "inference.h"
-#include "yoloDet.hpp"
-#include <chrono>
-#include <cstdint>
 #include <gflags/gflags.h>
 #include <memory>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
-#include <thread>
-
 #if (TARGET_PLATFORM == 0)
 #include "x3/x3_inference.hpp"
 using namespace infer::x3;
@@ -17,7 +11,7 @@ using namespace infer::x3;
 #include "jetson/trt_inference.hpp"
 using namespace infer::trt;
 #endif
-using namespace infer::vision;
+// using namespace infer::vision;
 
 DEFINE_string(image_path, "", "Specify config path.");
 DEFINE_string(model_path, "", "Specify model path.");
@@ -39,13 +33,13 @@ int main(int argc, char **argv) {
   std::vector<std::string> outputNames;
   float alpha = 0;
   bool isScale = false;
-  if (FLAGS_atype == "yolo") {
+  if (FLAGS_atype == "Yolo") {
     inputNames = {"images"};
     outputNames = {"output"};
     alpha = 255.0;
     isScale = true;
     cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
-  } else if (FLAGS_atype == "assd") {
+  } else if (FLAGS_atype == "Assd") {
     inputNames = {"data"};
     outputNames = {"conv13_3", "conv15_3", "conv16_3"};
   } else {
@@ -67,18 +61,16 @@ int main(int argc, char **argv) {
   std::shared_ptr<AlgoInference> instance =
       std::make_shared<AlgoInference>(params);
   if (!instance->initialize()) {
-    FLOWENGINE_LOGGER_ERROR("YoloDet initialization is failed!");
+    FLOWENGINE_LOGGER_ERROR("Yolo initialization is failed!");
     return -1;
   }
   infer::ModelInfo info;
-  instance->getModelInfo(info);
-  std::shared_ptr<Detection> det;
-  if (FLAGS_atype == "yolo") {
-    det = std::make_shared<YoloDet>(params, info);
-  } else if (FLAGS_atype == "assd") {
-    det = std::make_shared<AssdDet>(params, info);
-  } else {
-    return -1;
+  // instance->getModelInfo(info);
+  std::shared_ptr<infer::vision::Detection> det;
+  det = ObjectFactory::createObject<infer::vision::Detection>(FLAGS_atype, params, info);
+  if (det == nullptr) {
+      FLOWENGINE_LOGGER_ERROR("Error algorithm serial {}", FLAGS_atype);
+      return -1;
   }
 
   infer::Result ret;

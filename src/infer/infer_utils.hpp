@@ -68,7 +68,7 @@ void BGR2YUV(const cv::Mat bgrImg, cv::Mat &y, cv::Mat &u, cv::Mat &v);
 void YUV2BGR(const cv::Mat y, const cv::Mat u, const cv::Mat v,
              cv::Mat &bgrImg);
 
-void NV12toRGB(cv::Mat &nv12, cv::Mat &output);
+void NV12toRGB(cv::Mat const &nv12, cv::Mat &output);
 
 void YV12toNV12(const cv::Mat &input, cv::Mat &output);
 

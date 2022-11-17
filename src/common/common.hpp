@@ -15,8 +15,6 @@
 #include <string>
 #include <vector>
 
-#include "config.hpp"
-
 #ifndef _FLOWENGINE_COMMON_COMMON_HPP_
 #define _FLOWENGINE_COMMON_COMMON_HPP_
 

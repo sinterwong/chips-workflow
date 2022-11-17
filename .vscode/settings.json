@@ -8,5 +8,6 @@
     "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/platforms/linux/aarch64.jetson.cmake",
     "-DTOOLCHAIN_ROOTDIR=/usr/bin"
   ],
-  "cmake.cacheInit": null
+  "cmake.cacheInit": null,
+  "cmake.buildDirectory": "${workspaceFolder}/build"
 }

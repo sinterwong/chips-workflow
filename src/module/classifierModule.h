@@ -41,9 +41,7 @@ private:
 public:
   ClassifierModule(Backend *ptr, const std::string &initName,
                    const std::string &initType,
-                   const common::AlgorithmConfig &_params,
-                   const std::vector<std::string> &recv = {},
-                   const std::vector<std::string> &send = {});
+                   const common::AlgorithmConfig &_params);
 
   ~ClassifierModule();
 

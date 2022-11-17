@@ -26,9 +26,7 @@ class HelmetModule : public LogicModule {
 public:
   HelmetModule(Backend *ptr, const std::string &initName,
                const std::string &initType,
-               const common::LogicConfig &logicConfig,
-               const std::vector<std::string> &recv = {},
-               const std::vector<std::string> &send = {});
+               const common::LogicConfig &logicConfig);
   ~HelmetModule() {}
 
   virtual void forward(std::vector<forwardMessage> message) override;

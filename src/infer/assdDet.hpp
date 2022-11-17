@@ -14,12 +14,12 @@
 
 namespace infer {
 namespace vision {
-class AssdDet : public Detection {
+class Assd : public Detection {
   //!
   //! \brief construction
   //!
 public:
-  AssdDet(const common::AlgorithmConfig &_param, ModelInfo const &info)
+  Assd(const common::AlgorithmConfig &_param, ModelInfo const &info)
       : Detection(_param, info){}
 
 private:

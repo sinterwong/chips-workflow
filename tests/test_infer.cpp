@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
                                  std::move(inputNames),
                                  std::move(outputNames),
                                  std::move(inputShape),
-                                 "yolo",
+                                 "Yolo",
                                  0.4,
                                  0.4,
                                  255.0,
@@ -54,14 +54,14 @@ int main(int argc, char **argv) {
   std::shared_ptr<AlgoInference> instance =
       std::make_shared<AlgoInference>(params);
   if (!instance->initialize()) {
-    FLOWENGINE_LOGGER_ERROR("YoloDet initialization is failed!");
+    FLOWENGINE_LOGGER_ERROR("Yolo initialization is failed!");
     return -1;
   }
 
   ModelInfo info;
   instance->getModelInfo(info);
-  std::shared_ptr<vision::YoloDet> det =
-      std::make_shared<vision::YoloDet>(params, info);
+  std::shared_ptr<vision::Yolo> det =
+      std::make_shared<vision::Yolo>(params, info);
   /*
   VIDEO_FRAME_S frameInfo;
   memset(&frameInfo, 0, sizeof(VIDEO_FRAME_S));

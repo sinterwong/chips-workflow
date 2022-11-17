@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "common/common.hpp"
+#include "common/config.hpp"
 #include "logger/logger.hpp"
 #include "messageBus.h"
 #include "module.hpp"
@@ -123,8 +124,8 @@ public:
   StreamGenerator(Backend *ptr, const std::string &initName,
                        const std::string &initType,
                        const common::CameraConfig &_params,
-                       const std::vector<std::string> &recv = {},
-                       const std::vector<std::string> &send = {});
+                       
+                       );
 
   ~StreamGenerator() {
     if (avContext)

@@ -17,12 +17,12 @@
 namespace infer {
 namespace vision {
 
-class YoloDet : public Detection {
+class Yolo : public Detection {
   //!
   //! \brief construction
   //!
 public:
-  YoloDet(const common::AlgorithmConfig &_param, ModelInfo const &info)
+  Yolo(const common::AlgorithmConfig &_param, ModelInfo const &info)
       : Detection(_param, info){}
 
 private:

@@ -1,41 +1,41 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 PROJECT(FlowEngineModule LANGUAGES C CXX)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations -Wno-error=unused-function")
+# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations -Wno-error=unused-function")
 
 FILE(GLOB SWMODULE_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
 FILE(GLOB SWMODULE_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
-LINK_DIRECTORIES(
-    ${CURL_LIBRARY_DIR}
-)
-INCLUDE_DIRECTORIES(${3RDPARTY_DIR}/spdlog/include
-                        ${PROJECT_INCLUDE_DIR}
-                        ${PROJECT_INCLUDE_DIR}/module
-                        ${PROJECT_INCLUDE_DIR}/core
-                        ${PROJECT_INCLUDE_DIR}/infer
-                        ${CURL_INCLUDE_DIR})
-
-LINK_LIBRARIES(stdc++fs core module_logger infer utils ${CURL_LIBS})
-ADD_LIBRARY(module SHARED ${SWMODULE_LIB_SRC})
-SET(MODULE_LIBS module)
 
 IF(TARGET_HARDWARE STREQUAL jetson)
-    INCLUDE_DIRECTORIES(
-        ${PROJECT_INCLUDE_DIR}/jetson-utils
-        ${OpenCV_INCLUDE_DIRS}
-        ${Protobuf_INCLUDE_DIR}
-        ${CUDA_INCLUDE_DIRS}
-    )
     FILE(GLOB_RECURSE MODULE_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.h)
     FILE(GLOB_RECURSE MODULE_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/jetson/*.c)
-    ADD_LIBRARY(jetson_module SHARED ${MODULE_LIB_SRC})
-    TARGET_LINK_LIBRARIES(jetson_module jetson_infer jetson_infer_cu jetson-utils)
-    LIST(APPEND MODULE_LIBS jetson_module)
+    LIST(APPEND SWMODULE_LIB_SRC ${MODULE_LIB_SRC})
+    ADD_LIBRARY(module SHARED ${SWMODULE_LIB_HEAD} ${MODULE_LIB_HEAD} ${SWMODULE_LIB_SRC})
+    TARGET_INCLUDE_DIRECTORIES(module PRIVATE 
+                                ${PROJECT_INCLUDE_DIR}
+                                ${PROJECT_INCLUDE_DIR}/module
+                                ${PROJECT_INCLUDE_DIR}/core
+                                ${PROJECT_INCLUDE_DIR}/infer
+                                ${PROJECT_INCLUDE_DIR}/jetson-utils
+                                ${CURL_INCLUDE_DIR}
+                                ${OpenCV_INCLUDE_DIRS}
+                                ${Protobuf_INCLUDE_DIR}
+                                ${CUDA_INCLUDE_DIRS}
+    )
+    TARGET_LINK_LIBRARIES(module infer jetson-utils module_logger stdc++fs)
 ELSEIF(TARGET_HARDWARE STREQUAL x3)
     FILE(GLOB_RECURSE MODULE_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.h)
     FILE(GLOB_RECURSE MODULE_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.c)
-    ADD_LIBRARY(x3_module SHARED ${MODULE_LIB_SRC})
-    TARGET_LINK_LIBRARIES(x3_module x3_infer)
-    LIST(APPEND MODULE_LIBS x3_module)
+    LIST(APPEND SWMODULE_LIB_SRC ${MODULE_LIB_SRC})
+    ADD_LIBRARY(module SHARED $${SWMODULE_LIB_HEAD} ${MODULE_LIB_HEAD} ${SWMODULE_LIB_SRC})
+    TARGET_INCLUDE_DIRECTORIES(module PRIVATE 
+                                ${PROJECT_INCLUDE_DIR}
+                                ${PROJECT_INCLUDE_DIR}/module
+                                ${PROJECT_INCLUDE_DIR}/core
+                                ${PROJECT_INCLUDE_DIR}/infer
+                                ${CURL_INCLUDE_DIR}
+                                ${OpenCV_INCLUDE_DIRS}
+    )
+    TARGET_LINK_LIBRARIES(module infer)
 ELSE()
     MESSAGE(WARNING "No valid hardware is specified!")
 ENDIF()
@@ -62,7 +62,7 @@ ENDFOREACH()
 #     PATTERN "CMakeLists.txt" EXCLUDE
 # )
 
-INSTALL(TARGETS ${MODULE_LIBS}
+INSTALL(TARGETS module
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION bin)

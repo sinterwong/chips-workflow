@@ -20,6 +20,7 @@
 #include <cmath>
 #include <memory>
 #include <vector>
+#include "common/config.hpp"
 
 #define HB_CHECK_SUCCESS(value, errmsg)                                        \
   do {                                                                         \

@@ -1,5 +1,5 @@
 /**
- * @file moduleFactory.hpp
+ * @file factory.hpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
@@ -13,22 +13,23 @@
 
 #include <map>
 #include <memory>
+#include <iostream>
 
 #ifndef FlowEngineModuleRegister
 #define FlowEngineModuleRegister(X, ...)                                       \
-  int __type##X = ModuleFactory::registerModule(                               \
-      #X, (void *)(&__createModule<X, __VA_ARGS__>));
+  static int __type##X = ObjectFactory::registerModule(                               \
+      #X, (void *)(&__createObject<X, __VA_ARGS__>));
 #endif
 
 template <typename ModuleClass, typename... ArgsType>
-std::shared_ptr<ModuleClass> __createModule(ArgsType... args) {
+std::shared_ptr<ModuleClass> __createObject(ArgsType... args) {
   return std::make_shared<ModuleClass>(args...);
 }
 
-class ModuleFactory {
+class ObjectFactory {
 public:
   template <typename BaseClass, typename... ArgType>
-  static std::shared_ptr<BaseClass> createModule(std::string const &className,
+  static std::shared_ptr<BaseClass> createObject(std::string const &className,
                                                  ArgType... args) {
     using _CreateFactory = std::shared_ptr<BaseClass> (*)(ArgType...);
 

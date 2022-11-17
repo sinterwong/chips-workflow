@@ -21,7 +21,8 @@ private:
 
   cskFlag moduleFlag = init;
   CSK::CSKTracker tracker;
-  std::array<float, 4> roi = {1920.0 / 2 - 200.0 / 2, 1080.0 / 2 - 200.0 / 2, 200, 200};
+  std::array<float, 4> roi = {1920.0 / 2 - 200.0 / 2, 1080.0 / 2 - 200.0 / 2,
+                              200, 200};
   std::array<float, 4> answer;
   float value;
 
@@ -29,14 +30,11 @@ private:
 
 public:
   cskTrackModule(Backend *ptr, const std::string &initName,
-                 const std::string &initType,
-                 const std::vector<std::string> &recv = {},
-                 const std::vector<std::string> &send = {}  );
+                 const std::string &initType);
 
   ~cskTrackModule();
 
-  void forward(std::vector<forwardMessage>
-                   message) override;
+  void forward(std::vector<forwardMessage> message) override;
 };
-}
+} // namespace module
 #endif // METAENGINE_CSKTRACKMODULE_H

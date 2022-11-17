@@ -32,9 +32,9 @@ namespace module {
 StreamGenerator::StreamGenerator(Backend *ptr, const std::string &initName,
                                  const std::string &initType,
                                  const common::CameraConfig &_params,
-                                 const std::vector<std::string> &recv,
-                                 const std::vector<std::string> &send)
-    : Module(ptr, initName, initType, recv, send) {
+                                 
+                                 )
+    : Module(ptr, initName, initType) {
 
   // 编码、解码模块初始化，整个应用中需要调用一次
   HB_VDEC_Module_Init();
@@ -254,7 +254,5 @@ void StreamGenerator::forward(std::vector<forwardMessage> message) {
   }
 }
 FlowEngineModuleRegister(StreamGenerator, Backend *, std::string const &,
-                         std::string const &, common::CameraConfig const &,
-                         std::vector<std::string> const &,
-                         std::vector<std::string> const &);
+                         std::string const &, common::CameraConfig const &);
 } // namespace module

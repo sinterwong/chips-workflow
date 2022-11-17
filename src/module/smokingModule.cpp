@@ -20,10 +20,8 @@ namespace module {
 
 SmokingModule::SmokingModule(Backend *ptr, const std::string &initName,
                              const std::string &initType,
-                             const common::LogicConfig &logicConfig,
-                             const std::vector<std::string> &recv,
-                             const std::vector<std::string> &send)
-    : LogicModule(ptr, initName, initType, logicConfig, recv, send) {}
+                             const common::LogicConfig &logicConfig)
+    : LogicModule(ptr, initName, initType, logicConfig) {}
 
 /**
  * @brief
@@ -87,7 +85,5 @@ void SmokingModule::forward(std::vector<forwardMessage> message) {
 }
 
 FlowEngineModuleRegister(SmokingModule, Backend *, std::string const &,
-                         std::string const &, common::LogicConfig const &,
-                         std::vector<std::string> const &,
-                         std::vector<std::string> const &);
+                         std::string const &, common::LogicConfig const &);
 } // namespace module

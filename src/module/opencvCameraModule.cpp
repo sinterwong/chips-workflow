@@ -37,10 +37,8 @@ FrameBuf makeFrameBuf(std::shared_ptr<cv::Mat> mat) {
 
 OpencvCameraModule::OpencvCameraModule(Backend *ptr, const std::string &file,
                                        const std::string &initName,
-                                       const std::string &initType,
-                                       const std::vector<std::string> &recv,
-                                       const std::vector<std::string> &send)
-    : Module(ptr, initName, initType, recv, send) {
+                                       const std::string &initType)
+    : Module(ptr, initName, initType) {
   readFile = true;
   fileName = file;
   cameraNumber = -1;
@@ -50,10 +48,8 @@ OpencvCameraModule::OpencvCameraModule(Backend *ptr, const std::string &file,
 
 OpencvCameraModule::OpencvCameraModule(Backend *ptr, const int capNumber,
                                        const std::string &initName,
-                                       const std::string &initType,
-                                       const std::vector<std::string> &recv,
-                                       const std::vector<std::string> &send)
-    : Module(ptr, initName, initType, recv, send) {
+                                       const std::string &initType)
+    : Module(ptr, initName, initType) {
   readFile = false;
   fileName = "";
   cameraNumber = capNumber;
@@ -88,7 +84,5 @@ void OpencvCameraModule::afterForward() {
   }
 }
 FlowEngineModuleRegister(OpencvCameraModule, Backend *, std::string const &,
-                         std::string const &, std::string const &,
-                         std::vector<std::string> const &,
-                         std::vector<std::string> const &);
+                         std::string const &, std::string const &);
 } // namespace module

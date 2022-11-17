@@ -64,12 +64,10 @@ MESSAGE(INFO "Loading 3rdparty libraries")
 IF(TARGET_HARDWARE STREQUAL "x3")
     MESSAGE(STATUS "Loading X3 dependent libraries")
     LOAD_X3()
-    ADD_DEFINITIONS(-DTARGET_PLATFORM=0)
 
 ELSEIF(TARGET_HARDWARE STREQUAL "jetson")
     MESSAGE(STATUS "Loading Jetson dependent libraries")
     LOAD_Jetson()
-    ADD_DEFINITIONS(-DTARGET_PLATFORM=1)
 
 ELSE()
     IF(WITH_MNN_ENGINE)

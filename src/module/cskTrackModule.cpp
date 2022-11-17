@@ -1,10 +1,8 @@
 #include "cskTrackModule.h"
 namespace module {
 cskTrackModule::cskTrackModule(Backend *ptr, const std::string &initName,
-                               const std::string &initType,
-                               const std::vector<std::string> &recv,
-                               const std::vector<std::string> &send    )
-    : Module(ptr, initName, initType, recv, send) {}
+                               const std::string &initType)
+    : Module(ptr, initName, initType) {}
 
 cskTrackModule::~cskTrackModule() {}
 
@@ -60,6 +58,5 @@ cv::Rect cskTrackModule::floatArrayToCvRect(const std::array<float, 4> &a) {
   return cv::Rect(a[0], a[1], a[2], a[3]);
 }
 FlowEngineModuleRegister(cskTrackModule, Backend *, std::string const &,
-                         std::string const &, std::vector<std::string> const &,
-                         std::vector<std::string> const &);
+                         std::string const &);
 } // namespace module

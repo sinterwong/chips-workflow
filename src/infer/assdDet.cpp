@@ -15,7 +15,7 @@
 
 namespace infer {
 namespace vision {
-void AssdDet::generateBoxes(
+void Assd::generateBoxes(
     std::unordered_map<int, std::vector<DetectionResult>> &m,
     void **outputs) const {
 
@@ -93,7 +93,10 @@ void AssdDet::generateBoxes(
   }
 }
 
-bool AssdDet::verifyOutput(Result const &result) const { return true; }
+bool Assd::verifyOutput(Result const &result) const { return true; }
+
+FlowEngineModuleRegister(Assd, const common::AlgorithmConfig &,
+                         ModelInfo const &);
 
 } // namespace vision
 } // namespace infer

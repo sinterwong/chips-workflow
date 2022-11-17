@@ -19,9 +19,8 @@
 
 namespace module {
 FrameDifferenceModule::FrameDifferenceModule(
-    Backend *ptr, const std::string &initName, const std::string &initType,
-    const std::vector<std::string> &recv, const std::vector<std::string> &send)
-    : Module(ptr, initName, initType, recv, send), fd(initName) {}
+    Backend *ptr, const std::string &initName, const std::string &initType)
+    : Module(ptr, initName, initType), fd(initName) {}
 
 FrameDifferenceModule::~FrameDifferenceModule() {}
 
@@ -48,6 +47,5 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> message) {
   }
 }
 FlowEngineModuleRegister(FrameDifferenceModule, Backend *, std::string const &,
-                         std::string const &, std::vector<std::string> const &,
-                         std::vector<std::string> const &);
+                         std::string const &);
 } // namespace module

@@ -58,8 +58,8 @@ public:
                     std::tuple<int, int> screenSize,
                     const std::string &initName,
                     const std::string &initType,
-                    const std::vector<std::string> &recv = {},
-                    const std::vector<std::string> &send = {}     );
+                    
+                         );
 
     ~RKMediaVOModule();
 

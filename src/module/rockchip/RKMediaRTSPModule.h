@@ -54,8 +54,8 @@ public:
                       int height,
                       const std::string &initName,
                       const std::string &initType,
-                      const std::vector<std::string> &recv = {},
-                      const std::vector<std::string> &send = {}       );
+                      
+                             );
 
     ~RKMediaRTSPModule();
 

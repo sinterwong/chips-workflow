@@ -58,18 +58,15 @@ FrameBuf makeFrameBuf(uchar3 *image, int height, int width) {
   return temp;
 }
 
-StreamGenerator::StreamGenerator(Backend *ptr,
-                                       const std::string &initName,
-                                       const std::string &initType,
-                                       const common::CameraConfig &_params,
-                                       const std::vector<std::string> &recv,
-                                       const std::vector<std::string> &send)
-    : Module(ptr, initName, initType, recv, send) {
+StreamGenerator::StreamGenerator(Backend *ptr, const std::string &initName,
+                                 const std::string &initType,
+                                 const common::CameraConfig &_params)
+    : Module(ptr, initName, initType), params(_params) {
 
-  opt.height = _params.heightPixel;
-  opt.width = _params.widthPixel;
-  opt.codec = videoOptions::CodecFromStr(_params.videoCode.c_str());
-  opt.resource = _params.cameraIp;
+  opt.height = params.heightPixel;
+  opt.width = params.widthPixel;
+  opt.codec = videoOptions::CodecFromStr(params.videoCode.c_str());
+  opt.resource = params.cameraIp;
   inputStream = std::unique_ptr<videoSource>(videoSource::Create(opt));
   // inputStream = videoSource::Create(opt);
   if (!inputStream) {
@@ -79,10 +76,10 @@ StreamGenerator::StreamGenerator(Backend *ptr,
   cameraResult = CameraResult{static_cast<int>(inputStream->GetWidth()),
                               static_cast<int>(inputStream->GetHeight()),
                               static_cast<int>(inputStream->GetFrameRate()),
-                              _params.cameraId,
-                              _params.videoCode,
-                              _params.flowType,
-                              _params.cameraIp};
+                              params.cameraId,
+                              params.videoCode,
+                              params.flowType,
+                              params.cameraIp};
 }
 
 void StreamGenerator::step() {
@@ -129,8 +126,7 @@ void StreamGenerator::forward(std::vector<forwardMessage> message) {
     autoSend(sendMessage);
   }
 }
+
 FlowEngineModuleRegister(StreamGenerator, Backend *, std::string const &,
-                         std::string const &, common::CameraConfig const &,
-                         std::vector<std::string> const &,
-                         std::vector<std::string> const &);
+                         std::string const &, common::CameraConfig const &);
 } // namespace module

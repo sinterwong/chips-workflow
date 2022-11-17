@@ -10,9 +10,7 @@ namespace module {
 class serialModule : public Module {
 public:
   serialModule(Backend *ptr, const std::string &initName,
-               const std::string &initType,
-               const std::vector<std::string> &recv = {},
-               const std::vector<std::string> &send = {});
+               const std::string &initType);
   virtual void forward(std::vector<forwardMessage> message) override;
 };
 

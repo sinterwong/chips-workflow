@@ -18,7 +18,7 @@
 namespace infer {
 namespace vision {
 
-void YoloDet::generateBoxes(
+void Yolo::generateBoxes(
     std::unordered_map<int, std::vector<DetectionResult>> &m,
     void **outputs) const {
   float **output = reinterpret_cast<float **>(*outputs);
@@ -47,6 +47,9 @@ void YoloDet::generateBoxes(
     }
   }
 }
+
+FlowEngineModuleRegister(Yolo, const common::AlgorithmConfig &,
+                         ModelInfo const &);
 
 } // namespace vision
 } // namespace infer

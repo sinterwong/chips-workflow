@@ -5,6 +5,7 @@ SET(CMAKE_SYSTEM_PROCESSOR aarch64)
 SET(TARGET_OS linux)
 SET(TARGET_ARCH aarch64)
 SET(TARGET_HARDWARE jetson)
+ADD_DEFINITIONS(-DTARGET_PLATFORM=1)
 
 # set ${CMAKE_C_FLAGS} and ${CMAKE_CXX_FLAGS}flag for cross-compiled process
 SET(CROSS_COMPILATION_ARM jetson)
@@ -27,10 +28,3 @@ SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
 # SET(CMAKE_SKIP_BUILD_RPATH TRUE)
 # SET(CMAKE_SKIP_RPATH TRUE)
-
-# set g++ param
-# -fopenmp link libgomp
-# SET(CMAKE_CXX_FLAGS "-std=c++17 -march=armv8-a -mfloat-abi=softfp -mfpu=neon-vfpv4 \
-#     -ffunction-sections \
-#     -fdata-sections -O2 -fstack-protector-strong -lm -ldl -lstdc++\
-#     ${CMAKE_CXX_FLAGS}")

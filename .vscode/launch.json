@@ -6,16 +6,21 @@
       "type": "cppdbg",
       "request": "launch",
       // "program": "/home/wangxt/workspace/projects/flowengine/build/aarch64/bin/app_flowengine",
-      "program": "/home/wangxt/workspace/projects/flowengine/build/aarch64/bin/test_detection",
+      // "program": "/home/wangxt/workspace/projects/flowengine/build/aarch64/bin/test_detection",
+      "program": "/home/wangxt/workspace/projects/flowengine/build/aarch64/bin/test_vio_module",
       "args": [
-              //  "--config_path=/home/wangxt/workspace/projects/flowengine/build/agent.json",
+              //  "--config_path=/home/wangxt/workspace/projects/flowengine/conf/app/calling.json",
               //  "--num_workers=64",
-               "--image_path=/home/wangxt/workspace/projects/flowengine/tests/data/pedestrian.jpg",
-               "--model_path=/home/wangxt/workspace/projects/flowengine/tests/data/model/yolov5s.engine",
-              //  "--model_path=/home/wangxt/workspace/projects/flowengine/tests/data/model/assd_shoulder.engine",
-               "--atype=yolo",
-               "--input_height=640",  // 543, 640
-               "--input_width=640",   // 967, 640
+
+              //  "--image_path=/home/wangxt/workspace/projects/flowengine/tests/data/pedestrian.jpg",
+              //  "--model_path=/home/wangxt/workspace/projects/flowengine/tests/data/model/yolov5s.engine",
+              // //  "--model_path=/home/wangxt/workspace/projects/flowengine/tests/data/model/assd_shoulder.engine",
+              //  "--atype=Yolo",  // Yolo, Assd
+              //  "--input_height=640",  // 543, 640
+              //  "--input_width=640",   // 967, 640
+
+               "--video=rtsp://admin:zkfd123.com@114.242.23.39:9303/Streaming/Channels/101",   // 967, 640
+               "--model_path=/home/wangxt/workspace/projects/flowengine/tests/data/model/handdetn.engine",   // 967, 640
               ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",

@@ -6,9 +6,9 @@ RKMediaVOModule::RKMediaVOModule(Backend *ptr,
                                  std::tuple<int, int> screenSize,
                                  const std::string &initName,
                                  const std::string &initType,
-                                 const std::vector<std::string> &recv,
-                                 const std::vector<std::string> &send      )
-        : Module(ptr, initName, initType, recv, send)
+                                 
+                                       )
+        : Module(ptr, initName, initType)
 {
     bool ret;
     initSuccess = true;

@@ -33,9 +33,7 @@ private:
 
 public:
   JetsonOutputModule(Backend *ptr, const std::string &uri,
-                     const std::string &initName, const std::string &initType,
-                     const std::vector<std::string> &recv = {},
-                     const std::vector<std::string> &send = {});
+                     const std::string &initName, const std::string &initType);
   ~JetsonOutputModule() {
     // delete outputStream;
     // outputStream = nullptr;

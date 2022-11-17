@@ -11,6 +11,7 @@
 
 #ifndef __INFERENCE_VISION_DETECTION_H_
 #define __INFERENCE_VISION_DETECTION_H_
+#include "core/factory.hpp"
 #include "vision.hpp"
 #include <unordered_map>
 #include <vector>
@@ -23,12 +24,15 @@ class Detection : public Vision {
   //! \brief construction
   //!
 public:
-  Detection(const common::AlgorithmConfig &_param, ModelInfo const &_info) : Vision(_param, _info) {}
+  Detection(const common::AlgorithmConfig &_param, ModelInfo const &_info)
+      : Vision(_param, _info) {}
 
   //!
   //! \brief ProcessInput that the input is correct for infer
   //!
-  virtual bool processInput(cv::Mat const &input, void **output, common::ColorType, common::ColorType) const override;
+  virtual bool processInput(cv::Mat const &input, void **output,
+                            common::ColorType,
+                            common::ColorType) const override;
 
   //!
   //! \brief Postprocessing that the output is correct and prints it

@@ -22,7 +22,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "common/common.hpp"
+#include "common/config.hpp"
 #include "logger/logger.hpp"
 #include "module.hpp"
 #include "utils/convertMat.hpp"
@@ -60,10 +60,8 @@ protected:
 
 public:
   LogicModule(Backend *ptr, const std::string &initName,
-              const std::string &initType, const common::LogicConfig &params_,
-              const std::vector<std::string> &recv = {},
-              const std::vector<std::string> &send = {})
-      : Module(ptr, initName, initType, recv, send), params(params_) {}
+              const std::string &initType, const common::LogicConfig &params_)
+      : Module(ptr, initName, initType), params(params_) {}
   virtual ~LogicModule() {}
 
   inline bool drawBox(cv::Mat &image, retBox const &bbox,

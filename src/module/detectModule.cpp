@@ -9,9 +9,9 @@
  *
  */
 #include "detectModule.h"
-#include "infer/yoloDet.hpp"
-#include "infer/infer_utils.hpp"
+#include "infer_utils.hpp"
 #include <cstddef>
+#include <cstdlib>
 #include <memory>
 #include <opencv2/core/mat.hpp>
 
@@ -19,23 +19,27 @@ namespace module {
 
 DetectModule::DetectModule(Backend *ptr, const std::string &initName,
                            const std::string &initType,
-                           const common::AlgorithmConfig &_params,
-                           const std::vector<std::string> &recv,
-                           const std::vector<std::string> &send)
-    : Module(ptr, initName, initType, recv, send), params(std::move(_params)) {
+                           const common::AlgorithmConfig &_params)
+    : Module(ptr, initName, initType), params(std::move(_params)) {
 
   instance = std::make_shared<AlgoInference>(params);
   instance->initialize();
 
   instance->getModelInfo(modelInfo);
 
-  if (params.algorithmSerial == "yolo") {
-    detector = std::make_shared<infer::vision::YoloDet>(params, modelInfo);
-  } else if (params.algorithmSerial == "assd") {
-    // instance = std::make_shared<infer::trt::AssdDet>(params);
-  } else {
-    FLOWENGINE_LOGGER_ERROR("Error algorithm serial {}",
-                            params.algorithmSerial);
+  detector = ObjectFactory::createObject<infer::vision::Detection>(
+      params.algorithmSerial, params, modelInfo);
+  // if (params.algorithmSerial == "yolo") {
+  //   detector = std::make_shared<infer::vision::Yolo>(params, modelInfo);
+  // } else if (params.algorithmSerial == "assd") {
+  //   detector = std::make_shared<infer::vision::Assd>(params, modelInfo);
+  // } else {
+  //   FLOWENGINE_LOGGER_ERROR("Error algorithm serial {}",
+  //                           params.algorithmSerial);
+  // }
+  if (detector == nullptr) {
+      FLOWENGINE_LOGGER_ERROR("Error algorithm serial {}", params.algorithmSerial);
+      exit(-1);
   }
 }
 
@@ -129,7 +133,5 @@ void DetectModule::forward(std::vector<forwardMessage> message) {
   }
 }
 FlowEngineModuleRegister(DetectModule, Backend *, std::string const &,
-                         std::string const &, common::AlgorithmConfig const &,
-                         std::vector<std::string> const &,
-                         std::vector<std::string> const &);
+                         std::string const &, common::AlgorithmConfig const &);
 } // namespace module

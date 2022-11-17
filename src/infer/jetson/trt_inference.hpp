@@ -21,6 +21,7 @@
 #include <array>
 #include <cmath>
 #include <memory>
+#include "common/config.hpp"
 
 #define IMAGE_MAX_SIZE 1200 * 1200 * 3
 

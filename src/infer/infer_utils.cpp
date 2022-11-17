@@ -175,22 +175,11 @@ void RGB2NV12(cv::Mat const &input, cv::Mat &output) {
   YV12toNV12(temp, output);
 }
 
-void NV12toRGB(cv::Mat &nv12, cv::Mat &output) {
+void NV12toRGB(cv::Mat const &nv12, cv::Mat &output) {
   cv::cvtColor(nv12, output, CV_YUV2RGB_NV12);
 }
 
-bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect &rect,
-          float sr = 0.0) {
-
-  if (sr > 0) {
-    int sw = rect.width * sr;
-    int sh = rect.height * sr;
-    rect.x = std::max(0, rect.x - sw / 2);
-    rect.y = std::max(0, rect.y - sh / 2);
-    rect.width = std::min(input.cols, rect.width + sw);
-    rect.height = std::min(input.rows, rect.height + sh);
-  }
-
+bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect &rect) {
   output = input(rect).clone();
   return true;
 }
@@ -201,17 +190,25 @@ bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect &rect,
     FLOWENGINE_LOGGER_ERROR("cropImage is failed: error region!");
     return false;
   }
+  if (sr > 0) {
+    int sw = rect.width * sr;
+    int sh = rect.height * sr;
+    rect.x = std::max(0, rect.x - sw / 2);
+    rect.y = std::max(0, rect.y - sh / 2);
+    rect.width = std::min(input.cols, rect.width + sw);
+    rect.height = std::min(input.rows, rect.height + sh);
+  }
   switch (type) {
   case common::ColorType::RGB888:
   case common::ColorType::BGR888: {
-    crop(input, output, rect, sr);
+    crop(input, output, rect);
     break;
   }
   case common::ColorType::NV12: {
     // TODO 等实现了nv12专门的crop后替换此处的转换，目前的开销是不可接受的
     cv::Mat temp;
-    RGB2NV12(input, temp);
-    crop(temp, output, rect, sr);
+    NV12toRGB(input, temp);
+    crop(temp, output, rect);
     RGB2NV12(output, output);
     break;
   }
