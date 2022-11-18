@@ -14,12 +14,40 @@
 #include "infer_common.hpp"
 #include "opencv2/imgproc.hpp"
 #include <array>
+#include <opencv2/core/types.hpp>
 #include <opencv2/opencv.hpp>
 #include <unordered_map>
 #include <vector>
 
 namespace infer {
 namespace utils {
+
+struct Region {
+  int x = 0;
+  int y = 0;
+  int width = 0;
+  int height = 0;
+
+  Region() = default;
+  Region(int _x, int _y, int _width, int _height)
+      : x(_x), y(_y), width(_width), height(_height){};
+
+  inline int area() const { return width * height; }
+
+  inline void scale(float sr, int mh, int mw) {
+    if (sr > 0) {
+      int sw = width * sr;
+      int sh = height * sr;
+      x = std::max(0, x - sw / 2);
+      y = std::max(0, y - sh / 2);
+      width = std::min(mw, width + sw);
+      height = std::min(mh, height + sh);
+    }
+  }
+
+  inline cv::Rect2i toRect() const { return cv::Rect2i{x, y, width, height}; }
+};
+
 inline bool compare(DetectionResult const &a, DetectionResult const &b) {
   return a.det_confidence > b.det_confidence;
 }
@@ -34,7 +62,8 @@ void renderOriginShape(std::vector<DetectionResult> &results,
                        std::array<int, 3> const &inputShape, bool isScale);
 
 template <typename T>
-inline void chw_to_hwc(T *chw_data, T *hwc_data, int channel, int height, int width) {
+inline void chw_to_hwc(T *chw_data, T *hwc_data, int channel, int height,
+                       int width) {
   int wc = width * channel;
   int index = 0;
   for (int c = 0; c < channel; c++) {
@@ -48,7 +77,8 @@ inline void chw_to_hwc(T *chw_data, T *hwc_data, int channel, int height, int wi
 }
 
 template <typename T>
-inline void hwc_to_chw(T *chw_data, T *hwc_data, int channel, int height, int width) {
+inline void hwc_to_chw(T *chw_data, T *hwc_data, int channel, int height,
+                       int width) {
   int wh = width * height;
   int index = 0;
   for (int h = 0; h < height; h++) {
@@ -74,8 +104,8 @@ void YV12toNV12(const cv::Mat &input, cv::Mat &output);
 
 void RGB2NV12(cv::Mat const &input, cv::Mat &output);
 
-bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect &rect,
-               common::ColorType type, float sr=0.0);
+bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
+               common::ColorType type, float sr = 0.0);
 
 // TODO split nv12 -> y u v
 

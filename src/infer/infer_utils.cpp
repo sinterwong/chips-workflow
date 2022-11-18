@@ -179,12 +179,12 @@ void NV12toRGB(cv::Mat const &nv12, cv::Mat &output) {
   cv::cvtColor(nv12, output, CV_YUV2RGB_NV12);
 }
 
-bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect &rect) {
+bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect) {
   output = input(rect).clone();
   return true;
 }
 
-bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect &rect,
+bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
                common::ColorType type, float sr) {
   if (rect.width + rect.x > input.cols || rect.height + rect.y > input.rows) {
     FLOWENGINE_LOGGER_ERROR("cropImage is failed: error region!");

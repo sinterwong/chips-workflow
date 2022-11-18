@@ -19,6 +19,7 @@
 #include <cstddef>
 #include <memory>
 #include <opencv2/core/mat.hpp>
+#include <opencv2/core/types.hpp>
 #include <opencv2/imgcodecs.hpp>
 
 namespace module {
@@ -58,21 +59,21 @@ void ClassifierModule::forward(std::vector<forwardMessage> message) {
         return;
       }
       count = 0;
-      cv::Rect region{buf.logicInfo.region[0], buf.logicInfo.region[1],
+      cv::Rect2i region{buf.logicInfo.region[0], buf.logicInfo.region[1],
                       buf.logicInfo.region[2] - buf.logicInfo.region[0],
                       buf.logicInfo.region[3] - buf.logicInfo.region[1]};
-      std::shared_ptr<cv::Mat> inferImage;
+      cv::Mat inferImage;
       if (region.area() != 0) {
-        infer::utils::cropImage(*image, *inferImage, region, buf.frameType);
+        infer::utils::cropImage(*image, inferImage, region, buf.frameType);
       } else {
-        inferImage = image;
+        inferImage = image->clone();
       }
       infer::Result ret;
-      ret.shape = {inferImage->cols, inferImage->rows, 3};
+      ret.shape = {inferImage.cols, inferImage.rows, 3};
       void *outputs[modelInfo.output_count];
       void *output = reinterpret_cast<void *>(outputs);
       infer::FrameInfo frame;
-      frame.data = reinterpret_cast<void **>(&inferImage->data);
+      frame.data = reinterpret_cast<void **>(&inferImage.data);
       frame.shape = ret.shape;
       if (!instance->infer(frame, &output)) {
         continue;
@@ -86,20 +87,20 @@ void ClassifierModule::forward(std::vector<forwardMessage> message) {
                    static_cast<float>(ret.classResult.first)}};
       buf.algorithmResult.bboxes.emplace_back(std::move(b));
     } else if (type == "algorithm") {
-      std::shared_ptr<cv::Mat> inferImage;
+      cv::Mat inferImage;
       for (size_t i = 0; i < buf.algorithmResult.bboxes.size(); i++) {
         auto &bbox = buf.algorithmResult.bboxes.at(i);
 
         if (bbox.first == send) {
-          cv::Rect rect{static_cast<int>(bbox.second[0]),
+          cv::Rect2i rect{static_cast<int>(bbox.second[0]),
                         static_cast<int>(bbox.second[1]),
                         static_cast<int>(bbox.second[2] - bbox.second[0]),
                         static_cast<int>(bbox.second[3] - bbox.second[1])};
-          infer::utils::cropImage(*image, *inferImage, rect, buf.frameType);
+          infer::utils::cropImage(*image, inferImage, rect, buf.frameType);
           infer::Result ret;
-          ret.shape = {inferImage->cols, inferImage->rows, 3};
+          ret.shape = {inferImage.cols, inferImage.rows, 3};
           infer::FrameInfo frame;
-          frame.data = reinterpret_cast<void **>(&inferImage->data);
+          frame.data = reinterpret_cast<void **>(&inferImage.data);
           frame.shape = ret.shape;
           void *outputs[modelInfo.output_count];
           void *output = reinterpret_cast<void *>(outputs);

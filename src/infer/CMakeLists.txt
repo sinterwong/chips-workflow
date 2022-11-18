@@ -26,7 +26,7 @@ IF(TARGET_HARDWARE STREQUAL jetson)
         ${CUDA_INCLUDE_DIRS}
     )
 
-    TARGET_LINK_LIBRARIES(infer jetson_infer_cu nvinfer nvparsers nvonnxparser nvinfer_plugin ${OpenCV_LIBS} module_logger)
+    TARGET_LINK_LIBRARIES(infer jetson_infer_cu nvinfer nvparsers nvonnxparser nvinfer_plugin module_logger)
     LIST(APPEND INFER_LIBS jetson_infer_cu)
 ELSEIF(TARGET_HARDWARE STREQUAL x3)
     LINK_DIRECTORIES(
