@@ -39,7 +39,7 @@ public:
     // outputStream = nullptr;
   }
 
-  virtual void forward(std::vector<forwardMessage> message) override;
+  virtual void forward(std::vector<forwardMessage> &message) override;
 };
 } // namespace module
 #endif // __METAENGINE_JETSON_OUTPUT_H

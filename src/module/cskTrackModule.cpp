@@ -7,7 +7,7 @@ cskTrackModule::cskTrackModule(Backend *ptr, const std::string &initName,
 cskTrackModule::~cskTrackModule() {}
 
 void cskTrackModule::forward(
-    std::vector<forwardMessage> message) {
+    std::vector<forwardMessage> &message) {
   // for (auto &[send, type, buf] : message) {
   //   if (type == "ControlMessage") {
   //     std::cout << name << "{} CSKTrackModule module was done!" << std::endl;

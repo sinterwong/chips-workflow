@@ -11,7 +11,7 @@ class serialModule : public Module {
 public:
   serialModule(Backend *ptr, const std::string &initName,
                const std::string &initType);
-  virtual void forward(std::vector<forwardMessage> message) override;
+  virtual void forward(std::vector<forwardMessage> &message) override;
 };
 
 } // namespace module

@@ -28,7 +28,7 @@ EarthwireModule::EarthwireModule(Backend *ptr, const std::string &initName,
  *
  * @param message
  */
-void EarthwireModule::forward(std::vector<forwardMessage> message) {
+void EarthwireModule::forward(std::vector<forwardMessage> &message) {
   if (recvModule.empty()) {
     return;
   }

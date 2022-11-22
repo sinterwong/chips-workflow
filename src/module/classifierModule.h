@@ -45,7 +45,7 @@ public:
 
   ~ClassifierModule();
 
-  void forward(std::vector<forwardMessage> message) override;
+  void forward(std::vector<forwardMessage> &message) override;
 };
 } // namespace module
 #endif // __METAENGINE_CLASSIFIER_MODULE_H_

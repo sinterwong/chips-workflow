@@ -6,7 +6,7 @@ serialModule::serialModule(Backend *ptr, const std::string &initName,
                            const std::string &initType)
     : Module(ptr, initName, initType) {}
 
-void serialModule::forward(std::vector<forwardMessage> message) {
+void serialModule::forward(std::vector<forwardMessage> &message) {
   // tutorial::FrameMessage buf;
   //    char ch = getchar();
   //    tutorial::FrameMessage buf;

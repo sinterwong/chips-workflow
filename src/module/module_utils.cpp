@@ -1,17 +1,19 @@
-#include "utils/convertMat.hpp"
+/**
+ * @file module_utils.cpp
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2022-11-21
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 
+#include "module_utils.hpp"
+
+namespace module {
 namespace utils {
-
-static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                                        "abcdefghijklmnopqrstuvwxyz"
-                                        "0123456789+/";
-
-static inline bool is_base64(unsigned char c) {
-  return (isalnum(c) || (c == '+') || (c == '/'));
-}
-
-std::string ImageConverter::base64_encode(uchar const *bytes_to_encode,
-                                          unsigned int in_len) {
+std::string base64_encode(uchar const *bytes_to_encode, unsigned int in_len) {
   std::string ret;
 
   int i = 0;
@@ -60,7 +62,7 @@ std::string ImageConverter::base64_encode(uchar const *bytes_to_encode,
   return ret;
 }
 
-std::string ImageConverter::base64_decode(std::string const &encoded_string) {
+std::string base64_decode(std::string const &encoded_string) {
   int in_len = encoded_string.size();
   int i = 0;
   int j = 0;
@@ -114,28 +116,26 @@ std::string ImageConverter::base64_decode(std::string const &encoded_string) {
   return ret;
 }
 
-string ImageConverter::mat2str(const cv::Mat &m) {
+std::string mat2str(const cv::Mat &m) {
   int params[3] = {0};
   params[0] = cv::IMWRITE_JPEG_QUALITY;
   params[1] = 100;
 
-  vector<uchar> buf;
+  std::vector<uchar> buf;
   cv::imencode(".jpg", m, buf, std::vector<int>(params, params + 2));
   uchar *result = reinterpret_cast<uchar *>(&buf[0]);
 
   return base64_encode(result, buf.size());
 }
 
-cv::Mat ImageConverter::str2mat(const string &s) {
+cv::Mat str2mat(const std::string &s) {
   // Decode data
-  string decoded_string = base64_decode(s);
-  vector<uchar> data(decoded_string.begin(), decoded_string.end());
+  std::string decoded_string = base64_decode(s);
+  std::vector<uchar> data(decoded_string.begin(), decoded_string.end());
 
   cv::Mat img = imdecode(data, cv::IMREAD_UNCHANGED);
   return img;
 }
 
-ImageConverter::~ImageConverter() {
-  // TODO Auto-generated destructor stub
-}
 } // namespace utils
+} // namespace module

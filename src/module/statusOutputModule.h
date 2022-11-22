@@ -38,7 +38,7 @@ public:
                      const common::OutputConfig &outputConfig);
   ~StatusOutputModule() {}
 
-  virtual void forward(std::vector<forwardMessage> message) override;
+  virtual void forward(std::vector<forwardMessage> &message) override;
 
   bool postResult(std::string const &url, StatusInfo const &resultInfo,
                   std::string &result);

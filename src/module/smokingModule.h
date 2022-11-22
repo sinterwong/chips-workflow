@@ -29,7 +29,7 @@ public:
                 const common::LogicConfig &logicConfig);
   ~SmokingModule() {}
 
-  virtual void forward(std::vector<forwardMessage> message) override;
+  virtual void forward(std::vector<forwardMessage> &message) override;
 };
 } // namespace module
 #endif // __METAENGINE_CALLING_MODULE_H_

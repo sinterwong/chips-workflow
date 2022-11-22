@@ -16,7 +16,7 @@ public:
   OpencvDisplayModule(Backend *ptr, const std::string &initName,
                       const std::string &initType);
 
-  virtual void forward(std::vector<forwardMessage> message) override;
+  virtual void forward(std::vector<forwardMessage> &message) override;
 };
 } // namespace module
 #endif // METAENGINE_OPENCVDISPLAYMODULE_H

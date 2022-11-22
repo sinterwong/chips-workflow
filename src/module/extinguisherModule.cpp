@@ -29,7 +29,7 @@ ExtinguisherModule::ExtinguisherModule(Backend *ptr,
  *
  * @param message
  */
-void ExtinguisherModule::forward(std::vector<forwardMessage> message) {
+void ExtinguisherModule::forward(std::vector<forwardMessage> &message) {
   if (recvModule.empty()) {
     return;
   }

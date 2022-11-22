@@ -64,7 +64,7 @@ public:
     ~RKMediaVOModule();
 
     void
-    forward(std::vector<forwardMessage> message) override;
+    forward(std::vector<forwardMessage> &message) override;
 };
 
 

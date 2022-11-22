@@ -6,7 +6,7 @@ OpencvDisplayModule::OpencvDisplayModule(Backend *ptr,
                                          const std::string &initType)
     : Module(ptr, initName, initType) {}
 
-void OpencvDisplayModule::forward(std::vector<forwardMessage> message) {
+void OpencvDisplayModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     assert(type == "stream");
     // int height, width;

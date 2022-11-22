@@ -54,7 +54,7 @@ public:
                     const common::OutputConfig &outputConfig);
   ~AlarmOutputModule() {}
 
-  virtual void forward(std::vector<forwardMessage> message) override;
+  virtual void forward(std::vector<forwardMessage> &message) override;
 
   bool postResult(std::string const &url, AlarmInfo const &resultInfo,
                   std::string &result);

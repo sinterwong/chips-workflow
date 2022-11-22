@@ -94,7 +94,7 @@ void StreamGenerator::step() {
   afterForward();
 }
 
-void StreamGenerator::forward(std::vector<forwardMessage> message) {
+void StreamGenerator::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("{} StreamGenerator module was done!", name);

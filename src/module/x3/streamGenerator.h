@@ -132,7 +132,7 @@ public:
       avformat_close_input(&avContext);
   }
 
-  virtual void forward(std::vector<forwardMessage> message) override;
+  virtual void forward(std::vector<forwardMessage> &message) override;
 
   void step() override;
 

@@ -34,7 +34,7 @@ public:
 
   ~cskTrackModule();
 
-  void forward(std::vector<forwardMessage> message) override;
+  void forward(std::vector<forwardMessage> &message) override;
 };
 } // namespace module
 #endif // METAENGINE_CSKTRACKMODULE_H

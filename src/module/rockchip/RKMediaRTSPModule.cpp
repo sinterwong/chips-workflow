@@ -149,7 +149,7 @@ RKMediaRTSPModule::~RKMediaRTSPModule()
 }
 
 void RKMediaRTSPModule::forward(
-        std::vector<forwardMessage> message)
+        std::vector<forwardMessage> &message)
 {
     for (auto&[send, type, buf]: message)
     {

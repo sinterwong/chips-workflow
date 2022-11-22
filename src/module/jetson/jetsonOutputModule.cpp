@@ -24,7 +24,7 @@ JetsonOutputModule::JetsonOutputModule(Backend *ptr, const std::string &uri,
   }
 }
 
-void JetsonOutputModule::forward(std::vector<forwardMessage> message) {
+void JetsonOutputModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     assert(type == "stream");
     FrameBuf frameBufMessage = backendPtr->pool->read(buf.key);

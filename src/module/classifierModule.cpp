@@ -15,6 +15,7 @@
 #include "infer_utils.hpp"
 #include "inference.h"
 #include "logger/logger.hpp"
+#include "opencv2/imgproc.hpp"
 #include <cassert>
 #include <cstddef>
 #include <memory>
@@ -39,7 +40,7 @@ ClassifierModule::ClassifierModule(Backend *ptr, const std::string &initName,
 
 ClassifierModule::~ClassifierModule() {}
 
-void ClassifierModule::forward(std::vector<forwardMessage> message) {
+void ClassifierModule::forward(std::vector<forwardMessage> &message) {
   if (!instance) {
     std::cout << "instance is not init!!!" << std::endl;
     return;
@@ -96,7 +97,9 @@ void ClassifierModule::forward(std::vector<forwardMessage> message) {
                         static_cast<int>(bbox.second[1]),
                         static_cast<int>(bbox.second[2] - bbox.second[0]),
                         static_cast<int>(bbox.second[3] - bbox.second[1])};
-          infer::utils::cropImage(*image, inferImage, rect, buf.frameType);
+          infer::utils::cropImage(*image, inferImage, rect, buf.frameType, 0.5);
+          cv::cvtColor(inferImage, inferImage, cv::COLOR_RGB2BGR);
+          // cv::imwrite("temp.jpg", inferImage);
           infer::Result ret;
           ret.shape = {inferImage.cols, inferImage.rows, 3};
           infer::FrameInfo frame;

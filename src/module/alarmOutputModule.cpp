@@ -147,7 +147,7 @@ bool AlarmOutputModule::writeResult(AlgorithmResult const &rm,
   return true;
 }
 
-void AlarmOutputModule::forward(std::vector<forwardMessage> message) {
+void AlarmOutputModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("{} AlarmOutputModule module was done!", name);

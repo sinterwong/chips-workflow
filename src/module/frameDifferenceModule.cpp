@@ -24,7 +24,7 @@ FrameDifferenceModule::FrameDifferenceModule(
 
 FrameDifferenceModule::~FrameDifferenceModule() {}
 
-void FrameDifferenceModule::forward(std::vector<forwardMessage> message) {
+void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("FreameDifference module was done!");

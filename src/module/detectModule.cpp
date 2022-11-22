@@ -46,7 +46,7 @@ DetectModule::DetectModule(Backend *ptr, const std::string &initName,
 
 DetectModule::~DetectModule() {}
 
-void DetectModule::forward(std::vector<forwardMessage> message) {
+void DetectModule::forward(std::vector<forwardMessage> &message) {
   if (!instance) {
     std::cout << "instance is not init!!!" << std::endl;
     return;

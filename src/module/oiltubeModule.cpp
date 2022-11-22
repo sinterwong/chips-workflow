@@ -29,7 +29,7 @@ OiltubeModule::OiltubeModule(Backend *ptr, const std::string &initName,
  *
  * @param message
  */
-void OiltubeModule::forward(std::vector<forwardMessage> message) {
+void OiltubeModule::forward(std::vector<forwardMessage> &message) {
   if (recvModule.empty()) {
     return;
   }

@@ -72,7 +72,7 @@ bool StatusOutputModule::postResult(std::string const &url,
   return true;
 }
 
-void StatusOutputModule::forward(std::vector<forwardMessage> message) {
+void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("{} StatusOutputModule module was done!", name);

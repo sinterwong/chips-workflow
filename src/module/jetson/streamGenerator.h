@@ -51,7 +51,7 @@ public:
 
   ~StreamGenerator() {}
 
-  virtual void forward(std::vector<forwardMessage> message) override;
+  virtual void forward(std::vector<forwardMessage> &message) override;
 
   void step() override;
 };

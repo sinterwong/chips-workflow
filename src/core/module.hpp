@@ -62,7 +62,7 @@ public:
 
   virtual void beforeForward(){};
 
-  virtual void forward(std::vector<forwardMessage> message) = 0;
+  virtual void forward(std::vector<forwardMessage> &message) = 0;
 
   virtual void afterForward(){};
 

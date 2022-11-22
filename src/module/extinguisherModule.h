@@ -29,7 +29,7 @@ public:
                      const common::LogicConfig &logicConfig);
   ~ExtinguisherModule() {}
 
-  virtual void forward(std::vector<forwardMessage> message) override;
+  virtual void forward(std::vector<forwardMessage> &message) override;
 };
 } // namespace module
 #endif // __METAENGINE_EXTINGUISHER_MODULE_H_

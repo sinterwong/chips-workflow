@@ -30,7 +30,7 @@ HelmetModule::HelmetModule(Backend *ptr, const std::string &initName,
  *
  * @param message
  */
-void HelmetModule::forward(std::vector<forwardMessage> message) {
+void HelmetModule::forward(std::vector<forwardMessage> &message) {
   if (recvModule.empty()) {
     return;
   }
@@ -39,7 +39,7 @@ void HelmetModule::forward(std::vector<forwardMessage> message) {
       // FLOWENGINE_LOGGER_INFO("{} HelmetModule module was done!", name);
       std::cout << name << "{} HelmetModule module was done!" << std::endl;
       stopFlag.store(true);
-      checkOutputStream();
+      destoryOutputStream();
       return;
     }
     if (isRecord) {

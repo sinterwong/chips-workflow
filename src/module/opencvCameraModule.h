@@ -34,7 +34,7 @@ public:
   OpencvCameraModule(Backend *ptr, const int capNumber,
                      const std::string &initName, const std::string &initType);
 
-  void forward(std::vector<forwardMessage> message) override;
+  void forward(std::vector<forwardMessage> &message) override;
 
   void afterForward() override;
 };

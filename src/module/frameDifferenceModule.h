@@ -33,7 +33,7 @@ public:
 
   ~FrameDifferenceModule();
 
-  virtual void forward(std::vector<forwardMessage> message) override;
+  virtual void forward(std::vector<forwardMessage> &message) override;
 };
 } // namespace module
 #endif // __METAENGINE_FRAME_DIFFERENCE_MODULE_H

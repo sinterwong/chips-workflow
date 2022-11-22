@@ -46,7 +46,7 @@ public:
 
   ~DetectModule();
 
-  virtual void forward(std::vector<forwardMessage> message) override;
+  virtual void forward(std::vector<forwardMessage> &message) override;
 };
 } // namespace module
 #endif // __METAENGINE_DETECT_MODULE_H_

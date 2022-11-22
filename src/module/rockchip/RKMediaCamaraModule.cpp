@@ -96,7 +96,7 @@ RKMediaCameraModule::RKMediaCameraModule(Backend *ptr,
 }
 
 void RKMediaCameraModule::forward(
-        std::vector<forwardMessage> message)
+        std::vector<forwardMessage> &message)
 {
     backendPtr->pool->checkSize();
     mb = RK_MPI_SYS_GetMediaBuffer(RK_ID_RGA, 0, -1);

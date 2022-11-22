@@ -175,7 +175,7 @@ FrameBuf makeFrameBuf(VIDEO_FRAME_S *frameInfo, int height, int width) {
   return temp;
 }
 
-void StreamGenerator::forward(std::vector<forwardMessage> message) {
+void StreamGenerator::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("{} JetsonSourceModule module was done!", name);

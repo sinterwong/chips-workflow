@@ -57,7 +57,7 @@ OpencvCameraModule::OpencvCameraModule(Backend *ptr, const int capNumber,
   cap = cv::VideoCapture(cameraNumber);
 }
 
-void OpencvCameraModule::forward(std::vector<forwardMessage> message) {
+void OpencvCameraModule::forward(std::vector<forwardMessage> &message) {
   assert(cap.isOpened());
   frame = std::make_shared<cv::Mat>();
   ret = cap.read(*frame);

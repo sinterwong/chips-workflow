@@ -30,7 +30,7 @@ SmokingModule::SmokingModule(Backend *ptr, const std::string &initName,
  *
  * @param message
  */
-void SmokingModule::forward(std::vector<forwardMessage> message) {
+void SmokingModule::forward(std::vector<forwardMessage> &message) {
   if (recvModule.empty()) {
     return;
   }
@@ -39,7 +39,7 @@ void SmokingModule::forward(std::vector<forwardMessage> message) {
       // FLOWENGINE_LOGGER_INFO("{} SmokingModule module was done!", name);
       std::cout << name << "{} SmokingModule module was done!" << std::endl;
       stopFlag.store(true);
-      checkOutputStream();
+      destoryOutputStream();
       return;
     }
     if (isRecord) {

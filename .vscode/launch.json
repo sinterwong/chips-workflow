@@ -11,7 +11,7 @@
       // "program": "/home/wangxt/workspace/projects/flowengine/build/aarch64/bin/test_opencv_rect",
       "args": [
                "--config_path=/home/wangxt/workspace/projects/flowengine/conf/app/calling.json",
-               "--num_workers=16",
+               "--num_workers=32",
 
               //  "--image_path=/home/wangxt/workspace/projects/flowengine/tests/data/pedestrian.jpg",
               //  "--model_path=/home/wangxt/workspace/projects/flowengine/tests/data/model/yolov5s.engine",

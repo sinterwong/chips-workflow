@@ -28,7 +28,7 @@ CallingModule::CallingModule(Backend *ptr, const std::string &initName,
  *
  * @param message
  */
-void CallingModule::forward(std::vector<forwardMessage> message) {
+void CallingModule::forward(std::vector<forwardMessage> &message) {
   if (recvModule.empty()) {
     return;
   }
@@ -37,7 +37,7 @@ void CallingModule::forward(std::vector<forwardMessage> message) {
       // FLOWENGINE_LOGGER_INFO("{} CallingModule module was done!", name);
       std::cout << name << "CallingModule module was done!" << std::endl;
       stopFlag.store(true);
-      checkOutputStream();
+      destoryOutputStream();
       return;
     }
     if (isRecord) {
@@ -51,7 +51,8 @@ void CallingModule::forward(std::vector<forwardMessage> message) {
     if (type == "algorithm") {
       // 此处根据 buf.algorithmResult 写吸烟的逻辑并填充 buf.alarmResult 信息
       // 如果符合条件就发送至AlarmOutputModule
-      for (int i = 0; i < static_cast<int>(buf.algorithmResult.bboxes.size()); i++) {
+      for (int i = 0; i < static_cast<int>(buf.algorithmResult.bboxes.size());
+           i++) {
         auto &bbox = buf.algorithmResult.bboxes.at(i);
         if (bbox.first != send) {
           continue;
@@ -59,6 +60,7 @@ void CallingModule::forward(std::vector<forwardMessage> message) {
         // std::cout << "classid: " << bbox.second.at(5) << ", "
         //           << "confidence: " << bbox.second.at(4) << std::endl;
         if (bbox.second.at(5) == 2 && bbox.second.at(4) > 0.8) {
+        // if (bbox.second.at(4) > 0.8) {
           // 生成报警信息和报警图
           generateAlarm(buf, "存在打电话行为", bbox);
 
@@ -69,8 +71,8 @@ void CallingModule::forward(std::vector<forwardMessage> message) {
           if (params.videDuration > 0) {
             initRecord(buf);
           }
+          break;
         }
-        break;
       }
     } else if (type == "stream") {
       // 配置算法推理时需要用到的信息
