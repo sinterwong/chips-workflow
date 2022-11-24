@@ -3,10 +3,18 @@
 #include "common/config.hpp"
 #include "factory.hpp"
 #include "gflags/gflags.h"
-#include "jetson/trt_inference.hpp"
 #include "module.hpp"
 #include "pipeline.hpp"
 #include <memory>
+#if (TARGET_PLATFORM == 0)
+#include "x3/x3_inference.hpp"
+using namespace infer::x3;
+#include "hb_comm_video.h"
+#include "hb_type.h"
+#elif (TARGET_PLATFORM == 1)
+#include "jetson/trt_inference.hpp"
+using namespace infer::trt;
+#endif
 using namespace module;
 
 DEFINE_string(video, "", "Specify the video uri.");

@@ -20,7 +20,7 @@ void Assd::generateBoxes(
     void **outputs) const {
 
   float **output = static_cast<float **>(*outputs);
-  assert(modelInfo.outputShapes.size() == modelInfo.output_count);
+  assert(static_cast<int>(modelInfo.outputShapes.size()) == modelInfo.output_count);
 
   // TODO Re-implement
   for (int i = 0; i < modelInfo.output_count; ++i) {

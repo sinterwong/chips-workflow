@@ -14,10 +14,13 @@
 
 #include <any>
 #include <memory>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "common/common.hpp"
 #include "common/config.hpp"
+#include "hb_common.h"
 #include "logger/logger.hpp"
 #include "messageBus.h"
 #include "module.hpp"
@@ -35,7 +38,10 @@ extern "C" {
 namespace module {
 
 class StreamGenerator : public Module {
+
 private:
+   static const std::unordered_map<std::string, PAYLOAD_TYPE_E> entypeMapping;
+
   // ffmpeg context
   AVFormatContext *avContext = nullptr;
 
@@ -52,7 +58,7 @@ private:
   int mmz_index = 0;
   // 流拉取状态
   int error;
-  
+
   int ret = 0;
 
   // x3 info
@@ -122,10 +128,8 @@ private:
 
 public:
   StreamGenerator(Backend *ptr, const std::string &initName,
-                       const std::string &initType,
-                       const common::CameraConfig &_params,
-                       
-                       );
+                  const std::string &initType,
+                  const common::CameraConfig &_params);
 
   ~StreamGenerator() {
     if (avContext)
@@ -144,5 +148,6 @@ public:
 
   // std::any getPtrBuffer(std::vector<std::any> &list, FrameBuf *buf);
 };
+
 } // namespace module
 #endif // __METAENGINE_JETSON_SOURCE_H

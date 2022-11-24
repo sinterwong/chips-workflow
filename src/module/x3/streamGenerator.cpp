@@ -27,13 +27,18 @@
 #include <opencv2/opencv.hpp>
 #include <sys/types.h>
 #include <type_traits>
+#include <unordered_map>
+#include <utility>
 
 namespace module {
+
+std::unordered_map<std::string, PAYLOAD_TYPE_E> const
+    StreamGenerator::entypeMapping = {std::make_pair("h264", PT_H264),
+                                      std::make_pair("h265", PT_H265)};
+
 StreamGenerator::StreamGenerator(Backend *ptr, const std::string &initName,
                                  const std::string &initType,
-                                 const common::CameraConfig &_params,
-                                 
-                                 )
+                                 const common::CameraConfig &_params)
     : Module(ptr, initName, initType) {
 
   // 编码、解码模块初始化，整个应用中需要调用一次
@@ -46,7 +51,9 @@ StreamGenerator::StreamGenerator(Backend *ptr, const std::string &initName,
   }
   FLOWENGINE_LOGGER_INFO("x3_vp_init ok!");
 
-  ret = vdec_ChnAttr_init(&vdec_chn_info.m_chn_attr, PT_H264, 1920, 1080);
+  ret = vdec_ChnAttr_init(&vdec_chn_info.m_chn_attr,
+                          entypeMapping.at(_params.videoCode),
+                          _params.heightPixel, _params.widthPixel);
   if (ret) {
     FLOWENGINE_LOGGER_ERROR("vdec_ChnAttr_init failed, {}", ret);
   }
@@ -142,7 +149,8 @@ std::any getMatBuffer(std::vector<std::any> &list, FrameBuf *buf) {
   // cv::imwrite("temp_y.png", temp_y);
   // cv::imwrite("temp_uv.png", temp_uv);
   // cv::imwrite("temp_nv12.png", temp_nv12);
-  // for (size_t i = 0; i < frameInfo->stVFrame.height * frameInfo->stVFrame.width; i ++) {
+  // for (size_t i = 0; i < frameInfo->stVFrame.height *
+  // frameInfo->stVFrame.width; i ++) {
   //   std::cout << +frameInfo->stVFrame.vir_ptr[0][i] << ", ";
   // }
   // std::cout << std::endl;

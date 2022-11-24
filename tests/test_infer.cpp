@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
   instance->getModelInfo(info);
   std::shared_ptr<vision::Yolo> det =
       std::make_shared<vision::Yolo>(params, info);
-  /*
+  // /*
   VIDEO_FRAME_S frameInfo;
   memset(&frameInfo, 0, sizeof(VIDEO_FRAME_S));
 
@@ -78,7 +78,8 @@ int main(int argc, char **argv) {
   //           << "image.rows: " << image.rows << std::endl;
   // cv::Mat y = nv12(cv::Rect(0, 0, image.cols, image.rows)).clone();
   // cv::Mat uv =
-  //     nv12(cv::Rect(0, image.rows, nv12.cols, nv12.rows - image.rows)).clone();
+  //     nv12(cv::Rect(0, image.rows, nv12.cols, nv12.rows -
+  //     image.rows)).clone();
   // cv::imwrite("y.png", y);
   // cv::imwrite("uv.png", uv);
 
@@ -90,8 +91,8 @@ int main(int argc, char **argv) {
       reinterpret_cast<hb_char *>(nv12.data) + (image.rows * image.cols);
   cv::Mat picNV12 = cv::Mat(image.rows * 3 / 2, image.cols, CV_8UC1,
                             frameInfo.stVFrame.vir_ptr[0]);
-  cv::Mat temp_y = cv::Mat(image.rows, image.cols, CV_8UC1,
-                            frameInfo.stVFrame.vir_ptr[0]);
+  cv::Mat temp_y =
+      cv::Mat(image.rows, image.cols, CV_8UC1, frameInfo.stVFrame.vir_ptr[0]);
   cv::Mat temp_uv = cv::Mat(image.rows / 2, image.cols, CV_8UC1,
                             frameInfo.stVFrame.vir_ptr[1]);
   cv::imwrite("nv12_finial.png", picNV12);
@@ -103,19 +104,27 @@ int main(int argc, char **argv) {
   // }
   // std::cout << std::endl;
 
-  void *output = nullptr;
+  void *outputs[info.output_count];
+  void *output = reinterpret_cast<void *>(outputs);
   FrameInfo input;
   input.data = reinterpret_cast<void **>(frameInfo.stVFrame.vir_ptr);
   input.shape = {image.cols, image.rows, 3};
+  std::cout << "image shape: " << image.cols << ", " << image.rows << std::endl;
 
   if (!instance->infer(input, &output)) {
     FLOWENGINE_LOGGER_ERROR("infer is failed!");
     return -1;
   }
+  std::cout << "infer has done!" << std::endl;
+  float **out = reinterpret_cast<float **>(output);
+  for (int i = 5000; i < 5050; i++) {
+    std::cout << out[0][i] << ", ";
+  }
+  std::cout << std::endl;
 
   infer::Result result;
   result.shape = {image.cols, image.rows, 3};
-  det->processOutput(output, result);
+  det->processOutput(&output, result);
 
   FLOWENGINE_LOGGER_INFO("number of result: {}", result.detResults.size());
   for (auto &bbox : result.detResults) {
@@ -125,7 +134,7 @@ int main(int argc, char **argv) {
   }
   cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
   cv::imwrite("test_yolo_out.jpg", image);
-  */
+  // */
 
   gflags::ShutDownCommandLineFlags();
   // FlowEngineLoggerDrop();

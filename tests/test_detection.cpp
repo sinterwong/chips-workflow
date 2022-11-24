@@ -1,4 +1,5 @@
 #include "detection.hpp"
+#include "infer_utils.hpp"
 #include "inference.h"
 #include <gflags/gflags.h>
 #include <memory>
@@ -32,12 +33,10 @@ int main(int argc, char **argv) {
   std::vector<std::string> inputNames;
   std::vector<std::string> outputNames;
   float alpha = 0;
-  bool isScale = false;
   if (FLAGS_atype == "Yolo") {
     inputNames = {"images"};
     outputNames = {"output"};
     alpha = 255.0;
-    isScale = true;
     cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
   } else if (FLAGS_atype == "Assd") {
     inputNames = {"data"};
@@ -56,33 +55,59 @@ int main(int argc, char **argv) {
                                  0.4,
                                  alpha,
                                  0,
-                                 isScale,
+                                 false,
                                  1};
   std::shared_ptr<AlgoInference> instance =
       std::make_shared<AlgoInference>(params);
   if (!instance->initialize()) {
-    FLOWENGINE_LOGGER_ERROR("Yolo initialization is failed!");
+    FLOWENGINE_LOGGER_ERROR("initialization is failed!");
     return -1;
   }
+  std::cout << "instance initialize has done!" << std::endl;
   infer::ModelInfo info;
-  // instance->getModelInfo(info);
+  instance->getModelInfo(info);
   std::shared_ptr<infer::vision::Detection> det;
-  det = ObjectFactory::createObject<infer::vision::Detection>(FLAGS_atype, params, info);
+  det = ObjectFactory::createObject<infer::vision::Detection>(FLAGS_atype,
+                                                              params, info);
   if (det == nullptr) {
-      FLOWENGINE_LOGGER_ERROR("Error algorithm serial {}", FLAGS_atype);
-      return -1;
+    FLOWENGINE_LOGGER_ERROR("Error algorithm serial {}", FLAGS_atype);
+    return -1;
   }
-
   infer::Result ret;
   ret.shape = {image.cols, image.rows, 3};
   infer::FrameInfo frame;
-  frame.data = reinterpret_cast<void **>(&image.data);
+  cv::Mat data;
+  char *d[3] = {0, 0, 0};
+  if (TARGET_PLATFORM == 0) {
+    infer::utils::RGB2NV12(image, data);
+    d[0] = reinterpret_cast<char *>(data.data);
+    d[1] = reinterpret_cast<char *>(data.data) + (image.cols * image.rows);
+    frame.data = reinterpret_cast<void **>(d);
+    cv::Mat picNV12 = cv::Mat(image.rows * 3 / 2, image.cols, CV_8UC1, d[0]);
+    cv::Mat temp_y = cv::Mat(image.rows, image.cols, CV_8UC1, d[0]);
+    cv::Mat temp_uv = cv::Mat(image.rows / 2, image.cols, CV_8UC1, d[1]);
+    cv::imwrite("nv12_finial.png", picNV12);
+    cv::imwrite("y_finial.png", temp_y);
+    cv::imwrite("uv_finial.png", temp_uv);
+  } else {
+    frame.data = reinterpret_cast<void **>(&image.data);
+    data = image.clone();
+  }
+  cv::imwrite("test_detection_data.jpg", data);
+
   frame.shape = ret.shape;
+  std::cout << "image shape: " << image.cols << ", " << image.rows << std::endl;
+
   void *outputs[info.output_count];
   void *output = reinterpret_cast<void *>(outputs);
   instance->infer(frame, &output);
+  std::cout << "infer has done!" << std::endl;
   float **out = reinterpret_cast<float **>(output);
-  std::cout << "test: " << out[0][0] << std::endl;
+  for (int i = 5000; i < 5050; i++) {
+    std::cout << out[0][i] << ", ";
+  }
+  std::cout << std::endl;
+
   det->processOutput(&output, ret);
   FLOWENGINE_LOGGER_INFO("number of result: {}", ret.detResults.size());
   for (auto &bbox : ret.detResults) {
@@ -90,6 +115,7 @@ int main(int argc, char **argv) {
                   bbox.bbox[3] - bbox.bbox[1]);
     cv::rectangle(image, rect, cv::Scalar(0, 0, 255), 2);
   }
+  cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
   cv::imwrite("test_det_out.jpg", image);
 
   gflags::ShutDownCommandLineFlags();

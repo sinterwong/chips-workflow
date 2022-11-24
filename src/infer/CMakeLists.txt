@@ -49,7 +49,7 @@ ELSEIF(TARGET_HARDWARE STREQUAL x3)
         ${APPSDK_PATH}/include/vio
         ${APPSDK_PATH}/include/libmm
     )
-    TARGET_LINK_LIBRARIES(infer ${OpenCV_LIBS} ${BPU_libs} ${HB_MEDIA_libs} rt dl infer module_logger)
+    TARGET_LINK_LIBRARIES(infer ${OpenCV_LIBS} ${BPU_libs} ${HB_MEDIA_libs} rt dl module_logger)
 ELSE()
     MESSAGE(WARNING "No platform specified!")
 ENDIF()

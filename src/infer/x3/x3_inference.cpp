@@ -55,8 +55,8 @@ bool AlgoInference::initialize() {
   input_tensor_resized.properties.tensorLayout = HB_DNN_LAYOUT_NCHW;
   input_tensor_resized.properties.tensorType = HB_DNN_IMG_TYPE_NV12_SEPARATE;
 
-  std::cout << "input shape: " << mParams.inputShape.at(1) << ", "
-            << mParams.inputShape.at(0) << std::endl;
+  // std::cout << "input shape: " << mParams.inputShape.at(1) << ", "
+  //           << mParams.inputShape.at(0) << std::endl;
 
   input_tensor_resized.sysMem[0].memSize =
       mParams.inputShape.at(1) * mParams.inputShape.at(0);
@@ -81,7 +81,6 @@ bool AlgoInference::initialize() {
       input_tensor_resized.properties.validShape;
 
   // 准备模型输出数据的空间
-  int output_count;
   HB_CHECK_SUCCESS(hbDNNGetOutputCount(&output_count, dnn_handle),
                    "hbDNNGetOutputCount is failed!");
   output = new hbDNNTensor[output_count];
@@ -199,8 +198,19 @@ bool AlgoInference::infer(FrameInfo &input, void **outputs) {
                    "infer hbDNNReleaseTask failed");
   // 解析模型输出
   hbSysFlushMem(&(output->sysMem[0]), HB_SYS_MEM_CACHE_INVALIDATE);
-  *outputs = output->sysMem[0].virAddr;
-  // outputs = reinterpret_cast<void *>(output->sysMem[0].virAddr);
+  // float *pred = reinterpret_cast<float *>(output->sysMem[0].virAddr);
+  // std::cout << pred[0] << std::endl;
+
+  float** ret = reinterpret_cast<float**>(*outputs);
+
+  for (int i = 0; i < output_count; ++i) {
+    ret[i] = reinterpret_cast<float *>(output[i].sysMem[0].virAddr);
+  }
+
+  // float *out = reinterpret_cast<float *>(*outputs);
+  // std::cout << "hello" << std::endl;
+  // std::cout << out[0] << std::endl;
+  // std::cout << "world" << std::endl;
   return true;
 }
 

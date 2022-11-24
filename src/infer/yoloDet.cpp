@@ -28,12 +28,9 @@ void Yolo::generateBoxes(
     for (int j = 0; j < numAnchors * num; j += num) {
       if (output[i][j + 4] <= mParams.cond_thr)
         continue;
-      // std::cout << output[i][j + 0] << ", "
-      //           << output[i][j + 1] << ", "
-      //           << output[i][j + 2] << ", "
-      //           << output[i][j + 3] << ", "
-      //           << output[i][j + 4] << ", "
-      //           << output[i][j + 5] << std::endl;
+      // std::cout << output[i][j + 0] << ", " << output[i][j + 1] << ", "
+      //           << output[i][j + 2] << ", " << output[i][j + 3] << ", "
+      //           << output[i][j + 4] << ", " << output[i][j + 5] << std::endl;
       DetectionResult det;
       det.class_id = std::distance(
           output[i] + j + 5,

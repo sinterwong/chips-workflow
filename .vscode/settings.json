@@ -1,12 +1,12 @@
 {
-  "cmake.installPrefix": "/home/wangxt/workspace/softwares/flowengine",
+  "cmake.installPrefix": "/data/horizon_x3/data/projects/flowengine",
   "cmake.environment": {
-    "CMAKE_TOOLCHAIN_FILE": "${workspaceFolder}/platforms/linux/aarch64.jetson.cmake",
-    "TOOLCHAIN_ROOTDIR": "/usr/bin"
+    "CMAKE_TOOLCHAIN_FILE": "${workspaceFolder}/platforms/linux/aarch64.x3.cmake",
+    "TOOLCHAIN_ROOTDIR": "/opt/gcc-ubuntu-9.3.0-2020.03-x86_64-aarch64-linux-gnu"
   },
   "cmake.configureArgs": [
-    "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/platforms/linux/aarch64.jetson.cmake",
-    "-DTOOLCHAIN_ROOTDIR=/usr/bin"
+    "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/platforms/linux/aarch64.x3.cmake",
+    "-DTOOLCHAIN_ROOTDIR=/opt/gcc-ubuntu-9.3.0-2020.03-x86_64-aarch64-linux-gnu"
   ],
   "cmake.cacheInit": null,
   "cmake.buildDirectory": "${workspaceFolder}/build"
