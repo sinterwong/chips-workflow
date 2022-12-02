@@ -189,9 +189,7 @@ void *feed_decode_data(void *attr) {
              (uint64_t)mmz_paddr[i], (uint64_t)mmz_vaddr[i], i);
     }
   }
-  VIDEO_FRAME_S pstFrame;
   VIDEO_STREAM_S pstStream;
-  memset(&pstFrame, 0, sizeof(VIDEO_FRAME_S));
   memset(&pstStream, 0, sizeof(VIDEO_STREAM_S));
 
   AVFormatContext *avContext = NULL;
@@ -220,6 +218,9 @@ void *feed_decode_data(void *attr) {
     printf("try open\n");
   } while ((s32Ret != 0) && (running == 1));
   s32Ret = avformat_find_stream_info(avContext, 0);
+
+  av_dump_format(avContext, 0, sample_attr->file.c_str(), 0);
+
   videoIndex =
       av_find_best_stream(avContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
   av_init_packet(&avpacket);

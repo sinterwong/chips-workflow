@@ -48,13 +48,12 @@ DetectModule::~DetectModule() {}
 
 void DetectModule::forward(std::vector<forwardMessage> &message) {
   if (!instance) {
-    std::cout << "instance is not init!!!" << std::endl;
+    FLOWENGINE_LOGGER_WARN("instance is not init!!!");
     return;
   }
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      // FLOWENGINE_LOGGER_INFO("{} DetectModule module was done!", name);
-      std::cout << name << "{} Detection module was done!" << std::endl;
+      FLOWENGINE_LOGGER_INFO("{} DetectModule module was done!", name);
       stopFlag.store(true);
       return;
     }
@@ -82,7 +81,7 @@ void DetectModule::forward(std::vector<forwardMessage> &message) {
       ret.shape = {inferImage.cols, inferImage.rows, 3};
       void *outputs[modelInfo.output_count];
       void *output = reinterpret_cast<void *>(outputs);
-      infer::FrameInfo frame;
+      FrameInfo frame;
       frame.data = reinterpret_cast<void **>(&inferImage.data);
       frame.shape = ret.shape;
       if (!instance->infer(frame, &output)) {
@@ -111,7 +110,7 @@ void DetectModule::forward(std::vector<forwardMessage> &message) {
           infer::utils::cropImage(*image, inferImage, rect, buf.frameType);
           infer::Result ret;
           ret.shape = {inferImage.cols, inferImage.rows, 3};
-          infer::FrameInfo frame;
+          FrameInfo frame;
           frame.data = reinterpret_cast<void **>(&inferImage.data);
           frame.shape = ret.shape;
           void *outputs[modelInfo.output_count];

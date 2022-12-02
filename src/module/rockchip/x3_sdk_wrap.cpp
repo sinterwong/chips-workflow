@@ -15,7 +15,6 @@
 
 #include "logger/logger.hpp"
 #include "x3_sdk_wrap.hpp"
-#include "x3_vio_vdec.hpp"
 #include "x3_vio_venc.hpp"
 #include "x3_vio_vp.hpp"
 
@@ -97,31 +96,5 @@ int x3_venc_uninit_wrap(x3_venc_info_t *venc_info) {
       return -1;
     }
   }
-  return 0;
-}
-
-int x3_vdec_init_wrap(x3_vdec_chn_info_t *vdec_chn_info) {
-  int ret = 0;
-  // 创建内存buff
-  x3_vp_alloc(&vdec_chn_info->vp_param);
-  // 初始化解码器
-  ret = x3_vdec_init(vdec_chn_info->m_vdec_chn_id, &vdec_chn_info->m_chn_attr);
-  if (ret) {
-    FLOWENGINE_LOGGER_ERROR("x3_vdec_init failed, {}", ret);
-    return -1;
-  }
-  FLOWENGINE_LOGGER_INFO("start vdec chn{} ok!", vdec_chn_info->m_vdec_chn_id);
-  return 0;
-}
-
-int x3_vdec_uninit_wrap(x3_vdec_chn_info_t *vdec_chn_info) {
-  int ret = 0;
-  ret = x3_vdec_deinit(vdec_chn_info->m_vdec_chn_id);
-  if (ret) {
-    printf("x3_vdec_deinit failed, %d\n", ret);
-    return -1;
-  }
-  // 释放内存buff
-  x3_vp_free(&vdec_chn_info->vp_param);
   return 0;
 }

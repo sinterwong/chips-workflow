@@ -18,22 +18,22 @@
 #include "vio/hb_vps_api.h"
 #include <string>
 
-#define VIDEO_CHECK_SUCCESS(value, errmsg)                                        \
-  do {                                                                         \
-    /*value can be call of function*/                                          \
-    int ret_code = value;                                                      \
-    if (ret_code != 0) {                                                       \
-      FLOWENGINE_LOGGER_ERROR("[BPU ERROR] {}, error code:{}", errmsg,          \
-                             ret_code);                                        \
-      return ret_code;                                                         \
-    }                                                                          \
-  } while (0);
+// #define VIDEO_CHECK_SUCCESS(value, errmsg)                                        \
+//   do {                                                                         \
+//     /*value can be call of function*/                                          \
+//     int ret_code = value;                                                      \
+//     if (ret_code != 0) {                                                       \
+//       FLOWENGINE_LOGGER_ERROR("[BPU ERROR] {}, error code:{}", errmsg,          \
+//                              ret_code);                                        \
+//       return ret_code;                                                         \
+//     }                                                                          \
+//   } while (0);
 
-#define SET_BYTE(_p, _b) *_p++ = (unsigned char)_b;
+// #define SET_BYTE(_p, _b) *_p++ = (unsigned char)_b;
 
-#define SET_BUFFER(_p, _buf, _len)                                             \
-  memcpy(_p, _buf, _len);                                                      \
-  (_p) += (_len);
+// #define SET_BUFFER(_p, _buf, _len)                                             \
+//   memcpy(_p, _buf, _len);                                                      \
+//   (_p) += (_len);
 
 struct av_param_t {
   int count;

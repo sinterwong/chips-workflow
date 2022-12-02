@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
   }
   infer::Result ret;
   ret.shape = {image.cols, image.rows, 3};
-  infer::FrameInfo frame;
+  FrameInfo frame;
   cv::Mat data;
   char *d[3] = {0, 0, 0};
   if (TARGET_PLATFORM == 0) {

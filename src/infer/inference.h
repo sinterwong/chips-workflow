@@ -13,6 +13,8 @@
 #include "infer_common.hpp"
 #include <array>
 
+using common::FrameInfo;
+
 namespace infer {
 
 class Inference {

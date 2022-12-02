@@ -17,7 +17,7 @@ DEFINE_string(configs, "",
 
 int main(int argc, char **argv) {
 
-  FlowEngineLoggerInit(true, true, true, true);
+  // FlowEngineLoggerInit(true, true, true, true);
   gflags::SetUsageMessage("some usage message");
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
   FLOWENGINE_LOGGER_INFO(FLAGS_codec);
   gflags::ShutDownCommandLineFlags();
 
-  FlowEngineLoggerDrop();
+  // FlowEngineLoggerDrop();
 
   return 0;
 }

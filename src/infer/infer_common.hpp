@@ -15,8 +15,6 @@
 #ifndef __INFERENCE_COMMON_H_
 #define __INFERENCE_COMMON_H_
 
-using common::ColorType;
-
 namespace infer {
 
 /**
@@ -39,16 +37,6 @@ struct Result {
   std::vector<DetectionResult> detResults;
   std::pair<int, float> classResult;
   std::array<int, 3> shape;
-};
-
-/**
- * @brief 推理时的帧信息
- * 
- */
-struct FrameInfo {
-  std::array<int, 3> shape;
-  ColorType type; 
-  void **data;
 };
 
 /**
