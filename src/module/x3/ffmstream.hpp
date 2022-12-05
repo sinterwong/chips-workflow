@@ -10,12 +10,13 @@
  */
 #ifndef __STREAM_MANAGER_FOR_FFMPAGE_H_
 #define __STREAM_MANAGER_FOR_FFMPAGE_H_
-#include "libavcodec/avcodec.h"
 #include "logger/logger.hpp"
+#include <ostream>
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+#include "libavcodec/avcodec.h"
 #include <libavformat/avformat.h>
 #include <libavutil/timestamp.h>
 #ifdef __cplusplus
@@ -31,6 +32,14 @@ class FmpStream {
     int videoIndex;
     int bufSize;
     int firstPacket;
+
+    friend std::ostream &operator<<(std::ostream &os, AvParam &param) {
+      os << "count: " << param.count << ", "
+         << "videoIndex: " << param.videoIndex << ", "
+         << "bufSize: " << param.bufSize << ", "
+         << "firstPacket: " << param.firstPacket << std::endl;
+      return os;
+    }
   };
 
 private:
@@ -75,8 +84,16 @@ public:
   }
 
   inline std::string getCodecType() {
+
     if (isRunning()) {
-      return codecMapping.at(avContext->video_codec_id);
+      auto pCodec = avcodec_find_decoder(
+          avContext->streams[av_param.videoIndex]->codecpar->codec_id);
+      // FLOWENGINE_LOGGER_CRITICAL("Look here for codec_type: {}",
+      // avContext->streams[av_param.videoIndex]->codecpar->codec_type);
+      // FLOWENGINE_LOGGER_CRITICAL("Look here codec id: {}", pCodec->id);
+      // FLOWENGINE_LOGGER_CRITICAL("Look here codec: {}",
+      // codecMapping.at(pCodec->id));
+      return codecMapping.at(pCodec->id);
     } else {
       FLOWENGINE_LOGGER_ERROR("The stream is not opened!");
       return 0;

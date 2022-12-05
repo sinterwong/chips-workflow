@@ -25,9 +25,15 @@ namespace module::utils {
 
 const static bool isInit = []() -> bool {
   // 编码、解码模块初始化，整个应用中需要调用一次
-  HB_VDEC_Module_Init();
-  auto ret = x3_vp_init();
+  auto ret = HB_VDEC_Module_Init();
   if (ret) {
+    FLOWENGINE_LOGGER_ERROR("HB_VDEC_Module_Init is failed!");
+    return false;
+  }
+  FLOWENGINE_LOGGER_INFO("HB_VDEC_Module_Init ok!");
+  ret = x3_vp_init();
+  if (ret) {
+    FLOWENGINE_LOGGER_ERROR("x3_vp_init is failed!");
     HB_VDEC_Module_Uninit();
     return false;
   }
@@ -44,6 +50,10 @@ bool VideoDecoder::init(std::string const &type_, int width_, int height_) {
   type = type_;
   width = width_;
   height = height_;
+
+  // 初始化stream包装器
+  memset(&pstStream, 0, sizeof(VIDEO_STREAM_S));
+
   if (!vdec_ChnAttr_init(m_chn_attr, width, height, entypeMapping.at(type))) {
     FLOWENGINE_LOGGER_ERROR("vdec_ChnAttr_init failed, {}");
     return false;
@@ -59,9 +69,6 @@ bool VideoDecoder::init(std::string const &type_, int width_, int height_) {
     return false;
   }
   FLOWENGINE_LOGGER_INFO("start vdec chn{} ok!", m_vdec_chn_id);
-
-  // 初始化frame包装器
-  memset(&pstStream, 0, sizeof(VIDEO_STREAM_S));
 
   return true;
 }
@@ -121,21 +128,22 @@ bool VideoDecoder::vdec_ChnAttr_init(VDEC_CHN_ATTR_S &pVdecChnAttr, int width,
   return true;
 }
 
-bool VideoDecoder::sendStream(int index, int count, uint64_t paddr, char *vaddr,
-                              int size) {
+bool VideoDecoder::sendStream(int index, int count, uint64_t paddr,
+                              char **vaddr, int size) {
   int error;
   VDEC_CHN_STATUS_S pstStatus;
   HB_VDEC_QueryStatus(m_vdec_chn_id, &pstStatus);
   if (pstStatus.cur_input_buf_cnt >= maxCnt) {
     std::this_thread::sleep_for(10ms);
   }
+  std::this_thread::sleep_for(20ms);
+
   pstStream.pstPack.phy_ptr = paddr;
-  pstStream.pstPack.vir_ptr = vaddr;
+  pstStream.pstPack.vir_ptr = *vaddr;
   pstStream.pstPack.pts = count;
   pstStream.pstPack.src_idx = index;
   pstStream.pstPack.size = size;
   pstStream.pstPack.stream_end = HB_FALSE;
-
   error = HB_VDEC_SendStream(m_vdec_chn_id, &pstStream, 3000);
   if (error == -HB_ERR_VDEC_OPERATION_NOT_ALLOWDED ||
       error == -HB_ERR_VDEC_UNKNOWN) {
@@ -149,20 +157,21 @@ bool VideoDecoder::sendStream(int index, int count, uint64_t paddr, char *vaddr,
 
 //   os << frame.stVFrame.width << ", " << frame.stVFrame.height << ", "
 //      << frame.stVFrame.size << ", " << frame.stVFrame.vir_ptr << ", "
-//      << frame.stVFrame.vir_ptr[0] << ", " << frame.stVFrame.src_idx << ", "
-//      << frame.stVFrame.frame_end << ", " << frame.stVFrame.pts << std::endl;
+//      << frame.stVFrame.src_idx << ", " << frame.stVFrame.frame_end << ", "
+//      << frame.stVFrame.pts << std::endl;
 
 //   return os;
 // }
 
 bool VideoDecoder::getFrame(VIDEO_FRAME_S &stFrameInfo) {
-  // std::cout << stFrameInfo << std::endl;
   int error = HB_VDEC_GetFrame(m_vdec_chn_id, &stFrameInfo, 1000);
+  std::cout << "Get frame" << std::endl;
   if (error) {
     FLOWENGINE_LOGGER_ERROR("HB_VDEC_GetFrame chn{} error, ret: {}",
                             m_vdec_chn_id, error);
     return false;
   }
+  HB_VDEC_ReleaseFrame(m_vdec_chn_id, &stFrameInfo);
   return true;
 }
 

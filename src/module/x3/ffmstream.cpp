@@ -22,6 +22,7 @@ using namespace std::chrono_literals;
 namespace module::utils {
 
 std::unordered_map<AVCodecID, std::string> const FmpStream::codecMapping = {
+    std::make_pair(AV_CODEC_ID_NONE, "none"),
     std::make_pair(AV_CODEC_ID_H264, "h264"),
     std::make_pair(AV_CODEC_ID_H265, "h265")};
 
@@ -137,7 +138,7 @@ static int build_dec_seq_header(uint8_t *pbHeader, std::string const &p_enType,
 bool FmpStream::openStream() {
   int ret = 0;
 
-  AVDictionary *option = 0;
+  AVDictionary *option = nullptr;
   av_dict_set(&option, "stimeout", "3000000", 0);
   av_dict_set(&option, "bufsize", "1024000", 0);
   av_dict_set(&option, "rtsp_transport", "tcp", 0);

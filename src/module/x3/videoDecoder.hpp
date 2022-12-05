@@ -87,7 +87,7 @@ private:
 public:
   bool init(std::string const &type_, int width_, int height_);
 
-  bool sendStream(int index, int count, uint64_t paddr, char *vaddr, int size);
+  bool sendStream(int index, int count, uint64_t paddr, char **vaddr, int size);
 
   bool getFrame(VIDEO_FRAME_S &stFrameInfo);
 

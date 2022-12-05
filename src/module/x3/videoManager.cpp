@@ -15,6 +15,9 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <thread>
+
+using namespace std::chrono_literals;
 
 namespace module::utils {
 
@@ -23,7 +26,10 @@ bool VideoManager::init() {
     FLOWENGINE_LOGGER_ERROR("can't open the stream!");
     return false;
   }
-  FLOWENGINE_LOGGER_ERROR("{} is opened!", uri);
+  FLOWENGINE_LOGGER_INFO("{} is opened!", uri);
+  FLOWENGINE_LOGGER_INFO("The video size is {}x{}, and codec is {}!",
+                         reader->getHeight(), reader->getWidth(),
+                         reader->getCodecType());
 
   vp_param.mmz_size = reader->getHeight() * reader->getWidth();
 
@@ -31,36 +37,52 @@ bool VideoManager::init() {
 
   // 创建内存buff
   if (!x3_vp_alloc()) {
-    FLOWENGINE_LOGGER_ERROR("vdec_ChnAttr_init failed, {}");
+    FLOWENGINE_LOGGER_ERROR("x3_vp_alloc is failed");
     return false;
   }
+  FLOWENGINE_LOGGER_INFO("x3_vp_alloc is successed!");
 
-  // video decoder init
   if (!decoder->init(reader->getCodecType(), reader->getWidth(),
                      reader->getHeight())) {
     FLOWENGINE_LOGGER_ERROR("decoder init is failed!");
   }
+  FLOWENGINE_LOGGER_INFO("decoder initialization is successed!");
 
   return true;
 }
 
 void VideoManager::streamSend() {
+  // {
+  //   std::lock_guard<std::mutex> lk(m);
+  //   // video decoder init
+  //   if (!decoder->init(reader->getCodecType(), reader->getWidth(),
+  //                      reader->getHeight())) {
+  //     FLOWENGINE_LOGGER_ERROR("decoder init is failed!");
+  //   }
+  //   FLOWENGINE_LOGGER_INFO("decoder initialization is successed!");
+  // }
+  // is_start.notify_all();
   while (reader->isRunning() && decoder->isRunning()) {
     mmzIndex = reader->getParam().count % vp_param.mmz_cnt;
     int bufSize = reader->getRawFrame(
         reinterpret_cast<void *>(vp_param.mmz_vaddr[mmzIndex]));
-    if (bufSize > 0) {
+    if (bufSize < 0) {
       bufSize = 0;
     }
+    // std::cout << reader->getParam() << std::endl;
     if (!decoder->sendStream(mmzIndex, reader->getParam().count,
                              vp_param.mmz_paddr[mmzIndex],
-                             vp_param.mmz_vaddr[mmzIndex], bufSize)) {
+                             &vp_param.mmz_vaddr[mmzIndex], bufSize)) {
       break;
     }
   }
+  FLOWENGINE_LOGGER_WARN("reader status is {}, and decoder status is {}",
+                         reader->isRunning(), decoder->isRunning());
+  FLOWENGINE_LOGGER_WARN("VideoManager: streamSend is over!");
 }
 
 void VideoManager::streamGet() {
+  // 存在一个条件变量，sample给的是初始化
   while (decoder->isRunning()) {
     std::lock_guard<std::mutex> lk(m);
     decoder->getFrame(stFrameInfo);
@@ -68,21 +90,28 @@ void VideoManager::streamGet() {
 }
 
 void VideoManager::run() {
-  send = std::make_unique<joining_thread>(&VideoManager::streamSend, this);
-  recv = std::make_unique<joining_thread>(&VideoManager::streamGet, this);
+  // recv = std::make_unique<joining_thread>(&VideoManager::streamGet, this);
+  recv = std::make_unique<std::thread>(&VideoManager::streamGet, this);
+  std::this_thread::sleep_for(2ms);
+  send = std::make_unique<std::thread>(&VideoManager::streamSend, this);
 }
 
 std::shared_ptr<cv::Mat> VideoManager::getcvImage() {
-  std::lock_guard lk(m);
-  if (!stFrameInfo.stVFrame
-           .vir_ptr[0]) { // 需要一个能判定stFrameInfo是否有值的条件
-    return std::shared_ptr<cv::Mat>();
+  cv::Mat t;
+  {
+    std::lock_guard lk(m);
+    // 需要一个能判定stFrameInfo是否有值的条件
+    std::cout << stFrameInfo.stVFrame.size << std::endl;
+    if (stFrameInfo.stVFrame.size < 1) {
+      return std::shared_ptr<cv::Mat>();
+    }
+    int height = static_cast<int>(stFrameInfo.stVFrame.height);
+    int width = static_cast<int>(stFrameInfo.stVFrame.width);
+
+    t = cv::Mat(height * 3 / 2, width, CV_8UC1, stFrameInfo.stVFrame.vir_ptr[0])
+            .clone();
   }
-  int height = static_cast<int>(stFrameInfo.stVFrame.height);
-  int width = static_cast<int>(stFrameInfo.stVFrame.width);
-  sharedImage = std::make_shared<cv::Mat>(
-      cv::Mat(height * 3 / 2, width, CV_8UC1, stFrameInfo.stVFrame.vir_ptr[0])
-          .clone());
+  sharedImage = std::make_shared<cv::Mat>(std::move(t));
   return sharedImage;
 }
 

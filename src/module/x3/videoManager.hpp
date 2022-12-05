@@ -16,6 +16,7 @@
 #include "joining_thread.h"
 #include "logger/logger.hpp"
 #include "videoDecoder.hpp"
+#include <condition_variable>
 #include <memory>
 #include <opencv2/core/mat.hpp>
 #include <thread>
@@ -72,9 +73,10 @@ private:
 
   // vp_param_t vp_param;
   vp_param_t vp_param;
-  std::unique_ptr<joining_thread> send; // 生产者
-  std::unique_ptr<joining_thread> recv; // 消费者
+  std::unique_ptr<std::thread> send; // 生产者
+  std::unique_ptr<std::thread> recv; // 消费者
   std::mutex m;
+  // std::condition_variable is_start;
   std::shared_ptr<cv::Mat> sharedImage;
 
   void streamSend();
@@ -85,6 +87,11 @@ public:
   bool init();
 
   void run();
+
+  inline void join() noexcept {
+    recv->join();
+    send->join();
+  }
 
   std::shared_ptr<cv::Mat> getcvImage();
 
@@ -99,7 +106,7 @@ public:
   }
 
   ~VideoManager() noexcept {
-    HB_VDEC_ReleaseFrame(videoId, &stFrameInfo);
+    join();
     x3_vp_free();
   }
 };
