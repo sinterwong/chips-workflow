@@ -82,7 +82,8 @@ void VideoManager::streamSend() {
 }
 
 void VideoManager::streamGet() {
-  // 存在一个条件变量，sample给的是初始化
+  // std::unique_lock<std::mutex> lk(m);
+  // is_start.wait(lk, [this] { return !decoder->isRunning(); });
   while (decoder->isRunning()) {
     std::lock_guard<std::mutex> lk(m);
     decoder->getFrame(stFrameInfo);
@@ -101,7 +102,7 @@ std::shared_ptr<cv::Mat> VideoManager::getcvImage() {
   {
     std::lock_guard lk(m);
     // 需要一个能判定stFrameInfo是否有值的条件
-    std::cout << stFrameInfo.stVFrame.size << std::endl;
+    // std::cout << stFrameInfo.stVFrame.size << std::endl;
     if (stFrameInfo.stVFrame.size < 1) {
       return std::shared_ptr<cv::Mat>();
     }

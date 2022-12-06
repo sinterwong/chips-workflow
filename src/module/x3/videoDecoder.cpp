@@ -165,7 +165,7 @@ bool VideoDecoder::sendStream(int index, int count, uint64_t paddr,
 
 bool VideoDecoder::getFrame(VIDEO_FRAME_S &stFrameInfo) {
   int error = HB_VDEC_GetFrame(m_vdec_chn_id, &stFrameInfo, 1000);
-  std::cout << "Get frame" << std::endl;
+  // std::cout << "Get frame" << std::endl;
   if (error) {
     FLOWENGINE_LOGGER_ERROR("HB_VDEC_GetFrame chn{} error, ret: {}",
                             m_vdec_chn_id, error);
