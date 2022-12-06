@@ -97,23 +97,18 @@ void VideoManager::run() {
   send = std::make_unique<std::thread>(&VideoManager::streamSend, this);
 }
 
-std::shared_ptr<cv::Mat> VideoManager::getcvImage() {
-  cv::Mat t;
-  {
-    std::lock_guard lk(m);
-    // 需要一个能判定stFrameInfo是否有值的条件
-    // std::cout << stFrameInfo.stVFrame.size << std::endl;
-    if (stFrameInfo.stVFrame.size < 1) {
-      return std::shared_ptr<cv::Mat>();
-    }
-    int height = static_cast<int>(stFrameInfo.stVFrame.height);
-    int width = static_cast<int>(stFrameInfo.stVFrame.width);
-
-    t = cv::Mat(height * 3 / 2, width, CV_8UC1, stFrameInfo.stVFrame.vir_ptr[0])
-            .clone();
+cv::Mat VideoManager::getcvImage() {
+  std::lock_guard lk(m);
+  // 需要一个能判定stFrameInfo是否有值的条件
+  // std::cout << stFrameInfo.stVFrame.size << std::endl;
+  if (stFrameInfo.stVFrame.size < 1) {
+    return cv::Mat();
   }
-  sharedImage = std::make_shared<cv::Mat>(std::move(t));
-  return sharedImage;
+  int height = static_cast<int>(stFrameInfo.stVFrame.height);
+  int width = static_cast<int>(stFrameInfo.stVFrame.width);
+
+  return cv::Mat(height * 3 / 2, width, CV_8UC1,
+                 stFrameInfo.stVFrame.vir_ptr[0]).clone();
 }
 
 } // namespace module::utils

@@ -1,14 +1,14 @@
 /**
- * @file StreamGenerator.h
+ * @file streamModule.h
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief
- * @version 0.2
- * @date 2022-10-26
- *
+ * @brief 
+ * @version 0.1
+ * @date 2022-12-06
+ * 
  * @copyright Copyright (c) 2022
- *
+ * 
  */
-
+ 
 #ifndef __METAENGINE_SUNRISE_DECODER_H
 #define __METAENGINE_SUNRISE_DECODER_H
 
@@ -24,35 +24,27 @@
 #include "module.hpp"
 
 #if (TARGET_PLATFORM == 0)
-#include "x3/videoDecoder.hpp"
+#include "x3/videoManager.hpp"
+using namespace module::utils;
 #elif (TARGET_PLATFORM == 1)
-#include "jetson/videoDecoder.hpp"
+#include "jetson/videoManager.hpp"
 #endif
 
 namespace module {
 
-class StreamGenerator : public Module {
+class StreamModule : public Module {
 
 private:
-  // 帧数索引
-  int mmz_index = 0;
-  // 流拉取状态
-  int error;
-
-  int ret = 0;
-
   CameraResult cameraResult;
 
-  std::unique_ptr<utils::VideoDecoder> decoder;
-
-  cv::Mat frame;
+  std::unique_ptr<VideoManager> vm;
 
 public:
-  StreamGenerator(Backend *ptr, const std::string &initName,
+  StreamModule(Backend *ptr, const std::string &initName,
                   const std::string &initType,
                   const common::CameraConfig &_params);
 
-  ~StreamGenerator() {}
+  ~StreamModule() {}
 
   virtual void beforeForward() override;
 
@@ -62,11 +54,11 @@ public:
 
   static void delBuffer(std::vector<std::any> &);
 
-  // std::any getFrameInfo(std::vector<std::any> &, FrameBuf *);
+  std::any getFrameInfo(std::vector<std::any> &, FrameBuf *);
 
-  // std::any getMatBuffer(std::vector<std::any> &list, FrameBuf *buf);
+  std::any getMatBuffer(std::vector<std::any> &list, FrameBuf *buf);
 
-  // std::any getPtrBuffer(std::vector<std::any> &list, FrameBuf *buf);
+  std::any getPtrBuffer(std::vector<std::any> &list, FrameBuf *buf);
 };
 
 } // namespace module

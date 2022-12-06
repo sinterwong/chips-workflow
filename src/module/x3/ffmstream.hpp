@@ -10,6 +10,7 @@
  */
 #ifndef __STREAM_MANAGER_FOR_FFMPAGE_H_
 #define __STREAM_MANAGER_FOR_FFMPAGE_H_
+#include "libavutil/rational.h"
 #include "logger/logger.hpp"
 #include <ostream>
 
@@ -77,6 +78,16 @@ public:
     if (isRunning()) {
       return static_cast<int>(
           avContext->streams[av_param.videoIndex]->codecpar->height);
+    } else {
+      FLOWENGINE_LOGGER_ERROR("The stream is not opened!");
+      return 0;
+    }
+  }
+
+  inline int getRate() {
+    if (isRunning()) {
+      return static_cast<int>(
+          av_q2d(avContext->streams[av_param.videoIndex]->r_frame_rate));
     } else {
       FLOWENGINE_LOGGER_ERROR("The stream is not opened!");
       return 0;

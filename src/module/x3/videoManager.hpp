@@ -77,7 +77,7 @@ private:
   std::unique_ptr<std::thread> recv; // 消费者
   std::mutex m;
   // std::condition_variable is_start;
-  std::shared_ptr<cv::Mat> sharedImage;
+  // std::shared_ptr<cv::Mat> sharedImage;
 
   void streamSend();
 
@@ -88,12 +88,22 @@ public:
 
   void run();
 
+  inline bool isRunning() {
+    return reader->isRunning() && decoder->isRunning();
+  }
+
+  inline int getHeight() { return reader->getHeight(); }
+
+  inline int getWidth() { return reader->getWidth(); }
+
+  inline int getRate() { return reader->getRate(); }
+
   inline void join() noexcept {
     recv->join();
     send->join();
   }
 
-  std::shared_ptr<cv::Mat> getcvImage();
+  cv::Mat getcvImage();
 
   inline common::ColorType getType() const noexcept {
     return common::ColorType::NV12;
