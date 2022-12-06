@@ -22,7 +22,6 @@ DEFINE_int32(input_width, 335, "Specify input width.");
 
 int main(int argc, char **argv) {
 
-  FlowEngineLoggerInit(true, true, true, true);
   gflags::SetUsageMessage("some usage message");
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -119,7 +118,6 @@ int main(int argc, char **argv) {
   cv::imwrite("test_det_out.jpg", image);
 
   gflags::ShutDownCommandLineFlags();
-  FlowEngineLoggerDrop();
   return 0;
 }
 

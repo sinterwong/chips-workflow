@@ -59,6 +59,7 @@ void StreamModule::step() {
   if (!vm->isRunning()) {
     return;
   }
+  FLOWENGINE_LOGGER_CRITICAL("Stream forward!");
   forward(message);
   afterForward();
 }
@@ -117,7 +118,6 @@ void StreamModule::forward(std::vector<forwardMessage> &message) {
   sendMessage.cameraResult = cameraResult;
   sendMessage.status = 0;
   autoSend(sendMessage);
-  // FLOWENGINE_LOGGER_INFO("Send the frame message!");
 }
 FlowEngineModuleRegister(StreamModule, Backend *, std::string const &,
                          std::string const &, common::CameraConfig const &);

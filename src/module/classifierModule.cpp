@@ -42,27 +42,26 @@ ClassifierModule::~ClassifierModule() {}
 
 void ClassifierModule::forward(std::vector<forwardMessage> &message) {
   if (!instance) {
-    std::cout << "instance is not init!!!" << std::endl;
+    FLOWENGINE_LOGGER_INFO("ClassifierModule {} instance is not init!", name);
     return;
   }
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      // FLOWENGINE_LOGGER_INFO("{} ClassifierModule module was done!", name);
-      std::cout << name << "{} Classifier module was done!" << std::endl;
+      FLOWENGINE_LOGGER_INFO("{} ClassifierModule module was done!", name);
+      // std::cout << name << "{} Classifier module was done!" << std::endl;
       stopFlag.store(true);
       return;
     }
     auto frameBufMessage = backendPtr->pool->read(buf.key);
-    std::shared_ptr<cv::Mat> image =
-        std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
+    std::shared_ptr<cv::Mat> image = std::make_shared<cv::Mat>(
+        std::any_cast<cv::Mat>(frameBufMessage.read("Mat")));
     if (type == "logic") {
-      if (count++ < 5) {
+      if (count++ < 5) 
         return;
-      }
       count = 0;
       cv::Rect2i region{buf.logicInfo.region[0], buf.logicInfo.region[1],
-                      buf.logicInfo.region[2] - buf.logicInfo.region[0],
-                      buf.logicInfo.region[3] - buf.logicInfo.region[1]};
+                        buf.logicInfo.region[2] - buf.logicInfo.region[0],
+                        buf.logicInfo.region[3] - buf.logicInfo.region[1]};
       cv::Mat inferImage;
       if (region.area() != 0) {
         infer::utils::cropImage(*image, inferImage, region, buf.frameType);
@@ -94,9 +93,9 @@ void ClassifierModule::forward(std::vector<forwardMessage> &message) {
 
         if (bbox.first == send) {
           cv::Rect2i rect{static_cast<int>(bbox.second[0]),
-                        static_cast<int>(bbox.second[1]),
-                        static_cast<int>(bbox.second[2] - bbox.second[0]),
-                        static_cast<int>(bbox.second[3] - bbox.second[1])};
+                          static_cast<int>(bbox.second[1]),
+                          static_cast<int>(bbox.second[2] - bbox.second[0]),
+                          static_cast<int>(bbox.second[3] - bbox.second[1])};
           infer::utils::cropImage(*image, inferImage, rect, buf.frameType, 0.5);
           cv::cvtColor(inferImage, inferImage, cv::COLOR_RGB2BGR);
           // cv::imwrite("temp.jpg", inferImage);

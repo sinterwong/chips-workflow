@@ -34,6 +34,7 @@
   } while (0);
 
 #define MAX_SIZE 2560 * 1440
+#define BUFFER_NUM 2
 
 namespace infer {
 namespace x3 {
@@ -91,6 +92,8 @@ private:
     HB_CHECK_SUCCESS(hbDNNRelease(packed_dnn_handle),
                      "hbDNNRelease packed_dnn_handle failed");
 
+    // alloc.deallocate(mmz_vaddr, MAX_SIZE * BUFFER_NUM);
+
     return 0;
   }
 
@@ -111,8 +114,9 @@ private:
   // 加载模型handle
   hbPackedDNNHandle_t packed_dnn_handle;
   // 用于储存输入数据
-  uint64_t mmz_paddr[2];
-  char *mmz_vaddr[2];
+  char *mmz_vaddr = nullptr;
+  uint64_t mmz_paddr = 0;
+  // std::allocator<char> alloc;
 };
 } // namespace x3
 } // namespace infer

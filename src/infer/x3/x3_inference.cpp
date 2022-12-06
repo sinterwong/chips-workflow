@@ -110,32 +110,24 @@ bool AlgoInference::initialize() {
     HB_CHECK_SUCCESS(hbSysAllocCachedMem(&mem, out_aligned_size),
                      "hbSysAllocCachedMem is failed!");
   }
-
-  VP_CONFIG_S struVpConf;
-  memset(&struVpConf, 0x00, sizeof(VP_CONFIG_S));
-  struVpConf.u32MaxPoolCnt = 32; // 整个系统中可以容纳缓冲池的个数
-  HB_VP_SetConfig(&struVpConf);
-
-  int ret = HB_VP_Init();
-  if (!ret) {
-    FLOWENGINE_LOGGER_INFO("hb_vp_init success");
-  } else {
-    FLOWENGINE_LOGGER_INFO("hb_vp_init failed, ret: {}", ret);
-    return false;
+  // VP_CONFIG_S struVpConf;
+  // memset(&struVpConf, 0x00, sizeof(VP_CONFIG_S));
+  // struVpConf.u32MaxPoolCnt = 4; // 整个系统中可以容纳缓冲池的个数
+  // HB_VP_SetConfig(&struVpConf);
+  // int ret = HB_VP_Init();
+  // if (!ret) {
+  //   FLOWENGINE_LOGGER_INFO("hb_vp_init success");
+  // } else {
+  //   FLOWENGINE_LOGGER_ERROR("hb_vp_init failed, ret: {}", ret);
+  //   return false;
+  // }
+  // 按照文档来说，推理来说一定需要分配HB内存
+  int s32Ret =
+      HB_SYS_Alloc(&mmz_paddr, (void **)&mmz_vaddr, MAX_SIZE * BUFFER_NUM);
+  if (s32Ret) {
+    FLOWENGINE_LOGGER_ERROR("HB_SYS_Alloc is failed!");
   }
-
-  memset(mmz_paddr, 0, sizeof(mmz_paddr));
-  for (int i = 0; i < 2; i++) {
-    mmz_vaddr[i] = nullptr;
-  }
-  for (int i = 0; i < 2; i++) {
-    int s32Ret =
-        HB_SYS_Alloc(&mmz_paddr[i], (void **)&mmz_vaddr[i], MAX_SIZE);
-    if (s32Ret) {
-      FLOWENGINE_LOGGER_ERROR("HB_SYS_Alloc is failed!");
-    }
-  }
-
+  // mmz_vaddr = alloc.allocate(MAX_SIZE * BUFFER_NUM);
   return true;
 }
 
@@ -144,28 +136,17 @@ bool AlgoInference::infer(FrameInfo &input, void **outputs) {
   int width = input.shape.at(0);
   hb_char **data = reinterpret_cast<hb_char **>(input.data);
 
-  memcpy((void *)mmz_vaddr[0], (void *)data[0], height * width);
-  memcpy((void *)mmz_vaddr[1], (void *)data[1], height / 2 * width);
+  // memcpy((void *)mmz_vaddr[0], (void *)data[0], height * width);
+  // memcpy((void *)mmz_vaddr[1], (void *)data[1], height / 2 * width);
+  memcpy((void *)mmz_vaddr, (void *)data[0], height * width * 3 / 2);
 
-  // VIDEO_FRAME_S *stFrameInfo = reinterpret_cast<VIDEO_FRAME_S *>(inputs);
   // NV12 是 YUV420SP 格式
-  input_tensor.sysMem[0].virAddr = mmz_vaddr[0];
+  input_tensor.sysMem[0].virAddr = mmz_vaddr;
   input_tensor.sysMem[0].memSize = height * width;
 
   // 填充 input_tensor.data_ext 成员变量， UV 分量
-  input_tensor.sysMem[1].virAddr = mmz_vaddr[1];
+  input_tensor.sysMem[1].virAddr = mmz_vaddr + (height * width);
   input_tensor.sysMem[1].memSize = height / 2 * width;
-
-  // unsigned char* temp = reinterpret_cast<unsigned
-  // char*>(input_tensor.sysMem[1].virAddr); for (int i = 0; i <
-  // input.shape.at(0) * input.shape.at(1) / 2; i ++) {
-  //   std::cout << static_cast<int>(temp[i]) << ", ";
-  // }
-  // std::cout << std::endl;
-  // cv::Mat picNV12 = cv::Mat(input.shape.at(1) * 3 / 2, input.shape.at(0),
-  // CV_8UC1,
-  //                           data[0]);
-  // cv::imwrite("nv12_finial_finial.png", picNV12);
 
   // HB_DNN_IMG_TYPE_NV12_SEPARATE 类型的 layout 为 (1, 3, h, w)
   input_tensor.properties.validShape.numDimensions = 4;
@@ -201,7 +182,7 @@ bool AlgoInference::infer(FrameInfo &input, void **outputs) {
   // float *pred = reinterpret_cast<float *>(output->sysMem[0].virAddr);
   // std::cout << pred[0] << std::endl;
 
-  float** ret = reinterpret_cast<float**>(*outputs);
+  float **ret = reinterpret_cast<float **>(*outputs);
 
   for (int i = 0; i < output_count; ++i) {
     ret[i] = reinterpret_cast<float *>(output[i].sysMem[0].virAddr);

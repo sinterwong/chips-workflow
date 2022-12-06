@@ -10,7 +10,7 @@
           "name": "stream_a71a203c-d0aa-4c7f-80c0-6296c997525b",
           "recvName": "",
           "sendName": "logic_calling_29_3_1660981094258",
-          "sub_type": "StreamGenerator",
+          "sub_type": "StreamModule",
           "type": "stream",
           "videoCode": "h264",
           "width": 1920
@@ -23,23 +23,23 @@
           "name": "stream_a71a203c-d0aa-4c7f-80c0-6296c997525b",
           "recvName": "",
           "sendName": "output_stream_status_1660981094261",
-          "sub_type": "StreamGenerator",
+          "sub_type": "StreamModule",
           "type": "stream",
           "videoCode": "h264",
           "width": 1920
         },
         {
-          "alarm_output_dir": "/public/alarm/data",
+          "alarm_output_dir": "/root/flowengine/data",
           "event_id": 2,
           "height": "1080",
           "name": "logic_calling_29_3_1660981094258",
           "page": "2",
           "recvName": "stream_a71a203c-d0aa-4c7f-80c0-6296c997525b",
           "region": [
-            218,
-            168,
-            1578,
-            731
+            0,
+            0,
+            1000,
+            1000
           ],
           "sendName": "algorithm_handDet_1660981094167",
           "sub_type": "CallingModule",
@@ -61,7 +61,7 @@
             3
           ],
           "isScale": true,
-          "modelPath": "/open_explorer/data/projects/flowengine/tests/data/models/yolov5_640x640_nv12.bin",
+          "modelPath": "/root/flowengine/models/yolov5_640x640_nv12.bin",
           "name": "algorithm_handDet_1660981094167",
           "nms_thr": 0.45,
           "outputNames": [
@@ -87,7 +87,7 @@
             3
           ],
           "isScale": false,
-          "modelPath": "/open_explorer/data/projects/flowengine/tests/data/models/resnet_64x64_nv12.bin",
+          "modelPath": "/root/flowengine/models/resnet_64x64_nv12.bin",
           "name": "algorithm_phoneCls_1660981094253",
           "nms_thr": 0,
           "outputNames": [
@@ -100,17 +100,17 @@
           "algo_serial": "resnet"
         },
         {
-          "alarm_output_dir": "/public/alarm/data",
+          "alarm_output_dir": "/root/flowengine/data",
           "event_id": 2,
           "height": "1080",
           "name": "logic_calling_29_3_1660981094258",
           "page": "2",
           "recvName": "algorithm_phoneCls_1660981094253",
           "region": [
-            218,
-            168,
-            1578,
-            731
+            0,
+            0,
+            1000,
+            1000
           ],
           "sendName": "output_alarm_01_1660981094260",
           "sub_type": "CallingModule",

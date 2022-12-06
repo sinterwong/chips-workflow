@@ -91,7 +91,7 @@ bool VideoDecoder::vdec_ChnAttr_init(VDEC_CHN_ATTR_S &pVdecChnAttr, int width,
   pVdecChnAttr.u32StreamBufCnt = 3;
   // 输出buffer size，必须1024对齐
   pVdecChnAttr.u32StreamBufSize = (width * height * 3 / 2 + 1024) & ~0x3ff;
-  // 使用外部buffer
+  // HB_FALSE时使用外部buffer
   pVdecChnAttr.bExternalBitStreamBuf = HB_TRUE;
   if (enType == PT_H265) {
     // 使能带宽优化

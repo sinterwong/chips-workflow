@@ -26,9 +26,9 @@ namespace module::utils {
 class VideoManager : private common::NonCopyable {
 private:
   struct vp_param_t {
-    uint64_t mmz_paddr[5];
-    char *mmz_vaddr[5];
-    int mmz_cnt = 5;
+    uint64_t mmz_paddr[3];
+    char *mmz_vaddr[3];
+    int mmz_cnt = 3;
     int mmz_size;
   };
 
@@ -61,6 +61,17 @@ private:
     }
     return true;
   }
+
+  inline bool memory_alloc() {
+    // TODO 尝试内部模式，分配普通内存即可
+    return true;
+  }
+
+  inline bool memory_dealloc() {
+    // TODO 尝试内部模式，分配普通内存即可
+    return true;
+  }
+  
   // stream manager
   std::unique_ptr<FmpStream> reader;
   std::unique_ptr<VideoDecoder> decoder;

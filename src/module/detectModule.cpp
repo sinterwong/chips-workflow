@@ -10,10 +10,12 @@
  */
 #include "detectModule.h"
 #include "infer_utils.hpp"
+#include "logger/logger.hpp"
 #include <cstddef>
 #include <cstdlib>
 #include <memory>
 #include <opencv2/core/mat.hpp>
+#include <opencv2/imgcodecs.hpp>
 
 namespace module {
 
@@ -29,14 +31,6 @@ DetectModule::DetectModule(Backend *ptr, const std::string &initName,
 
   detector = ObjectFactory::createObject<infer::vision::Detection>(
       params.algorithmSerial, params, modelInfo);
-  // if (params.algorithmSerial == "yolo") {
-  //   detector = std::make_shared<infer::vision::Yolo>(params, modelInfo);
-  // } else if (params.algorithmSerial == "assd") {
-  //   detector = std::make_shared<infer::vision::Assd>(params, modelInfo);
-  // } else {
-  //   FLOWENGINE_LOGGER_ERROR("Error algorithm serial {}",
-  //                           params.algorithmSerial);
-  // }
   if (detector == nullptr) {
     FLOWENGINE_LOGGER_ERROR("Error algorithm serial {}",
                             params.algorithmSerial);
@@ -59,18 +53,16 @@ void DetectModule::forward(std::vector<forwardMessage> &message) {
     }
     auto frameBufMessage = backendPtr->pool->read(buf.key);
 
-    std::shared_ptr<cv::Mat> image =
+    auto image =
         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
 
     if (type == "logic") {
-      if (count++ < 5) {
+      if (count++ < 5)
         return;
-      }
       count = 0;
-      cv::Rect2i region{
-          buf.logicInfo.region[0], buf.logicInfo.region[1],
-          buf.logicInfo.region[2] - buf.logicInfo.region[0],
-          buf.logicInfo.region[3] - buf.logicInfo.region[1]};
+      cv::Rect2i region{buf.logicInfo.region[0], buf.logicInfo.region[1],
+                        buf.logicInfo.region[2] - buf.logicInfo.region[0],
+                        buf.logicInfo.region[3] - buf.logicInfo.region[1]};
       cv::Mat inferImage;
       if (region.area() != 0) {
         infer::utils::cropImage(*image, inferImage, region, buf.frameType);
@@ -84,12 +76,11 @@ void DetectModule::forward(std::vector<forwardMessage> &message) {
       FrameInfo frame;
       frame.data = reinterpret_cast<void **>(&inferImage.data);
       frame.shape = ret.shape;
+      cv::imwrite("DetectionModule_infer.jpg", inferImage);
       if (!instance->infer(frame, &output)) {
         continue;
       }
-
       detector->processOutput(&output, ret);
-
       for (auto &rbbox : ret.detResults) {
         // retBox b{}
         retBox b = {name,

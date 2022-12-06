@@ -179,7 +179,15 @@ void NV12toRGB(cv::Mat const &nv12, cv::Mat &output) {
   cv::cvtColor(nv12, output, CV_YUV2RGB_NV12);
 }
 
-bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect) {
+bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect, float sr) {
+    if (sr > 0) {
+    int sw = rect.width * sr;
+    int sh = rect.height * sr;
+    rect.x = std::max(0, rect.x - sw / 2);
+    rect.y = std::max(0, rect.y - sh / 2);
+    rect.width = std::min(input.cols, rect.width + sw);
+    rect.height = std::min(input.rows, rect.height + sh);
+  }
   output = input(rect).clone();
   return true;
 }
@@ -190,25 +198,17 @@ bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
     FLOWENGINE_LOGGER_ERROR("cropImage is failed: error region!");
     return false;
   }
-  if (sr > 0) {
-    int sw = rect.width * sr;
-    int sh = rect.height * sr;
-    rect.x = std::max(0, rect.x - sw / 2);
-    rect.y = std::max(0, rect.y - sh / 2);
-    rect.width = std::min(input.cols, rect.width + sw);
-    rect.height = std::min(input.rows, rect.height + sh);
-  }
   switch (type) {
   case common::ColorType::RGB888:
   case common::ColorType::BGR888: {
-    crop(input, output, rect);
+    crop(input, output, rect, sr);
     break;
   }
   case common::ColorType::NV12: {
     // TODO 等实现了nv12专门的crop后替换此处的转换，目前的开销是不可接受的
     cv::Mat temp;
     NV12toRGB(input, temp);
-    crop(temp, output, rect);
+    crop(temp, output, rect, sr);
     RGB2NV12(output, output);
     break;
   }
