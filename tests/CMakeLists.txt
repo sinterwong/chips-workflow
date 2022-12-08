@@ -56,7 +56,7 @@ FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
     STRING(REPLACE ".cpp" "" testname ${sourcefilewithoutpath})
     ADD_EXECUTABLE( ${testname} ${sourcefile})
-    TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} module_logger utils stdc++fs)
+    TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} core module_logger utils stdc++fs)
     SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin/tests)
 
     INSTALL(TARGETS ${testname}

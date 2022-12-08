@@ -25,10 +25,10 @@
 
 #if (TARGET_PLATFORM == 0)
 #include "x3/videoManager.hpp"
-using namespace module::utils;
 #elif (TARGET_PLATFORM == 1)
 #include "jetson/videoManager.hpp"
 #endif
+using namespace module::utils;
 
 namespace module {
 
@@ -53,8 +53,6 @@ public:
   void step() override;
 
   static void delBuffer(std::vector<std::any> &);
-
-  std::any getFrameInfo(std::vector<std::any> &, FrameBuf *);
 
   std::any getMatBuffer(std::vector<std::any> &list, FrameBuf *buf);
 

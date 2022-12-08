@@ -10,7 +10,7 @@
           "name": "stream_a71a203c-d0aa-4c7f-80c0-6296c997525b",
           "recvName": "",
           "sendName": "logic_calling_29_3_1660981094258",
-          "sub_type": "StreamGenerator",
+          "sub_type": "StreamModule",
           "type": "stream",
           "videoCode": "h264",
           "width": 1920
@@ -23,7 +23,7 @@
           "name": "stream_a71a203c-d0aa-4c7f-80c0-6296c997525b",
           "recvName": "",
           "sendName": "output_stream_status_1660981094261",
-          "sub_type": "StreamGenerator",
+          "sub_type": "StreamModule",
           "type": "stream",
           "videoCode": "h264",
           "width": 1920
@@ -60,7 +60,7 @@
             640,
             3
           ],
-          "isScale": true,
+          "isScale": false,
           "modelPath": "/home/wangxt/workspace/projects/flowengine/tests/data/model/handdetn.engine",
           "name": "algorithm_handDet_1660981094167",
           "nms_thr": 0.45,

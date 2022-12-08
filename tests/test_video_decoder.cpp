@@ -1,11 +1,7 @@
 #include "gflags/gflags.h"
-#include "joining_thread.h"
 #include "logger/logger.hpp"
-#include "pipeline.hpp"
-#include <cassert>
 #include <chrono>
 #include <opencv2/imgcodecs.hpp>
-#include <thread>
 
 #if (TARGET_PLATFORM == 0)
 #include "x3/videoManager.hpp"
@@ -31,7 +27,7 @@ int main(int argc, char **argv) {
   FLOWENGINE_LOGGER_INFO("Video manager has initialized!");
   vm.run();
   FLOWENGINE_LOGGER_INFO("Video manager is running!");
-  std::this_thread::sleep_for(30ms);
+  std::this_thread::sleep_for(10s);
   auto image = vm.getcvImage();
   FLOWENGINE_LOGGER_CRITICAL("Saving image..");
   cv::imwrite("vm_out.jpg", image);

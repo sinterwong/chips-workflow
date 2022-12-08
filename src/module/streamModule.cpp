@@ -12,12 +12,8 @@
 #include "streamModule.h"
 #include "logger/logger.hpp"
 #include "messageBus.h"
-#include "x3/videoManager.hpp"
-#include <any>
 #include <array>
-#include <cstddef>
 #include <memory>
-#include <opencv2/imgproc/types_c.h>
 #include <opencv2/opencv.hpp>
 #include <unordered_map>
 #include <utility>
@@ -109,8 +105,12 @@ void StreamModule::forward(std::vector<forwardMessage> &message) {
   }
 
   queueMessage sendMessage;
+  cv::Mat frame = vm->getcvImage();
+  if (frame.empty()) {
+    return;
+  }
   FrameBuf fbm =
-      makeFrameBuf(vm->getcvImage(), vm->getHeight(), vm->getWidth());
+      makeFrameBuf(std::move(frame), vm->getHeight(), vm->getWidth());
   int returnKey = backendPtr->pool->write(fbm);
 
   sendMessage.frameType = vm->getType();
