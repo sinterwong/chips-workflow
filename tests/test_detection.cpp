@@ -6,6 +6,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 #if (TARGET_PLATFORM == 0)
+#include "hb_vp_api.h"
 #include "x3/x3_inference.hpp"
 using namespace infer::x3;
 #elif (TARGET_PLATFORM == 1)
@@ -26,6 +27,20 @@ int main(int argc, char **argv) {
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
+#if (TARGET_PLATFORM == 0)
+  // 推理时需要将数据拷贝到HB_MEM中，因此在这之前需要完成初始化
+  VP_CONFIG_S struVpConf;
+  memset(&struVpConf, 0x00, sizeof(VP_CONFIG_S));
+  struVpConf.u32MaxPoolCnt = 4; // 整个系统中可以容纳缓冲池的个数
+  HB_VP_SetConfig(&struVpConf);
+  int s32Ret = HB_VP_Init();
+  if (!s32Ret) {
+    FLOWENGINE_LOGGER_INFO("hb_vp_init success");
+  } else {
+    FLOWENGINE_LOGGER_ERROR("hb_vp_init failed, ret: {}", s32Ret);
+    return -1;
+  }
+#endif
   // TODO 根据不同平台，给出不同的类型
   cv::Mat image = cv::imread(FLAGS_image_path);
 

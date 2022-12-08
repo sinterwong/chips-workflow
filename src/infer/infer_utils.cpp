@@ -16,6 +16,7 @@
 #include <array>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgproc/types_c.h>
+#include <string>
 #include <type_traits>
 namespace infer {
 namespace utils {
@@ -128,10 +129,9 @@ void YUV2BGR(const cv::Mat y, const cv::Mat u, const cv::Mat v,
 void YV12toNV12(cv::Mat const &input, cv::Mat &output) {
   int width = input.cols;
   int height = input.rows * 2 / 3;
-  int stride =
-      (int)input.step[0]; // Rows bytes stride - in most cases equal to width
-
-  input.copyTo(output);
+  // Rows bytes stride - in most cases equal to width
+  int stride = (int)input.step[0];
+  cv::Mat temp = input.clone();
 
   // Y Channel
   //  YYYYYYYYYYYYYYYY
@@ -147,7 +147,7 @@ void YV12toNV12(cv::Mat const &input, cv::Mat &output) {
   //  VVVVVVVV
   cv::Mat inV =
       cv::Mat(cv::Size(width / 2, height / 2), CV_8UC1,
-              (unsigned char *)input.data + stride * height,
+              (unsigned char *)temp.data + stride * height,
               stride / 2); // Input V color channel (in YV12 V is above U).
 
   // U Input channel
@@ -156,7 +156,7 @@ void YV12toNV12(cv::Mat const &input, cv::Mat &output) {
   //  UUUUUUUU
   cv::Mat inU =
       cv::Mat(cv::Size(width / 2, height / 2), CV_8UC1,
-              (unsigned char *)input.data + stride * height +
+              (unsigned char *)temp.data + stride * height +
                   (stride / 2) * (height / 2),
               stride / 2); // Input V color channel (in YV12 U is below V).
 
@@ -170,9 +170,9 @@ void YV12toNV12(cv::Mat const &input, cv::Mat &output) {
 
 // template<typename common::ColorType Src=common::ColorType::RGB888>
 void RGB2NV12(cv::Mat const &input, cv::Mat &output) {
-  cv::Mat temp;
-  cv::cvtColor(input, temp, cv::COLOR_RGB2YUV_YV12);
-  YV12toNV12(temp, output);
+  // 这里图片的宽高必须是偶数，否则直接卡死这里
+  cv::cvtColor(input, output, cv::COLOR_RGB2YUV_YV12);
+  YV12toNV12(output, output);
 }
 
 void NV12toRGB(cv::Mat const &nv12, cv::Mat &output) {
@@ -180,13 +180,19 @@ void NV12toRGB(cv::Mat const &nv12, cv::Mat &output) {
 }
 
 bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect, float sr) {
-    if (sr > 0) {
+  if (sr > 0) {
     int sw = rect.width * sr;
     int sh = rect.height * sr;
     rect.x = std::max(0, rect.x - sw / 2);
     rect.y = std::max(0, rect.y - sh / 2);
-    rect.width = std::min(input.cols, rect.width + sw);
-    rect.height = std::min(input.rows, rect.height + sh);
+    rect.width = std::min(input.cols - rect.x, rect.width + sw);
+    rect.height = std::min(input.rows - rect.y, rect.height + sh);
+  }
+  // width 和 height 如果为奇数的话至少是1，因此可以直接操作
+  if (rect.width % 2 != 0)
+    rect.width -= 1;
+  if (rect.height % 2 != 0) {
+    rect.height -= 1;
   }
   output = input(rect).clone();
   return true;
@@ -206,9 +212,8 @@ bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
   }
   case common::ColorType::NV12: {
     // TODO 等实现了nv12专门的crop后替换此处的转换，目前的开销是不可接受的
-    cv::Mat temp;
-    NV12toRGB(input, temp);
-    crop(temp, output, rect, sr);
+    NV12toRGB(input, output);
+    crop(output, output, rect, sr);
     RGB2NV12(output, output);
     break;
   }

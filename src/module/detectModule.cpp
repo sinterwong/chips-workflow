@@ -64,19 +64,27 @@ void DetectModule::forward(std::vector<forwardMessage> &message) {
                         buf.logicInfo.region[2] - buf.logicInfo.region[0],
                         buf.logicInfo.region[3] - buf.logicInfo.region[1]};
       cv::Mat inferImage;
+      infer::Result ret;
       if (region.area() != 0) {
         infer::utils::cropImage(*image, inferImage, region, buf.frameType);
+        ret.shape = {region.width, region.height, 3};
       } else {
         inferImage = image->clone();
+        // FLOWENGINE_LOGGER_CRITICAL("image shape: {}x{}",
+        //                            buf.cameraResult.widthPixel,
+        //                            buf.cameraResult.heightPixel);
+        // FLOWENGINE_LOGGER_CRITICAL("input shape: {}x{}", inferImage.cols,
+        //                            inferImage.rows);
+
+        ret.shape = {buf.cameraResult.widthPixel, buf.cameraResult.heightPixel,
+                     3};
       }
-      infer::Result ret;
-      ret.shape = {inferImage.cols, inferImage.rows, 3};
+      // cv::imwrite("detectmodule.jpg", inferImage);
       void *outputs[modelInfo.output_count];
       void *output = reinterpret_cast<void *>(outputs);
       FrameInfo frame;
       frame.data = reinterpret_cast<void **>(&inferImage.data);
       frame.shape = ret.shape;
-      cv::imwrite("DetectionModule_infer.jpg", inferImage);
       if (!instance->infer(frame, &output)) {
         continue;
       }
@@ -100,7 +108,7 @@ void DetectModule::forward(std::vector<forwardMessage> &message) {
                           static_cast<int>(bbox.second[3] - bbox.second[1])};
           infer::utils::cropImage(*image, inferImage, rect, buf.frameType);
           infer::Result ret;
-          ret.shape = {inferImage.cols, inferImage.rows, 3};
+          ret.shape = {rect.width, rect.height, 3};
           FrameInfo frame;
           frame.data = reinterpret_cast<void **>(&inferImage.data);
           frame.shape = ret.shape;

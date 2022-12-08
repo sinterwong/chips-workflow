@@ -110,18 +110,7 @@ bool AlgoInference::initialize() {
     HB_CHECK_SUCCESS(hbSysAllocCachedMem(&mem, out_aligned_size),
                      "hbSysAllocCachedMem is failed!");
   }
-  // VP_CONFIG_S struVpConf;
-  // memset(&struVpConf, 0x00, sizeof(VP_CONFIG_S));
-  // struVpConf.u32MaxPoolCnt = 4; // 整个系统中可以容纳缓冲池的个数
-  // HB_VP_SetConfig(&struVpConf);
-  // int ret = HB_VP_Init();
-  // if (!ret) {
-  //   FLOWENGINE_LOGGER_INFO("hb_vp_init success");
-  // } else {
-  //   FLOWENGINE_LOGGER_ERROR("hb_vp_init failed, ret: {}", ret);
-  //   return false;
-  // }
-  // 按照文档来说，推理来说一定需要分配HB内存
+  // Note: 调用HB_SYS_Alloc之前需要先初始化VP_Pool
   int s32Ret =
       HB_SYS_Alloc(&mmz_paddr, (void **)&mmz_vaddr, MAX_SIZE * BUFFER_NUM);
   if (s32Ret) {
@@ -135,6 +124,8 @@ bool AlgoInference::infer(FrameInfo &input, void **outputs) {
   int height = input.shape.at(1);
   int width = input.shape.at(0);
   hb_char **data = reinterpret_cast<hb_char **>(input.data);
+
+  // cv::imwrite("infer.jpg", cv::Mat(height * 3 / 2, width, CV_8UC1, data[0]));
 
   // memcpy((void *)mmz_vaddr[0], (void *)data[0], height * width);
   // memcpy((void *)mmz_vaddr[1], (void *)data[1], height / 2 * width);

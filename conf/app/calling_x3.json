@@ -38,8 +38,8 @@
           "region": [
             0,
             0,
-            1000,
-            1000
+            0,
+            0
           ],
           "sendName": "algorithm_handDet_1660981094167",
           "sub_type": "CallingModule",
@@ -60,7 +60,7 @@
             640,
             3
           ],
-          "isScale": true,
+          "isScale": false,
           "modelPath": "/root/flowengine/models/yolov5_640x640_nv12.bin",
           "name": "algorithm_handDet_1660981094167",
           "nms_thr": 0.45,
@@ -82,8 +82,8 @@
             "data"
           ],
           "inputShape": [
-            128,
-            128,
+            64,
+            64,
             3
           ],
           "isScale": false,
@@ -109,8 +109,8 @@
           "region": [
             0,
             0,
-            1000,
-            1000
+            0,
+            0
           ],
           "sendName": "output_alarm_01_1660981094260",
           "sub_type": "CallingModule",

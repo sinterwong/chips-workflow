@@ -53,23 +53,26 @@ void ClassifierModule::forward(std::vector<forwardMessage> &message) {
       return;
     }
     auto frameBufMessage = backendPtr->pool->read(buf.key);
-    std::shared_ptr<cv::Mat> image = std::make_shared<cv::Mat>(
-        std::any_cast<cv::Mat>(frameBufMessage.read("Mat")));
+    auto image =
+        std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
+
     if (type == "logic") {
-      if (count++ < 5) 
+      if (count++ < 5)
         return;
       count = 0;
       cv::Rect2i region{buf.logicInfo.region[0], buf.logicInfo.region[1],
                         buf.logicInfo.region[2] - buf.logicInfo.region[0],
                         buf.logicInfo.region[3] - buf.logicInfo.region[1]};
       cv::Mat inferImage;
+      infer::Result ret;
       if (region.area() != 0) {
         infer::utils::cropImage(*image, inferImage, region, buf.frameType);
+        ret.shape = {region.width, region.height, 3};
       } else {
         inferImage = image->clone();
+        ret.shape = {buf.cameraResult.widthPixel, buf.cameraResult.heightPixel,
+                     3};
       }
-      infer::Result ret;
-      ret.shape = {inferImage.cols, inferImage.rows, 3};
       void *outputs[modelInfo.output_count];
       void *output = reinterpret_cast<void *>(outputs);
       FrameInfo frame;
@@ -87,7 +90,6 @@ void ClassifierModule::forward(std::vector<forwardMessage> &message) {
                    static_cast<float>(ret.classResult.first)}};
       buf.algorithmResult.bboxes.emplace_back(std::move(b));
     } else if (type == "algorithm") {
-      cv::Mat inferImage;
       for (size_t i = 0; i < buf.algorithmResult.bboxes.size(); i++) {
         auto &bbox = buf.algorithmResult.bboxes.at(i);
 
@@ -96,11 +98,11 @@ void ClassifierModule::forward(std::vector<forwardMessage> &message) {
                           static_cast<int>(bbox.second[1]),
                           static_cast<int>(bbox.second[2] - bbox.second[0]),
                           static_cast<int>(bbox.second[3] - bbox.second[1])};
+          cv::Mat inferImage;
           infer::utils::cropImage(*image, inferImage, rect, buf.frameType, 0.5);
-          cv::cvtColor(inferImage, inferImage, cv::COLOR_RGB2BGR);
-          // cv::imwrite("temp.jpg", inferImage);
+          // cv::imwrite("classmodule.jpg", inferImage);
           infer::Result ret;
-          ret.shape = {inferImage.cols, inferImage.rows, 3};
+          ret.shape = {rect.width, rect.height, 3};
           FrameInfo frame;
           frame.data = reinterpret_cast<void **>(&inferImage.data);
           frame.shape = ret.shape;

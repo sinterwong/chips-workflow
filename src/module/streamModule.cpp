@@ -59,7 +59,7 @@ void StreamModule::step() {
   if (!vm->isRunning()) {
     return;
   }
-  FLOWENGINE_LOGGER_CRITICAL("Stream forward!");
+  // FLOWENGINE_LOGGER_CRITICAL("Stream forward!");
   forward(message);
   afterForward();
 }

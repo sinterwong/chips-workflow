@@ -39,7 +39,7 @@ private:
   std::string config;
   utils::ConfigParser configParser;
   Backend backend{std::make_unique<BoostMessage>(),
-                  std::make_unique<RouteFramePool>(8)};
+                  std::make_unique<RouteFramePool>(2)};
   // std::unique_ptr<thread_pool> pool;
   std::unique_ptr<thread_pool> pool;
   std::unordered_map<std::string, std::shared_ptr<Module>> atm;
