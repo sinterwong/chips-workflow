@@ -19,7 +19,7 @@ namespace infer {
 
 /**
  * @brief 检测结果
- * 
+ *
  */
 struct alignas(float) DetectionResult {
   // x y w h
@@ -29,23 +29,29 @@ struct alignas(float) DetectionResult {
   float class_confidence;
 };
 
+using ClsRet = std::pair<int, float>;
+using DetRet = std::vector<DetectionResult>;
+using Points = std::array<int, 3>;
+using PoseRet = std::vector<Points>;
+
 /**
  * @brief infer的结果
- * 
+ *
  */
 struct Result {
-  std::vector<DetectionResult> detResults;
-  std::pair<int, float> classResult;
+  DetRet detResults;
+  ClsRet classResult;
+  // PoseRet poseResults;
   std::array<int, 3> shape;
 };
 
 /**
  * @brief 模型的基础信息（模型装载后可以获取）
- * 
+ *
  */
-struct ModelInfo{
-  int output_count;  // 输出的个数
-  std::vector<std::vector<int>> outputShapes;  // 输出的尺度
+struct ModelInfo {
+  int output_count;                           // 输出的个数
+  std::vector<std::vector<int>> outputShapes; // 输出的尺度
 };
 
 } // namespace infer

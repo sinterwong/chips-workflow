@@ -18,9 +18,8 @@
 namespace infer {
 namespace vision {
 
-void Yolo::generateBoxes(
-    std::unordered_map<int, std::vector<DetectionResult>> &m,
-    void **outputs) const {
+void Yolo::generateBoxes(std::unordered_map<int, DetRet> &m,
+                         void **outputs) const {
   float **output = reinterpret_cast<float **>(*outputs);
   for (int i = 0; i < modelInfo.output_count; ++i) {
     int numAnchors = modelInfo.outputShapes[i].at(1);
@@ -39,7 +38,7 @@ void Yolo::generateBoxes(
       det.det_confidence = output[i][real_idx];
       memcpy(&det, &output[i][j], 5 * sizeof(float));
       if (m.count(det.class_id) == 0)
-        m.emplace(det.class_id, std::vector<DetectionResult>());
+        m.emplace(det.class_id, DetRet());
       m[det.class_id].push_back(det);
     }
   }

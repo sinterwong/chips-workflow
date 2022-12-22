@@ -15,12 +15,12 @@
 
 namespace infer {
 namespace vision {
-void Assd::generateBoxes(
-    std::unordered_map<int, std::vector<DetectionResult>> &m,
-    void **outputs) const {
+void Assd::generateBoxes(std::unordered_map<int, DetRet> &m,
+                         void **outputs) const {
 
   float **output = static_cast<float **>(*outputs);
-  assert(static_cast<int>(modelInfo.outputShapes.size()) == modelInfo.output_count);
+  assert(static_cast<int>(modelInfo.outputShapes.size()) ==
+         modelInfo.output_count);
 
   // TODO Re-implement
   for (int i = 0; i < modelInfo.output_count; ++i) {
@@ -84,7 +84,7 @@ void Assd::generateBoxes(
 
           if (m.count(det.class_id) == 0) {
             // 目前还没有该类别，需要初始化一下
-            m.emplace(det.class_id, std::vector<DetectionResult>());
+            m.emplace(det.class_id, DetRet());
           }
           m[det.class_id].push_back(det);
         }

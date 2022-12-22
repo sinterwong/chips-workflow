@@ -35,9 +35,7 @@ float iou(std::array<float, 4> const &lbox, std::array<float, 4> const &rbox) {
   return interBoxS / (lbox[2] * lbox[3] + rbox[2] * rbox[3] - interBoxS);
 }
 
-void nms(std::vector<DetectionResult> &res,
-         std::unordered_map<int, std::vector<DetectionResult>> &m,
-         float nms_thr) {
+void nms(DetRet &res, std::unordered_map<int, DetRet> &m, float nms_thr) {
   for (auto it = m.begin(); it != m.end(); it++) {
     // std::cout << it->second[0].class_id << " --- " << std::endl;
     auto &dets = it->second;
@@ -55,8 +53,7 @@ void nms(std::vector<DetectionResult> &res,
   }
 }
 
-void renderOriginShape(std::vector<DetectionResult> &results,
-                       std::array<int, 3> const &shape,
+void renderOriginShape(DetRet &results, std::array<int, 3> const &shape,
                        std::array<int, 3> const &inputShape, bool isScale) {
   float rw, rh;
   if (isScale) {

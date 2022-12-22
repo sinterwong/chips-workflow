@@ -46,7 +46,7 @@ public:
 
 protected:
   virtual void
-  generateBoxes(std::unordered_map<int, std::vector<DetectionResult>> &,
+  generateBoxes(std::unordered_map<int, DetRet> &,
                 void **) const = 0;
 };
 } // namespace vision

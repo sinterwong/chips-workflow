@@ -1,16 +1,16 @@
 /**
- * @file classifier.hpp
+ * @file pose.hpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief
+ * @brief 
  * @version 0.1
- * @date 2022-11-14
- *
+ * @date 2022-12-22
+ * 
  * @copyright Copyright (c) 2022
- *
+ * 
  */
-
-#ifndef __INFERENCE_VISION_CLASSIFIER_H_
-#define __INFERENCE_VISION_CLASSIFIER_H_
+#ifndef __INFERENCE_VISION_POSE_H_
+#define __INFERENCE_VISION_POSE_H_
+#include "core/factory.hpp"
 #include "vision.hpp"
 #include <unordered_map>
 #include <vector>
@@ -18,12 +18,13 @@
 namespace infer {
 namespace vision {
 
-class Classifier : public Vision {
+class Pose : public Vision {
   //!
   //! \brief construction
   //!
 public:
-  Classifier(const common::AlgorithmConfig &_param, ModelInfo const &_info) : Vision(_param, _info) {}
+  Pose(const common::AlgorithmConfig &_param, ModelInfo const &_info)
+      : Vision(_param, _info) {}
 
   //!
   //! \brief ProcessInput that the input is correct for infer
@@ -42,27 +43,6 @@ public:
   //!
   virtual bool verifyOutput(Result const &) const override;
 
-private:
-  ClsRet softmax_argmax(float *output, int outputSize) const {
-    float val{0.0};
-    int idx{0};
-
-    // Calculate Softmax
-    float sum{0.0};
-    for (int i = 0; i < outputSize; i++) {
-      // std::cout << output[i] << std::endl;
-      // output[i] = exp(output[i]);
-      sum += output[i];
-    }
-    for (int i = 0; i < outputSize; i++) {
-      output[i] /= sum; // 获取概率值
-      if (val < output[i]) {
-        val = output[i];
-        idx = i;
-      }
-    }
-    return ClsRet{idx, val};
-  }
 };
 } // namespace vision
 } // namespace infer
