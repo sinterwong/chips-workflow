@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/2/28.
-//
-
 #ifndef METAENGINE_RKMEDIARTSPMODULE_H
 #define METAENGINE_RKMEDIARTSPMODULE_H
 
@@ -58,13 +54,13 @@ public:
                       int height,
                       const std::string &initName,
                       const std::string &initType,
-                      const std::vector<std::string> &recv = {},
-                      const std::vector<std::string> &send = {}       );
+                      
+                             );
 
     ~RKMediaRTSPModule();
 
     void
-    forward(std::vector<forwardMessage> message) override;
+    forward(std::vector<forwardMessage> &message) override;
 };
 
 

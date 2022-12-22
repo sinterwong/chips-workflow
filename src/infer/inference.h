@@ -10,26 +10,12 @@
  */
 #ifndef __INFERENCE_H_
 #define __INFERENCE_H_
-#include <opencv2/opencv.hpp>
-#include <vector>
+#include "infer_common.hpp"
 #include <array>
-#include "common/common.hpp"
+
+using common::FrameInfo;
 
 namespace infer {
-
-struct alignas(float) DetectionResult {
-  // x y w h
-  std::array<float, 4> bbox;  // [x1, y1, x2, y2]
-  float det_confidence;
-  float class_id;
-  float class_confidence;
-};
-
-struct Result {
-  std::vector<DetectionResult> detResults;
-  std::pair<int, float> classResult;
-  std::array<int, 3> shape;
-};
 
 class Inference {
 public:
@@ -42,12 +28,17 @@ public:
   //!
   //! \brief Runs the inference engine with input of void*
   //!
-  virtual bool infer(void*, Result &) = 0;
+  virtual bool infer(FrameInfo &, void **) = 0;
 
   //!
-  //! \brief Runs the inference engine with input of Mat
+  //! \brief ProcessInput that the input is correct for infer
   //!
-  // virtual bool infer(cv::Mat&, Result &) = 0;
+  virtual bool processInput(void *) = 0;
+
+  //!
+  //! \brief Outside can get model information after model initialize
+  //!
+  virtual void getModelInfo(ModelInfo &) const = 0;
 };
 } // namespace infer
 #endif

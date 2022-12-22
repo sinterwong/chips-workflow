@@ -37,6 +37,8 @@ MACRO(LOAD_BOOST)
 ENDMACRO()
 
 MACRO(LOAD_OPENCV)
+    SET(OPENCV_HOME ${3RDPARTY_DIR}/opencv)
+    LIST(APPEND CMAKE_PREFIX_PATH ${OPENCV_HOME}/lib/cmake)
     FIND_PACKAGE(OpenCV CONFIG REQUIRED opencv_core opencv_highgui opencv_video opencv_imgcodecs opencv_imgproc)
     IF(OpenCV_INCLUDE_DIRS)
         MESSAGE(STATUS "Opencv library status:")
@@ -48,9 +50,13 @@ MACRO(LOAD_OPENCV)
 ENDMACRO()
 
 MACRO(LOAD_CUDA)
-    SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/src/module/jetson_utils/cuda" )
+    # SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/src/module/jetson-utils/cuda" )
+    SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${3RDPARTY_ROOT}/jetson-utils/cuda")
     FIND_PACKAGE(CUDA)
     MESSAGE("-- CUDA version: ${CUDA_VERSION}")
+    MESSAGE("-- CUDA CUDA_TOOLKIT_ROOT_DIR: ${CUDA_TOOLKIT_ROOT_DIR}")
+    MESSAGE("-- CUDA CUDA_CUDART_LIBRARY: ${CUDA_CUDART_LIBRARY}")
+    MESSAGE("-- CUDA CUDA_INCLUDE_DIRS : ${CUDA_INCLUDE_DIRS}")
     SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}; -O3)
 
     IF(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
@@ -69,6 +75,8 @@ MACRO(LOAD_CUDA)
 	    LINK_DIRECTORIES(/usr/lib/aarch64-linux-gnu/tegra)
     ENDIF()
 ENDMACRO()
+
+
 
 MACRO(LOAD_FMT)
     FIND_FILE(FMT_INCLUDE_DIR include ${3RDPARTY_DIR}/fmt NO_DEFAULT_PATH)
@@ -212,4 +220,42 @@ MACRO(LOAD_TENGINE)
     ELSE()
         MESSAGE(FATAL_ERROR "TENGINE_LIBS not found!")
     ENDIF()
+ENDMACRO()
+
+MACRO(LOAD_Jetson)
+    LOAD_OPENCV()
+    LOAD_OPENSSL()
+    LOAD_CURL()
+    LOAD_PROTOBUF()
+    LOAD_CUDA()
+ENDMACRO()
+
+MACRO(LOAD_X3)
+    # define dnn lib path
+    LOAD_OPENCV()
+    LOAD_OPENSSL()
+    LOAD_CURL()
+    SET(DNN_PATH "/root/.horizon/ddk/xj3_aarch64/dnn/")
+    SET(APPSDK_PATH "/root/.horizon/ddk/xj3_aarch64/appsdk/appuser/")
+    SET(DNN_LIB_PATH ${DNN_PATH}/lib)
+    SET(BPU_libs dnn cnn_intf hbrt_bernoulli_aarch64)
+    SET(HB_MEDIA_libs vio hbmedia avcodec avformat avutil)
+    INCLUDE_DIRECTORIES(
+        ${DNN_PATH}/include
+        ${APPSDK_PATH}/include
+        ${APPSDK_PATH}/include/vio
+        ${APPSDK_PATH}/include/libmm
+    )
+    LINK_DIRECTORIES(
+        ${DNN_LIB_PATH}
+        ${APPSDK_PATH}/lib
+        ${APPSDK_PATH}/lib/hbbpu
+        ${APPSDK_PATH}/lib/hbmedia
+    )
+    LINK_LIBRARIES(
+        ${BPU_libs}
+        ${HB_MEDIA_libs}
+        rt
+        dl
+    )
 ENDMACRO()

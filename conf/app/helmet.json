@@ -10,7 +10,7 @@
           "name": "stream_615328e4-45e4-47d8-a04f-3b7612bba74e",
           "recvName": "",
           "sendName": "logic_helmet_5_1661996691485",
-          "sub_type": "JetsonSourceModule",
+          "sub_type": "StreamGenerator",
           "type": "stream",
           "videoCode": "h264",
           "width": 1920
@@ -23,7 +23,7 @@
           "name": "stream_615328e4-45e4-47d8-a04f-3b7612bba74e",
           "recvName": "",
           "sendName": "output_stream_status_1661749862683",
-          "sub_type": "JetsonSourceModule",
+          "sub_type": "StreamGenerator",
           "type": "stream",
           "videoCode": "h264",
           "width": 1920
@@ -48,7 +48,7 @@
           "width": "1080"
         },
         {
-          "algo_serial": "assd",
+          "algo_serial": "Assd",
           "alpha": 0,
           "batchSize": 1,
           "beta": 0,
@@ -62,7 +62,7 @@
             3
           ],
           "isScale": false,
-          "modelPath": "/opt/deploy/models/headdet_assd.engine",
+          "modelPath": "/opt/deploy/models/headdet_Assd.engine",
           "name": "algorithm_headDet_1661996691410",
           "nms_thr": 0.45,
           "outputNames": [

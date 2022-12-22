@@ -33,15 +33,13 @@ private:
 
 public:
   JetsonOutputModule(Backend *ptr, const std::string &uri,
-                     const std::string &initName, const std::string &initType,
-                     const std::vector<std::string> &recv = {},
-                     const std::vector<std::string> &send = {});
+                     const std::string &initName, const std::string &initType);
   ~JetsonOutputModule() {
     // delete outputStream;
     // outputStream = nullptr;
   }
 
-  virtual void forward(std::vector<forwardMessage> message) override;
+  virtual void forward(std::vector<forwardMessage> &message) override;
 };
 } // namespace module
 #endif // __METAENGINE_JETSON_OUTPUT_H

@@ -25,5 +25,7 @@ logs/
 cmake-build-debug/
 cmake-build-debug-remote-host/
 tests/data
-.vscode/
 .cache
+3rdparty/target/linux_aarch64
+3rdparty/target/linux_x86_64
+.vscode/settings.json

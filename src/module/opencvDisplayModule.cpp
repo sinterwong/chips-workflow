@@ -1,23 +1,17 @@
-//
-// Created by Wallel on 2022/2/22.
-//
-
 #include "opencvDisplayModule.h"
 
 namespace module {
 OpencvDisplayModule::OpencvDisplayModule(Backend *ptr,
                                          const std::string &initName,
-                                         const std::string &initType,
-                                         const std::vector<std::string> &recv,
-                                         const std::vector<std::string> &send)
-    : Module(ptr, initName, initType, recv, send) {}
+                                         const std::string &initType)
+    : Module(ptr, initName, initType) {}
 
-void OpencvDisplayModule::forward(std::vector<forwardMessage> message) {
+void OpencvDisplayModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     assert(type == "stream");
-    int height, width;
-    height = buf.cameraResult.heightPixel;
-    width = buf.cameraResult.widthPixel;
+    // int height, width;
+    // height = buf.cameraResult.heightPixel;
+    // width = buf.cameraResult.widthPixel;
 
     auto frameBufMessage = backendPtr->pool->read(buf.key);
     auto framePtr = std::any_cast<cv::Mat>(frameBufMessage.read("Mat"));
@@ -27,6 +21,5 @@ void OpencvDisplayModule::forward(std::vector<forwardMessage> message) {
   }
 }
 FlowEngineModuleRegister(OpencvDisplayModule, Backend *, std::string const &,
-                         std::string const &, std::vector<std::string> const &,
-                         std::vector<std::string> const &);
+                         std::string const &);
 } // namespace module

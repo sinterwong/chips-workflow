@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/2/28.
-//
-
 #include "RKMediaVOModule.h"
 
 RKMediaVOModule::RKMediaVOModule(Backend *ptr,
@@ -10,9 +6,9 @@ RKMediaVOModule::RKMediaVOModule(Backend *ptr,
                                  std::tuple<int, int> screenSize,
                                  const std::string &initName,
                                  const std::string &initType,
-                                 const std::vector<std::string> &recv,
-                                 const std::vector<std::string> &send      )
-        : Module(ptr, initName, initType, recv, send)
+                                 
+                                       )
+        : Module(ptr, initName, initType)
 {
     bool ret;
     initSuccess = true;
@@ -54,7 +50,7 @@ RKMediaVOModule::~RKMediaVOModule()
 }
 
 void RKMediaVOModule::forward(
-        std::vector<forwardMessage> message)
+        std::vector<forwardMessage> &message)
 {
     bool ret;
     for (auto&[send, type, buf]: message)

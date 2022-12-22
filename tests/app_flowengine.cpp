@@ -18,8 +18,8 @@
 
 #include "common/common.hpp"
 #include "logger/logger.hpp"
-#include "module.hpp"
-#include "pipeline.hpp"
+#include "core/module.hpp"
+#include "module/pipeline.hpp"
 
 #include "license/licenseVerifier.hpp"
 
@@ -32,7 +32,6 @@ using namespace module;
 // using common::WORKER_TYPES;
 
 int main(int argc, char **argv) {
-  FlowEngineLoggerInit(true, true, true, true);
   gflags::SetUsageMessage("some usage message");
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -110,10 +109,8 @@ int main(int argc, char **argv) {
   }
 #endif
   std::shared_ptr<PipelineModule> pipeline(std::make_shared<PipelineModule>(FLAGS_config_path, FLAGS_num_workers));
-
   pipeline->run();
   gflags::ShutDownCommandLineFlags();
-  FlowEngineLoggerDrop();
   return 0;
 }
 

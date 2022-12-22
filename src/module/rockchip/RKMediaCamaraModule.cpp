@@ -5,9 +5,9 @@ RKMediaCameraModule::RKMediaCameraModule(Backend *ptr,
                                          const std::string &iqfile,
                                          const std::string &initName,
                                          const std::string &initType,
-                                         const std::vector<std::string> &recv,
-                                         const std::vector<std::string> &send    )
-        : Module(ptr, initName, initType, recv, send)
+                                         
+                                             )
+        : Module(ptr, initName, initType)
 {
     bool ret;
     initSuccess = true;
@@ -96,7 +96,7 @@ RKMediaCameraModule::RKMediaCameraModule(Backend *ptr,
 }
 
 void RKMediaCameraModule::forward(
-        std::vector<forwardMessage> message)
+        std::vector<forwardMessage> &message)
 {
     backendPtr->pool->checkSize();
     mb = RK_MPI_SYS_GetMediaBuffer(RK_ID_RGA, 0, -1);

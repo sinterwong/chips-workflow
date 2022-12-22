@@ -10,6 +10,7 @@
  */
 
 #include "callingModule.h"
+#include "logger/logger.hpp"
 #include <cstdlib>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -18,10 +19,8 @@ namespace module {
 
 CallingModule::CallingModule(Backend *ptr, const std::string &initName,
                              const std::string &initType,
-                             const common::LogicConfig &logicConfig,
-                             const std::vector<std::string> &recv,
-                             const std::vector<std::string> &send)
-    : LogicModule(ptr, initName, initType, logicConfig, recv, send) {}
+                             const common::LogicConfig &logicConfig)
+    : LogicModule(ptr, initName, initType, logicConfig) {}
 
 /**
  * @brief
@@ -30,18 +29,15 @@ CallingModule::CallingModule(Backend *ptr, const std::string &initName,
  *
  * @param message
  */
-void CallingModule::forward(std::vector<forwardMessage> message) {
+void CallingModule::forward(std::vector<forwardMessage> &message) {
   if (recvModule.empty()) {
     return;
   }
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      // FLOWENGINE_LOGGER_INFO("{} CallingModule module was done!", name);
-      std::cout << name << "CallingModule module was done!" << std::endl;
+      FLOWENGINE_LOGGER_INFO("{} CallingModule module was done!", name);
       stopFlag.store(true);
-      if (outputStream && outputStream->IsStreaming()) {
-        outputStream->Close();
-      }
+      destoryOutputStream();
       return;
     }
     if (isRecord) {
@@ -55,14 +51,16 @@ void CallingModule::forward(std::vector<forwardMessage> message) {
     if (type == "algorithm") {
       // 此处根据 buf.algorithmResult 写吸烟的逻辑并填充 buf.alarmResult 信息
       // 如果符合条件就发送至AlarmOutputModule
-      for (int i = 0; i < buf.algorithmResult.bboxes.size(); i++) {
+      for (int i = 0; i < static_cast<int>(buf.algorithmResult.bboxes.size());
+           i++) {
         auto &bbox = buf.algorithmResult.bboxes.at(i);
         if (bbox.first != send) {
           continue;
         }
-        // std::cout << "classid: " << bbox.second.at(5) << ", "
-        //           << "confidence: " << bbox.second.at(4) << std::endl;
+        // FLOWENGINE_LOGGER_CRITICAL("classid: {}, confidence: {}",
+        //                            bbox.second.at(5), bbox.second.at(4));
         if (bbox.second.at(5) == 2 && bbox.second.at(4) > 0.8) {
+          // if (bbox.second.at(4) > 0.8) {
           // 生成报警信息和报警图
           generateAlarm(buf, "存在打电话行为", bbox);
 
@@ -70,11 +68,11 @@ void CallingModule::forward(std::vector<forwardMessage> message) {
           sendWithTypes(buf, {"output"});
 
           // 保存视频
-          if (params.videDuration > 0) {
-            initRecord(buf);
-          }
+          // if (params.videDuration > 0) {
+          //   initRecord(buf);
+          // }
+          break;
         }
-        break;
       }
     } else if (type == "stream") {
       // 配置算法推理时需要用到的信息
@@ -87,7 +85,5 @@ void CallingModule::forward(std::vector<forwardMessage> message) {
 }
 
 FlowEngineModuleRegister(CallingModule, Backend *, std::string const &,
-                         std::string const &, common::LogicConfig const &,
-                         std::vector<std::string> const &,
-                         std::vector<std::string> const &);
+                         std::string const &, common::LogicConfig const &);
 } // namespace module

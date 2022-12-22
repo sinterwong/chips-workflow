@@ -23,7 +23,7 @@
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 
-#include "common/common.hpp"
+#include "common/config.hpp"
 #include "logger/logger.hpp"
 #include "module.hpp"
 
@@ -41,10 +41,8 @@ protected:
 public:
   OutputModule(Backend *ptr, const std::string &initName,
                const std::string &initType,
-               const common::OutputConfig &outputConfig_,
-               const std::vector<std::string> &recv = {},
-               const std::vector<std::string> &send = {})
-      : Module(ptr, initName, initType, recv, send),
+               const common::OutputConfig &outputConfig_)
+      : Module(ptr, initName, initType),
         config(std::move(outputConfig_)) {}
   ~OutputModule() {}
 };

@@ -1,7 +1,13 @@
-//
-// Created by Wallel on 2022/2/16.
-//
-
+/**
+ * @file routeFramePool.cpp
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.2
+ * @date 2022-06-30
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include "routeFramePool.h"
 #include <shared_mutex>
 #include <utility>

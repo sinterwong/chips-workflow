@@ -15,12 +15,31 @@
 #include <string>
 #include <vector>
 
-#include "config.hpp"
-
 #ifndef _FLOWENGINE_COMMON_COMMON_HPP_
 #define _FLOWENGINE_COMMON_COMMON_HPP_
 
 namespace common {
+/**
+ * @brief 颜色类型
+ *
+ */
+enum class ColorType { RGB888 = 0, BGR888, NV12 };
+
+/**
+ * @brief 帧信息
+ *
+ */
+struct FrameInfo {
+  std::array<int, 3> shape;
+  ColorType type;
+  void **data;
+};
+
+struct NonCopyable {
+  NonCopyable() = default;
+  NonCopyable(const NonCopyable &) = delete;
+  NonCopyable &operator=(const NonCopyable &) = delete;
+};
 
 } // namespace common
 #endif
