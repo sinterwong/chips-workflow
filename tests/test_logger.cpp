@@ -2,7 +2,7 @@
 
 int main()
 {
-    FlowEngineLoggerInit(true, true, true, true);
+    // FlowEngineLoggerInit(true, true, true, true);
 
     FLOWENGINE_LOGGER_TRACE("hello logger, {}", 2020);
     FLOWENGINE_LOGGER_DEBUG("hello logger, {}", 2020);

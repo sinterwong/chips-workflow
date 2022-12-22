@@ -1,7 +1,13 @@
-//
-// Created by Wallel on 2021/12/26.
-//
-
+/**
+ * @file messageBus.h
+ * @author Sinter Wong (sintercver@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2022-06-30
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #ifndef DETTRACKENGINE_MESSAGEBUS_H
 #define DETTRACKENGINE_MESSAGEBUS_H
 
@@ -15,6 +21,9 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include "common/common.hpp"
+
+using common::ColorType;
 
 /**
  * @brief bbox result type
@@ -82,7 +91,7 @@ struct queueMessage {
   std::string send; // 上游模块名称
   std::string recv;
   std::string messageType;
-  std::string frameType;
+  ColorType frameType;
   LogicInfo logicInfo;
   AlarmResult alarmResult;
   CameraResult cameraResult;

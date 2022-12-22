@@ -1,12 +1,12 @@
 /**
  * @file module.hpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.3
  * @date 2022-09-05
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #ifndef FLOWCORE_MODULE_HPP
@@ -17,8 +17,8 @@
 #include <vector>
 
 #include "backend.h"
+#include "factory.hpp"
 #include "logger/logger.hpp"
-#include "moduleFactory.hpp"
 
 namespace module {
 using forwardMessage = std::tuple<std::string, std::string, queueMessage>;
@@ -44,14 +44,11 @@ protected:
 public:
   std::atomic_bool stopFlag;
 
-  Module(Backend *ptr, const std::string &initName, const std::string &initType,
-         const std::vector<std::string> &recv = {},
-         const std::vector<std::string> &send = {}) {
-    backendPtr = ptr;
-    name = initName;
-    type = initType;
-    recvModule = recv;
-    sendModule = send;
+  Module(Backend *ptr, const std::string &initName, const std::string &initType)
+      : backendPtr(ptr), name(initName), type(initType){
+    // backendPtr = ptr;
+    // name = initName;
+    // type = initType;
 
     stopFlag.store(false);
     backendPtr->message->registered(name);
@@ -65,7 +62,7 @@ public:
 
   virtual void beforeForward(){};
 
-  virtual void forward(std::vector<forwardMessage> message) = 0;
+  virtual void forward(std::vector<forwardMessage> &message) = 0;
 
   virtual void afterForward(){};
 
@@ -87,10 +84,10 @@ public:
         std::string Msend, Mtype;
         queueMessage Mbyte;
         backendPtr->message->recv(name, flag, Msend, Mtype, Mbyte, true);
-// #ifdef _DEBUG
-//         assert(flag == MessageBus::returnFlag::successWithMore ||
-//                flag == MessageBus::returnFlag::successWithEmpty);
-// #endif
+        // #ifdef _DEBUG
+        //         assert(flag == MessageBus::returnFlag::successWithMore ||
+        //                flag == MessageBus::returnFlag::successWithEmpty);
+        // #endif
         auto iter = hash.find(Msend);
         if (iter == hash.end()) {
           hash.insert(std::make_pair(Msend, message.size()));
@@ -101,7 +98,7 @@ public:
         }
         loop = flag == MessageBus::returnFlag::successWithMore;
       }
-      // std::this_thread::sleep_for(std::chrono::microseconds(100));
+      std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
     beforeForward();
 

@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/2/28.
-//
-
 #include "RKMediaRTSPModule.h"
 
 // rtsp
@@ -32,9 +28,9 @@ RKMediaRTSPModule::RKMediaRTSPModule(Backend *ptr,
                                      int height,
                                      const std::string &initName,
                                      const std::string &initType,
-                                     const std::vector<std::string> &recv,
-                                     const std::vector<std::string> &send)
-        : Module(ptr, initName, initType, recv, send)
+                                     
+                                     )
+        : Module(ptr, initName, initType)
 {
     bool ret;
     initSuccess = true;
@@ -153,7 +149,7 @@ RKMediaRTSPModule::~RKMediaRTSPModule()
 }
 
 void RKMediaRTSPModule::forward(
-        std::vector<forwardMessage> message)
+        std::vector<forwardMessage> &message)
 {
     for (auto&[send, type, buf]: message)
     {

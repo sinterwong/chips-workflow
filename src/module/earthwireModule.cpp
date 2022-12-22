@@ -18,10 +18,8 @@ namespace module {
 
 EarthwireModule::EarthwireModule(Backend *ptr, const std::string &initName,
                                  const std::string &initType,
-                                 const common::LogicConfig &logicConfig,
-                                 const std::vector<std::string> &recv,
-                                 const std::vector<std::string> &send)
-    : LogicModule(ptr, initName, initType, logicConfig, recv, send) {}
+                                 const common::LogicConfig &logicConfig)
+    : LogicModule(ptr, initName, initType, logicConfig) {}
 
 /**
  * @brief
@@ -30,7 +28,7 @@ EarthwireModule::EarthwireModule(Backend *ptr, const std::string &initName,
  *
  * @param message
  */
-void EarthwireModule::forward(std::vector<forwardMessage> message) {
+void EarthwireModule::forward(std::vector<forwardMessage> &message) {
   if (recvModule.empty()) {
     return;
   }
@@ -53,7 +51,7 @@ void EarthwireModule::forward(std::vector<forwardMessage> message) {
     if (type == "algorithm") {
       // 此处根据 buf.algorithmResult 写吸烟的逻辑并填充 buf.alarmResult 信息
       // 如果符合条件就发送至AlarmOutputModule
-      for (int i = 0; i < buf.algorithmResult.bboxes.size(); i++) {
+      for (int i = 0; i < static_cast<int>(buf.algorithmResult.bboxes.size()); i++) {
         auto &bbox = buf.algorithmResult.bboxes.at(i);
         if (bbox.first != send) {
           continue;
@@ -85,7 +83,5 @@ void EarthwireModule::forward(std::vector<forwardMessage> message) {
 }
 
 FlowEngineModuleRegister(EarthwireModule, Backend *, std::string const &,
-                         std::string const &, common::LogicConfig const &,
-                         std::vector<std::string> const &,
-                         std::vector<std::string> const &);
+                         std::string const &, common::LogicConfig const &);
 } // namespace module

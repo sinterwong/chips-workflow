@@ -11,7 +11,7 @@
 
 #include "pipeline.hpp"
 #include "module.hpp"
-#include "moduleFactory.hpp"
+#include "factory.hpp"
 #include <algorithm>
 #include <memory>
 #include <unordered_map>
@@ -31,31 +31,27 @@ bool PipelineModule::submitModule(ModuleConfigure const &config,
                                   ParamsConfig const &paramsConfig) {
   switch (paramsConfig.GetKind()) {
   case common::ConfigType::Algorithm: { // Algorithm
-    atm[config.moduleName] = ModuleFactory::createModule<Module>(
+    atm[config.moduleName] = ObjectFactory::createObject<Module>(
         config.typeName, &backend, config.moduleName, config.ctype,
-        paramsConfig.GetAlgorithmConfig(), std::vector<std::string>{name},
-        std::vector<std::string>());
+        paramsConfig.GetAlgorithmConfig());
     break;
   }
   case common::ConfigType::Logic: { // Logic
-    atm[config.moduleName] = ModuleFactory::createModule<Module>(
+    atm[config.moduleName] = ObjectFactory::createObject<Module>(
         config.typeName, &backend, config.moduleName, config.ctype,
-        paramsConfig.GetLogicConfig(), std::vector<std::string>{name},
-        std::vector<std::string>());
+        paramsConfig.GetLogicConfig());
     break;
   }
   case common::ConfigType::Output: { // Output
-    atm[config.moduleName] = ModuleFactory::createModule<Module>(
+    atm[config.moduleName] = ObjectFactory::createObject<Module>(
         config.typeName, &backend, config.moduleName, config.ctype,
-        paramsConfig.GetOutputConfig(), std::vector<std::string>{name},
-        std::vector<std::string>());
+        paramsConfig.GetOutputConfig());
     break;
   }
   case common::ConfigType::Stream: { // Stream
-    atm[config.moduleName] = ModuleFactory::createModule<Module>(
+    atm[config.moduleName] = ObjectFactory::createObject<Module>(
         config.typeName, &backend, config.moduleName, config.ctype,
-        paramsConfig.GetCameraConfig(), std::vector<std::string>{name},
-        std::vector<std::string>());
+        paramsConfig.GetCameraConfig());
     break;
   }
   default: {
@@ -68,6 +64,7 @@ bool PipelineModule::submitModule(ModuleConfigure const &config,
               << std::endl;
     exit(-1);
   }
+  atm[config.moduleName]->addRecvModule(name);  // 关联上控制模块
 
   pool->submit(&Module::go, atm.at(config.moduleName));
   return true;
@@ -137,7 +134,7 @@ void PipelineModule::stopModule(std::string const &moduleName) {
   backend.message->send(name, moduleName, type, queueMessage());
 
   // 从atm中删除对象
-  int num = atm.erase(moduleName);
+  atm.erase(moduleName);
 }
 
 bool PipelineModule::startPipeline() {

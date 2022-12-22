@@ -1,18 +1,12 @@
-//
-// Created by Wallel on 2022/3/10.
-//
-
 #include "serialModule.h"
-#include "frameMessage.pb.h"
+// #include "frameMessage.pb.h"
 
 namespace module {
 serialModule::serialModule(Backend *ptr, const std::string &initName,
-                           const std::string &initType,
-                           const std::vector<std::string> &recv,
-                           const std::vector<std::string> &send)
-    : Module(ptr, initName, initType, recv, send) {}
+                           const std::string &initType)
+    : Module(ptr, initName, initType) {}
 
-void serialModule::forward(std::vector<forwardMessage> message) {
+void serialModule::forward(std::vector<forwardMessage> &message) {
   // tutorial::FrameMessage buf;
   //    char ch = getchar();
   //    tutorial::FrameMessage buf;
@@ -29,6 +23,5 @@ void serialModule::forward(std::vector<forwardMessage> message) {
   //    autoSend(buf.SerializeAsString());
 }
 FlowEngineModuleRegister(serialModule, Backend *, std::string const &,
-                         std::string const &, std::vector<std::string> const &,
-                         std::vector<std::string> const &);
+                         std::string const &);
 } // namespace module

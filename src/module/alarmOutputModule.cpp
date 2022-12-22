@@ -19,10 +19,8 @@ namespace module {
 
 AlarmOutputModule::AlarmOutputModule(Backend *ptr, const std::string &initName,
                                      const std::string &initType,
-                                     const common::OutputConfig &outputConfig,
-                                     const std::vector<std::string> &recv,
-                                     const std::vector<std::string> &send)
-    : OutputModule(ptr, initName, initType, outputConfig, recv, send) {}
+                                     const common::OutputConfig &outputConfig)
+    : OutputModule(ptr, initName, initType, outputConfig) {}
 
 bool AlarmOutputModule::postResult(std::string const &url,
                                    AlarmInfo const &alarmInfo,
@@ -88,6 +86,10 @@ bool AlarmOutputModule::postResult(std::string const &url,
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 
   CURLcode response = curl_easy_perform(curl);
+  if (!response) {
+    std::cout << "[AlarmOutputModule]: curl_easy_perform error code: " << response << std::endl;
+    return false;
+  }
 
   // end of for
   curl_easy_cleanup(curl);
@@ -103,7 +105,7 @@ bool AlarmOutputModule::writeResult(AlgorithmResult const &rm,
 
   if (!rm.bboxes.empty()) {
     rapidjson::Value bboxes(rapidjson::kArrayType);
-    for (int i = 0; i < rm.bboxes.size(); i++) {
+    for (int i = 0; i < static_cast<int>(rm.bboxes.size()); i++) {
       // create a bbox object
       rapidjson::Value bbox;
       bbox.SetObject();
@@ -122,7 +124,7 @@ bool AlarmOutputModule::writeResult(AlgorithmResult const &rm,
 
   if (!rm.polys.empty()) {
     rapidjson::Value polys(rapidjson::kArrayType);
-    for (int i = 0; i < rm.polys.size(); i++) {
+    for (int i = 0; i < static_cast<int>(rm.polys.size()); i++) {
       // create a bbox object
       rapidjson::Value polygon;
       // create coord array (x1, y1, x2, y2)
@@ -145,7 +147,7 @@ bool AlarmOutputModule::writeResult(AlgorithmResult const &rm,
   return true;
 }
 
-void AlarmOutputModule::forward(std::vector<forwardMessage> message) {
+void AlarmOutputModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
       // FLOWENGINE_LOGGER_INFO("{} AlarmOutputModule module was done!", name);
@@ -178,7 +180,5 @@ void AlarmOutputModule::forward(std::vector<forwardMessage> message) {
 }
 
 FlowEngineModuleRegister(AlarmOutputModule, Backend *, std::string const &,
-                         std::string const &, common::OutputConfig const &,
-                         std::vector<std::string> const &,
-                         std::vector<std::string> const &);
+                         std::string const &, common::OutputConfig const &);
 } // namespace module

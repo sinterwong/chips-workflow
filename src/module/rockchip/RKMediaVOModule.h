@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/2/28.
-//
-
 #ifndef METAENGINE_RKMEDIARTSPMODULE_H
 #define METAENGINE_RKMEDIARTSPMODULE_H
 
@@ -62,13 +58,13 @@ public:
                     std::tuple<int, int> screenSize,
                     const std::string &initName,
                     const std::string &initType,
-                    const std::vector<std::string> &recv = {},
-                    const std::vector<std::string> &send = {}     );
+                    
+                         );
 
     ~RKMediaVOModule();
 
     void
-    forward(std::vector<forwardMessage> message) override;
+    forward(std::vector<forwardMessage> &message) override;
 };
 
 

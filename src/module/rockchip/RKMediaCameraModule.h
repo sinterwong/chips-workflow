@@ -1,7 +1,3 @@
-//
-// Created by Wallel on 2022/2/16.
-//
-
 #ifndef METAENGINE_RKMEDIACAMERAMODULE_H
 #define METAENGINE_RKMEDIACAMERAMODULE_H
 
@@ -61,11 +57,11 @@ public:
                        const std::string &iqfile,
                        const std::string &initName,
                        const std::string &initType,
-                       const std::vector<std::string> &recv = {},
-                       const std::vector<std::string> &send = {}        );
+                       
+                               );
 
     void
-    forward(std::vector<forwardMessage> message) override;
+    forward(std::vector<forwardMessage> &message) override;
 };
 
 

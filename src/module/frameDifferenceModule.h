@@ -18,7 +18,6 @@
 #include <utility>
 
 #include "backend.h"
-#include "frameMessage.pb.h"
 #include "frame_difference.h"
 #include "module.hpp"
 
@@ -30,13 +29,11 @@ private:
 
 public:
   FrameDifferenceModule(Backend *ptr, const std::string &initName,
-                        const std::string &initType,
-                        const std::vector<std::string> &recv = {},
-                        const std::vector<std::string> &send = {});
+                        const std::string &initType);
 
   ~FrameDifferenceModule();
 
-  virtual void forward(std::vector<forwardMessage> message) override;
+  virtual void forward(std::vector<forwardMessage> &message) override;
 };
 } // namespace module
 #endif // __METAENGINE_FRAME_DIFFERENCE_MODULE_H

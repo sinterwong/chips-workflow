@@ -16,7 +16,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "common/common.hpp"
+#include "common/config.hpp"
 #include "logger/logger.hpp"
 
 #include "rapidjson/document.h"
@@ -39,17 +39,6 @@ private:
     std::make_pair("output", common::ConfigType::Output),
     std::make_pair("logic", common::ConfigType::Logic),
   };
-  // 启动模块的类型
-  std::unordered_map<std::string, std::string> moduleMapping {
-    std::make_pair("webStream", "JetsonSourceModule"),
-    std::make_pair("detection", "DetectModule"),
-    std::make_pair("classifier", "ClassifierModule"),
-    std::make_pair("statusOutput", "StatusOutputModule"),
-    std::make_pair("alarmOutput", "AlarmOutputModule"),
-    std::make_pair("calling", "CallingModule"),
-    std::make_pair("smoking", "SmokingModule")
-  };
-
 
 public:
   // ConfigParser(std::string const &url_) : url(url_) {}

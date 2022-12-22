@@ -17,20 +17,22 @@
 #include "jetson/buffers.h"
 #include "jetson/common.h"
 #include <NvInferRuntimeCommon.h>
+#include <opencv2/opencv.hpp>
 #include <array>
 #include <cmath>
 #include <memory>
+#include "common/config.hpp"
 
 #define IMAGE_MAX_SIZE 1200 * 1200 * 3
 
 namespace infer {
 namespace trt {
-class TRTInference : public Inference {
+class AlgoInference : public Inference {
 public:
   //!
   //! \brief construction
   //!
-  TRTInference(const common::AlgorithmConfig &_param) : mParams(_param) {
+  AlgoInference(const common::AlgorithmConfig &_param) : mParams(_param) {
     CHECK(cudaStreamCreate(&processStream));
     // prepare input data cache in pinned memory
     CHECK(cudaMallocHost((void **)&imageHost, IMAGE_MAX_SIZE));
@@ -41,10 +43,12 @@ public:
   //!
   //! \brief destruction
   //!
-  ~TRTInference() {
+  ~AlgoInference() {
     cudaStreamDestroy(processStream);
     CHECK(cudaFree(imageDevice));
     CHECK(cudaFreeHost(imageHost));
+    imageHost = nullptr;
+    imageDevice = nullptr;
   }
   //!
   //! \brief initialize the network
@@ -54,31 +58,19 @@ public:
   //!
   //! \brief Runs the inference engine
   //!
-  virtual bool infer(void *, Result &) override;
+  virtual bool infer(FrameInfo &, void **) override;
   // virtual bool infer(cv::Mat const&, Result &) override;
-
-private:
-  //!
-  //! \brief Resize input
-  //!
-  bool resizeInput(cv::Mat &) const;
 
   //!
   //! \brief Reads the input and mean data, preprocesses, and stores the result
   //! in a managed buffer
   //!
-  virtual bool processInput(void *, BufferManager const &,
-                            std::array<int, 3> const &) const;
+  virtual bool processInput(void *) override;
 
   //!
-  //! \brief Verifies that the output is correct and prints it
+  //! \brief Outside can get model information after model initialize
   //!
-  virtual bool verifyOutput(Result const &) const;
-
-  //!
-  //! \brief Postprocessing that the output is correct and prints it
-  //!
-  virtual bool processOutput(BufferManager const &, Result &) const;
+  virtual void getModelInfo(ModelInfo &) const override;
 
 private:
   uint8_t *imageHost = nullptr;
@@ -98,6 +90,8 @@ protected:
   std::vector<Dims> inputDims;
   //!< The dimensions of the output to the network.
   std::vector<Dims> outputDims;
+
+  std::shared_ptr<BufferManager> buffers;
 };
 } // namespace trt
 } // namespace infer
