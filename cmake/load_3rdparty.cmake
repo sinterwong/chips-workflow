@@ -235,27 +235,34 @@ MACRO(LOAD_X3)
     LOAD_OPENCV()
     LOAD_OPENSSL()
     LOAD_CURL()
-    SET(DNN_PATH "/root/.horizon/ddk/xj3_aarch64/dnn/")
-    SET(APPSDK_PATH "/root/.horizon/ddk/xj3_aarch64/appsdk/appuser/")
-    SET(DNN_LIB_PATH ${DNN_PATH}/lib)
+    # SET(APPSDK_PATH "/root/.horizon/ddk/xj3_aarch64/appsdk/appuser/")
+    SET(APPSDK_PATH "/usr")
     SET(BPU_libs dnn cnn_intf hbrt_bernoulli_aarch64)
     SET(HB_MEDIA_libs vio hbmedia avcodec avformat avutil)
-    INCLUDE_DIRECTORIES(
-        ${DNN_PATH}/include
+    SET(X3_INCLUDE 
         ${APPSDK_PATH}/include
+        ${APPSDK_PATH}/include/dnn
         ${APPSDK_PATH}/include/vio
         ${APPSDK_PATH}/include/libmm
     )
-    LINK_DIRECTORIES(
-        ${DNN_LIB_PATH}
+    SET(X3_DIRECTORIES 
         ${APPSDK_PATH}/lib
         ${APPSDK_PATH}/lib/hbbpu
         ${APPSDK_PATH}/lib/hbmedia
     )
-    LINK_LIBRARIES(
+    SET(X3_LIBS 
         ${BPU_libs}
         ${HB_MEDIA_libs}
         rt
         dl
+    )
+    INCLUDE_DIRECTORIES(
+        ${X3_INCLUDE}
+    )
+    LINK_DIRECTORIES(
+        ${X3_DIRECTORIES}
+    )
+    LINK_LIBRARIES(
+        ${X3_LIBS}
     )
 ENDMACRO()

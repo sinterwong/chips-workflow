@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 PROJECT(Tests)
-# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations -Wno-error=unused-function")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations -Wno-error=unused-function")
 INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}
     ${PROJECT_INCLUDE_DIR}/core
@@ -12,25 +12,19 @@ INCLUDE_DIRECTORIES(
     ${OPENSSL_INCLUDE_DIR}
     ${CURL_INCLUDE_DIR}
     ${CUDA_INCLUDE_DIRS}
-    ${DNN_PATH}/include
-    ${APPSDK_PATH}/include
-    ${APPSDK_PATH}/include/vio
-    ${APPSDK_PATH}/include/libmm
+    ${X3_INCLUDE}
 )
 
 LINK_DIRECTORIES(
     ${OpenCV_LIBRARY_DIR}
     ${CURL_LIBRARY_DIR}
     ${OPENSSL_LIBRARY_DIR}
-    ${DNN_LIB_PATH}
-    ${APPSDK_PATH}/lib
-    ${APPSDK_PATH}/lib/hbbpu
-    ${APPSDK_PATH}/lib/hbmedia
+    ${X3_DIRECTORIES}
 )
 SET(FE_LIBS core license module module_logger infer utils)
 IF(TARGET_HARDWARE STREQUAL "x3")
     MESSAGE(STATUS "Loading X3 dependent libraries")
-    SET(CHIPS_DEPAND_LIBS ${BPU_libs} ${HB_MEDIA_libs} rt dl)
+    SET(CHIPS_DEPAND_LIBS ${X3_LIBS})
 ELSEIF(TARGET_HARDWARE STREQUAL "jetson")
     MESSAGE(STATUS "Loading Jetson dependent libraries")
     SET(CHIPS_DEPAND_LIBS jetson_infer_cu jetson-utils)
