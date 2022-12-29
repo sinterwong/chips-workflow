@@ -31,6 +31,7 @@ ELSEIF(TARGET_HARDWARE STREQUAL "jetson")
 ELSE()
     SET(CHIPS_DEPAND_LIBS)
 ENDIF()
+
 LINK_LIBRARIES(
     ${OpenCV_LIBS}
     ${Protobuf_LIBRARY}
@@ -40,6 +41,7 @@ LINK_LIBRARIES(
     gflags::gflags
     pthread
     spdlog
+    stdc++fs
 )
 SET(LINK "-Wl,--no-as-needed")
 FILE(GLOB APP_SOURCES *.cpp)
@@ -50,7 +52,7 @@ FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
     STRING(REPLACE ".cpp" "" testname ${sourcefilewithoutpath})
     ADD_EXECUTABLE( ${testname} ${sourcefile})
-    TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} core module_logger utils stdc++fs)
+    TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} module_logger)
     SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin/tests)
 
     INSTALL(TARGETS ${testname}

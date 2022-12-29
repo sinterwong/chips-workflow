@@ -114,9 +114,8 @@ public:
   inline AvParam &getParam() { return av_param; }
 
   inline void closeStream() {
-
-    auto lv = &avpacket;
-    av_packet_free(&lv);
+    // auto lv = &avpacket;
+    // av_packet_free(&lv);
 
     if (avContext) {
       avformat_close_input(&avContext);

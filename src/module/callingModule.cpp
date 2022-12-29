@@ -57,8 +57,8 @@ void CallingModule::forward(std::vector<forwardMessage> &message) {
         if (bbox.first != send) {
           continue;
         }
-        // FLOWENGINE_LOGGER_CRITICAL("classid: {}, confidence: {}",
-        //                            bbox.second.at(5), bbox.second.at(4));
+        FLOWENGINE_LOGGER_CRITICAL("classid: {}, confidence: {}",
+                                   bbox.second.at(5), bbox.second.at(4));
         if (bbox.second.at(5) == 2 && bbox.second.at(4) > 0.8) {
           // if (bbox.second.at(4) > 0.8) {
           // 生成报警信息和报警图

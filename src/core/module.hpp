@@ -32,7 +32,7 @@ protected:
   std::string type;
 
   std::unordered_map<std::string, int> hash;
-
+  
   std::vector<forwardMessage> message;
 
   bool loop;

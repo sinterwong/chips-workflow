@@ -14,7 +14,8 @@ SET(CROSS_COMPILATION_ARCHITECTURE aarch64)
 SET(CMAKE_C_COMPILER       ${TOOLCHAIN_ROOTDIR}/aarch64-linux-gnu-gcc)
 SET(CMAKE_CXX_COMPILER     ${TOOLCHAIN_ROOTDIR}/aarch64-linux-gnu-g++)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wl,--allow-shlib-undefined")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -march=armv8-a -mcpu=cortex-a53 -Wl,--allow-shlib-undefined")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -march=armv8-a -mcpu=cortex-a53")
 set(CMAKE_CXX_FLAGS_DEBUG " -Wall -Werror -g -O0 ")
 set(CMAKE_C_FLAGS_DEBUG " -Wall -Werror -g -O0 ")
 set(CMAKE_CXX_FLAGS_RELEASE " -Wall -Werror -O3 ")
@@ -25,8 +26,8 @@ SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
-SET(CMAKE_SKIP_BUILD_RPATH TRUE)
-SET(CMAKE_SKIP_RPATH TRUE)
+# SET(CMAKE_SKIP_BUILD_RPATH TRUE)
+# SET(CMAKE_SKIP_RPATH TRUE)
 
 # set g++ param
 # -fopenmp link libgomp
