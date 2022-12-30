@@ -45,9 +45,9 @@ bool VideoManager::init() {
   if (!decoder->init(reader->getCodecType(), reader->getWidth(),
                      reader->getHeight())) {
     FLOWENGINE_LOGGER_ERROR("decoder init is failed!");
+    return false;
   }
   FLOWENGINE_LOGGER_INFO("decoder initialization is successed!");
-
   return true;
 }
 

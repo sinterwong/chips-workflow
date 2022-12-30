@@ -236,7 +236,7 @@ MACRO(LOAD_X3)
     LOAD_OPENSSL()
     LOAD_CURL()
     # SET(APPSDK_PATH "/root/.horizon/ddk/xj3_aarch64/appsdk/appuser/")
-    SET(APPSDK_PATH "/usr")
+    # # SET(APPSDK_PATH "/usr")
     SET(BPU_libs dnn cnn_intf hbrt_bernoulli_aarch64)
     SET(HB_MEDIA_libs vio hbmedia avcodec avformat avutil)
     SET(X3_INCLUDE 
