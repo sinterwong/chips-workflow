@@ -1,18 +1,17 @@
 /**
  * @file pose.hpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-12-22
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 #ifndef __INFERENCE_VISION_POSE_H_
 #define __INFERENCE_VISION_POSE_H_
 #include "core/factory.hpp"
 #include "vision.hpp"
-#include <unordered_map>
 #include <vector>
 
 namespace infer {
@@ -43,6 +42,8 @@ public:
   //!
   virtual bool verifyOutput(Result const &) const override;
 
+protected:
+  virtual void generatePoints(PoseRet &, void **) const = 0;
 };
 } // namespace vision
 } // namespace infer

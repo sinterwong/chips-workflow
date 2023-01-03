@@ -88,7 +88,6 @@ void printOutput(const ReportingOptions &reporting,
 }
 
 int main(int argc, char **argv) {
-  FlowEngineLoggerInit(true, true, true, true);
   const std::string sampleName = "TensorRT.trtexec";
 
   auto sampleTest = sample::gLogger.defineTest(sampleName, argc, argv);
@@ -304,6 +303,5 @@ int main(int argc, char **argv) {
   }
   printPerformanceProfile(options.reporting, iEnv);
 
-  FlowEngineLoggerDrop();
   return sample::gLogger.reportPass(sampleTest);
 }

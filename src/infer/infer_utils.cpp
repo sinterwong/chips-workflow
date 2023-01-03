@@ -35,26 +35,26 @@ float iou(std::array<float, 4> const &lbox, std::array<float, 4> const &rbox) {
   return interBoxS / (lbox[2] * lbox[3] + rbox[2] * rbox[3] - interBoxS);
 }
 
-void nms(DetRet &res, std::unordered_map<int, DetRet> &m, float nms_thr) {
-  for (auto it = m.begin(); it != m.end(); it++) {
+void nms(DetRet &res, std::unordered_map<int, DetRet> &temp, float nms_thr) {
+  for (auto it = temp.begin(); it != temp.end(); it++) {
     // std::cout << it->second[0].class_id << " --- " << std::endl;
     auto &dets = it->second;
     std::sort(dets.begin(), dets.end(), compare);
-    for (size_t m = 0; m < dets.size(); ++m) {
-      auto &item = dets[m];
+    for (size_t i = 0; i < dets.size(); ++i) {
+      auto &item = dets[i];
       res.push_back(item);
-      for (size_t n = m + 1; n < dets.size(); ++n) {
-        if (iou(item.bbox, dets[n].bbox) > nms_thr) {
-          dets.erase(dets.begin() + n);
-          --n;
+      for (size_t j = i + 1; j < dets.size(); ++j) {
+        if (iou(item.bbox, dets[j].bbox) > nms_thr) {
+          dets.erase(dets.begin() + j);
+          --j;
         }
       }
     }
   }
 }
 
-void renderOriginShape(DetRet &results, std::array<int, 3> const &shape,
-                       std::array<int, 3> const &inputShape, bool isScale) {
+void restoryBoxes(DetRet &results, std::array<int, 3> const &shape,
+                  std::array<int, 3> const &inputShape, bool isScale) {
   float rw, rh;
   if (isScale) {
     rw = std::min(inputShape[0] * 1.0 / shape.at(0),
@@ -76,6 +76,9 @@ void renderOriginShape(DetRet &results, std::array<int, 3> const &shape,
     ret.bbox[3] = b < shape[1] ? b : shape[1];
   }
 }
+
+void restoryPoints(PoseRet &results, std::array<int, 3> const &shape,
+                   std::array<int, 3> const &inputShape, bool isScale) {}
 
 bool resizeInput(cv::Mat &image, bool isScale, std::array<int, 2> &dstShape) {
   if (isScale) {
