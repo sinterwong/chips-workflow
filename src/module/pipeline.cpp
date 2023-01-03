@@ -10,14 +10,17 @@
  */
 
 #include "pipeline.hpp"
-#include "module.hpp"
 #include "factory.hpp"
+#include "module.hpp"
+#include "utils/configParser.hpp"
 #include <algorithm>
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
 namespace module {
+using utils::ModuleConfigure;
+using utils::ParamsConfig;
 
 PipelineModule::PipelineModule(std::string const &config_, size_t workers_n)
     : config(config_) {
@@ -64,16 +67,14 @@ bool PipelineModule::submitModule(ModuleConfigure const &config,
               << std::endl;
     exit(-1);
   }
-  atm[config.moduleName]->addRecvModule(name);  // 关联上控制模块
+  atm[config.moduleName]->addRecvModule(name); // 关联上控制模块
 
   pool->submit(&Module::go, atm.at(config.moduleName));
   return true;
 }
 
-bool PipelineModule::parseConfigs(
-    std::string const &path,
-    std::vector<std::vector<std::pair<ModuleConfigure, ParamsConfig>>>
-        &pipelines) {
+bool PipelineModule::parseConfigs(std::string const &path,
+                                  std::vector<pipelineParams> &pipelines) {
   std::string content;
   if (!configParser.readFile(path, content)) {
     FLOWENGINE_LOGGER_ERROR("config parse: read file is failed!");
@@ -149,7 +150,7 @@ bool PipelineModule::startPipeline() {
     }
   }
 
-  std::vector<std::vector<std::pair<ModuleConfigure, ParamsConfig>>> pipelines;
+  std::vector<pipelineParams> pipelines;
   if (!parseConfigs(config, pipelines)) {
     FLOWENGINE_LOGGER_ERROR("parse config error");
     return false;

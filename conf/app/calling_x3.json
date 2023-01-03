@@ -61,7 +61,7 @@
             3
           ],
           "isScale": false,
-          "modelPath": "/root/workspace/projects/flowengine/tests/data/models/yolov5_640x640_nv12.bin",
+          "modelPath": "/root/workspace/softwares/flowengine/models/yolov5_640x640_nv12.bin",
           "name": "algorithm_handDet_1660981094167",
           "nms_thr": 0.45,
           "outputNames": [
@@ -87,7 +87,7 @@
             3
           ],
           "isScale": false,
-          "modelPath": "/root/workspace/projects/flowengine/tests/data/models/resnet_64x64_nv12.bin",
+          "modelPath": "/root/workspace/softwares/flowengine/models/resnet_64x64_nv12.bin",
           "name": "algorithm_phoneCls_1660981094253",
           "nms_thr": 0,
           "outputNames": [
