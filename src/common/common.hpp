@@ -23,7 +23,7 @@ namespace common {
  * @brief 颜色类型
  *
  */
-enum class ColorType { RGB888 = 0, BGR888, NV12 };
+enum class ColorType { None = 0, RGB888, BGR888, NV12 };
 
 /**
  * @brief 帧信息

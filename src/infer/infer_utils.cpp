@@ -217,6 +217,10 @@ bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
     RGB2NV12(output, output);
     break;
   }
+  case common::ColorType::None: {
+    FLOWENGINE_LOGGER_ERROR("cropImage is failed: unknow the image ColorType!");
+    break;
+  }
   }
   return true;
 }

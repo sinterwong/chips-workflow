@@ -253,6 +253,7 @@ MACRO(LOAD_X3)
     SET(X3_LIBS 
         ${BPU_libs}
         ${HB_MEDIA_libs}
+        spcdev
         rt
         dl
     )
