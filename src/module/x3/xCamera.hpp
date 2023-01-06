@@ -76,6 +76,7 @@ public:
       FLOWENGINE_LOGGER_ERROR("sp_open_camera failed!");
       return false;
     }
+    FLOWENGINE_LOGGER_INFO("sp_open_camera is successed!");
     int yuv_size = FRAME_BUFFER_SIZE(mOptions.width, mOptions.height);
     yuv_data = reinterpret_cast<char *>(malloc(yuv_size * sizeof(char)));
     return true;

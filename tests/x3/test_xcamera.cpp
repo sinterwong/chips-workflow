@@ -8,7 +8,7 @@
 using namespace module::utils;
 
 int main(int argc, char **argv) {
-  videoOptions opt{std::string("csi://0"), -1, -1, 25, 0};
+  videoOptions opt{std::string("csi://0"), 1920, 1080, 25, 0};
   std::unique_ptr<XCamera> camera = XCamera::create(opt);
 
   void *image;
