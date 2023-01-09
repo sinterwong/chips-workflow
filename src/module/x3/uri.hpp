@@ -29,12 +29,7 @@ public:
   void Print(std::string const &prefix) const;
 
   /**
-   * Cast to C-style string (`const char*`)
-   */
-  inline std::string c_str() const { return string; }
-
-  /**
-   * Cast to C-style string (`const char*`)
+   * Cast to std::string
    */
   operator std::string () const { return string; }
 

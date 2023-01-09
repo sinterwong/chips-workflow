@@ -24,7 +24,7 @@ using namespace std::chrono_literals;
 
 namespace module::utils {
 
-class XCamera : videoSource {
+class XCamera : public videoSource {
 public:
   /**
    * Create a decoder from the provided video options.
