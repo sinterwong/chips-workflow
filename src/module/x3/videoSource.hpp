@@ -12,6 +12,7 @@
 #define __X3_VIDEO_SOURCE_H_
 
 #include "common/common.hpp"
+#include "logger/logger.hpp"
 #include "x3/uri.hpp"
 #include <algorithm>
 #include <atomic>
@@ -44,11 +45,11 @@ public:
 
   inline bool isStreaming() const noexcept { return mStreaming; }
 
-  inline size_t getWidth() const noexcept { return mOptions.width; }
+  virtual inline size_t getWidth() const noexcept { return mOptions.width; }
 
-  inline size_t getHeight() const noexcept { return mOptions.height; }
+  virtual inline size_t getHeight() const noexcept { return mOptions.height; }
 
-  inline size_t getFrameRate() const noexcept { return mOptions.frameRate; }
+  virtual inline size_t getFrameRate() const noexcept { return mOptions.frameRate; }
 
   uint64_t getLastTimestamp() const noexcept { return mLastTimestamp; }
 

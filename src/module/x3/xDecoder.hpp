@@ -44,7 +44,7 @@ public:
       FLOWENGINE_LOGGER_ERROR("XDecoder -- failed to create device!");
       return nullptr;
     }
-    FLOWENGINE_LOGGER_ERROR("XDecoder -- successfully created device!");
+    FLOWENGINE_LOGGER_INFO("XDecoder -- successfully created device!");
     return cam;
   }
 
@@ -54,6 +54,54 @@ public:
   ~XDecoder() { close(); };
 
 public:
+  virtual inline size_t getWidth() const noexcept override {
+    return stream->getWidth();
+  }
+
+  virtual inline size_t getHeight() const noexcept override {
+    return stream->getHeight();
+  }
+
+  virtual inline size_t getFrameRate() const noexcept override {
+    return stream->getRate();
+  }
+
+  virtual bool capture(void **image,
+                       size_t timeout = DEFAULT_TIMEOUT) override {
+
+    int ret = sp_decoder_get_image(decoder, yuv_data);
+    if (ret != 0) {
+      FLOWENGINE_LOGGER_WARN("sp_decoder_get_image get next frame is failed!");
+      return false;
+    }
+    // TODO 数据如何给出去? copy? 先写出来吧，这样是不安全的
+    *image = reinterpret_cast<void *>(yuv_data);
+    return true;
+  }
+
+  /**
+   * Return the interface type
+   */
+  virtual inline size_t getType() const noexcept override { return Type; }
+
+  /**
+   * Unique type identifier of decoder class.
+   */
+  static const size_t Type = (1 << 0);
+
+private:
+  XDecoder(videoOptions const &options) : videoSource(options) {}
+  const std::unordered_map<std::string, int> entypeMapping{
+      std::pair<std::string, int>("h264", SP_ENCODER_H264),
+      std::pair<std::string, int>("h265", SP_ENCODER_H265),
+      std::pair<std::string, int>("mpeg", SP_ENCODER_MJPEG),
+  };
+  std::unique_ptr<FFStream> stream;
+  void *decoder;
+  char *yuv_data;
+  void *raw_data;
+
+private:
   virtual bool open() override {
     // 启动流
     stream = std::make_unique<FFStream>(mOptions.resource);
@@ -95,42 +143,6 @@ public:
     producter->join();
   }
 
-  virtual bool capture(void **image,
-                       size_t timeout = DEFAULT_TIMEOUT) override {
-
-    int ret = sp_decoder_get_image(decoder, yuv_data);
-    if (ret != 0) {
-      FLOWENGINE_LOGGER_WARN("sp_decoder_get_image get next frame is failed!");
-      return false;
-    }
-    // TODO 数据如何给出去? copy? 先写出来吧，这样是不安全的
-    *image = reinterpret_cast<void *>(yuv_data);
-    return true;
-  }
-
-  /**
-   * Return the interface type
-   */
-  virtual inline size_t getType() const noexcept override { return Type; }
-
-  /**
-   * Unique type identifier of decoder class.
-   */
-  static const size_t Type = (1 << 0);
-
-private:
-  XDecoder(videoOptions const &options) : videoSource(options) {}
-  const std::unordered_map<std::string, int> entypeMapping{
-      std::pair<std::string, int>("h264", SP_ENCODER_H264),
-      std::pair<std::string, int>("h265", SP_ENCODER_H265),
-      std::pair<std::string, int>("mpeg", SP_ENCODER_MJPEG),
-  };
-  std::unique_ptr<FFStream> stream;
-  void *decoder;
-  char *yuv_data;
-  void *raw_data;
-
-private:
   std::unique_ptr<std::thread> producter; // 生产者
   void producting() {
     while (stream->isRunning()) {
