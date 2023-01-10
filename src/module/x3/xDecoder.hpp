@@ -53,6 +53,48 @@ public:
    */
   ~XDecoder() { close(); };
 
+public:
+  virtual bool open() override {
+    // 启动流
+    stream = std::make_unique<FFStream>(mOptions.resource);
+    if (!stream->openStream()) {
+      FLOWENGINE_LOGGER_ERROR("can't open the stream {}!",
+                              std::string(mOptions.resource));
+      return false;
+    }
+    decoder = sp_init_decoder_module();
+    int ret = sp_start_decode(decoder, "", mOptions.videoIdx,
+                              entypeMapping.at(stream->getCodecType()),
+                              stream->getWidth(), stream->getHeight());
+    if (ret != 0) {
+      FLOWENGINE_LOGGER_ERROR("sp_open_decoder failed {}!", ret);
+      return false;
+    }
+    FLOWENGINE_LOGGER_INFO("sp_open_decoder is successed!");
+    int yuv_size = FRAME_BUFFER_SIZE(mOptions.width, mOptions.height);
+    yuv_data = reinterpret_cast<char *>(malloc(yuv_size * sizeof(char)));
+
+    producter = std::make_unique<std::thread>(&XDecoder::producting, this);
+
+    return true;
+  };
+
+  /**
+   * Close the stream.
+   * @see videoSource::Close()
+   */
+  virtual inline void close() noexcept override {
+    if (decoder != nullptr) {
+      sp_stop_decode(decoder);
+      sp_release_decoder_module(decoder);
+    }
+    free(yuv_data);
+    if (stream->isRunning()) {
+      stream->closeStream();
+    }
+    producter->join();
+  }
+
   virtual bool capture(void **image,
                        size_t timeout = DEFAULT_TIMEOUT) override {
 
@@ -89,47 +131,6 @@ private:
   void *raw_data;
 
 private:
-  virtual bool open() override {
-    // 启动流
-    stream = std::make_unique<FFStream>(mOptions.resource);
-    if (!stream->openStream()) {
-      FLOWENGINE_LOGGER_ERROR("can't open the stream {}!",
-                              std::string(mOptions.resource));
-      return false;
-    }
-
-    decoder = sp_init_decoder_module();
-    int ret = sp_start_decode(decoder, "", mOptions.videoIdx,
-                              entypeMapping.at(stream->getCodecType()),
-                              stream->getWidth(), stream->getHeight());
-    std::this_thread::sleep_for(2s);
-    if (ret != 0) {
-      FLOWENGINE_LOGGER_ERROR("sp_open_decoder failed {}!", ret);
-      return false;
-    }
-    FLOWENGINE_LOGGER_INFO("sp_open_decoder is successed!");
-    int yuv_size = FRAME_BUFFER_SIZE(mOptions.width, mOptions.height);
-    yuv_data = reinterpret_cast<char *>(malloc(yuv_size * sizeof(char)));
-
-    producter = std::make_unique<std::thread>(&XDecoder::producting, this);
-
-    return true;
-  };
-
-  /**
-   * Close the stream.
-   * @see videoSource::Close()
-   */
-  virtual inline void close() noexcept override {
-    sp_stop_decode(decoder);
-    sp_release_decoder_module(decoder);
-    free(yuv_data);
-    if (stream->isRunning()) {
-      stream->closeStream();
-    }
-    producter->join();
-  }
-
   std::unique_ptr<std::thread> producter; // 生产者
   void producting() {
     while (stream->isRunning()) {

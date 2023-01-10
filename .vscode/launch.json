@@ -9,7 +9,8 @@
       // "program": "/root/workspace/projects/flowengine/build/aarch64/bin/test_detection",
       // "program": "/root/workspace/projects/flowengine/build/aarch64/bin/test_vio_module",
       // "program": "/root/workspace/projects/flowengine/build/aarch64/bin/test_opencv_rect",
-      "program": "/root/workspace/projects/flowengine/build/aarch64/bin/test_xcamera",
+      // "program": "/root/workspace/projects/flowengine/build/aarch64/bin/test_xcamera",
+      "program": "/root/workspace/projects/flowengine/build/aarch64/bin/test_decoder",
       "args": [
               //  "--config_path=/root/workspace/projects/flowengine/conf/app/calling_x3.json",
               //  "--num_workers=8",
