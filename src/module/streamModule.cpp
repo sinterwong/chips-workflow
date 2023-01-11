@@ -37,7 +37,10 @@ StreamModule::StreamModule(Backend *ptr, const std::string &initName,
 void StreamModule::beforeForward() {
   if (!vm->isRunning()) {
     if (vm->init()) {
-      vm->run();
+      FLOWENGINE_LOGGER_INFO("StreamModule video is initialized!");
+      if (vm->run()) {
+        FLOWENGINE_LOGGER_INFO("StreamModule video is opened!");
+      }
     } else {
       FLOWENGINE_LOGGER_ERROR(
           "StreamModule forward is failed, please check stream status!");

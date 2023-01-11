@@ -1,18 +1,20 @@
 /**
  * @file ffstream.hpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2023-01-09
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 #ifndef __STREAM_MANAGER_FFMPAGE_H_
 #define __STREAM_MANAGER_FFMPAGE_H_
 #include "libavutil/rational.h"
 #include "logger/logger.hpp"
+#include <mutex>
 #include <ostream>
+#include <shared_mutex>
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,15 +60,21 @@ private:
 
   static const std::unordered_map<AVCodecID, std::string> codecMapping;
 
+  std::shared_mutex m;
+
 public:
   bool openStream(); // 开启视频流
 
   int getRawFrame(void **data);
 
-  inline bool isRunning() { return isOpen.load(); };
+  inline bool isRunning() {
+    std::shared_lock<std::shared_mutex> lk(m);
+    return isOpen.load();
+  };
 
   inline int getWidth() {
     if (isRunning()) {
+      std::shared_lock<std::shared_mutex> lk(m);
       return static_cast<int>(
           avContext->streams[av_param.videoIndex]->codecpar->width);
     } else {
@@ -76,6 +84,7 @@ public:
   }
   inline int getHeight() {
     if (isRunning()) {
+      std::shared_lock<std::shared_mutex> lk(m);
       return static_cast<int>(
           avContext->streams[av_param.videoIndex]->codecpar->height);
     } else {
@@ -86,6 +95,7 @@ public:
 
   inline int getRate() {
     if (isRunning()) {
+      std::shared_lock<std::shared_mutex> lk(m);
       return static_cast<int>(
           av_q2d(avContext->streams[av_param.videoIndex]->r_frame_rate));
     } else {
@@ -97,6 +107,7 @@ public:
   inline std::string getCodecType() {
 
     if (isRunning()) {
+      std::shared_lock<std::shared_mutex> lk(m);
       auto pCodec = avcodec_find_decoder(
           avContext->streams[av_param.videoIndex]->codecpar->codec_id);
       return codecMapping.at(pCodec->id);
@@ -106,9 +117,13 @@ public:
     }
   }
 
-  inline AvParam &getParam() { return av_param; }
+  inline AvParam &getParam() {
+    std::shared_lock<std::shared_mutex> lk(m);
+    return av_param;
+  }
 
   inline void closeStream() {
+    std::lock_guard lk(m);
     // auto lv = &avpacket;
     // av_packet_free(&lv);
     av_packet_unref(&avpacket);

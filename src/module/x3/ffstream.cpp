@@ -11,6 +11,7 @@
 
 #include "ffstream.hpp"
 #include "libavcodec/avcodec.h"
+#include <mutex>
 
 using namespace std::chrono_literals;
 
@@ -143,6 +144,7 @@ bool FFStream::openStream() {
   av_dict_set(&option, "stimeout", "3000000", 0);
   av_dict_set(&option, "bufsize", "1024000", 0);
   av_dict_set(&option, "rtsp_transport", "tcp", 0);
+  std::lock_guard lk(m);
   ret = avformat_open_input(&avContext, uri.c_str(), 0, &option);
   if (ret < 0) {
     FLOWENGINE_LOGGER_INFO("avformat_open_input failed");
@@ -176,6 +178,8 @@ int FFStream::getRawFrame(void **data) {
   uint8_t *seqHeader = nullptr;
   int seqHeaderSize = 0, error = 0;
 
+  std::lock_guard lk(m);
+
   if (!avpacket.size) {
     error = av_read_frame(avContext, &avpacket);
   }
@@ -185,7 +189,6 @@ int FFStream::getRawFrame(void **data) {
     } else {
       FLOWENGINE_LOGGER_INFO("Failed to av_read_frame error(0x{})", error);
     }
-    closeStream();
     return -1;
   } else {
     if (av_param.firstPacket) {

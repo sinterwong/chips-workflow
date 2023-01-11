@@ -33,9 +33,9 @@ std::unique_ptr<videoSource> videoSource::create(videoOptions const &options) {
 
 std::string const videoSource::typeTostr(size_t type) {
   if (type == XCamera::Type)
-    return "gstCamera";
+    return "XCamera";
   else if (type == XDecoder::Type)
-    return "gstDecoder";
+    return "XDecoder";
   return "(unknown)";
 }
 

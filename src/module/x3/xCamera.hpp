@@ -14,8 +14,8 @@
 
 #include "logger/logger.hpp"
 #include "videoSource.hpp"
-#include <memory>
 #include <chrono>
+#include <memory>
 
 #include <sp_vio.h>
 #include <thread>
@@ -36,7 +36,7 @@ public:
       return nullptr;
     }
     // initialize camera (with fallback)
-    if (!cam->open()) {
+    if (!cam->init()) {
       FLOWENGINE_LOGGER_ERROR("XCamera -- failed to create device!");
       return nullptr;
     }
@@ -51,6 +51,10 @@ public:
 
   virtual bool capture(void **image,
                        size_t timeout = DEFAULT_TIMEOUT) override {
+
+    if (!mStreaming.load()) // TODO
+      if (!open())
+        return false;
 
     int ret = sp_vio_get_yuv(camera, yuv_data, mOptions.width, mOptions.height,
                              DEFAULT_TIMEOUT);
@@ -68,7 +72,6 @@ public:
    * @see videoSource::Open()
    */
   virtual bool open() override {
-    camera = sp_init_vio_module();
     int ret = sp_open_camera(camera, 0, mOptions.videoIdx % 32, &mOptions.width,
                              &mOptions.height);
     std::this_thread::sleep_for(2s);
@@ -79,6 +82,7 @@ public:
     FLOWENGINE_LOGGER_INFO("sp_open_camera is successed!");
     int yuv_size = FRAME_BUFFER_SIZE(mOptions.width, mOptions.height);
     yuv_data = reinterpret_cast<char *>(malloc(yuv_size * sizeof(char)));
+    mStreaming.store(true);
     return true;
   };
 
@@ -90,6 +94,7 @@ public:
     sp_vio_close(camera);
     sp_release_vio_module(camera);
     free(yuv_data);
+    mStreaming.store(false);
   }
 
   /**
@@ -106,6 +111,11 @@ private:
   XCamera(videoOptions const &options) : videoSource(options) {}
   void *camera;
   char *yuv_data;
+
+  bool init() {
+    camera = sp_init_vio_module();
+    return true;
+  }
 };
 
 } // namespace module::utils

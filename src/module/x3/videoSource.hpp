@@ -80,7 +80,7 @@ protected:
   videoSource(videoOptions const &options) : mOptions(options) {
     mStreaming = false;
     mLastTimestamp = 0;
-    mRawFormat = ColorType::None;
+    mRawFormat = ColorType::NV12;
   }
 };
 } // namespace module::utils
