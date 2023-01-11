@@ -85,7 +85,7 @@ void nms(std::vector<DetectionRet> &res,
   }
 }
 
-void renderOriginShape(std::vector<DetectionRet> &results,
+void restoryBoxes(std::vector<DetectionRet> &results,
                        std::array<int, 3> const &shape,
                        std::array<int, 3> const &inputShape,
                        bool isScale = true) {
@@ -635,7 +635,7 @@ int main(int argc, char **argv) {
       std::cout << "**************" << std::endl;
 
       // rect 还原成原始大小
-      renderOriginShape(bboxes, {picWidth, picHeight, 3},
+      restoryBoxes(bboxes, {picWidth, picHeight, 3},
                         {inputWidth, inputHeight, 3}, false);
 
       for (auto &bbox : bboxes) {

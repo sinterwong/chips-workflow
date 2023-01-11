@@ -63,7 +63,7 @@ void nms(std::vector<DetectionRet> &res,
   }
 }
 
-void renderOriginShape(std::vector<DetectionRet> &results,
+void restoryBoxes(std::vector<DetectionRet> &results,
                        std::array<int, 3> const &shape,
                        std::array<int, 3> const &inputShape,
                        bool isScale = true) {
@@ -226,7 +226,7 @@ int main(int argc, char **argv) {
   }
   nms(bboxes, m);
   // rect 还原成原始大小
-  renderOriginShape(bboxes, {1920, 1080, 3}, {640, 640, 3}, false);
+  restoryBoxes(bboxes, {1920, 1080, 3}, {640, 640, 3}, false);
 
   // 释放内存
   hbSysFreeMem(&(input.sysMem[0]));

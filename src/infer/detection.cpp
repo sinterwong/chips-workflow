@@ -31,7 +31,7 @@ bool Detection::processOutput(void **output, Result &result) const {
   generateBoxes(cls2bbox, output);
   utils::nms(result.detResults, cls2bbox, mParams.nms_thr);
   // rect 还原成原始大小
-  utils::renderOriginShape(result.detResults, result.shape, mParams.inputShape,
+  utils::restoryBoxes(result.detResults, result.shape, mParams.inputShape,
                            mParams.isScale);
   DetRet::iterator it = result.detResults.begin();
   // 清除掉不符合要求的框

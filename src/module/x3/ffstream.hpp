@@ -1,18 +1,20 @@
 /**
- * @file ffmstream.hpp
+ * @file ffstream.hpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
- * @date 2022-11-30
+ * @date 2023-01-09
  *
- * @copyright Copyright (c) 2022
+ * @copyright Copyright (c) 2023
  *
  */
-#ifndef __STREAM_MANAGER_FOR_FFMPAGE_H_
-#define __STREAM_MANAGER_FOR_FFMPAGE_H_
+#ifndef __STREAM_MANAGER_FFMPAGE_H_
+#define __STREAM_MANAGER_FFMPAGE_H_
 #include "libavutil/rational.h"
 #include "logger/logger.hpp"
+#include <mutex>
 #include <ostream>
+#include <shared_mutex>
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,7 +28,7 @@ extern "C" {
 
 namespace module::utils {
 
-class FmpStream {
+class FFStream {
 
   struct AvParam {
     int count = 0;
@@ -58,15 +60,21 @@ private:
 
   static const std::unordered_map<AVCodecID, std::string> codecMapping;
 
+  std::shared_mutex m;
+
 public:
   bool openStream(); // 开启视频流
 
-  int getRawFrame(void *data);
+  int getRawFrame(void **data);
 
-  inline bool isRunning() { return isOpen.load(); };
+  inline bool isRunning() {
+    std::shared_lock<std::shared_mutex> lk(m);
+    return isOpen.load();
+  };
 
   inline int getWidth() {
     if (isRunning()) {
+      std::shared_lock<std::shared_mutex> lk(m);
       return static_cast<int>(
           avContext->streams[av_param.videoIndex]->codecpar->width);
     } else {
@@ -76,6 +84,7 @@ public:
   }
   inline int getHeight() {
     if (isRunning()) {
+      std::shared_lock<std::shared_mutex> lk(m);
       return static_cast<int>(
           avContext->streams[av_param.videoIndex]->codecpar->height);
     } else {
@@ -86,6 +95,7 @@ public:
 
   inline int getRate() {
     if (isRunning()) {
+      std::shared_lock<std::shared_mutex> lk(m);
       return static_cast<int>(
           av_q2d(avContext->streams[av_param.videoIndex]->r_frame_rate));
     } else {
@@ -97,13 +107,9 @@ public:
   inline std::string getCodecType() {
 
     if (isRunning()) {
+      std::shared_lock<std::shared_mutex> lk(m);
       auto pCodec = avcodec_find_decoder(
           avContext->streams[av_param.videoIndex]->codecpar->codec_id);
-      // FLOWENGINE_LOGGER_CRITICAL("Look here for codec_type: {}",
-      // avContext->streams[av_param.videoIndex]->codecpar->codec_type);
-      // FLOWENGINE_LOGGER_CRITICAL("Look here codec id: {}", pCodec->id);
-      // FLOWENGINE_LOGGER_CRITICAL("Look here codec: {}",
-      // codecMapping.at(pCodec->id));
       return codecMapping.at(pCodec->id);
     } else {
       FLOWENGINE_LOGGER_ERROR("The stream is not opened!");
@@ -111,21 +117,25 @@ public:
     }
   }
 
-  inline AvParam &getParam() { return av_param; }
+  inline AvParam &getParam() {
+    std::shared_lock<std::shared_mutex> lk(m);
+    return av_param;
+  }
 
   inline void closeStream() {
+    std::lock_guard lk(m);
     // auto lv = &avpacket;
     // av_packet_free(&lv);
-
+    av_packet_unref(&avpacket);
     if (avContext) {
       avformat_close_input(&avContext);
     }
     isOpen.store(false);
   }
 
-  explicit FmpStream(std::string const &uri_) noexcept : uri(uri_) {}
+  explicit FFStream(std::string const &uri_) noexcept : uri(uri_) {}
 
-  ~FmpStream() noexcept { closeStream(); }
+  ~FFStream() noexcept { closeStream(); }
 };
 } // namespace module::utils
 

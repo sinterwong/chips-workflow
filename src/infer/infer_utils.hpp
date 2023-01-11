@@ -56,7 +56,12 @@ float iou(std::array<float, 4> const &, std::array<float, 4> const &);
 
 void nms(DetRet &, std::unordered_map<int, DetRet> &, float);
 
-void renderOriginShape(DetRet &results, std::array<int, 3> const &shape,
+// 复原bbox原图尺寸
+void restoryBoxes(DetRet &results, std::array<int, 3> const &shape,
+                       std::array<int, 3> const &inputShape, bool isScale);
+
+// 复原points原始尺寸
+void restoryPoints(PoseRet &results, std::array<int, 3> const &shape,
                        std::array<int, 3> const &inputShape, bool isScale);
 
 template <typename T>
