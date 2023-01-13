@@ -112,7 +112,7 @@ private:
   void *camera;
   char *yuv_data;
 
-  bool init() {
+  virtual bool init() override {
     camera = sp_init_vio_module();
     return true;
   }

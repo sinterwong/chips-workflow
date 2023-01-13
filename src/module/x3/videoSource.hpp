@@ -12,8 +12,8 @@
 #define __X3_VIDEO_SOURCE_H_
 
 #include "common/common.hpp"
+#include "x3/video_common.hpp"
 #include "logger/logger.hpp"
-#include "x3/uri.hpp"
 #include <algorithm>
 #include <atomic>
 #include <cstddef>
@@ -23,14 +23,6 @@ using common::ColorType;
 
 namespace module::utils {
 
-struct videoOptions {
-  URI resource;
-  int width;
-  int height;
-  int frameRate;
-  int videoIdx;
-};
-
 class videoSource {
 public:
   static std::unique_ptr<videoSource> create(videoOptions const &options);
@@ -39,11 +31,13 @@ public:
 
   virtual bool capture(void **image, uint64_t timeout = DEFAULT_TIMEOUT) = 0;
 
+  virtual bool init() = 0;
+
   virtual bool open() = 0;
 
   virtual void close() noexcept = 0;
 
-  inline bool isStreaming() const noexcept { return mStreaming; }
+  inline bool isStreaming() const noexcept { return mStreaming.load(); }
 
   virtual inline size_t getWidth() const noexcept { return mOptions.width; }
 
@@ -78,7 +72,7 @@ protected:
   size_t mLastTimestamp;
 
   videoSource(videoOptions const &options) : mOptions(options) {
-    mStreaming = false;
+    mStreaming.store(false);
     mLastTimestamp = 0;
     mRawFormat = ColorType::NV12;
   }
