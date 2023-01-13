@@ -24,20 +24,34 @@ private:
   std::string uri; // 流地址
   int videoId;     // 编码通道
   std::unique_ptr<videoSource> stream;
-  void* frame;
+  void *frame;
 
 public:
   bool init();
 
   bool run();
 
-  inline bool isRunning() { return stream->isStreaming(); }
+  inline bool isRunning() { return stream && stream->isStreaming(); }
 
-  inline int getHeight() { return stream->getHeight(); }
+  inline int getHeight() {
+    if (stream) {
+      return stream->getHeight();
+    }
+    return -1;
+  }
 
-  inline int getWidth() { return stream->getWidth(); }
+  inline int getWidth() {
+    if (stream) {
+      return stream->getWidth();
+    }
+    return -1;
+  }
 
-  inline int getRate() { return stream->getFrameRate(); }
+  inline int getRate() { if (stream) {
+      return stream->getFrameRate();
+    }
+    return -1;
+  }
 
   cv::Mat getcvImage();
 
