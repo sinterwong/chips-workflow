@@ -30,14 +30,14 @@ bool StatusOutputModule::postResult(std::string const &url,
   headers =
       curl_slist_append(headers, "Content-Type:application/json;charset=UTF-8");
   curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-  curl_easy_setopt(curl, CURLOPT_POST, 1); //设置为非0表示本次操作为POST
+  curl_easy_setopt(curl, CURLOPT_POST, 1); // 设置为非0表示本次操作为POST
   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
   rapidjson::Document doc;
   doc.SetObject(); // key-value 相当与map
 
   rapidjson::Document::AllocatorType &allocator =
-      doc.GetAllocator(); //获取分配器
+      doc.GetAllocator(); // 获取分配器
 
   // /*
   // Add member
@@ -61,9 +61,9 @@ bool StatusOutputModule::postResult(std::string const &url,
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 
   CURLcode response = curl_easy_perform(curl);
-  if (!response) {
-    std::cout << "[AlarmOutputModule]: curl_easy_perform error code: "
-              << response << std::endl;
+  if (response) {
+    FLOWENGINE_LOGGER_ERROR(
+        "[StatusOutputModule]: curl_easy_perform error code: {}", response);
     return false;
   }
 

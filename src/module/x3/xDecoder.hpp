@@ -70,7 +70,7 @@ public:
     mOptions.height = stream->getHeight();
     mOptions.frameRate = stream->getRate();
     FLOWENGINE_LOGGER_INFO("{} video is opened!", mOptions.resource.string);
-    int ret = sp_start_decode(decoder, "", mOptions.videoIdx,
+    int ret = sp_start_decode(decoder, "", mOptions.videoIdx % 32,
                               entypeMapping.at(stream->getCodecType()),
                               stream->getWidth(), stream->getHeight());
     if (ret != 0) {
@@ -149,7 +149,7 @@ private:
   void *raw_data;
 
 private:
-  bool init() {
+  virtual bool init() override {
     decoder = sp_init_decoder_module();
     return true;
   }
