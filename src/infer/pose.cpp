@@ -12,7 +12,6 @@
 #include "infer_utils.hpp"
 #include <algorithm>
 #include <array>
-#include <unordered_map>
 #include <vector>
 
 namespace infer {
@@ -26,6 +25,8 @@ bool Pose::processInput(cv::Mat const &input, void **output,
 }
 
 bool Pose::processOutput(void **output, Result &result) const {
+  generatePoints(result.poseResults, output);
+  
   return true;
 }
 

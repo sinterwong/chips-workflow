@@ -1,6 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 PROJECT(FlowEngine3rdparty)
 
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations")
 # NOTE: build with source
 SET(SPDLOG_BUILD_SHARED ON)
 ADD_SUBDIRECTORY(spdlog)

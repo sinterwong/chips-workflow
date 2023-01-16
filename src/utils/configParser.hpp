@@ -30,24 +30,23 @@ namespace utils {
 using common::ModuleConfigure;
 using common::ParamsConfig;
 
+using moduleParams = std::pair<ModuleConfigure, ParamsConfig>;
+using pipelineParams = std::vector<moduleParams>;
+
 class ConfigParser {
 private:
   // 配置参数类型
-  std::unordered_map<std::string, common::ConfigType> typeMapping {
-    std::make_pair("stream", common::ConfigType::Stream),
-    std::make_pair("algorithm", common::ConfigType::Algorithm),
-    std::make_pair("output", common::ConfigType::Output),
-    std::make_pair("logic", common::ConfigType::Logic),
+  std::unordered_map<std::string, common::ConfigType> typeMapping{
+      std::make_pair("stream", common::ConfigType::Stream),
+      std::make_pair("algorithm", common::ConfigType::Algorithm),
+      std::make_pair("output", common::ConfigType::Output),
+      std::make_pair("logic", common::ConfigType::Logic),
   };
 
 public:
-  // ConfigParser(std::string const &url_) : url(url_) {}
-  bool
-  parseConfig(const char *jsonstr,
-              std::vector<std::vector<std::pair<ModuleConfigure, ParamsConfig>>>
-                  &pipelinesConfigs);
+  bool parseConfig(const char *jsonstr, std::vector<pipelineParams> &pipelines);
 
-  bool readFile(std::string const &filename, std::string &result);
+  bool readFile(std::string const &filename, std::string &ret);
 
   bool writeJson(std::string const &config, std::string const &outPath);
 };

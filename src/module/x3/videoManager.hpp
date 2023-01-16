@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2022
  *
  */
-#ifndef __VIDEO_MANAGER_FOR_X3_H_
-#define __VIDEO_MANAGER_FOR_X3_H_
+#ifndef __VIDEO_MANAGER_FOR_X3_OLD_H_
+#define __VIDEO_MANAGER_FOR_X3_OLD_H_
 #include "common/common.hpp"
 #include "ffmstream.hpp"
 #include "hb_vp_api.h"
@@ -97,7 +97,7 @@ private:
 public:
   bool init();
 
-  void run();
+  bool run();
 
   inline bool isRunning() {
     return reader->isRunning() && decoder->isRunning();
@@ -123,7 +123,7 @@ public:
   explicit VideoManager(std::string const &uri_, int idx_) noexcept
       : uri(uri_), videoId(idx_) {
     reader = std::make_unique<FmpStream>(uri_);
-    decoder = std::make_unique<VideoDecoder>(idx_, vp_param.mmz_cnt);
+    decoder = std::make_unique<VideoDecoder>(idx_ % 32, vp_param.mmz_cnt);
   }
 
   ~VideoManager() noexcept {

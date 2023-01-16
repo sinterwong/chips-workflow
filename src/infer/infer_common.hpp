@@ -41,7 +41,7 @@ using PoseRet = std::vector<Points>;
 struct Result {
   DetRet detResults;
   ClsRet classResult;
-  // PoseRet poseResults;
+  PoseRet poseResults;
   std::array<int, 3> shape;
 };
 

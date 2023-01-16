@@ -58,9 +58,9 @@ void SmokingModule::forward(std::vector<forwardMessage> &message) {
         if (bbox.first != send) {
           continue;
         }
-        // std::cout << "classid: " << bbox.second.at(5) << ", "
-        //           << "confidence: " << bbox.second.at(4) << std::endl;
-        if (bbox.second.at(5) == 1 && bbox.second.at(4) > 0.9) {
+        FLOWENGINE_LOGGER_CRITICAL("classid: {}, confidence: {}",
+                                   bbox.second.at(5), bbox.second.at(4));
+        if (bbox.second.at(5) == 1 && bbox.second.at(4) > 0.8) {
           // 生成报警信息和报警图
           generateAlarm(buf, "存在吸烟行为", bbox);
 

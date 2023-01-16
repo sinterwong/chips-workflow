@@ -38,8 +38,7 @@ bool VideoManager::init() {
   }
   video.release();
   // 读取一帧之后，视频流进入streaming状态
-  bool ret = stream->Capture(&frame, 1000);
-  frame = nullptr;  // 归位
+  bool ret = stream->Open();
   return true;
 }
 

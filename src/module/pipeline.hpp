@@ -29,8 +29,7 @@
 #include <vector>
 
 namespace module {
-using common::ModuleConfigure;
-using common::ParamsConfig;
+using utils::pipelineParams;
 
 class PipelineModule {
 private:
@@ -83,9 +82,7 @@ private:
 
   bool startPipeline();
 
-  bool parseConfigs(
-      std::string const &uri,
-      std::vector<std::vector<std::pair<ModuleConfigure, ParamsConfig>>> &);
+  bool parseConfigs(std::string const &uri, std::vector<pipelineParams> &);
 
   void terminate() {
     // 向所有模块发送终止信号

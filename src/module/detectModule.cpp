@@ -66,7 +66,13 @@ void DetectModule::forward(std::vector<forwardMessage> &message) {
       cv::Mat inferImage;
       infer::Result ret;
       if (region.area() != 0) {
-        infer::utils::cropImage(*image, inferImage, region, buf.frameType);
+        if (!infer::utils::cropImage(*image, inferImage, region,
+                                     buf.frameType)) {
+          FLOWENGINE_LOGGER_ERROR("cropImage is failed, rect is {},{},{},{}",
+                                  region.x, region.y, region.width,
+                                  region.height);
+          return;
+        }
         ret.shape = {region.width, region.height, 3};
       } else {
         inferImage = image->clone();
@@ -106,7 +112,12 @@ void DetectModule::forward(std::vector<forwardMessage> &message) {
                           static_cast<int>(bbox.second[1]),
                           static_cast<int>(bbox.second[2] - bbox.second[0]),
                           static_cast<int>(bbox.second[3] - bbox.second[1])};
-          infer::utils::cropImage(*image, inferImage, rect, buf.frameType);
+          if (!infer::utils::cropImage(*image, inferImage, rect,
+                                       buf.frameType)) {
+            FLOWENGINE_LOGGER_ERROR("cropImage is failed, rect is {},{},{},{}",
+                                    rect.x, rect.y, rect.width, rect.height);
+            return;
+          }
           infer::Result ret;
           ret.shape = {rect.width, rect.height, 3};
           FrameInfo frame;

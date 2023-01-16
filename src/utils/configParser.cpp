@@ -17,10 +17,8 @@
 
 namespace utils {
 
-bool ConfigParser::parseConfig(
-    const char *jsonstr,
-    std::vector<std::vector<std::pair<ModuleConfigure, ParamsConfig>>>
-        &pipelinesConfigs) {
+bool ConfigParser::parseConfig(const char *jsonstr,
+                               std::vector<pipelineParams> &pipelinesConfigs) {
   rapidjson::Document d;
   if (d.Parse(jsonstr).HasParseError()) {
     FLOWENGINE_LOGGER_ERROR("parseJson: parse error: ", d.GetParseError());
@@ -47,7 +45,7 @@ bool ConfigParser::parseConfig(
         FLOWENGINE_LOGGER_INFO("parseJson: Pipeline if not an array....");
         return false;
       }
-      std::vector<std::pair<ModuleConfigure, ParamsConfig>> pipe;
+      pipelineParams pipe;
       for (int p = 0; p < static_cast<int>(pipeline.Size()); p++) {
 
         rapidjson::Value &params = pipeline[p];
@@ -143,8 +141,7 @@ bool ConfigParser::parseConfig(
           break;
         }
         }
-        pipe.emplace_back(std::pair<ModuleConfigure, ParamsConfig>{
-            std::move(mc), std::move(pc)});
+        pipe.emplace_back(moduleParams{std::move(mc), std::move(pc)});
       }
       if (!pipe.empty()) {
         pipelinesConfigs.emplace_back(pipe);
