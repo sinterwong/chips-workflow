@@ -24,6 +24,7 @@
 #include "logger/logger.hpp"
 #include "module.hpp"
 #include "module_utils.hpp"
+#include "infer_utils.hpp"
 
 #if (TARGET_PLATFORM == 0)
 #include "x3/videoRecord.hpp"
@@ -138,8 +139,20 @@ public:
     if (params.isDraw) {
       // 临时画个图（后续根据前端参数来决定返回的图片是否带有画图标记）
       showImage = frame->clone();
-      if (buf.frameType == ColorType::RGB888) {
-        cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
+      switch (buf.frameType) {
+        case ColorType::BGR888:
+          break;
+        case ColorType::RGB888: {
+          cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
+          break;
+        }
+        case ColorType::NV12: {
+          infer::utils::NV12toRGB(showImage, showImage);
+          cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
+          break;
+        }
+        case ColorType::None:
+          break;
       }
     } else {
       showImage = *frame;

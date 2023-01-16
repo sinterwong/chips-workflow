@@ -10,6 +10,7 @@
  */
 
 #include "alarmOutputModule.h"
+#include "logger/logger.hpp"
 #include "messageBus.h"
 #include "outputModule.h"
 #include <fstream>
@@ -86,8 +87,8 @@ bool AlarmOutputModule::postResult(std::string const &url,
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 
   CURLcode response = curl_easy_perform(curl);
-  if (!response) {
-    std::cout << "[AlarmOutputModule]: curl_easy_perform error code: " << response << std::endl;
+  if (response) {
+    FLOWENGINE_LOGGER_ERROR("[AlarmOutputModule]: curl_easy_perform error code: {}", response);
     return false;
   }
 
