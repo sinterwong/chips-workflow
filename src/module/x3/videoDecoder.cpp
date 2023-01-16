@@ -23,30 +23,30 @@ using namespace std::chrono_literals;
 
 namespace module::utils {
 
-// const static bool isInit = []() -> bool {
-//   // 编码、解码模块初始化，整个应用中需要调用一次
-//   auto ret = HB_VDEC_Module_Init();
-//   if (ret) {
-//     FLOWENGINE_LOGGER_ERROR("HB_VDEC_Module_Init is failed!");
-//     return false;
-//   }
-//   FLOWENGINE_LOGGER_INFO("HB_VDEC_Module_Init ok!");
-//   ret = x3_vp_init();
-//   if (ret) {
-//     FLOWENGINE_LOGGER_ERROR("x3_vp_init is failed!");
-//     HB_VDEC_Module_Uninit();
-//     return false;
-//   }
-//   FLOWENGINE_LOGGER_INFO("x3_vp_init ok!");
-//   return true;
-// }();
+const static bool isInit = []() -> bool {
+  // 编码、解码模块初始化，整个应用中需要调用一次
+  auto ret = HB_VDEC_Module_Init();
+  if (ret) {
+    FLOWENGINE_LOGGER_ERROR("HB_VDEC_Module_Init is failed!");
+    return false;
+  }
+  FLOWENGINE_LOGGER_INFO("HB_VDEC_Module_Init ok!");
+  ret = x3_vp_init();
+  if (ret) {
+    FLOWENGINE_LOGGER_ERROR("x3_vp_init is failed!");
+    HB_VDEC_Module_Uninit();
+    return false;
+  }
+  FLOWENGINE_LOGGER_INFO("x3_vp_init ok!");
+  return true;
+}();
 
 std::unordered_map<std::string, PAYLOAD_TYPE_E> const
     VideoDecoder::entypeMapping = {std::make_pair("h264", PT_H264),
                                    std::make_pair("h265", PT_H265)};
 
 bool VideoDecoder::init(std::string const &type_, int width_, int height_) {
-  // assert(isInit);
+  assert(isInit);
   type = type_;
   width = width_;
   height = height_;
