@@ -11,6 +11,7 @@
 
 #ifndef __INFERENCE_VISION_CLASSIFIER_H_
 #define __INFERENCE_VISION_CLASSIFIER_H_
+#include "logger/logger.hpp"
 #include "vision.hpp"
 #include <unordered_map>
 #include <vector>
@@ -48,12 +49,15 @@ private:
     int idx{0};
 
     // Calculate Softmax
-    float sum{0.0};
+    float sum = 0.;
+    // FLOWENGINE_LOGGER_INFO("outputSize: {}", outputSize);
     for (int i = 0; i < outputSize; i++) {
-      // std::cout << output[i] << std::endl;
-      // output[i] = exp(output[i]);
+      // FLOWENGINE_LOGGER_INFO("before val: {}", output[i]);
+      output[i] = std::exp(output[i]);
+      // FLOWENGINE_LOGGER_INFO("after val: {}", output[i]);
       sum += output[i];
     }
+    // FLOWENGINE_LOGGER_INFO("**********");
     for (int i = 0; i < outputSize; i++) {
       output[i] /= sum; // 获取概率值
       if (val < output[i]) {
