@@ -33,7 +33,6 @@ ClassifierModule::ClassifierModule(Backend *ptr, const std::string &initName,
   instance = std::make_shared<AlgoInference>(params);
   instance->initialize();
 
-  infer::ModelInfo modelInfo;
   instance->getModelInfo(modelInfo);
   classifier = std::make_shared<infer::vision::Classifier>(params, modelInfo);
 }

@@ -12,8 +12,8 @@
       // "program": "/root/workspace/projects/flowengine/build/aarch64/bin/test_xcamera",
       // "program": "/root/workspace/projects/flowengine/build/aarch64/bin/test_decoder",
       "args": [
-               "--config_path=/root/workspace/projects/flowengine/conf/app/smoking_x3.json",
-               "--num_workers=8",
+               "--config_path=/root/workspace/projects/flowengine/conf/app/calling_smoking.json",
+               "--num_workers=32",
 
               //  "--image_path=/root/workspace/projects/flowengine/tests/data/data/test.jpg",
               //  "--model_path=/root/workspace/projects/flowengine/tests/data/models/yolov5_640x640_nv12.bin",
