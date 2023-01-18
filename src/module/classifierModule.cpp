@@ -33,7 +33,6 @@ ClassifierModule::ClassifierModule(Backend *ptr, const std::string &initName,
   instance = std::make_shared<AlgoInference>(params);
   instance->initialize();
 
-  infer::ModelInfo modelInfo;
   instance->getModelInfo(modelInfo);
   classifier = std::make_shared<infer::vision::Classifier>(params, modelInfo);
 }
@@ -68,9 +67,10 @@ void ClassifierModule::forward(std::vector<forwardMessage> &message) {
       if (region.area() != 0) {
         if (!infer::utils::cropImage(*image, inferImage, region, buf.frameType,
                                      0.5)) {
-          FLOWENGINE_LOGGER_ERROR("cropImage is failed, rect is {},{},{},{}",
+          FLOWENGINE_LOGGER_ERROR("cropImage is failed, rect is {},{},{},{}, "
+                                  "but the video resolution is {}x{}",
                                   region.x, region.y, region.width,
-                                  region.height);
+                                  region.height, image->cols, image->rows);
           return;
         }
         ret.shape = {region.width, region.height, 3};
@@ -107,8 +107,10 @@ void ClassifierModule::forward(std::vector<forwardMessage> &message) {
           cv::Mat inferImage;
           if (!infer::utils::cropImage(*image, inferImage, rect, buf.frameType,
                                        0.5)) {
-            FLOWENGINE_LOGGER_ERROR("cropImage is failed, rect is {},{},{},{}",
-                                    rect.x, rect.y, rect.width, rect.height);
+            FLOWENGINE_LOGGER_ERROR("cropImage is failed, rect is {},{},{},{}, "
+                                    "but the video resolution is {}x{}",
+                                    rect.x, rect.y, rect.width, rect.height,
+                                    image->cols, image->rows);
             return;
           }
           // cv::imwrite("classmodule.jpg", inferImage);

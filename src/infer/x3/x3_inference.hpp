@@ -12,15 +12,13 @@
 #ifndef __X3_INFERENCE_H_
 #define __X3_INFERENCE_H_
 
-#include "dnn/hb_dnn.h"
-#include "hb_comm_video.h"
 #include "inference.h"
 #include "logger/logger.hpp"
-#include <array>
-#include <cmath>
-#include <memory>
-#include <vector>
 #include "common/config.hpp"
+
+#include <opencv2/core/mat.hpp>
+#include <sp_bpu.h>
+#include <memory>
 
 #define HB_CHECK_SUCCESS(value, errmsg)                                        \
   do {                                                                         \
@@ -74,49 +72,25 @@ private:
   //! \brief Release the resource
   //!
   int terminate() {
-
-    // 释放HB内存
-    // HB_CHECK_SUCCESS(hbSysFreeMem(&(input_tensor.sysMem[0])),
-    //                  "hbSysFreeMem input_tensor.sysMem[0] failed!");
-    HB_CHECK_SUCCESS(hbSysFreeMem(&(input_tensor_resized.sysMem[0])),
-                     "hbSysFreeMem input_tensor_resized.sysMem[0] failed!");
-    // for (int i = 0; i < output_count; i++) {
-    //   HB_CHECK_SUCCESS(hbSysFreeMem(&(output[i].sysMem[0])),
-    //                    "hbSysFreeMem output.sysMem[0] failed!");
-    // }
-
-    // 释放handle
-    // HB_CHECK_SUCCESS(hbDNNReleaseTask(task_handle), "hbDNNReleaseTask
-    // failed"); HB_CHECK_SUCCESS(hbDNNRelease(dnn_handle),
-    //                  "hbDNNRelease dnn_handle failed");
-    HB_CHECK_SUCCESS(hbDNNRelease(packed_dnn_handle),
-                     "hbDNNRelease packed_dnn_handle failed");
-
-    // alloc.deallocate(mmz_vaddr, MAX_SIZE * BUFFER_NUM);
-
+    // len代表单次推理的输出数量
+    sp_deinit_bpu_tensor(output_tensor, output_count);
+    sp_release_bpu_module(engine);
     return 0;
   }
 
 private:
   //!< The parameters for the sample.
   common::AlgorithmConfig mParams;
-  // 准备输入数据（用于存放yuv数据）
-  hbDNNTensor input_tensor;
-  // resize后送给bpu运行的图像
-  hbDNNTensor input_tensor_resized;
-
   // output
-  hbDNNTensor *output;
   int output_count;
+  hbDNNTensor *output_tensor;
   std::vector<std::vector<int>> outputShapes;
-  // dnn_handle
-  hbDNNHandle_t dnn_handle;
-  // 加载模型handle
-  hbPackedDNNHandle_t packed_dnn_handle;
-  // 用于储存输入数据
-  char *mmz_vaddr = nullptr;
-  uint64_t mmz_paddr = 0;
-  // std::allocator<char> alloc;
+
+  // infer engine
+  bpu_module *engine;
+
+  // input data
+  cv::Mat input_data;
 };
 } // namespace x3
 } // namespace infer
