@@ -63,7 +63,7 @@
             3
           ],
           "isScale": false,
-          "modelPath": "/root/workspace/projects/flowengine/tests/data/models/yolov5_640x640_nv12.bin",
+          "modelPath": "/opt/deploy/flowengine/models/detection/yolo/yolov5_640x640_nv12.bin",
           "name": "algorithm_handDet_x3_1673517182659",
           "nms_thr": 0.45,
           "outputNames": [
@@ -89,7 +89,7 @@
             3
           ],
           "isScale": false,
-          "modelPath": "/root/workspace/projects/flowengine/tests/data/models/resnet_64x64_nv12.bin",
+          "modelPath": "/opt/deploy/flowengine/models/classifier/resnet/resnet_64x64_nv12.bin",
           "name": "algorithm_phoneCls_x3_1673517182647",
           "nms_thr": 0,
           "outputNames": [
@@ -201,7 +201,7 @@
             3
           ],
           "isScale": false,
-          "modelPath": "/root/workspace/projects/flowengine/tests/data/models/yolov5_640x640_nv12.bin",
+          "modelPath": "/opt/deploy/flowengine/models/detection/yolo/yolov5_640x640_nv12.bin",
           "name": "algorithm_handDet_x3_1673517182659",
           "nms_thr": 0.45,
           "outputNames": [
@@ -227,7 +227,7 @@
             3
           ],
           "isScale": false,
-          "modelPath": "/root/workspace/projects/flowengine/tests/data/models/resnet_64x64_nv12.bin",
+          "modelPath": "/opt/deploy/flowengine/models/classifier/resnet/resnet_64x64_nv12.bin",
           "name": "algorithm_smokeCls_x3_1673517182656",
           "nms_thr": 0,
           "outputNames": [

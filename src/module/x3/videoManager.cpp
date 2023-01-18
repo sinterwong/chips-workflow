@@ -24,7 +24,8 @@ namespace module::utils {
 
 bool VideoManager::init() {
   videoOptions opt;
-  opt.videoIdx = videoId;
+  // TODO global variable to update the channel number;
+  opt.videoIdx = videoId % 32;
   opt.resource = uri;
   stream = videoSource::create(opt);
   FLOWENGINE_LOGGER_INFO("video initialization is successed!");
