@@ -40,7 +40,7 @@ public:
       FLOWENGINE_LOGGER_ERROR("XCamera -- failed to create device!");
       return nullptr;
     }
-    FLOWENGINE_LOGGER_ERROR("XCamera -- successfully created device!");
+    FLOWENGINE_LOGGER_INFO("XCamera -- successfully created device!");
     return cam;
   }
 
