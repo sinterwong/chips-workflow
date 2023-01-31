@@ -26,7 +26,7 @@ def __convert():
                      '--fp16',
                      ])
 
-@app.route("/convert", methods=['POST'])
+@app.route("/convert_jetson", methods=['POST'])
 def convert():
     onnx_params = request.json.get("onnx_params")  # onnx params
     idx = request.json.get("idx")  # onnx params

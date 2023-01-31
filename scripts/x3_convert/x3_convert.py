@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+import json
 from multiprocessing import Process
 import subprocess
 import os
@@ -26,11 +27,14 @@ def __convert():
                      ])
 
 
-@app.route("/convert", methods=['POST'])
+@app.route("/convert_x3", methods=['POST'])
 def convert():
     onnx_params = request.json.get("onnx_params")  # onnx params
-    hyper_params = request.json.get("hyper_params")  # onnx params
-    model_parameter = dict(hyper_params)["model_parameter"]
+    hyper_params = request.json.get("hyper_params")  # hyper params
+    print(hyper_params)
+    hyper_params_dict = json.loads(hyper_params)
+    # model_parameter = dict(hyper_params)["model_parameter"]
+    model_parameter = hyper_params_dict["model_parameter"]
     img_size = model_parameter["img_size"]
     if isinstance(img_size, int):
         img_size = [img_size, img_size]
@@ -44,11 +48,11 @@ def convert():
     p = Process(target=__convert)
     p.start()
     p.join()
-    with open("temp_nv12.bin", "rb") as f:
+    with open("model_output/temp_nv12.bin", "rb") as f:
         data = f.read()
     return jsonify({"idx": idx, "engine": base64.b64encode(data).decode(encoding='utf-8')})
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    app.run(host="0.0.0.0", port=19778, debug=False, threaded=True)
+    app.run(host="0.0.0.0", port=9888, debug=False, threaded=True)
