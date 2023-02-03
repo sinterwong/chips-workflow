@@ -20,6 +20,14 @@
 namespace module {
 namespace utils {
 
+bool VideoRecord::init() {
+  stream = std::unique_ptr<videoOutput>(videoOutput::Create(std::move(params)));
+  if (!stream) {
+    return false;
+  }
+  return true;
+}
+
 bool VideoRecord::check() const noexcept {
   return stream && stream->IsStreaming();
 }

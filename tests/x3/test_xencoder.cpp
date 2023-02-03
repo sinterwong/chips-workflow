@@ -35,5 +35,6 @@ int main(int argc, char **argv) {
       FLOWENGINE_LOGGER_CRITICAL("render is failed!");
     };
   }
+  FLOWENGINE_LOGGER_INFO("Done!");
   return 0;
 }

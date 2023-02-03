@@ -31,7 +31,6 @@ bool XEncoder::init() {
   encoder = sp_init_encoder_module();
   stream_buffer =
       reinterpret_cast<char *>(malloc(sizeof(char) * STREAM_FRAME_SIZE));
-  outStream = std::ofstream(mOptions.resource.string, std::ios::binary);
   return true;
 }
 
@@ -43,6 +42,7 @@ bool XEncoder::open() noexcept {
     FLOWENGINE_LOGGER_ERROR("sp_open_encode failed {}!", ret);
     return false;
   }
+  outStream = std::ofstream(mOptions.resource.location, std::ios::out | std::ios::binary);
   FLOWENGINE_LOGGER_INFO("sp_open_encode is successed!");
   mStreaming.store(true);
   return true;
@@ -61,7 +61,6 @@ bool XEncoder::render(void **image) {
   if (!mStreaming.load())
     if (!open())
       return false;
-  FLOWENGINE_LOGGER_CRITICAL("hello");
   sp_encoder_set_frame(encoder, reinterpret_cast<char *>(*image), frame_size);
 
   memset(reinterpret_cast<void *>(stream_buffer), 0, STREAM_FRAME_SIZE);
@@ -72,7 +71,6 @@ bool XEncoder::render(void **image) {
     return false;
   }
   outStream.write(stream_buffer, stream_frame_size);
-  FLOWENGINE_LOGGER_CRITICAL("{} world", stream_frame_size);
   return true;
 }
 

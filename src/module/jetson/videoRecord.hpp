@@ -17,34 +17,20 @@
 
 namespace module {
 namespace utils {
-struct VideoParams {
-  std::string uri;
-  int height;
-  int width;
-  int rate;
-};
 
 class VideoRecord {
 public:
-  explicit VideoRecord(VideoParams &&params_)
-      : params(params_) {
-    videoOptions opt;
-    opt.resource = params.uri;
-    opt.height = params.height;
-    opt.width = params.width;
-    opt.frameRate = params.rate;
-    // TODO: steam 没有启动
-    stream = std::unique_ptr<videoOutput>(videoOutput::Create(std::move(opt)));
-  }
+  explicit VideoRecord(videoOptions &&params_) : params(params_) {}
 
-  VideoRecord(VideoRecord const &other) = delete;
-  VideoRecord(VideoRecord &&other) = delete;
-  VideoRecord &operator=(VideoRecord const &other) = delete;
-  VideoRecord &operator=(VideoRecord &&other) = delete;
+  ~VideoRecord() { destory(); }
 
-  ~VideoRecord() {
-    destory();
-  }
+  /**
+   * @brief init the stream.
+   *
+   * @return true
+   * @return false
+   */
+  bool init();
 
   /**
    * @brief Destory the stream.
@@ -72,7 +58,7 @@ public:
 
 private:
   std::unique_ptr<videoOutput> stream = nullptr;
-  VideoParams params;
+  videoOptions params;
 };
 } // namespace utils
 } // namespace module

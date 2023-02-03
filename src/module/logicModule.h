@@ -21,13 +21,15 @@
 #include <vector>
 
 #include "common/config.hpp"
+#include "infer_utils.hpp"
 #include "logger/logger.hpp"
 #include "module.hpp"
 #include "module_utils.hpp"
-#include "infer_utils.hpp"
+#include "x3/video_common.hpp"
 
 #if (TARGET_PLATFORM == 0)
 #include "x3/videoRecord.hpp"
+using namespace module::utils;
 #elif (TARGET_PLATFORM == 1)
 #include "jetson/videoRecord.hpp"
 #elif (TARGET_PLATFORM == 2)
@@ -86,7 +88,7 @@ public:
 
   inline void destoryOutputStream() { vr->destory(); }
 
-  inline void initRecord(queueMessage const &buf) {
+  inline bool initRecord(queueMessage const &buf) {
     isRecord = true;
     int frameRate =
         buf.cameraResult.frameRate > 0 ? buf.cameraResult.frameRate : 30;
@@ -94,9 +96,13 @@ public:
     drawTimes = floor(frameCount / 3);
     std::string filepath =
         buf.alarmResult.alarmFile + "/" + buf.alarmResult.alarmId + ".mp4";
-    utils::VideoParams params{std::move(filepath), buf.cameraResult.heightPixel,
-                              buf.cameraResult.widthPixel, frameRate};
+    videoOptions params;
+    params.resource = std::move(filepath);
+    params.width = buf.cameraResult.widthPixel;
+    params.height = buf.cameraResult.heightPixel;
+    params.frameRate = frameRate;
     vr = std::make_unique<utils::VideoRecord>(std::move(params));
+    return vr->init();
   }
 
   inline void recordVideo(int key, int width, int height) {
@@ -140,19 +146,19 @@ public:
       // 临时画个图（后续根据前端参数来决定返回的图片是否带有画图标记）
       showImage = frame->clone();
       switch (buf.frameType) {
-        case ColorType::BGR888:
-          break;
-        case ColorType::RGB888: {
-          cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
-          break;
-        }
-        case ColorType::NV12: {
-          infer::utils::NV12toRGB(showImage, showImage);
-          cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
-          break;
-        }
-        case ColorType::None:
-          break;
+      case ColorType::BGR888:
+        break;
+      case ColorType::RGB888: {
+        cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
+        break;
+      }
+      case ColorType::NV12: {
+        infer::utils::NV12toRGB(showImage, showImage);
+        cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
+        break;
+      }
+      case ColorType::None:
+        break;
       }
     } else {
       showImage = *frame;
