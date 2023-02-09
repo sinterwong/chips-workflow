@@ -53,23 +53,29 @@ public:
    * Destructor
    */
   ~XDecoder() {
-    close();
+    if (mStreaming.load()) {
+      close();
+    }
     sp_release_decoder_module(decoder);
   };
 
 public:
   virtual bool open() override {
-    // 启动流
-    stream = std::make_unique<FFStream>(mOptions.resource);
-    if (!stream->openStream()) {
-      FLOWENGINE_LOGGER_ERROR("can't open the stream {}!",
-                              std::string(mOptions.resource));
-      return false;
+    {
+      std::lock_guard lk(m);
+      // 启动流
+      stream = std::make_unique<FFStream>(mOptions.resource);
+      if (!stream->openStream()) {
+        FLOWENGINE_LOGGER_ERROR("can't open the stream {}!",
+                                std::string(mOptions.resource));
+        return false;
+      }
+      mOptions.width = stream->getWidth();
+      mOptions.height = stream->getHeight();
+      mOptions.frameRate = stream->getRate();
+      FLOWENGINE_LOGGER_INFO("{} video is opened!", mOptions.resource.string);
     }
-    mOptions.width = stream->getWidth();
-    mOptions.height = stream->getHeight();
-    mOptions.frameRate = stream->getRate();
-    FLOWENGINE_LOGGER_INFO("{} video is opened!", mOptions.resource.string);
+
     int ret = sp_start_decode(decoder, "", mOptions.videoIdx % 32,
                               entypeMapping.at(stream->getCodecType()),
                               stream->getWidth(), stream->getHeight());
@@ -91,12 +97,13 @@ public:
    * @see videoSource::Close()
    */
   virtual inline void close() noexcept override {
+    std::lock_guard lk(m);
     if (stream->isRunning()) {
       stream->closeStream();
     }
+    mStreaming.store(false);
     sp_stop_decode(decoder);
     free(yuv_data);
-    mStreaming.store(false);
   }
 
   virtual inline size_t getWidth() const noexcept override {
@@ -155,10 +162,13 @@ private:
   }
 
   std::unique_ptr<joining_thread> producter; // 生产者
+  std::mutex m;
   void producting() {
     int ret;
     while (stream->isRunning()) {
-
+      std::lock_guard lk(m);
+      if (!stream->isRunning())
+        break;
       int bufSize = stream->getRawFrame(&raw_data);
       if (bufSize < 0) {
         sp_decoder_set_image(decoder, reinterpret_cast<char *>(raw_data),

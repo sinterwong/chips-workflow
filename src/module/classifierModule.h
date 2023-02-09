@@ -32,7 +32,6 @@ using namespace infer::trt;
 namespace module {
 class ClassifierModule : public Module {
 private:
-  int count = 0;
   common::AlgorithmConfig params;
   std::shared_ptr<AlgoInference> instance;
   infer::ModelInfo modelInfo;

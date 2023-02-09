@@ -10,6 +10,7 @@
  */
 
 #include "videoManager.hpp"
+#include "joining_thread.h"
 #include "logger/logger.hpp"
 #include "videoDecoder.hpp"
 #include "videoSource.hpp"
@@ -32,10 +33,29 @@ bool VideoManager::init() {
   return true;
 }
 
-bool VideoManager::run() { return stream->open(); }
+bool VideoManager::run() {
+  if (!stream->open()) {
+    return false;
+  };
+  joining_thread consumer{[this]() {
+    while (isRunning()) {
+      std::lock_guard lk(m);
+      bool ret = stream->capture(&frame, 1000);
+      if (!ret) {
+        frame = nullptr;
+      }
+    }
+    FLOWENGINE_LOGGER_INFO("streamGet is over!");
+  }};
+  consumer.detach();
+  return true;
+}
 
 cv::Mat VideoManager::getcvImage() {
-  stream->capture(&frame);
+  std::lock_guard lk(m);
+  if (!frame) {
+    return cv::Mat();
+  }
   return cv::Mat(getHeight() * 3 / 2, getWidth(), CV_8UC1, frame).clone();
 }
 
