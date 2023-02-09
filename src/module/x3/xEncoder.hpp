@@ -14,16 +14,18 @@
 #include "common/common.hpp"
 #include "x3/video_common.hpp"
 #include <atomic>
+#include <fstream>
 #include <memory>
 #include <sp_codec.h>
+#include <sp_vio.h>
 
 namespace module::utils {
 
-class videoOutput {
+class XEncoder {
 public:
-  static std::unique_ptr<videoOutput> create(videoOptions const &options);
+  static std::unique_ptr<XEncoder> create(videoOptions const &options);
 
-  virtual ~videoOutput() {}
+  virtual ~XEncoder();
 
   /**
    * @brief 初始化编码组建
@@ -31,10 +33,7 @@ public:
    * @return true
    * @return false
    */
-  inline bool init() {
-    encoder = sp_init_encoder_module();
-    return true;
-  }
+  bool init();
 
   /**
    * @brief 开始编码
@@ -42,8 +41,14 @@ public:
    * @return true
    * @return false
    */
-  bool open();
+  bool open() noexcept;
 
+  /**
+   * @brief 关闭编码
+   * 
+   * @return true 
+   * @return false 
+   */
   bool close() noexcept;
 
   /**
@@ -71,10 +76,14 @@ public:
 private:
   std::atomic<bool> mStreaming;
   videoOptions mOptions;
-  void *encoder;
+  void *encoder = nullptr;
+  int frame_size = 0;
+  char* stream_buffer = nullptr;
+  std::ofstream outStream;
 
-  videoOutput(videoOptions const &options) : mOptions(options) {
+  XEncoder(videoOptions const &options) : mOptions(options) {
     mStreaming = false;
+    frame_size = FRAME_BUFFER_SIZE(mOptions.height, mOptions.width);
   }
 };
 } // namespace module::utils

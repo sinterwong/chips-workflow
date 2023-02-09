@@ -11,6 +11,7 @@
 #ifndef __VIDEO_MANAGER_FOR_X3_H_
 #define __VIDEO_MANAGER_FOR_X3_H_
 #include "common/common.hpp"
+#include "joining_thread.h"
 #include "logger/logger.hpp"
 #include "videoSource.hpp"
 #include <memory>
@@ -25,6 +26,9 @@ private:
   int videoId;     // 编码通道
   std::unique_ptr<videoSource> stream;
   void *frame;
+  std::mutex m;
+
+  void streamGet();
 
 public:
   bool init();
@@ -47,7 +51,8 @@ public:
     return -1;
   }
 
-  inline int getRate() { if (stream) {
+  inline int getRate() {
+    if (stream) {
       return stream->getFrameRate();
     }
     return -1;

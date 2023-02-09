@@ -57,9 +57,6 @@ void DetectModule::forward(std::vector<forwardMessage> &message) {
         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
 
     if (type == "logic") {
-      if (count++ < 5)
-        return;
-      count = 0;
       cv::Rect2i region{buf.logicInfo.region[0], buf.logicInfo.region[1],
                         buf.logicInfo.region[2] - buf.logicInfo.region[0],
                         buf.logicInfo.region[3] - buf.logicInfo.region[1]};

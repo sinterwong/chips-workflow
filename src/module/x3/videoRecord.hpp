@@ -9,6 +9,9 @@
  *
  */
 
+#include "common/common.hpp"
+#include "x3/video_common.hpp"
+#include "x3/xEncoder.hpp"
 #include <any>
 #include <iostream>
 #include <memory>
@@ -16,28 +19,21 @@
 
 namespace module {
 namespace utils {
-struct VideoParams {
-  std::string uri;
-  int height;
-  int width;
-  int rate;
-};
 
-class VideoRecord {
+class VideoRecord : private common::NonCopyable {
 public:
-  explicit VideoRecord(VideoParams &&params_)
-      : params(params_) {
-    // stream = std::unique_ptr<videoOutput>(videoOutput::Create(std::move(opt)));
+  explicit VideoRecord(videoOptions &&params_) : params(params_) {
   }
 
-  VideoRecord(VideoRecord const &other) = delete;
-  VideoRecord(VideoRecord &&other) = delete;
-  VideoRecord &operator=(VideoRecord const &other) = delete;
-  VideoRecord &operator=(VideoRecord &&other) = delete;
+  ~VideoRecord() { destory(); }
 
-  ~VideoRecord() {
-    destory();
-  }
+  /**
+   * @brief init the stream.
+   *
+   * @return true
+   * @return false
+   */
+  bool init();
 
   /**
    * @brief Destory the stream.
@@ -64,8 +60,9 @@ public:
   bool record(void *frame);
 
 private:
-  // std::unique_ptr<videoOutput> stream = nullptr;
-  VideoParams params;
+  std::unique_ptr<XEncoder> stream = nullptr;
+  videoOptions params;
+
 };
 } // namespace utils
 } // namespace module

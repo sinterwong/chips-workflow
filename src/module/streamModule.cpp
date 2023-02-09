@@ -59,6 +59,8 @@ void StreamModule::step() {
     return;
   }
   // FLOWENGINE_LOGGER_CRITICAL("Stream forward!");
+  // 100ms 处理一帧
+  std::this_thread::sleep_for(std::chrono::microseconds(100));
   forward(message);
   afterForward();
 }

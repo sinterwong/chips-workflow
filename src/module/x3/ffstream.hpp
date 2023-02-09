@@ -62,6 +62,8 @@ private:
 
   std::shared_mutex m;
 
+  uint8_t *seqHeader = nullptr;
+
 public:
   bool openStream(); // 开启视频流
 
@@ -124,9 +126,12 @@ public:
 
   inline void closeStream() {
     std::lock_guard lk(m);
+    if (seqHeader) {
+      free(seqHeader);
+      seqHeader = nullptr;
+    }
     // auto lv = &avpacket;
     // av_packet_free(&lv);
-    av_packet_unref(&avpacket);
     if (avContext) {
       avformat_close_input(&avContext);
     }

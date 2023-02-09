@@ -29,3 +29,5 @@ tests/data
 3rdparty/target/linux_aarch64
 3rdparty/target/linux_x86_64
 .vscode/settings.json
+scripts/x3_convert/calibration_data_rgb_f32_coco
+scripts/x3_convert/model_output
