@@ -14,6 +14,7 @@
 #include "logger/logger.hpp"
 #include "videoDecoder.hpp"
 #include "videoSource.hpp"
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -42,6 +43,7 @@ bool VideoManager::run() {
       std::lock_guard lk(m);
       bool ret = stream->capture(&frame, 1000);
       if (!ret) {
+        FLOWENGINE_LOGGER_WARN("Getframe is failed!");
         frame = nullptr;
       }
     }

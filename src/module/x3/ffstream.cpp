@@ -1,12 +1,12 @@
 /**
  * @file ffstream.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2023-01-09
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 
 #include "ffstream.hpp"
@@ -162,7 +162,8 @@ bool FFStream::openStream() {
   av_param.videoIndex =
       av_find_best_stream(avContext, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
   if (av_param.videoIndex < 0) {
-    FLOWENGINE_LOGGER_INFO("av_find_best_stream failed, ret: {}", av_param.videoIndex);
+    FLOWENGINE_LOGGER_INFO("av_find_best_stream failed, ret: {}",
+                           av_param.videoIndex);
     return false;
   }
   av_init_packet(&avpacket);
@@ -175,12 +176,13 @@ bool FFStream::openStream() {
 }
 
 int FFStream::getRawFrame(void **data) {
-  uint8_t *seqHeader = nullptr;
-  int seqHeaderSize = 0, error = 0;
+  int seqHeaderSize = 0;
+  int error = 0;
 
   std::lock_guard lk(m);
 
   if (!avpacket.size) {
+    av_packet_unref(&avpacket); // 不加就会内存泄露
     error = av_read_frame(avContext, &avpacket);
   }
   if (error < 0) {
@@ -214,10 +216,6 @@ int FFStream::getRawFrame(void **data) {
       av_param.bufSize = seqHeaderSize;
       // memcpy(data, (void *)seqHeader, seqHeaderSize);
       *data = (void *)seqHeader;
-      if (seqHeader) {
-        free(seqHeader);
-        seqHeader = nullptr;
-      }
     } else {
       av_param.bufSize = avpacket.size;
       // memcpy((void *)data, (void *)avpacket.data, avpacket.size);
@@ -227,6 +225,10 @@ int FFStream::getRawFrame(void **data) {
     ++av_param.count;
     return av_param.bufSize;
   }
+
+  // TEMP
+  avpacket.size = 0;
+  return error;
 }
 
 } // namespace module::utils

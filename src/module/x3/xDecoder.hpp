@@ -169,6 +169,7 @@ private:
       std::lock_guard lk(m);
       if (!stream->isRunning())
         break;
+      std::this_thread::sleep_for(20ms);
       int bufSize = stream->getRawFrame(&raw_data);
       if (bufSize < 0) {
         sp_decoder_set_image(decoder, reinterpret_cast<char *>(raw_data),

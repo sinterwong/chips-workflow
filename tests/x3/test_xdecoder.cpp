@@ -26,21 +26,22 @@ void run_stream(std::string const &url, int idx) {
   vm.init();
   vm.run();
   std::string savePath = std::to_string(idx) + "_test_xdecoder.jpg";
-  int count = 0;
+  // int count = 0;
   while (1) {
-    ++count;
-    if (count % 10 != 0) {
-      continue;
-    }
-    std::cout << count << ": " << vm.getHeight() << ", " << vm.getWidth()
-              << std::endl;
-    FLOWENGINE_LOGGER_INFO("id: {}, height: {}, width: {}, count: {}", idx,
-                           vm.getHeight(), vm.getWidth(), count);
-    cv::Mat nv12_image = vm.getcvImage();
-    if (!nv12_image.empty()) {
-      std::cout << "saving the image" << std::endl;
-      cv::imwrite(savePath, nv12_image);
-    }
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+  //   ++count;
+  //   if (count % 100 != 0) {
+  //     continue;
+  //   }
+  //   std::cout << count << ": " << vm.getHeight() << ", " << vm.getWidth()
+  //             << std::endl;
+  //   FLOWENGINE_LOGGER_INFO("id: {}, height: {}, width: {}, count: {}", idx,
+  //                          vm.getHeight(), vm.getWidth(), count);
+  //   cv::Mat nv12_image = vm.getcvImage();
+  //   if (!nv12_image.empty()) {
+  //     std::cout << "saving the image" << std::endl;
+  //     cv::imwrite(savePath, nv12_image);
+  //   }
   }
 }
 
