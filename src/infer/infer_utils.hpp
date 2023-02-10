@@ -14,6 +14,7 @@
 #include "infer_common.hpp"
 #include "opencv2/imgproc.hpp"
 #include <array>
+#include <chrono>
 #include <opencv2/core/types.hpp>
 #include <opencv2/opencv.hpp>
 #include <unordered_map>
@@ -110,11 +111,16 @@ void RGB2NV12(cv::Mat const &input, cv::Mat &output);
 bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
                common::ColorType type, float sr = 0.0);
 
-// TODO split nv12 -> y u v
+bool crop_nv12(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect, float sr);
 
-// TODO rect nv12 -> calling to split nv12 to y u v and rect y u v separately,
-// merge the result to new Mat
-
+template <typename F, typename... Args>
+long long measureTime(F func, Args&&... args) {
+  auto start = std::chrono::high_resolution_clock::now();
+  func(std::forward<Args>(args)...);
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+  return duration.count();
+}
 } // namespace utils
 } // namespace infer
 #endif

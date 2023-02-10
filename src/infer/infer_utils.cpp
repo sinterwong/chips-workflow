@@ -14,6 +14,10 @@
 #include "logger/logger.hpp"
 #include <algorithm>
 #include <array>
+#include <opencv2/core.hpp>
+#include <opencv2/core/core_c.h>
+#include <opencv2/core/hal/interface.h>
+#include <opencv2/core/types.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgproc/types_c.h>
 #include <string>
@@ -126,53 +130,97 @@ void YUV2BGR(const cv::Mat y, const cv::Mat u, const cv::Mat v,
   cv::cvtColor(yuvImg, bgrImg, cv::COLOR_YUV2BGR);
 }
 
-void YV12toNV12(cv::Mat const &input, cv::Mat &output) {
-  int width = input.cols;
-  int height = input.rows * 2 / 3;
-  // Rows bytes stride - in most cases equal to width
-  int stride = (int)input.step[0];
-  cv::Mat temp = input.clone();
+void YU122NV12(cv::Mat const &input, cv::Mat &output) {
+  int y_rows = input.rows * 2 / 3;
+  cv::Mat y = input.rowRange(0, y_rows).colRange(0, input.cols);
+  cv::Mat uv = input.rowRange(y_rows, input.rows).colRange(0, input.cols);
+  output.create(cv::Size(input.cols, input.rows), CV_8UC1);
 
-  // Y Channel
-  //  YYYYYYYYYYYYYYYY
-  //  YYYYYYYYYYYYYYYY
-  //  YYYYYYYYYYYYYYYY
-  //  YYYYYYYYYYYYYYYY
-  //  YYYYYYYYYYYYYYYY
-  //  YYYYYYYYYYYYYYYY
+  // 拷贝y通道
+  y.copyTo(output.rowRange(0, y.rows).colRange(0, y.cols)); // 5ms左右
 
-  // V Input channel
-  //  VVVVVVVV
-  //  VVVVVVVV
-  //  VVVVVVVV
-  cv::Mat inV =
-      cv::Mat(cv::Size(width / 2, height / 2), CV_8UC1,
-              (unsigned char *)temp.data + stride * height,
-              stride / 2); // Input V color channel (in YV12 V is above U).
+  // // 指出nv12的uv通道，准备填值
+  cv::Mat uvInterleaved =
+      output.rowRange(y_rows, input.rows).colRange(0, uv.cols);
 
-  // U Input channel
-  //  UUUUUUUU
-  //  UUUUUUUU
-  //  UUUUUUUU
-  cv::Mat inU =
-      cv::Mat(cv::Size(width / 2, height / 2), CV_8UC1,
-              (unsigned char *)temp.data + stride * height +
-                  (stride / 2) * (height / 2),
-              stride / 2); // Input V color channel (in YV12 U is below V).
+  // int u_rows = uv.rows / 2;
+  // int u_cols = uv.cols / 2;
+  // for (int row = 0; row < u_rows; ++row) {
+  //   for (int col = 0; col < u_cols; ++col) {
+  //     // 一共四组，每组复制总共30ms，四组共耗时大约120ms
+  //     uvInterleaved.at<uchar>(2 * row, col * 2) = uv.at<uchar>(row, col); //
+  //     u uvInterleaved.at<uchar>(2 * row, col * 2 + 1) = uv.at<uchar>(row +
+  //     u_rows, col); // v
 
-  for (int row = 0; row < height / 2; row++) {
-    for (int col = 0; col < width / 2; col++) {
-      output.at<uchar>(height + row, 2 * col) = inU.at<uchar>(row, col);
-      output.at<uchar>(height + row, 2 * col + 1) = inV.at<uchar>(row, col);
+  //     uvInterleaved.at<uchar>(2 * row + 1, col * 2) = uv.at<uchar>(row, col +
+  //     u_cols); // u uvInterleaved.at<uchar>(2 * row + 1, col * 2 + 1) =
+  //     uv.at<uchar>(row + u_rows, col + u_cols); // v
+  //   }
+  // }
+
+  // 将UV分别重塑为两个矩阵
+  cv::Mat u = uv.rowRange(0, uv.rows / 2).colRange(0, uv.cols / 2);
+  cv::Mat v = uv.rowRange(uv.rows / 2, uv.rows).colRange(0, uv.cols / 2);
+
+  // 将U和V矩阵分别复制到UV通道中，每个U/V对应一个2x2的位置
+  for (int row = 0; row < uv.rows / 2; ++row) {
+    uchar *uvInterleavedRow = uvInterleaved.ptr<uchar>(2 * row);
+    uchar *uRow = u.ptr<uchar>(row);
+    uchar *vRow = v.ptr<uchar>(row);
+
+    for (int col = 0; col < uv.cols / 2; ++col) {
+      uvInterleavedRow[2 * col] = uRow[col];
+      uvInterleavedRow[2 * col + 1] = vRow[col];
+    }
+
+    uvInterleavedRow = uvInterleaved.ptr<uchar>(2 * row + 1);
+
+    for (int col = 0; col < uv.cols / 2; ++col) {
+      uvInterleavedRow[2 * col] = uRow[col];
+      uvInterleavedRow[2 * col + 1] = vRow[col];
     }
   }
+}
+
+void YUV444toNV12(cv::Mat const &input, cv::Mat &output) {
+  output.create(cv::Size(input.cols, input.rows * 3 / 2), CV_8UC1);
+  int uv_rows = input.rows / 2;
+  int uv_cols = input.cols / 2;
+
+  cv::Mat yuv_channel[3];
+  cv::split(input, yuv_channel);
+  cv::Mat y = yuv_channel[0];
+  cv::Mat u = yuv_channel[1];
+  cv::Mat v = yuv_channel[2];
+
+  // 将U和V分量重采样为与Y分量具有相同的大小
+  cv::Mat u_resized, v_resized;
+  cv::resize(u, u_resized, cv::Size(uv_cols, uv_rows), 0, 0, cv::INTER_LINEAR);
+  cv::resize(v, v_resized, cv::Size(uv_cols, uv_rows), 0, 0, cv::INTER_LINEAR);
+
+  // 将重采样后的U和V分量并入一个矩阵中
+  cv::Mat uv_interleaved =
+      output.rowRange(y.rows, input.rows * 3 / 2).colRange(0, input.cols);
+  for (int row = 0; row < uv_rows; ++row) {
+    for (int col = 0; col < uv_cols; ++col) {
+      uv_interleaved.at<uchar>(row, col * 2) = u_resized.at<uchar>(row, col);
+      uv_interleaved.at<uchar>(row, col * 2 + 1) =
+          v_resized.at<uchar>(row, col);
+    }
+  }
+  // 将Y和UV分量并入一个矩阵中
+  y.copyTo(output.rowRange(0, y.rows).colRange(0, y.cols));
 }
 
 // template<typename common::ColorType Src=common::ColorType::RGB888>
 void RGB2NV12(cv::Mat const &input, cv::Mat &output) {
   // 这里图片的宽高必须是偶数，否则直接卡死这里
-  cv::cvtColor(input, output, cv::COLOR_RGB2YUV_YV12);
-  YV12toNV12(output, output);
+  cv::Mat temp;
+  cv::cvtColor(input, temp, cv::COLOR_RGB2YUV_I420);
+  YU122NV12(temp, output);
+
+  // cv::cvtColor(input, temp, cv::COLOR_RGB2YUV);
+  // YUV444toNV12(temp, output);
 }
 
 void NV12toRGB(cv::Mat const &nv12, cv::Mat &output) {
@@ -195,6 +243,46 @@ bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect, float sr) {
     rect.height -= 1;
   }
   output = input(rect).clone();
+  return true;
+}
+
+bool crop_nv12(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
+               float sr) {
+  // Get the width, height and stride of the input image
+  int width = input.cols;
+  int height = input.rows;
+  int stride = static_cast<int>(input.step[0]);
+
+  // Check if the rect is within the bounds of the input image
+  if (rect.x < 0 || rect.y < 0 || rect.x + rect.width > width ||
+      rect.y + rect.height > height) {
+    return false;
+  }
+
+  // Get pointers to the input Y and UV channels
+  const uint8_t *pY = input.ptr<uint8_t>(0);
+  const uint8_t *pUV = pY + height * stride;
+
+  // Create a new image for the output
+  output = cv::Mat(rect.height, rect.width, CV_8UC2);
+
+  // Get pointers to the output Y and UV channels
+  uint8_t *pOutY = output.ptr<uint8_t>(0);
+  uint8_t *pOutUV = pOutY + rect.height * output.step[0];
+
+  // Loop through each row of the image
+  for (int row = 0; row < rect.height; row++) {
+    // Copy the Y channel
+    memcpy(pOutY, pY + (row + rect.y) * stride + rect.x, rect.width);
+    pOutY += output.step[0];
+
+    // If this is an even row, copy the UV channels
+    if ((row + rect.y) % 2 == 0) {
+      memcpy(pOutUV, pUV + (row + rect.y) * stride / 2 + rect.x, rect.width);
+      pOutUV += output.step[0];
+    }
+  }
+
   return true;
 }
 
