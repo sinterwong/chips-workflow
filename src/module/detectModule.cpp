@@ -9,7 +9,7 @@
  *
  */
 #include "detectModule.h"
-#include "infer_utils.hpp"
+#include "preprocess.hpp"
 #include "logger/logger.hpp"
 #include <cstddef>
 #include <cstdlib>

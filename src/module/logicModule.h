@@ -12,20 +12,16 @@
 #ifndef __METAENGINE_LOGIC_MODULE_H_
 #define __METAENGINE_LOGIC_MODULE_H_
 
-#include <any>
-#include <cassert>
 #include <experimental/filesystem>
 #include <memory>
-#include <opencv2/core/types.hpp>
-#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc.hpp>
 #include <vector>
 
 #include "common/config.hpp"
-#include "infer_utils.hpp"
+#include "preprocess.hpp"
 #include "logger/logger.hpp"
 #include "module.hpp"
 #include "module_utils.hpp"
-#include "x3/video_common.hpp"
 
 #if (TARGET_PLATFORM == 0)
 #include "x3/videoRecord.hpp"
@@ -153,8 +149,7 @@ public:
         break;
       }
       case ColorType::NV12: {
-        infer::utils::NV12toRGB(showImage, showImage);
-        cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
+        cv::cvtColor(showImage, showImage, cv::COLOR_YUV2BGR_NV12);
         break;
       }
       case ColorType::None:

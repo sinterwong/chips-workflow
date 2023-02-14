@@ -1,5 +1,5 @@
 #include "detection.hpp"
-#include "infer_utils.hpp"
+#include "preprocess.hpp"
 #include "inference.h"
 #include <gflags/gflags.h>
 #include <memory>

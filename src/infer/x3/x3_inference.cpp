@@ -10,14 +10,15 @@
  */
 
 #include "x3_inference.hpp"
-#include "infer_utils.hpp"
 #include "logger/logger.hpp"
+#include "preprocess.hpp"
 
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 
 namespace infer {
 namespace x3 {
+using namespace infer::utils;
 
 bool AlgoInference::initialize() {
   // 加载模型
@@ -74,14 +75,14 @@ bool AlgoInference::processInput(void *inputs) {
   input_data = cv::Mat(height * 3 / 2, width, CV_8UC1, data);
 
   // TODO to accomplish nv12 resize
-  utils::NV12toRGB(input_data, input_data);
+  NV12toRGB(input_data, input_data);
   std::array<int, 2> shape = {mParams.inputShape.at(0),
                               mParams.inputShape.at(1)};
-  if (!utils::resizeInput(input_data, mParams.isScale, shape)) {
+  if (!resizeInput(input_data, mParams.isScale, shape)) {
     FLOWENGINE_LOGGER_ERROR("utils::resizeInput is failed!");
     return false;
   }
-  utils::RGB2NV12(input_data, input_data);
+  RGB2NV12(input_data, input_data);
   // cv::imwrite("temp.jpg", input_data);
   return true;
 }

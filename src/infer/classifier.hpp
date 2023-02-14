@@ -11,10 +11,7 @@
 
 #ifndef __INFERENCE_VISION_CLASSIFIER_H_
 #define __INFERENCE_VISION_CLASSIFIER_H_
-#include "logger/logger.hpp"
 #include "vision.hpp"
-#include <unordered_map>
-#include <vector>
 
 namespace infer {
 namespace vision {

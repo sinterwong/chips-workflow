@@ -10,18 +10,9 @@
  */
 
 #include "classifierModule.h"
-#include "backend.h"
 #include "classifier.hpp"
-#include "infer_utils.hpp"
-#include "inference.h"
+#include "preprocess.hpp"
 #include "logger/logger.hpp"
-#include "opencv2/imgproc.hpp"
-#include <cassert>
-#include <cstddef>
-#include <memory>
-#include <opencv2/core/mat.hpp>
-#include <opencv2/core/types.hpp>
-#include <opencv2/imgcodecs.hpp>
 
 namespace module {
 
@@ -34,7 +25,7 @@ ClassifierModule::ClassifierModule(Backend *ptr, const std::string &initName,
   instance->initialize();
 
   instance->getModelInfo(modelInfo);
-  classifier = std::make_shared<infer::vision::Classifier>(params, modelInfo);
+  classifier = std::make_shared<Classifier>(params, modelInfo);
 }
 
 ClassifierModule::~ClassifierModule() {}

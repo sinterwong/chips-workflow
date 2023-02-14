@@ -12,14 +12,7 @@
 #ifndef __METAENGINE_CLASSIFIER_MODULE_H_
 #define __METAENGINE_CLASSIFIER_MODULE_H_
 
-#include <array>
-#include <memory>
-#include <opencv2/opencv.hpp>
-#include <string>
-#include <utility>
-
-#include "backend.h"
-#include "common/common.hpp"
+#include "module.hpp"
 #include "classifier.hpp"
 #if (TARGET_PLATFORM == 0)
 #include "x3/x3_inference.hpp"
@@ -28,14 +21,15 @@ using namespace infer::x3;
 #include "jetson/trt_inference.hpp"
 using namespace infer::trt;
 #endif
-#include "module.hpp"
 namespace module {
+using infer::vision::Classifier;
+
 class ClassifierModule : public Module {
 private:
   common::AlgorithmConfig params;
   std::shared_ptr<AlgoInference> instance;
   infer::ModelInfo modelInfo;
-  std::shared_ptr<infer::vision::Classifier> classifier;
+  std::shared_ptr<Classifier> classifier;
 
 public:
   ClassifierModule(Backend *ptr, const std::string &initName,
