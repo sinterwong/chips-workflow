@@ -42,10 +42,21 @@ int main(int argc, char **argv) {
   // nv12 croped
   cv::Mat image_nv12_croped;
   auto test_nv12_crop = [&image_nv12, &image_nv12_croped]() {
-    cv::Rect2i roi = {500, 500, 500, 500};
+    cv::Rect2i roi = {0, 0, 500, 500};
     cropImage(image_nv12, image_nv12_croped, roi, common::ColorType::NV12);
   };
   auto nv12_crop_cost = measureTime(test_nv12_crop);
+
+  // nv12 resize
+  cv::Mat image_nv12_resized;
+  auto test_nv12_resize = [&image_nv12, &image_nv12_resized]() {
+    cv::Mat temp;
+    NV12toRGB(image_nv12, temp);
+    std::array<int, 2> shape{640, 640};
+    resizeInput(temp, false, shape);
+    RGB2NV12(temp, image_nv12_resized);
+  };
+  auto nv12_resize_cost = measureTime(test_nv12_resize);
 
   cv::imwrite("nv12_croped_image.jpg", image_nv12_croped);
   cv::Mat image_croped_bgr;
@@ -58,5 +69,7 @@ int main(int argc, char **argv) {
                          static_cast<float>(rgb_to_nv12_cost) / 1000);
   FLOWENGINE_LOGGER_INFO("NV12 crop image cost time: {} ms",
                          static_cast<float>(nv12_crop_cost) / 1000);
+  FLOWENGINE_LOGGER_INFO("NV12 resize image cost time: {} ms",
+                         static_cast<float>(nv12_resize_cost) / 1000);
   return 0;
 }
