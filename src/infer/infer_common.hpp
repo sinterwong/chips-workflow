@@ -16,34 +16,13 @@
 #define __INFERENCE_COMMON_H_
 
 namespace infer {
+using common::BBox;
+using common::InferResult;
+using common::Points;
 
-/**
- * @brief 检测结果
- *
- */
-struct alignas(float) DetectionResult {
-  // x y w h
-  std::array<float, 4> bbox; // [x1, y1, x2, y2]
-  float det_confidence;
-  float class_id;
-  float class_confidence;
-};
-
-using ClsRet = std::pair<int, float>;
-using DetRet = std::vector<DetectionResult>;
-using Points = std::array<int, 3>;
-using PoseRet = std::vector<Points>;
-
-/**
- * @brief infer的结果
- *
- */
-struct Result {
-  DetRet detResults;
-  ClsRet classResult;
-  PoseRet poseResults;
-  std::array<int, 3> shape;
-};
+using common::ClsRet;
+using common::DetRet;
+using common::PoseRet;
 
 /**
  * @brief 模型的基础信息（模型装载后可以获取）

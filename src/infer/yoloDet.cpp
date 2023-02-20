@@ -30,7 +30,7 @@ void Yolo::generateBoxes(std::unordered_map<int, DetRet> &m,
       // std::cout << output[i][j + 0] << ", " << output[i][j + 1] << ", "
       //           << output[i][j + 2] << ", " << output[i][j + 3] << ", "
       //           << output[i][j + 4] << ", " << output[i][j + 5] << std::endl;
-      DetectionResult det;
+      BBox det;
       det.class_id = std::distance(
           output[i] + j + 5,
           std::max_element(output[i] + j + 5, output[i] + j + num));

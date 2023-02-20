@@ -21,6 +21,7 @@
 #include "utils/configParser.hpp"
 // #include "BS_thread_pool.hpp"
 
+#include "algorithmManager.hpp"
 #include <algorithm>
 #include <any>
 #include <memory>
@@ -30,6 +31,7 @@
 
 namespace module {
 using utils::pipelineParams;
+using infer::AlgorithmManager;
 
 class PipelineModule {
 private:
@@ -37,8 +39,10 @@ private:
   std::string type = "ControlMessage";
   std::string config;
   utils::ConfigParser configParser;
+
   Backend backend{std::make_unique<BoostMessage>(),
-                  std::make_unique<RouteFramePool>(2)};
+                  std::make_unique<RouteFramePool>(2),
+                  std::make_unique<AlgorithmManager>()};
   // std::unique_ptr<thread_pool> pool;
   std::unique_ptr<thread_pool> pool;
   std::unordered_map<std::string, std::shared_ptr<Module>> atm;

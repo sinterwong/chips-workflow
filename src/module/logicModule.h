@@ -40,7 +40,7 @@ protected:
   int frameCount = 0;         // 保存帧数
   int drawTimes = 0;          // 视频上画的次数
   common::LogicConfig params; // 逻辑参数
-  retBox alarmBox;            // 报警作图框
+  RetBox alarmBox;            // 报警作图框
   std::unique_ptr<utils::VideoRecord> vr;
 
 public:
@@ -49,7 +49,7 @@ public:
       : Module(ptr, initName, initType), params(params_) {}
   virtual ~LogicModule() {}
 
-  inline bool drawBox(cv::Mat &image, retBox const &bbox,
+  inline bool drawBox(cv::Mat &image, RetBox const &bbox,
                       cv::Scalar const &scalar = {0, 0, 255}) const {
     cv::Rect rect(bbox.second[0], bbox.second[1],
                   bbox.second[2] - bbox.second[0],
@@ -122,7 +122,7 @@ public:
   }
 
   inline void generateAlarm(queueMessage &buf, std::string const &detail,
-                            retBox const &bbox) {
+                            RetBox const &bbox) {
     // 生成本次报警的唯一ID
     buf.alarmResult.alarmVideoDuration = params.videDuration;
     buf.alarmResult.alarmId = utils::generate_hex(16);

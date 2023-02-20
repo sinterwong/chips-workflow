@@ -16,7 +16,8 @@
 
 namespace infer {
 namespace utils {
-inline bool compare(DetectionResult const &a, DetectionResult const &b) {
+
+inline bool compare(BBox const &a, BBox const &b) {
   return a.det_confidence > b.det_confidence;
 }
 

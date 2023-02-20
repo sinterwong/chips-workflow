@@ -24,17 +24,9 @@
 #include "common/common.hpp"
 
 using common::ColorType;
+using common::RetBox;
+using common::RetPoly;
 
-/**
- * @brief bbox result type
- * 
- */
-using retBox = std::pair<std::string, std::array<float, 6>>;
-/**
- * @brief poly result type
- * 
- */
-using retPoly = std::pair<std::string, std::array<float, 9>>;
 
 /**
  * @brief 报警时的摄像头信息
@@ -69,8 +61,8 @@ struct AlarmResult {
  * @todo 这里的vector线程不安全 未来需要替换
  */
 struct AlgorithmResult {
-  std::vector<retBox> bboxes; // [x1, y1, x2, y2, confidence, classid]
-  std::vector<retPoly> polys; // [x1, y1, ..., x4, y4, classid]
+  std::vector<RetBox> bboxes; // [x1, y1, x2, y2, confidence, classid]
+  std::vector<RetPoly> polys; // [x1, y1, ..., x4, y4, classid]
 };
 
 /**
@@ -103,9 +95,6 @@ struct queueMessage {
  *
  */
 class MessageBus {
-protected:
-  std::unordered_set<std::string> pool;
-
 public:
   enum class returnFlag {
     null,

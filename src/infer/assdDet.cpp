@@ -77,7 +77,7 @@ void Assd::generateBoxes(std::unordered_map<int, DetRet> &m,
           float h = re_y2 - re_y1;
           float cx = re_x2 - w / 2.;
           float cy = re_y2 - h / 2.;
-          DetectionResult det;
+          BBox det;
           det.class_id = 0;
           det.bbox = {cx, cy, w, h};
           det.class_confidence = output[i][k];
@@ -93,7 +93,7 @@ void Assd::generateBoxes(std::unordered_map<int, DetRet> &m,
   }
 }
 
-bool Assd::verifyOutput(Result const &result) const { return true; }
+bool Assd::verifyOutput(InferResult const &result) const { return true; }
 
 FlowEngineModuleRegister(Assd, const common::AlgorithmConfig &,
                          ModelInfo const &);
