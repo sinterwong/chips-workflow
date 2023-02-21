@@ -10,10 +10,10 @@
  */
 
 #include "jetson/trt_inference.hpp"
-#include "infer_utils.hpp"
 #include "jetson/logger.h"
 #include "jetson/preprocess.h"
 #include "jetson/standard.h"
+
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -26,6 +26,8 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 #include <vector>
+
+#include "infer/preprocess.hpp"
 
 namespace infer {
 namespace trt {

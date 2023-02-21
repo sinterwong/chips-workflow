@@ -46,7 +46,7 @@ private:
 public:
   bool init();
 
-  void run();
+  bool run();
 
   inline bool isRunning() { return stream && stream->IsStreaming(); }
 

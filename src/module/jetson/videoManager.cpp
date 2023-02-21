@@ -42,7 +42,6 @@ bool VideoManager::init() {
   return true;
 }
 
-
 void VideoManager::streamGet() {
   while (isRunning()) {
     // FLOWENGINE_LOGGER_CRITICAL("Get Frame!");
@@ -54,8 +53,12 @@ void VideoManager::streamGet() {
   }
 }
 
-void VideoManager::run() {
+bool VideoManager::run() {
+  if (!isRunning()) {
+    return false;
+  }
   consumer = std::make_unique<std::thread>(&VideoManager::streamGet, this);
+  return true;
 }
 
 cv::Mat VideoManager::getcvImage() {
