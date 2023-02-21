@@ -28,7 +28,7 @@ void JetsonOutputModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     assert(type == "stream");
     FrameBuf frameBufMessage = backendPtr->pool->read(buf.key);
-    auto frame = std::any_cast<uchar3 *>(frameBufMessage.read("void**"));
+    auto frame = std::any_cast<uchar3 *>(frameBufMessage.read("void*"));
     // std::cout << (frame == nullptr) << std::endl;
     outputStream->Render(frame, buf.cameraResult.widthPixel,
                          buf.cameraResult.heightPixel);

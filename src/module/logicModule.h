@@ -18,10 +18,10 @@
 #include <vector>
 
 #include "common/config.hpp"
-#include "preprocess.hpp"
 #include "logger/logger.hpp"
 #include "module.hpp"
 #include "module_utils.hpp"
+#include "preprocess.hpp"
 
 #if (TARGET_PLATFORM == 0)
 #include "x3/videoRecord.hpp"
@@ -102,15 +102,17 @@ public:
   }
 
   inline void recordVideo(int key, int width, int height) {
-
+    // FLOWENGINE_LOGGER_CRITICAL("frameCount {} times", frameCount);
     FrameBuf frameBufMessage = backendPtr->pool->read(key);
+
     if (drawTimes-- > 0) {
       auto image =
           std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
       drawBox(*image, alarmBox, cv::Scalar{255, 0, 0});
       vr->record(image->data);
     } else {
-      vr->record(std::any_cast<void *>(frameBufMessage.read("void**")));
+      void *data = std::any_cast<void *>(frameBufMessage.read("void*"));
+      vr->record(data);
     }
 
     if (--frameCount <= 0 || !vr->check()) {

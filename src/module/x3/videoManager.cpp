@@ -53,6 +53,7 @@ bool VideoManager::run() {
   return true;
 }
 
+// 可以返回一个shared_ptr
 cv::Mat VideoManager::getcvImage() {
   std::lock_guard lk(m);
   if (!frame) {

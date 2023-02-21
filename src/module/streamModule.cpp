@@ -60,7 +60,7 @@ void StreamModule::step() {
   }
   // FLOWENGINE_LOGGER_CRITICAL("Stream forward!");
   // 100ms 处理一帧
-  std::this_thread::sleep_for(std::chrono::microseconds(100));
+  // std::this_thread::sleep_for(std::chrono::microseconds(100));
   forward(message);
   afterForward();
 }
@@ -85,14 +85,14 @@ std::any getPtrBuffer(std::vector<std::any> &list, FrameBuf *buf) {
   assert(list[0].has_value());
   assert(list[0].type() == typeid(std::shared_ptr<cv::Mat>));
   auto mat = std::any_cast<std::shared_ptr<cv::Mat>>(list[0]);
-  return reinterpret_cast<void **>(&mat->data);
+  return reinterpret_cast<void *>(mat->data);
 }
 
 FrameBuf makeFrameBuf(cv::Mat &&frame, int height, int width) {
   FrameBuf temp;
   temp.write({std::make_any<std::shared_ptr<cv::Mat>>(
                  std::make_shared<cv::Mat>(std::forward<cv::Mat>(frame)))},
-             {std::make_pair("void**", getPtrBuffer),
+             {std::make_pair("void*", getPtrBuffer),
               std::make_pair("Mat", getMatBuffer)},
              &StreamModule::delBuffer,
              std::make_tuple(width, height, 3, UINT8));
