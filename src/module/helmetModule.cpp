@@ -36,8 +36,7 @@ void HelmetModule::forward(std::vector<forwardMessage> &message) {
   }
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      // FLOWENGINE_LOGGER_INFO("{} HelmetModule module was done!", name);
-      std::cout << name << "{} HelmetModule module was done!" << std::endl;
+      FLOWENGINE_LOGGER_INFO("{} HelmetModule module was done!", name);
       stopFlag.store(true);
       destoryOutputStream();
       return;

@@ -35,8 +35,7 @@ void OiltubeModule::forward(std::vector<forwardMessage> &message) {
   }
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      // FLOWENGINE_LOGGER_INFO("{} OiltubeModule module was done!", name);
-      std::cout << name << "{} OiltubeModule module was done!" << std::endl;
+      FLOWENGINE_LOGGER_INFO("{} OiltubeModule module was done!", name);
       stopFlag.store(true);
       return;
     }

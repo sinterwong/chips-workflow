@@ -110,7 +110,7 @@ public:
       drawBox(*image, alarmBox, cv::Scalar{255, 0, 0});
       vr->record(image->data);
     } else {
-      vr->record(std::any_cast<void *>(frameBufMessage.read("void*")));
+      vr->record(std::any_cast<void *>(frameBufMessage.read("void**")));
     }
 
     if (!vr->check() || --frameCount <= 0) {
