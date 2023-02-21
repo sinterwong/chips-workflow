@@ -26,11 +26,11 @@ public:
 
   virtual ~AlgorithmBus() {}
 
-  virtual bool registered(std::string const &name, AlgorithmConfig const &) = 0;
+  virtual bool registered(std::string const &, AlgorithmConfig const &) = 0;
 
-  virtual bool unregistered(std::string const &name) = 0;
+  virtual bool unregistered(std::string const &) = 0;
 
-  virtual bool infer(std::string const &name, InferParams const &,
-                     InferResult &ret) = 0;
+  virtual bool infer(std::string const &, void *, InferParams const &,
+                     InferResult &) = 0;
 };
 #endif

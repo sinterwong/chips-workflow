@@ -60,7 +60,7 @@ struct InferParams {
 };
 
 /**
- * @brief 检测结果
+ * @brief bbox 数据
  *
  */
 struct alignas(float) BBox {
@@ -72,7 +72,7 @@ struct alignas(float) BBox {
 };
 
 // point 数据
-using Points = std::array<int, 3>;
+using Point = std::array<int, 3>;
 
 // 单次分类结果
 using ClsRet = std::pair<int, float>;
@@ -81,10 +81,10 @@ using ClsRet = std::pair<int, float>;
 using DetRet = std::vector<BBox>;
 
 // 单次关键点检测的结果
-using PoseRet = std::vector<Points>;
+using PoseRet = std::vector<Point>;
 
 /**
- * @brief 支持的算法类型
+ * @brief 算法类型
  *
  */
 enum class AlgoType {
@@ -95,16 +95,24 @@ enum class AlgoType {
   Feature
 };
 
-using AlgoRet = std::variant<DetRet, ClsRet, PoseRet>;
+using AlgoRet = std::variant<std::monostate, DetRet, ClsRet, PoseRet>;
 
 /**
  * @brief 算法推理时返回结果
  *
  */
 struct InferResult {
-  AlgoType aType;
   std::array<int, 3> shape; // 输入图像的尺寸
   AlgoRet aRet;
+};
+
+/**
+ * @brief 模型的基础信息（模型装载后可以获取）
+ *
+ */
+struct ModelInfo {
+  int output_count;                           // 输出的个数
+  std::vector<std::vector<int>> outputShapes; // 输出的尺度
 };
 
 /**

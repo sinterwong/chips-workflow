@@ -15,9 +15,9 @@
 #ifndef __FLOWCORE_ALGO_INFER_H_
 #define __FLOWCORE_ALGO_INFER_H_
 
-using common::InferResult;
 using common::AlgorithmConfig;
 using common::InferParams;
+using common::InferResult;
 
 class AlgoInfer {
 public:
@@ -38,6 +38,14 @@ public:
    * @return false
    */
   virtual bool infer(void *data, InferParams const &, InferResult &ret) = 0;
+
+  /**
+   * @brief 关闭算法
+   *
+   * @return true
+   * @return false
+   */
+  virtual bool destory() = 0;
 
 protected:
   AlgorithmConfig config;

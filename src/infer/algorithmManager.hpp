@@ -12,6 +12,7 @@
 #include "core/algoInfer.hpp"
 #include "core/algorithmBus.h"
 #include <memory>
+#include <shared_mutex>
 #include <unordered_map>
 
 #ifndef __FLOWCORE_ALGORITHM_MANAGER_H_
@@ -24,17 +25,18 @@ class AlgorithmManager : public AlgorithmBus {
 public:
   virtual ~AlgorithmManager() {}
 
-  virtual bool registered(std::string const &name,
+  virtual bool registered(std::string const &,
                           AlgorithmConfig const &) override;
 
-  virtual bool unregistered(std::string const &name) override;
+  virtual bool unregistered(std::string const &) override;
 
-  virtual bool infer(std::string const &name, InferParams const &,
-                     InferResult &ret) override;
+  virtual bool infer(std::string const &, void *, InferParams const &,
+                     InferResult &) override;
 
 protected:
   // 名称索引算法
   std::unordered_map<std::string, algo_ptr> name2algo;
+  std::shared_mutex m;
 };
 #endif
 }

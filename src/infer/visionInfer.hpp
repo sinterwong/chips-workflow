@@ -10,6 +10,7 @@
  */
 #include "core/algoInfer.hpp"
 #include "vision.hpp"
+#include <mutex>
 #if (TARGET_PLATFORM == 0)
 #include "x3/x3_inference.hpp"
 using namespace infer::x3;
@@ -38,10 +39,12 @@ public:
 
   virtual bool infer(void* data, InferParams const &, InferResult &ret) override;
 
+  virtual bool destory() override;
+
 private:
   std::mutex m;
   std::shared_ptr<AlgoInference> instance;
   std::shared_ptr<vision::Vision> vision;
-  infer::ModelInfo modelInfo;
+  ModelInfo modelInfo;
 };
 } // namespace infer
