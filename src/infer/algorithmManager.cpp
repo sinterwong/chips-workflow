@@ -25,7 +25,7 @@ bool AlgorithmManager::registered(std::string const &name,
   if (iter != name2algo.end()) {
     FLOWENGINE_LOGGER_WARN("{} had registered!", name);
   }
-  // 注册算法 TODO 先直接给到 VisionInfer
+  // 注册算法 TODO 先直接给到 VisionInfer，话说这套框架有可能加入非视觉任务？
   algo_ptr algo = std::make_shared<VisionInfer>(config);
   if (!algo->init()) {
     FLOWENGINE_LOGGER_ERROR("algorithm manager: failed to register {}", name);
@@ -58,7 +58,7 @@ bool AlgorithmManager::infer(std::string const &name, void *data,
   std::shared_lock lk(m);
   auto iter = name2algo.find(name);
   if (iter != name2algo.end()) {
-    FLOWENGINE_LOGGER_ERROR("{} was no registered!", name);
+    FLOWENGINE_LOGGER_WARN("{} was no registered!", name);
     return false;
   }
   return iter->second->infer(data, params, ret);
