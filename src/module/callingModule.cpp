@@ -68,9 +68,9 @@ void CallingModule::forward(std::vector<forwardMessage> &message) {
           sendWithTypes(buf, {"output"});
 
           // 保存视频
-          // if (params.videDuration > 0) {
-          //   initRecord(buf);
-          // }
+          if (params.videDuration > 0) {
+            initRecord(buf);
+          }
           break;
         }
       }
