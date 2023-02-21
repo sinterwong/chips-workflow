@@ -113,7 +113,7 @@ public:
       vr->record(std::any_cast<void *>(frameBufMessage.read("void**")));
     }
 
-    if (!vr->check() || --frameCount <= 0) {
+    if (--frameCount <= 0 || !vr->check()) {
       isRecord = false;
       frameCount = 0;
       drawTimes = 0;
