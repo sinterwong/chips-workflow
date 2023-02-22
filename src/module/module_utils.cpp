@@ -1,15 +1,21 @@
 /**
  * @file module_utils.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-11-21
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include "module_utils.hpp"
+
+#include "rapidjson/document.h"
+#include "rapidjson/prettywriter.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
+#include <vector>
 
 namespace module {
 namespace utils {
@@ -135,6 +141,89 @@ cv::Mat str2mat(const std::string &s) {
 
   cv::Mat img = imdecode(data, cv::IMREAD_UNCHANGED);
   return img;
+}
+
+bool retPolys2json(std::vector<RetPoly> const &retPolygons, std::string &result) {
+  rapidjson::Document doc;
+  doc.SetObject();
+  // 获取分配器
+  rapidjson::Document::AllocatorType &allocator = doc.GetAllocator();
+
+  if (!retPolygons.empty()) {
+    rapidjson::Value polys(rapidjson::kArrayType);
+    for (int i = 0; i < static_cast<int>(retPolygons.size()); i++) {
+      rapidjson::Value polygon;
+      polygon.SetObject();
+      rapidjson::Value coord(rapidjson::kArrayType);
+      for (auto v : retPolygons[i].second) {
+        coord.PushBack(v, allocator);
+      }
+      polygon.AddMember("coord", coord, allocator);
+      rapidjson::Value className(retPolygons[i].first.c_str(), allocator);
+      polygon.AddMember("class_name", className, allocator);
+      polys.PushBack(polygon, allocator);
+    }
+    doc.AddMember("polygons", polys, allocator);
+  }
+
+  rapidjson::StringBuffer buffer;
+  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+  doc.Accept(writer);
+  result = std::string(buffer.GetString());
+  return true;
+}
+
+bool retBoxes2json(std::vector<RetBox> const &retBoxes, std::string &result) {
+  rapidjson::Document doc;
+  doc.SetObject();
+  // 获取分配器
+  rapidjson::Document::AllocatorType &allocator = doc.GetAllocator();
+
+  if (!retBoxes.empty()) {
+    rapidjson::Value bboxes(rapidjson::kArrayType);
+    for (int i = 0; i < static_cast<int>(retBoxes.size()); i++) {
+      rapidjson::Value bbox;
+      bbox.SetObject();
+      rapidjson::Value coord(rapidjson::kArrayType);
+      for (auto v : retBoxes[i].second) {
+        coord.PushBack(v, allocator);
+      }
+      bbox.AddMember("coord", coord, allocator);
+      rapidjson::Value className(retBoxes[i].first.c_str(), allocator);
+      bbox.AddMember("class_name", className, allocator);
+      bboxes.PushBack(bbox, allocator);
+    }
+    doc.AddMember("bboxes", bboxes, allocator);
+  }
+
+  rapidjson::StringBuffer buffer;
+  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+  doc.Accept(writer);
+  result = std::string(buffer.GetString());
+  return true;
+}
+
+bool drawRetBox(cv::Mat &image, RetBox const &bbox, cv::Scalar const &scalar) {
+  cv::Rect rect(bbox.second[0], bbox.second[1], bbox.second[2] - bbox.second[0],
+                bbox.second[3] - bbox.second[1]);
+  cv::rectangle(image, rect, scalar, 2);
+  cv::putText(image, bbox.first, cv::Point(rect.x, rect.y - 1),
+              cv::FONT_HERSHEY_PLAIN, 2, {255, 255, 255});
+  return true;
+}
+
+bool drawRetPoly(cv::Mat &image, RetPoly const &poly,
+                 cv::Scalar const &scalar) {
+  std::vector<cv::Point> fillContSingle;
+  for (int i = 0; i < static_cast<int>(poly.second.size()); i += 2) {
+    fillContSingle.emplace_back(
+        cv::Point{static_cast<int>(poly.second[i]),
+                  static_cast<int>(poly.second[i + 1])});
+  }
+  cv::fillPoly(image, std::vector<std::vector<cv::Point>>{fillContSingle},
+               cv::Scalar(0, 255, 255));
+
+  return true;
 }
 
 } // namespace utils

@@ -27,12 +27,12 @@ class Module {
 protected:
   Backend *backendPtr;
 
-  std::string name;
+  std::string name;   // 模块名称
 
-  std::string type;
+  std::string type;   // 模块类型 {stream, output, logic}
 
   std::unordered_map<std::string, int> hash;
-  
+
   std::vector<forwardMessage> message;
 
   bool loop;
@@ -45,18 +45,15 @@ public:
   std::atomic_bool stopFlag;
 
   Module(Backend *ptr, const std::string &initName, const std::string &initType)
-      : backendPtr(ptr), name(initName), type(initType){
+      : backendPtr(ptr), name(initName), type(initType) {
     // backendPtr = ptr;
     // name = initName;
     // type = initType;
 
     stopFlag.store(false);
     backendPtr->message->registered(name);
-    // FlowEngineLoggerInit(true, true, true, true);
   }
-  virtual ~Module() {
-    // FlowEngineLoggerDrop();
-  }
+  virtual ~Module() {}
 
   virtual void beforeGetMessage(){};
 

@@ -18,6 +18,11 @@
 #include <string>
 #include <vector>
 
+#include "common/common.hpp"
+
+using common::RetBox;
+using common::RetPoly;
+
 namespace module {
 namespace utils {
 
@@ -60,5 +65,11 @@ static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 constexpr static inline bool is_base64(unsigned char c) {
   return (isalnum(c) || (c == '+') || (c == '/'));
 }
+
+bool drawRetBox(cv::Mat &image, RetBox const &bbox,
+                cv::Scalar const &scalar = {0, 0, 255});
+
+bool drawRetPoly(cv::Mat &image, RetPoly const &poly,
+                 cv::Scalar const &scalar = {0, 0, 255});
 } // namespace utils
 } // namespace module

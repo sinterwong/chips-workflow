@@ -68,9 +68,15 @@ void OpencvCameraModule::forward(std::vector<forwardMessage> &message) {
     int returnKey = backendPtr->pool->write(frameBufMessage);
 
     queueMessage sendMessage;
+
+    // 报警时所需的视频流的信息
+    AlarmInfo alarmInfo;
+    alarmInfo.cameraId = 0;
+    alarmInfo.cameraIp = fileName;
+    alarmInfo.height = frame->rows;
+    alarmInfo.width = frame->cols;
+
     sendMessage.frameType = ColorType::BGR888;
-    sendMessage.cameraResult.heightPixel = frame->rows;
-    sendMessage.cameraResult.widthPixel = frame->cols;
     sendMessage.key = returnKey;
     autoSend(sendMessage);
   } else {

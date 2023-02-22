@@ -16,6 +16,8 @@
 #include <variant>
 #include <vector>
 
+#include "common.hpp"
+
 #ifndef _FLOWENGINE_COMMON_CONFIG_HPP_
 #define _FLOWENGINE_COMMON_CONFIG_HPP_
 
@@ -36,7 +38,7 @@ struct AlgorithmConfig {
   std::vector<std::string> inputTensorNames;  // input tensor names
   std::vector<std::string> outputTensorNames; // output tensor names
   std::string algorithmSerial;                // 算法系列
-  Shape inputShape;              // 算法需要的输入尺度
+  Shape inputShape;                           // 算法需要的输入尺度
   bool isScale;                               // 是否等比例缩放
   float cond_thr;                             // 置信度阈值
   float nms_thr;                              // NMS 阈值
@@ -70,7 +72,8 @@ struct OutputConfig {
   std::string url;
 };
 
-using ParamsConfig = std::variant<AlgorithmConfig, CameraConfig, LogicConfig, OutputConfig>;
+using ParamsConfig =
+    std::variant<AlgorithmConfig, CameraConfig, LogicConfig, OutputConfig>;
 
 inline void doSomething(AlgorithmConfig &config) {
   // do something with AlgorithmConfig
@@ -92,5 +95,5 @@ inline void processConfig(ParamsConfig &config) {
   std::visit([](auto &config) { doSomething(config); }, config);
 }
 
-}
+} // namespace common
 #endif // _FLOWENGINE_COMMON_CONFIG_HPP_

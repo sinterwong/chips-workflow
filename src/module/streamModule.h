@@ -1,14 +1,14 @@
 /**
  * @file streamModule.h
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-12-06
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
- 
+
 #ifndef __METAENGINE_SUNRISE_DECODER_H
 #define __METAENGINE_SUNRISE_DECODER_H
 
@@ -29,20 +29,21 @@
 #include "jetson/videoManager.hpp"
 #endif
 using namespace module::utils;
+using common::CameraConfig;
 
 namespace module {
 
 class StreamModule : public Module {
 
 private:
-  CameraResult cameraResult;
+  // CameraResult cameraResult;
+  CameraConfig config;
 
   std::unique_ptr<VideoManager> vm;
 
 public:
-  StreamModule(Backend *ptr, const std::string &initName,
-                  const std::string &initType,
-                  const common::CameraConfig &_params);
+  StreamModule(Backend *ptr, std::string const &, std::string const &,
+               CameraConfig const &);
 
   ~StreamModule() {}
 

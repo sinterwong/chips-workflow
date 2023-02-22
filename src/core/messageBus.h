@@ -1,16 +1,17 @@
 /**
  * @file messageBus.h
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-30
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 #ifndef DETTRACKENGINE_MESSAGEBUS_H
 #define DETTRACKENGINE_MESSAGEBUS_H
 
+#include "common/common.hpp"
 #include <array>
 #include <atomic>
 #include <iostream>
@@ -21,60 +22,32 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-#include "common/common.hpp"
 
 using common::ColorType;
 using common::RetBox;
 using common::RetPoly;
 
-
 /**
- * @brief 报警时的摄像头信息
+ * @brief 报警时需要返回的信息
  *
  */
-struct CameraResult {
-  int widthPixel;        // 视频宽度
-  int heightPixel;       // 视频高度
-  int frameRate;         // 帧数
-  int cameraId;          // 摄像机唯一ID
-  std::string videoCode; // 视频编码类型
-  std::string flowType;  // 流协议类型
-  std::string cameraIp;  // 网络流链接
+struct AlarmInfo {
+  int height;                  // 高
+  int width;                   // 宽
+  int cameraId;                // 摄像机 ID
+  int eventId;                 // 报警类型Id
+  int prepareDelayInSec;       // 视频录制时间
+  std::string page;            // 是否展示报警
+  std::string cameraIp;        // 视频流 IP
+  std::string alarmType;       // 报警类型
+  std::string alarmFile;       // 报警图片(base64)
+  std::string alarmId;         // 本次报警唯一 ID
+  std::string alarmDetails;    // 报警细节
+  std::string algorithmResult; // 算法返回结果
 };
 
 /**
- * @brief 报警信息
- *
- */
-struct AlarmResult {
-  int alarmVideoDuration;   // 报警视频时长（秒）
-  int eventId;              // 报警类型的ID（smoke, phone等等）
-  std::string page;         // 是否展示报警
-  std::string alarmType;    // 报警类型（smoke, phone等等）
-  std::string alarmFile;    // 报警图片路径
-  std::string alarmId;      // 报警的唯一标识 uuid
-  std::string alarmDetails; // 报警细节
-};
-
-/**
- * @brief 报警时的算法信息
- * @todo 这里的vector线程不安全 未来需要替换
- */
-struct AlgorithmResult {
-  std::vector<RetBox> bboxes; // [x1, y1, x2, y2, confidence, classid]
-  std::vector<RetPoly> polys; // [x1, y1, ..., x4, y4, classid]
-};
-
-/**
- * @brief 逻辑模块配置
- */
-struct LogicInfo {
-  std::array<int, 4> region;         // [x1, y1, x2, y2]
-  std::vector<int> attentionClasses; // [0, 2, 10...]
-};
-
-/**
- * @brief 传递的消息
+ * @brief 模块之间的传递的消息
  *
  */
 struct queueMessage {
@@ -84,10 +57,7 @@ struct queueMessage {
   std::string recv;
   std::string messageType;
   ColorType frameType;
-  LogicInfo logicInfo;
-  AlarmResult alarmResult;
-  CameraResult cameraResult;
-  AlgorithmResult algorithmResult;
+  AlarmInfo alarmInfo;
 };
 
 /**
