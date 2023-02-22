@@ -1,12 +1,12 @@
 /**
  * @file routeFramePool.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.2
  * @date 2022-06-30
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 #include "routeFramePool.h"
 #include <shared_mutex>
@@ -65,13 +65,10 @@ std::any FrameBuf::read(std::string str) {
   return iter->second(dataList, this);
 }
 
-void FrameBuf::write(
-    std::vector<std::any> data,
-    std::map<std::string,
-             std::function<std::any(std::vector<std::any> &, FrameBuf *)>>
-        mFunc,
-    std::function<void(std::vector<std::any> &)> dFunc,
-    std::tuple<int, int, int, frameDataType> infor) {
+void FrameBuf::write(std::vector<std::any> data,
+                     std::map<std::string, getFrameBufFunc> mFunc,
+                     delFrameBufFunc dFunc,
+                     std::tuple<int, int, int, frameDataType> infor) {
   dataList = std::move(data);
   mapFunction = std::move(mFunc);
   delFunction = std::move(dFunc);

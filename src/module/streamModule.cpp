@@ -86,7 +86,7 @@ std::any getPtrBuffer(std::vector<std::any> &list, FrameBuf *buf) {
   assert(list[0].has_value());
   assert(list[0].type() == typeid(std::shared_ptr<cv::Mat>));
   auto mat = std::any_cast<std::shared_ptr<cv::Mat>>(list[0]);
-  return reinterpret_cast<void **>(&mat->data);
+  return reinterpret_cast<void *>(mat->data);
 }
 
 FrameBuf makeFrameBuf(cv::Mat &&frame, int height, int width) {
@@ -104,7 +104,6 @@ void StreamModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
       FLOWENGINE_LOGGER_INFO("{} StreamModule module was done!", name);
-      // std::cout << name << "{} StreamModule module was done!" << std::endl;
       stopFlag.store(true);
       return;
     }
