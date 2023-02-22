@@ -24,14 +24,21 @@ namespace common {
  * @brief 颜色类型
  *
  */
-enum class ColorType { None = 0, RGB888, BGR888, NV12 };
+enum class ColorType {
+  None = 0, // Raw type
+  RGB888,   // RGB type
+  BGR888,   // BGR type
+  NV12      // YUV420 NV12 type
+};
+
+using Shape = std::array<int, 3>;
 
 /**
  * @brief 帧信息
  *
  */
 struct FrameInfo {
-  std::array<int, 3> shape;
+  Shape shape;
   ColorType type;
   void **data;
 };
@@ -52,11 +59,12 @@ using RetPoly = std::pair<std::string, std::array<float, 9>>;
  *
  */
 struct InferParams {
-  std::string name;                  // 调用逻辑的名称
-  ColorType frameType;               // frameType
-  float cropScaling;                 // 截图时候需要缩放的比例
-  std::vector<RetBox> regions;       // bboxes
-  std::vector<int> attentionClasses; // [0, 2, 10...]
+  std::string name;            // 调用逻辑的名称
+  ColorType frameType;         // frameType
+  float cropScaling;           // 截图时候需要缩放的比例
+  std::vector<RetBox> regions; // bboxes
+  Shape shape;                 // 图像的尺寸
+  // std::vector<int> attentionClasses; // [0, 2, 10...] logic中操作
 };
 
 /**
@@ -72,7 +80,7 @@ struct alignas(float) BBox {
 };
 
 // point 数据
-using Point = std::array<int, 3>;
+using Point = Shape;
 
 // 单次分类结果
 using ClsRet = std::pair<int, float>;
@@ -102,7 +110,7 @@ using AlgoRet = std::variant<std::monostate, DetRet, ClsRet, PoseRet>;
  *
  */
 struct InferResult {
-  std::array<int, 3> shape; // 输入图像的尺寸
+  Shape shape; // 输入图像的尺寸
   AlgoRet aRet;
 };
 

@@ -48,8 +48,8 @@ void nms(DetRet &res, std::unordered_map<int, DetRet> &temp, float nms_thr) {
   }
 }
 
-void restoryBoxes(DetRet &results, std::array<int, 3> const &shape,
-                  std::array<int, 3> const &inputShape, bool isScale) {
+void restoryBoxes(DetRet &results, Shape const &shape,
+                  Shape const &inputShape, bool isScale) {
   float rw, rh;
   if (isScale) {
     rw = std::min(inputShape[0] * 1.0 / shape.at(0),
@@ -72,8 +72,8 @@ void restoryBoxes(DetRet &results, std::array<int, 3> const &shape,
   }
 }
 
-void restoryPoints(PoseRet &results, std::array<int, 3> const &shape,
-                   std::array<int, 3> const &inputShape, bool isScale) {}
+void restoryPoints(PoseRet &results, Shape const &shape,
+                   Shape const &inputShape, bool isScale) {}
 
 } // namespace utils
 } // namespace infer

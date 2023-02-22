@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+using Shape = std::array<int, 3>;
+
 #define HB_CHECK_SUCCESS(value, errmsg)                                \
 	do {                                                               \
 		/*value can be call of function*/                                  \
@@ -64,8 +66,8 @@ void nms(std::vector<DetectionRet> &res,
 }
 
 void restoryBoxes(std::vector<DetectionRet> &results,
-                       std::array<int, 3> const &shape,
-                       std::array<int, 3> const &inputShape,
+                       Shape const &shape,
+                       Shape const &inputShape,
                        bool isScale = true) {
   float rw, rh;
   if (isScale) {

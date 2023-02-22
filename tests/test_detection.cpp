@@ -22,6 +22,7 @@ DEFINE_int32(input_height, 335, "Specify input height.");
 DEFINE_int32(input_width, 335, "Specify input width.");
 
 using common::InferResult;
+using common::Shape;
 
 int main(int argc, char **argv) {
 
@@ -61,7 +62,7 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  std::array<int, 3> inputShape{FLAGS_input_width, FLAGS_input_height, 3};
+  Shape inputShape{FLAGS_input_width, FLAGS_input_height, 3};
   common::AlgorithmConfig params{FLAGS_model_path,
                                  std::move(inputNames),
                                  std::move(outputNames),

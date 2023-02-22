@@ -15,6 +15,7 @@
 #include "vision.hpp"
 #include <memory>
 #include <mutex>
+#include <opencv2/core/hal/interface.h>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <variant>
@@ -42,8 +43,9 @@ bool VisionInfer::init() {
 bool VisionInfer::infer(void *data, const InferParams &params,
                         InferResult &ret) {
   // 该函数可能被并发调用，infer时处理线程安全问题
-  // TODO data 直接默认是shared_ptr<cv::Mat>
-  std::shared_ptr<cv::Mat> image{reinterpret_cast<cv::Mat *>(data)};
+  Shape const &shape = params.shape;
+  auto cv_type = shape.at(2) == 1 ? CV_8UC1 : CV_8UC3;
+  cv::Mat image = cv::Mat(shape.at(1), shape.at(0), cv_type, data);
   auto &bboxes = params.regions;
   for (auto &bbox : bboxes) {
     cv::Mat inferImage;
@@ -52,20 +54,27 @@ bool VisionInfer::infer(void *data, const InferParams &params,
                     static_cast<int>(bbox.second[2] - bbox.second[0]),
                     static_cast<int>(bbox.second[3] - bbox.second[1])};
     if (rect.area() != 0) {
-      if (!cropImage(*image, inferImage, rect, params.frameType,
+      if (!cropImage(image, inferImage, rect, params.frameType,
                      params.cropScaling)) {
         FLOWENGINE_LOGGER_ERROR(
             "VisionInfer infer: cropImage is failed, rect is {},{},{},{}, "
             "but the video resolution is {}x{}",
-            rect.x, rect.y, rect.width, rect.height, image->cols, image->rows);
+            rect.x, rect.y, rect.width, rect.height, image.cols, image.rows);
         return false;
       }
     } else {
-      inferImage = image->clone();
+      inferImage = image.clone();
     }
-    cv::imwrite("inferImage.jpg", inferImage);
-
-    ret.shape = {rect.width, rect.height, 3};
+    switch (params.frameType) {
+    case common::ColorType::None:
+    case common::ColorType::RGB888:
+    case common::ColorType::BGR888:
+      ret.shape = {inferImage.cols, inferImage.rows, 3};
+      break;
+    case common::ColorType::NV12:
+      ret.shape = {inferImage.cols, inferImage.rows * 2 / 3, 3};
+      break;
+    }
     FrameInfo frame;
     frame.type = params.frameType;
     frame.data = reinterpret_cast<void **>(&inferImage.data);

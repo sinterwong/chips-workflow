@@ -36,7 +36,7 @@ struct AlgorithmConfig {
   std::vector<std::string> inputTensorNames;  // input tensor names
   std::vector<std::string> outputTensorNames; // output tensor names
   std::string algorithmSerial;                // 算法系列
-  std::array<int, 3> inputShape;              // 算法需要的输入尺度
+  Shape inputShape;              // 算法需要的输入尺度
   bool isScale;                               // 是否等比例缩放
   float cond_thr;                             // 置信度阈值
   float nms_thr;                              // NMS 阈值

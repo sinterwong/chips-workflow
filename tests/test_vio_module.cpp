@@ -8,6 +8,8 @@
 #include <memory>
 using namespace module;
 
+using common::Shape;
+
 DEFINE_string(video, "", "Specify the video uri.");
 DEFINE_string(model_path, "", "Specify the model path.");
 
@@ -36,7 +38,7 @@ int main(int argc, char **argv) {
   }
 
   // 算法module
-  std::array<int, 3> inputShape{640, 640, 3};
+  Shape inputShape{640, 640, 3};
   std::vector<std::string> inputNames = {"images"};
   std::vector<std::string> outputNames = {"output"};
   common::AlgorithmConfig params{FLAGS_model_path,

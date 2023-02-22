@@ -18,6 +18,7 @@
 namespace infer {
 using common::BBox;
 using common::Point;
+using common::Shape;
 
 using common::InferResult;
 

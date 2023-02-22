@@ -14,6 +14,7 @@ DEFINE_string(image_path, "", "Specify image path.");
 DEFINE_string(model_path, "", "Specify the yolo model path.");
 
 using common::InferResult;
+using common::Shape;
 using infer::VisionInfer;
 
 int main(int argc, char **argv) {
@@ -34,10 +35,8 @@ int main(int argc, char **argv) {
 
   cv::Mat image_nv12;
   infer::utils::RGB2NV12(image_rgb, image_nv12);
-  std::shared_ptr<cv::Mat> image_nv12_ptr =
-      std::make_shared<cv::Mat>(image_nv12);
 
-  std::array<int, 3> inputShape{640, 640, 3};
+  Shape inputShape{640, 640, 3};
   common::AlgorithmConfig config{FLAGS_model_path,
                                  std::move(inputNames),
                                  std::move(outputNames),
@@ -58,12 +57,14 @@ int main(int argc, char **argv) {
 
   std::vector<RetBox> regions{{"hello", {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}}};
 
-  InferParams params{
-      std::string("hello"), ColorType::NV12, 0.5, regions, {0} // [0, 2, 10...]
-  };
+  InferParams params{std::string("hello"),
+                     ColorType::NV12,
+                     0.5,
+                     regions,
+                     {image_nv12.cols, image_nv12.rows, image_nv12.channels()}};
   InferResult ret;
 
-  vision->infer(&image_nv12, params, ret);
+  vision->infer(image_nv12.data, params, ret);
 
   auto bboxes = std::get_if<common::DetRet>(&ret.aRet);
   if (!bboxes) {
@@ -77,8 +78,7 @@ int main(int argc, char **argv) {
                   bbox.bbox[3] - bbox.bbox[1]);
     cv::rectangle(image_bgr, rect, cv::Scalar(0, 0, 255), 2);
   }
-  cv::cvtColor(image_bgr, image_bgr, cv::COLOR_RGB2BGR);
-  cv::imwrite("test_det_out.jpg", image_bgr);
+  cv::imwrite("test_vision_infer_out.jpg", image_bgr);
 
   gflags::ShutDownCommandLineFlags();
   return 0;
