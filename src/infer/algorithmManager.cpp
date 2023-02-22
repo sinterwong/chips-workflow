@@ -24,13 +24,16 @@ bool AlgorithmManager::registered(std::string const &name,
   auto iter = name2algo.find(name);
   if (iter != name2algo.end()) {
     FLOWENGINE_LOGGER_WARN("{} had registered!", name);
+    return false;
   }
   // 注册算法 TODO 先直接给到 VisionInfer，话说这套框架有可能加入非视觉任务？
-  algo_ptr algo = std::make_shared<VisionInfer>(config);
-  if (!algo->init()) {
+  name2algo[name] = std::make_shared<VisionInfer>(config);
+  if (!name2algo.at(name)->init()) {
     FLOWENGINE_LOGGER_ERROR("algorithm manager: failed to register {}", name);
     return false;
   }
+  
+
   return true;
 }
 
@@ -57,7 +60,7 @@ bool AlgorithmManager::infer(std::string const &name, void *data,
   // infer调用的线程安全问题交给algoInfer去处理，可以做的更精细（如提前数据处理等）
   std::shared_lock lk(m);
   auto iter = name2algo.find(name);
-  if (iter != name2algo.end()) {
+  if (iter == name2algo.end()) {
     FLOWENGINE_LOGGER_WARN("{} was no registered!", name);
     return false;
   }
