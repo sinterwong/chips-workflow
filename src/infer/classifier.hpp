@@ -50,7 +50,7 @@ private:
     // FLOWENGINE_LOGGER_INFO("outputSize: {}", outputSize);
     for (int i = 0; i < outputSize; i++) {
       // FLOWENGINE_LOGGER_INFO("before val: {}", output[i]);
-      output[i] = std::exp(output[i]);
+      // output[i] = std::exp(output[i]);
       // FLOWENGINE_LOGGER_INFO("after val: {}", output[i]);
       sum += output[i];
     }
