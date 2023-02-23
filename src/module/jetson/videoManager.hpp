@@ -49,11 +49,26 @@ public:
 
   inline bool isRunning() { return stream && stream->IsStreaming(); }
 
-  inline int getHeight() { return stream && stream->GetHeight(); }
+  inline int getHeight() {
+    if (stream) {
+      return stream->GetHeight();
+    }
+    return -1;
+  }
 
-  inline int getWidth() { return stream && stream->GetWidth(); }
+  inline int getWidth() {
+    if (stream) {
+      return stream->GetWidth();
+    }
+    return -1;
+  }
 
-  inline int getRate() { return stream && stream->GetFrameRate(); }
+  inline int getRate() {
+    if (stream) {
+      return stream->GetFrameRate();
+    }
+    return -1;
+  }
 
   std::shared_ptr<cv::Mat> getcvImage();
 
@@ -61,8 +76,7 @@ public:
     return common::ColorType::RGB888;
   }
 
-  explicit VideoManager(std::string const &uri_) noexcept
-      : uri(uri_) {}
+  explicit VideoManager(std::string const &uri_) noexcept : uri(uri_) {}
 
   ~VideoManager() noexcept {}
 };
