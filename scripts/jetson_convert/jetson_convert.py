@@ -43,4 +43,4 @@ def convert():
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    app.run(host="192.168.31.54", port=19777, debug=False, threaded=True)
+    app.run(host="192.168.31.54", port=19777, debug=False, threaded=False)
