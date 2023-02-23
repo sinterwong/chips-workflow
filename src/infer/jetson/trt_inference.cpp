@@ -116,8 +116,6 @@ bool AlgoInference::processInput(void *inputs) {
   cv::Mat image{inputData->shape[1], inputData->shape[0], CV_8UC3, *inputData->data};
   // cv::imwrite("temp_out.jpg", image);
 
-  int image_size = image.cols * image.rows * image.channels();
-
   std::array<int, 2> shape = {mParams.inputShape.at(0),
                               mParams.inputShape.at(1)};
   if (!utils::resizeInput(image, mParams.isScale, shape)) {

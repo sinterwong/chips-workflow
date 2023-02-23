@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
   std::this_thread::sleep_for(10s);
   auto image = vm.getcvImage();
   FLOWENGINE_LOGGER_CRITICAL("Saving image..");
-  cv::imwrite("vm_out.jpg", image);
+  cv::imwrite("vm_out.jpg", *image);
   FLOWENGINE_LOGGER_CRITICAL("I'm Here");
   // auto logger_ptr = spdlog::get(FLOWENGINE_LOGGER_NAME);
   // if (!logger_ptr) {

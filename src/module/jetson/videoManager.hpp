@@ -28,7 +28,7 @@ private:
   int mmzIndex;     // 循环索引
   videoOptions opt; // 视频参数
   std::unique_ptr<videoSource> stream = nullptr;
-  uchar3 *frame;
+  uchar3 *frame = nullptr;
   std::unique_ptr<std::thread> consumer; // 消费者
   std::mutex m;
 
@@ -58,7 +58,7 @@ public:
 
   inline void join() noexcept { consumer->join(); }
 
-  cv::Mat getcvImage();
+  std::shared_ptr<cv::Mat> getcvImage();
 
   inline common::ColorType getType() const noexcept {
     return common::ColorType::RGB888;

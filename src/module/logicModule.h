@@ -104,16 +104,11 @@ public:
   inline void recordVideo(int key, int width, int height) {
     // FLOWENGINE_LOGGER_CRITICAL("frameCount {} times", frameCount);
     FrameBuf frameBufMessage = backendPtr->pool->read(key);
-
+    auto image = std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
     if (drawTimes-- > 0) {
-      auto image =
-          std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
       drawBox(*image, alarmBox, cv::Scalar{255, 0, 0});
-      vr->record(image->data);
-    } else {
-      void *data = std::any_cast<void *>(frameBufMessage.read("void*"));
-      vr->record(data);
     }
+    vr->record(image->data);
 
     if (--frameCount <= 0 || !vr->check()) {
       isRecord = false;

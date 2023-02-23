@@ -43,13 +43,14 @@ bool VideoManager::init() {
 }
 
 void VideoManager::streamGet() {
+
+  // 每隔100ms消耗一帧，防止长时间静止
   while (isRunning()) {
     // FLOWENGINE_LOGGER_CRITICAL("Get Frame!");
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
     std::lock_guard lk(m);
-    bool ret = stream->Capture(&frame, 1000);
-    if (!ret) {
-      frame = nullptr;
-    }
+    uchar3 *temp = nullptr;
+    stream->Capture(&temp, 1000);
   }
 }
 
@@ -61,14 +62,23 @@ bool VideoManager::run() {
   return true;
 }
 
-cv::Mat VideoManager::getcvImage() {
+std::shared_ptr<cv::Mat> VideoManager::getcvImage() {
+  // std::lock_guard lk(m);
+  // if (!frame) {
+  //   return std::shared_ptr<cv::Mat>();
+  // }
+  // return std::make_shared<cv::Mat>(cv::Mat(stream->GetHeight(),
+  //                                          stream->GetWidth(), CV_8UC3,
+  //                                          reinterpret_cast<void *>(frame)));
+
   std::lock_guard lk(m);
-  if (!frame) {
-    return cv::Mat();
+  bool ret = stream->Capture(&frame, 1000);
+  if (!ret) {
+    return nullptr;
   }
-  return cv::Mat(stream->GetHeight(), stream->GetWidth(), CV_8UC3,
-                 reinterpret_cast<void *>(frame))
-      .clone();
+  return std::make_shared<cv::Mat>(cv::Mat(stream->GetHeight(),
+                                           stream->GetWidth(), CV_8UC3,
+                                           reinterpret_cast<void *>(frame)));
 }
 
 } // namespace module::utils
