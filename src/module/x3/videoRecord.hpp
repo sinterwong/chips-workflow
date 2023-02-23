@@ -22,10 +22,13 @@ namespace utils {
 
 class VideoRecord : private common::NonCopyable {
 public:
-  explicit VideoRecord(videoOptions &&params_) : params(params_) {
-  }
+  explicit VideoRecord(videoOptions &&params_)
+      : params(params_), channel(ChannelsManager::getInstance().getChannel()) {}
 
-  ~VideoRecord() { destory(); }
+  ~VideoRecord() {
+    destory();
+    ChannelsManager::getInstance().setChannel(channel);
+  }
 
   /**
    * @brief init the stream.
@@ -62,7 +65,7 @@ public:
 private:
   std::unique_ptr<XEncoder> stream = nullptr;
   videoOptions params;
-
+  int channel;
 };
 } // namespace utils
 } // namespace module

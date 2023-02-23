@@ -14,6 +14,7 @@
 #include "joining_thread.h"
 #include "logger/logger.hpp"
 #include "videoSource.hpp"
+#include "video_common.hpp"
 #include <memory>
 #include <opencv2/core/mat.hpp>
 #include <thread>
@@ -23,9 +24,10 @@ namespace module::utils {
 class VideoManager : private common::NonCopyable {
 private:
   std::string uri; // 流地址
-  int videoId;     // 编码通道
+  int channel;
   std::unique_ptr<videoSource> stream;
-  void *frame;
+  void *frame = nullptr;
+  std::unique_ptr<joining_thread> consumer; // 消费者
   std::mutex m;
 
   void streamGet();
@@ -58,16 +60,16 @@ public:
     return -1;
   }
 
-  cv::Mat getcvImage();
+  std::shared_ptr<cv::Mat> getcvImage();
 
   inline common::ColorType getType() const noexcept {
     return stream->getRawFormat();
   }
 
-  explicit VideoManager(std::string const &uri_, int idx_) noexcept
-      : uri(uri_), videoId(idx_) {}
+  explicit VideoManager(std::string const &uri_) noexcept
+      : uri(uri_), channel(ChannelsManager::getInstance().getChannel()) {}
 
-  ~VideoManager() noexcept {}
+  ~VideoManager() noexcept { ChannelsManager::getInstance().setChannel(channel); }
 };
 } // namespace module::utils
 

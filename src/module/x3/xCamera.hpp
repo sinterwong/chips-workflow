@@ -72,7 +72,7 @@ public:
    * @see videoSource::Open()
    */
   virtual bool open() override {
-    int ret = sp_open_camera(camera, 0, mOptions.videoIdx % 32, &mOptions.width,
+    int ret = sp_open_camera(camera, 0, mOptions.videoIdx, &mOptions.width,
                              &mOptions.height);
     std::this_thread::sleep_for(2s);
     if (ret != 0) {

@@ -31,7 +31,7 @@ StreamModule::StreamModule(Backend *ptr, const std::string &initName,
                               _params.videoCode,
                               _params.flowType,
                               _params.cameraIp};
-  vm = std::make_unique<VideoManager>(_params.cameraIp, _params.cameraId);
+  vm = std::make_unique<VideoManager>(_params.cameraIp);
 }
 
 void StreamModule::beforeForward() {

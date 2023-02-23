@@ -49,8 +49,10 @@ void VideoManager::streamGet() {
     // FLOWENGINE_LOGGER_CRITICAL("Get Frame!");
     std::this_thread::sleep_for(std::chrono::microseconds(100));
     std::lock_guard lk(m);
-    uchar3 *temp = nullptr;
-    stream->Capture(&temp, 1000);
+    bool ret = stream->Capture(&frame, 1000);
+    if (!ret) {
+      FLOWENGINE_LOGGER_WARN("Getframe is failed!");
+    }
   }
 }
 
@@ -58,7 +60,7 @@ bool VideoManager::run() {
   if (!isRunning()) {
     return false;
   }
-  consumer = std::make_unique<std::thread>(&VideoManager::streamGet, this);
+  consumer = std::make_unique<joining_thread>(&VideoManager::streamGet, this);
   return true;
 }
 

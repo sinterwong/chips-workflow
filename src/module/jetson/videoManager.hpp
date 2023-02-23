@@ -24,12 +24,11 @@ class VideoManager : private common::NonCopyable {
 private:
   // stream manager
   std::string uri;  // 流地址
-  int videoId;      // 编码通道
   int mmzIndex;     // 循环索引
   videoOptions opt; // 视频参数
   std::unique_ptr<videoSource> stream = nullptr;
   uchar3 *frame = nullptr;
-  std::unique_ptr<std::thread> consumer; // 消费者
+  std::unique_ptr<joining_thread> consumer; // 消费者
   std::mutex m;
 
   inline std::string getCodec(int fourcc) {
@@ -56,18 +55,16 @@ public:
 
   inline int getRate() { return stream && stream->GetFrameRate(); }
 
-  inline void join() noexcept { consumer->join(); }
-
   std::shared_ptr<cv::Mat> getcvImage();
 
   inline common::ColorType getType() const noexcept {
     return common::ColorType::RGB888;
   }
 
-  explicit VideoManager(std::string const &uri_, int idx_) noexcept
-      : uri(uri_), videoId(idx_) {}
+  explicit VideoManager(std::string const &uri_) noexcept
+      : uri(uri_) {}
 
-  ~VideoManager() noexcept { join(); }
+  ~VideoManager() noexcept {}
 };
 } // namespace module::utils
 
