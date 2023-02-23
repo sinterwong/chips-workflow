@@ -120,6 +120,8 @@ void StreamModule::forward(std::vector<forwardMessage> &message) {
   sendMessage.frameType = vm->getType();
   sendMessage.key = returnKey;
   sendMessage.cameraResult = cameraResult;
+  sendMessage.cameraResult.heightPixel = vm->getHeight();
+  sendMessage.cameraResult.widthPixel = vm->getWidth();
   sendMessage.status = 0;
   autoSend(sendMessage);
 }

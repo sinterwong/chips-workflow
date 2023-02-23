@@ -19,8 +19,9 @@ namespace utils {
 
 bool VideoRecord::init() {
   params.videoIdx = channel;
-  FLOWENGINE_LOGGER_CRITICAL("current channel is {}", channel);
+  FLOWENGINE_LOGGER_CRITICAL("Recording video in channel {}", channel);
   stream = XEncoder::create(params);
+  stream->init();
   if (!stream) {
     return false;
   }
@@ -33,10 +34,7 @@ bool VideoRecord::check() const noexcept {
 }
 
 void VideoRecord::destory() noexcept {
-  if (check()) {
-    stream->close();
-  }
-  stream = nullptr;
+  // 不做处理, XEncoder 在析构的时候会自行释放
 }
 
 bool VideoRecord::record(void *frame) {
