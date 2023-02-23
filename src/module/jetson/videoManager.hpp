@@ -24,12 +24,11 @@ class VideoManager : private common::NonCopyable {
 private:
   // stream manager
   std::string uri;  // 流地址
-  int videoId;      // 编码通道
   int mmzIndex;     // 循环索引
   videoOptions opt; // 视频参数
   std::unique_ptr<videoSource> stream = nullptr;
-  uchar3 *frame;
-  std::unique_ptr<std::thread> consumer; // 消费者
+  uchar3 *frame = nullptr;
+  std::unique_ptr<joining_thread> consumer; // 消费者
   std::mutex m;
 
   inline std::string getCodec(int fourcc) {
@@ -46,28 +45,40 @@ private:
 public:
   bool init();
 
-  void run();
+  bool run();
 
   inline bool isRunning() { return stream && stream->IsStreaming(); }
 
-  inline int getHeight() { return stream && stream->GetHeight(); }
+  inline int getHeight() {
+    if (stream) {
+      return stream->GetHeight();
+    }
+    return -1;
+  }
 
-  inline int getWidth() { return stream && stream->GetWidth(); }
+  inline int getWidth() {
+    if (stream) {
+      return stream->GetWidth();
+    }
+    return -1;
+  }
 
-  inline int getRate() { return stream && stream->GetFrameRate(); }
+  inline int getRate() {
+    if (stream) {
+      return stream->GetFrameRate();
+    }
+    return -1;
+  }
 
-  inline void join() noexcept { consumer->join(); }
-
-  cv::Mat getcvImage();
+  std::shared_ptr<cv::Mat> getcvImage();
 
   inline common::ColorType getType() const noexcept {
     return common::ColorType::RGB888;
   }
 
-  explicit VideoManager(std::string const &uri_, int idx_) noexcept
-      : uri(uri_), videoId(idx_) {}
+  explicit VideoManager(std::string const &uri_) noexcept : uri(uri_) {}
 
-  ~VideoManager() noexcept { join(); }
+  ~VideoManager() noexcept {}
 };
 } // namespace module::utils
 

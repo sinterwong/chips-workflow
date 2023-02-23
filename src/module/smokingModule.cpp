@@ -36,8 +36,7 @@ void SmokingModule::forward(std::vector<forwardMessage> &message) {
   }
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      // FLOWENGINE_LOGGER_INFO("{} SmokingModule module was done!", name);
-      std::cout << name << "{} SmokingModule module was done!" << std::endl;
+      FLOWENGINE_LOGGER_INFO("{} SmokingModule module was done!", name);
       stopFlag.store(true);
       destoryOutputStream();
       return;
@@ -60,7 +59,8 @@ void SmokingModule::forward(std::vector<forwardMessage> &message) {
         }
         FLOWENGINE_LOGGER_CRITICAL("classid: {}, confidence: {}",
                                    bbox.second.at(5), bbox.second.at(4));
-        if (bbox.second.at(5) == 1 && bbox.second.at(4) > 0.8) {
+        // if (bbox.second.at(5) == 1 && bbox.second.at(4) > 0.8) {
+        if (bbox.second.at(5) == 2) {
           // 生成报警信息和报警图
           generateAlarm(buf, "存在吸烟行为", bbox);
 

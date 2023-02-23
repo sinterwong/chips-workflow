@@ -12,11 +12,7 @@
 #ifndef __METAENGINE_DETECT_MODULE_H_
 #define __METAENGINE_DETECT_MODULE_H_
 
-#include <memory>
-#include <string>
-
-#include "backend.h"
-#include "common/common.hpp"
+#include "module.hpp"
 #include "detection.hpp"
 #if (TARGET_PLATFORM == 0)
 #include "x3/x3_inference.hpp"
@@ -28,7 +24,6 @@ using namespace infer::trt;
 #include "jetson/trt_inference.hpp"
 using namespace infer::trt;
 #endif
-#include "module.hpp"
 
 namespace module {
 class DetectModule : public Module {

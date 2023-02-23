@@ -36,7 +36,7 @@ bool XEncoder::init() {
 
 bool XEncoder::open() noexcept {
   // chn 做成全局变量
-  int ret = sp_start_encode(encoder, mOptions.videoIdx % 32, SP_ENCODER_H264,
+  int ret = sp_start_encode(encoder, mOptions.videoIdx, SP_ENCODER_H264,
                             mOptions.width, mOptions.height, 8000);
   if (ret != 0) {
     FLOWENGINE_LOGGER_ERROR("sp_open_encode failed {}!", ret);

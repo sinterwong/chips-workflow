@@ -9,11 +9,7 @@
  * 
  */
 #include "classifier.hpp"
-#include "infer_utils.hpp"
-#include <algorithm>
-#include <array>
-#include <unordered_map>
-#include <vector>
+#include "logger/logger.hpp"
 
 namespace infer {
 namespace vision {

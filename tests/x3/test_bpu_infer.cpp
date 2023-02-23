@@ -17,7 +17,7 @@
 #include "gflags/gflags.h"
 
 #include "hb_dnn.h"
-#include "infer_utils.hpp"
+#include "preprocess.hpp"
 
 DEFINE_string(model_path, "", "Specify the model path.");
 DEFINE_string(image_path, "", "Specify the image path.");

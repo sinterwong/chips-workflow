@@ -59,8 +59,8 @@ void CallingModule::forward(std::vector<forwardMessage> &message) {
         }
         FLOWENGINE_LOGGER_CRITICAL("classid: {}, confidence: {}",
                                    bbox.second.at(5), bbox.second.at(4));
-        if (bbox.second.at(5) == 2 && bbox.second.at(4) > 0.8) {
-          // if (bbox.second.at(4) > 0.8) {
+        // if (bbox.second.at(5) == 2 && bbox.second.at(4) > 0.8) {
+          if (bbox.second.at(5) == 2) {
           // 生成报警信息和报警图
           generateAlarm(buf, "存在打电话行为", bbox);
 
@@ -68,9 +68,9 @@ void CallingModule::forward(std::vector<forwardMessage> &message) {
           sendWithTypes(buf, {"output"});
 
           // 保存视频
-          // if (params.videDuration > 0) {
-          //   initRecord(buf);
-          // }
+          if (params.videDuration > 0) {
+            initRecord(buf);
+          }
           break;
         }
       }

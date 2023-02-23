@@ -22,7 +22,7 @@ DEFINE_int32(end, 9, "stream end index.");
 
 void run_stream(std::string const &url, int idx) {
 
-  VideoManager vm{url, idx};
+  VideoManager vm{url};
   vm.init();
   vm.run();
   std::string savePath = std::to_string(idx) + "_test_xdecoder.jpg";

@@ -31,7 +31,7 @@ StreamModule::StreamModule(Backend *ptr, const std::string &initName,
                               _params.videoCode,
                               _params.flowType,
                               _params.cameraIp};
-  vm = std::make_unique<VideoManager>(_params.cameraIp, _params.cameraId);
+  vm = std::make_unique<VideoManager>(_params.cameraIp);
 }
 
 void StreamModule::beforeForward() {
@@ -60,7 +60,7 @@ void StreamModule::step() {
   }
   // FLOWENGINE_LOGGER_CRITICAL("Stream forward!");
   // 100ms 处理一帧
-  std::this_thread::sleep_for(std::chrono::microseconds(100));
+  // std::this_thread::sleep_for(std::chrono::microseconds(100));
   forward(message);
   afterForward();
 }
@@ -85,14 +85,13 @@ std::any getPtrBuffer(std::vector<std::any> &list, FrameBuf *buf) {
   assert(list[0].has_value());
   assert(list[0].type() == typeid(std::shared_ptr<cv::Mat>));
   auto mat = std::any_cast<std::shared_ptr<cv::Mat>>(list[0]);
-  return reinterpret_cast<void **>(&mat->data);
+  return reinterpret_cast<void *>(mat->data);
 }
 
-FrameBuf makeFrameBuf(cv::Mat &&frame, int height, int width) {
+FrameBuf makeFrameBuf(std::shared_ptr<cv::Mat> frame, int height, int width) {
   FrameBuf temp;
-  temp.write({std::make_any<std::shared_ptr<cv::Mat>>(
-                 std::make_shared<cv::Mat>(std::forward<cv::Mat>(frame)))},
-             {std::make_pair("void**", getPtrBuffer),
+  temp.write({frame},
+             {std::make_pair("void*", getPtrBuffer),
               std::make_pair("Mat", getMatBuffer)},
              &StreamModule::delBuffer,
              std::make_tuple(width, height, 3, UINT8));
@@ -110,17 +109,21 @@ void StreamModule::forward(std::vector<forwardMessage> &message) {
   }
 
   queueMessage sendMessage;
-  cv::Mat frame = vm->getcvImage();
-  if (frame.empty()) {
+  auto frame = vm->getcvImage();
+  if (!frame || frame->empty()) {
+    FLOWENGINE_LOGGER_WARN("StreamModule get frame is failed!");
     return;
   }
-  FrameBuf fbm =
-      makeFrameBuf(std::move(frame), vm->getHeight(), vm->getWidth());
+  FrameBuf fbm = makeFrameBuf(frame, vm->getHeight(), vm->getWidth());
   int returnKey = backendPtr->pool->write(fbm);
 
   sendMessage.frameType = vm->getType();
   sendMessage.key = returnKey;
   sendMessage.cameraResult = cameraResult;
+  sendMessage.cameraResult.heightPixel =
+      vm->getHeight() > 0 ? vm->getHeight() : cameraResult.heightPixel;
+  sendMessage.cameraResult.widthPixel =
+      vm->getWidth() > 0 ? vm->getWidth() : cameraResult.widthPixel;
   sendMessage.status = 0;
   autoSend(sendMessage);
 }

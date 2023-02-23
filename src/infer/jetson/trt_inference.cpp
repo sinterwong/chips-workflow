@@ -10,10 +10,10 @@
  */
 
 #include "jetson/trt_inference.hpp"
-#include "infer_utils.hpp"
 #include "jetson/logger.h"
 #include "jetson/preprocess.h"
 #include "jetson/standard.h"
+
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -26,6 +26,8 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 #include <vector>
+
+#include "infer/preprocess.hpp"
 
 namespace infer {
 namespace trt {
@@ -113,8 +115,6 @@ bool AlgoInference::processInput(void *inputs) {
   auto inputData = reinterpret_cast<FrameInfo *>(inputs);
   cv::Mat image{inputData->shape[1], inputData->shape[0], CV_8UC3, *inputData->data};
   // cv::imwrite("temp_out.jpg", image);
-
-  int image_size = image.cols * image.rows * image.channels();
 
   std::array<int, 2> shape = {mParams.inputShape.at(0),
                               mParams.inputShape.at(1)};

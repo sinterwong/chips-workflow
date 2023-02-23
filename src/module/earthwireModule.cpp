@@ -34,8 +34,7 @@ void EarthwireModule::forward(std::vector<forwardMessage> &message) {
   }
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
-      // FLOWENGINE_LOGGER_INFO("{} EarthwireModule module was done!", name);
-      std::cout << name << "{} EarthwireModule module was done!" << std::endl;
+      FLOWENGINE_LOGGER_INFO("{} EarthwireModule module was done!", name);
       stopFlag.store(true);
       return;
     }
@@ -56,9 +55,10 @@ void EarthwireModule::forward(std::vector<forwardMessage> &message) {
         if (bbox.first != send) {
           continue;
         }
-        // std::cout << "classid: " << bbox.second.at(5) << ", "
-        //           << "confidence: " << bbox.second.at(4) << std::endl;
-        if (bbox.second.at(5) == 0 && bbox.second.at(4) > 0.9) {
+        FLOWENGINE_LOGGER_CRITICAL("classid: {}, confidence: {}",
+                                   bbox.second.at(5), bbox.second.at(4));
+        // if (bbox.second.at(5) == 0 && bbox.second.at(4) > 0.9) {
+        if (bbox.second.at(5) == 1) {
           // 生成报警信息和报警图
           generateAlarm(buf, "未检测到接地线", bbox);
 

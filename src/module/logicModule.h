@@ -12,20 +12,16 @@
 #ifndef __METAENGINE_LOGIC_MODULE_H_
 #define __METAENGINE_LOGIC_MODULE_H_
 
-#include <any>
-#include <cassert>
 #include <experimental/filesystem>
 #include <memory>
-#include <opencv2/core/types.hpp>
-#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc.hpp>
 #include <vector>
 
 #include "common/config.hpp"
-#include "infer_utils.hpp"
 #include "logger/logger.hpp"
 #include "module.hpp"
 #include "module_utils.hpp"
-#include "x3/video_common.hpp"
+#include "preprocess.hpp"
 
 #if (TARGET_PLATFORM == 0)
 #include "x3/videoRecord.hpp"
@@ -106,18 +102,15 @@ public:
   }
 
   inline void recordVideo(int key, int width, int height) {
-
+    // FLOWENGINE_LOGGER_CRITICAL("frameCount {} times", frameCount);
     FrameBuf frameBufMessage = backendPtr->pool->read(key);
+    auto image = std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
     if (drawTimes-- > 0) {
-      auto image =
-          std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
       drawBox(*image, alarmBox, cv::Scalar{255, 0, 0});
-      vr->record(image->data);
-    } else {
-      vr->record(std::any_cast<void *>(frameBufMessage.read("void*")));
     }
+    vr->record(image->data);
 
-    if (!vr->check() || --frameCount <= 0) {
+    if (--frameCount <= 0 || !vr->check()) {
       isRecord = false;
       frameCount = 0;
       drawTimes = 0;
@@ -153,8 +146,7 @@ public:
         break;
       }
       case ColorType::NV12: {
-        infer::utils::NV12toRGB(showImage, showImage);
-        cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
+        cv::cvtColor(showImage, showImage, cv::COLOR_YUV2BGR_NV12);
         break;
       }
       case ColorType::None:
