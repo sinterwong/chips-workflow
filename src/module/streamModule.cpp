@@ -32,7 +32,7 @@ StreamModule::StreamModule(Backend *ptr, std::string const &_name,
   //                             _params.flowType,
   //                             _params.cameraIp
   //                             };
-  vm = std::make_unique<VideoManager>(config.cameraIp, config.cameraId);
+  vm = std::make_unique<VideoManager>(config.cameraIp);
 }
 
 void StreamModule::beforeForward() {
@@ -89,10 +89,9 @@ std::any getPtrBuffer(std::vector<std::any> &list, FrameBuf *buf) {
   return reinterpret_cast<void *>(mat->data);
 }
 
-FrameBuf makeFrameBuf(cv::Mat &&frame, int height, int width) {
+FrameBuf makeFrameBuf(std::shared_ptr<cv::Mat> frame, int height, int width) {
   FrameBuf temp;
-  temp.write({std::make_any<std::shared_ptr<cv::Mat>>(
-                 std::make_shared<cv::Mat>(std::forward<cv::Mat>(frame)))},
+  temp.write({frame},
              {std::make_pair("void*", getPtrBuffer),
               std::make_pair("Mat", getMatBuffer)},
              &StreamModule::delBuffer,
@@ -110,12 +109,12 @@ void StreamModule::forward(std::vector<forwardMessage> &message) {
   }
 
   queueMessage sendMessage;
-  cv::Mat frame = vm->getcvImage();
-  if (frame.empty()) {
+  auto frame = vm->getcvImage();
+  if (!frame || frame->empty()) {
+    FLOWENGINE_LOGGER_WARN("StreamModule get frame is failed!");
     return;
   }
-  FrameBuf fbm =
-      makeFrameBuf(std::move(frame), vm->getHeight(), vm->getWidth());
+  FrameBuf fbm = makeFrameBuf(frame, vm->getHeight(), vm->getWidth());
   int returnKey = backendPtr->pool->write(fbm);
 
   // 报警时所需的视频流的信息

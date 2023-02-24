@@ -76,7 +76,7 @@ public:
       FLOWENGINE_LOGGER_INFO("{} video is opened!", mOptions.resource.string);
     }
 
-    int ret = sp_start_decode(decoder, "", mOptions.videoIdx % 32,
+    int ret = sp_start_decode(decoder, "", mOptions.videoIdx,
                               entypeMapping.at(stream->getCodecType()),
                               stream->getWidth(), stream->getHeight());
     if (ret != 0) {

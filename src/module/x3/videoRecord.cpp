@@ -18,7 +18,10 @@ namespace module {
 namespace utils {
 
 bool VideoRecord::init() {
+  params.videoIdx = channel;
+  FLOWENGINE_LOGGER_CRITICAL("Recording video in channel {}", channel);
   stream = XEncoder::create(params);
+  stream->init();
   if (!stream) {
     return false;
   }
@@ -27,18 +30,16 @@ bool VideoRecord::init() {
 
 bool VideoRecord::check() const noexcept {
   return stream && stream->isStreaming();
+  // return true;
 }
 
 void VideoRecord::destory() noexcept {
-  if (check()) {
-    stream->close();
-  }
-  stream = nullptr;
+  // 不做处理, XEncoder 在析构的时候会自行释放
 }
 
 bool VideoRecord::record(void *frame) {
-  stream->render(&frame);
-  return true;
+  return stream->render(&frame);
+  // return true;
 }
 } // namespace utils
 } // namespace module

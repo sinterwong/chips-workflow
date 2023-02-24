@@ -36,13 +36,14 @@ bool XEncoder::init() {
 
 bool XEncoder::open() noexcept {
   // chn 做成全局变量
-  int ret = sp_start_encode(encoder, mOptions.videoIdx % 32, SP_ENCODER_H264,
+  int ret = sp_start_encode(encoder, mOptions.videoIdx, SP_ENCODER_H264,
                             mOptions.width, mOptions.height, 8000);
   if (ret != 0) {
     FLOWENGINE_LOGGER_ERROR("sp_open_encode failed {}!", ret);
     return false;
   }
-  outStream = std::ofstream(mOptions.resource.location, std::ios::out | std::ios::binary);
+  outStream = std::ofstream(mOptions.resource.location,
+                            std::ios::out | std::ios::binary);
   FLOWENGINE_LOGGER_INFO("sp_open_encode is successed!");
   mStreaming.store(true);
   return true;
