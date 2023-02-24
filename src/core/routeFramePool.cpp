@@ -45,12 +45,16 @@ int RouteFramePool::write(FrameBuf buf) {
 }
 
 RouteFramePool::~RouteFramePool() {
+  std::lock_guard<std::shared_mutex> lk(routeMutex);
   for (auto &buf : routeArray) {
     buf.del();
   }
 }
 
-void RouteFramePool::checkSize() { routeArray[key].del(); }
+void RouteFramePool::checkSize() {
+  std::lock_guard<std::shared_mutex> lk(routeMutex);
+  routeArray[key].del();
+}
 
 void FrameBuf::del() {
   if (not isDel) {
