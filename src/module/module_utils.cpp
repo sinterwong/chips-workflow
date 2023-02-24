@@ -1,12 +1,12 @@
 /**
  * @file module_utils.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-11-21
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include "module_utils.hpp"
@@ -135,6 +135,26 @@ cv::Mat str2mat(const std::string &s) {
 
   cv::Mat img = imdecode(data, cv::IMREAD_UNCHANGED);
   return img;
+}
+
+void wrapH2642mp4(std::string const &h264File, std::string const &mp4File) {
+  cv::VideoCapture input_video(h264File);
+  cv::Size video_size =
+      cv::Size((int)input_video.get(cv::CAP_PROP_FRAME_WIDTH),
+               (int)input_video.get(cv::CAP_PROP_FRAME_HEIGHT));
+  double fps = input_video.get(cv::CAP_PROP_FPS);
+
+  cv::VideoWriter output_video(mp4File,
+                               cv::VideoWriter::fourcc('H', '2', '6', '4'), fps,
+                               video_size, true);
+
+  cv::Mat frame;
+  while (input_video.read(frame)) {
+    output_video.write(frame);
+  }
+
+  input_video.release();
+  output_video.release();
 }
 
 } // namespace utils
