@@ -15,6 +15,7 @@
 #include <array>
 #include <memory>
 #include <opencv2/opencv.hpp>
+#include <stdexcept>
 #include <unordered_map>
 #include <utility>
 
@@ -24,15 +25,13 @@ StreamModule::StreamModule(Backend *ptr, std::string const &_name,
                            std::string const &_type,
                            CameraConfig const &_config)
     : Module(ptr, _name, _type), config(_config) {
-  // cameraResult = CameraResult{static_cast<int>(_params.widthPixel),
-  //                             static_cast<int>(_params.heightPixel),
-  //                             25,
-  //                             _params.cameraId,
-  //                             _params.videoCode,
-  //                             _params.flowType,
-  //                             _params.cameraIp
-  //                             };
-  vm = std::make_unique<VideoManager>(config.cameraIp);
+
+  try {
+    vm = std::make_unique<VideoManager>(config.cameraIp);
+  } catch (const std::runtime_error &e) {
+    FLOWENGINE_LOGGER_ERROR("initRecorder exception: ", e.what());
+    std::runtime_error("StreamModule ctor has failed!");
+  }
 }
 
 void StreamModule::beforeForward() {

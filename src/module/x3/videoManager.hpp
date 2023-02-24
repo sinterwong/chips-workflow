@@ -66,10 +66,16 @@ public:
     return stream->getRawFormat();
   }
 
-  explicit VideoManager(std::string const &uri_) noexcept
-      : uri(uri_), channel(ChannelsManager::getInstance().getChannel()) {}
+  explicit VideoManager(std::string const &uri_) : uri(uri_) {
+    channel = ChannelsManager::getInstance().getChannel();
+    if (channel < 0) {
+      throw std::runtime_error("Channel usage overflow!");
+    }
+  }
 
-  ~VideoManager() noexcept { ChannelsManager::getInstance().setChannel(channel); }
+  ~VideoManager() noexcept {
+    ChannelsManager::getInstance().setChannel(channel);
+  }
 };
 } // namespace module::utils
 

@@ -15,6 +15,7 @@
 #include <experimental/filesystem>
 #include <memory>
 #include <opencv2/imgproc.hpp>
+#include <stdexcept>
 #include <vector>
 
 #include "common/config.hpp"
@@ -63,7 +64,12 @@ public:
     params.width = width;
     params.height = height;
     params.frameRate = rate;
-    vr = std::make_unique<utils::VideoRecord>(std::move(params));
+    try {
+      vr = std::make_unique<utils::VideoRecord>(std::move(params));
+    } catch (const std::runtime_error &e) {
+      FLOWENGINE_LOGGER_ERROR("initRecorder exception: ", e.what());
+      return false;
+    }
     return vr->init();
   }
 
@@ -84,7 +90,7 @@ public:
   }
 
   inline void generateAlarmInfo(AlarmInfo &alarmInfo, std::string const &detail,
-                            RetBox const &bbox) {
+                                RetBox const &bbox) {
     // 生成本次报警的唯一ID
     alarmInfo.alarmId = utils::generate_hex(16);
     alarmInfo.alarmFile = config.outputDir + "/" + alarmInfo.alarmId;

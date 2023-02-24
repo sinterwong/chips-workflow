@@ -15,6 +15,7 @@
 #include <any>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <string>
 
 namespace module {
@@ -22,8 +23,12 @@ namespace utils {
 
 class VideoRecord : private common::NonCopyable {
 public:
-  explicit VideoRecord(videoOptions &&params_)
-      : params(params_), channel(ChannelsManager::getInstance().getChannel()) {}
+  explicit VideoRecord(videoOptions &&params_) : params(params_) {
+    channel = ChannelsManager::getInstance().getChannel();
+    if (channel < 0) {
+      throw std::runtime_error("Channel usage overflow!");
+    }
+  }
 
   ~VideoRecord() {
     destory();
