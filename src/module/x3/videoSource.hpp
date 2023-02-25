@@ -25,41 +25,41 @@ namespace module::utils {
 
 class videoSource {
 public:
-  static std::unique_ptr<videoSource> create(videoOptions const &options);
+  static std::unique_ptr<videoSource> Create(videoOptions const &options);
 
   virtual ~videoSource() {}
 
-  virtual bool capture(void **image, uint64_t timeout = DEFAULT_TIMEOUT) = 0;
+  virtual bool Capture(void **image, uint64_t timeout = DEFAULT_TIMEOUT) = 0;
 
-  virtual bool init() = 0;
+  virtual bool Init() = 0;
 
-  virtual bool open() = 0;
+  virtual bool Open() = 0;
 
-  virtual void close() noexcept = 0;
+  virtual void Close() noexcept = 0;
 
-  inline bool isStreaming() const noexcept { return mStreaming.load(); }
+  inline bool IsStreaming() const noexcept { return mStreaming.load(); }
 
-  virtual inline size_t getWidth() const noexcept { return mOptions.width; }
+  virtual inline size_t GetWidth() const noexcept { return mOptions.width; }
 
-  virtual inline size_t getHeight() const noexcept { return mOptions.height; }
+  virtual inline size_t GetHeight() const noexcept { return mOptions.height; }
 
-  virtual inline size_t getFrameRate() const noexcept { return mOptions.frameRate; }
+  virtual inline size_t GetFrameRate() const noexcept { return mOptions.frameRate; }
 
-  uint64_t getLastTimestamp() const noexcept { return mLastTimestamp; }
+  uint64_t GetLastTimestamp() const noexcept { return mLastTimestamp; }
 
-  inline ColorType getRawFormat() const noexcept { return mRawFormat; }
+  inline ColorType GetRawFormat() const noexcept { return mRawFormat; }
 
-  inline const URI &getResource() const noexcept { return mOptions.resource; }
+  inline const URI &GetResource() const noexcept { return mOptions.resource; }
 
-  inline const videoOptions &getOptions() const noexcept { return mOptions; }
+  inline const videoOptions &GetOptions() const noexcept { return mOptions; }
 
-  virtual inline size_t getType() const noexcept { return 0; }
+  virtual inline size_t GetType() const noexcept { return 0; }
 
-  inline bool isType(size_t type) const noexcept { return (type == getType()); }
+  inline bool IsType(size_t type) const noexcept { return (type == GetType()); }
 
-  template <typename T> bool isType() const noexcept { return isType(T::Type); }
+  template <typename T> bool IsType() const noexcept { return isType(T::Type); }
 
-  inline const std::string typeTostr() const { return typeTostr(getType()); }
+  inline const std::string typeTostr() const { return typeTostr(GetType()); }
 
   static const std::string typeTostr(size_t type);
 

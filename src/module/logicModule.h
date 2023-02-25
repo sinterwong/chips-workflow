@@ -25,14 +25,7 @@
 #include "module_utils.hpp"
 #include "preprocess.hpp"
 
-#if (TARGET_PLATFORM == 0)
-#include "x3/videoRecord.hpp"
-using namespace module::utils;
-#elif (TARGET_PLATFORM == 1)
-#include "jetson/videoRecord.hpp"
-#elif (TARGET_PLATFORM == 2)
-#include "jetson/trt_inference.hpp"
-#endif
+#include "videoRecord.hpp"
 
 using common::LogicConfig;
 

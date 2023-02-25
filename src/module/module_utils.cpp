@@ -68,6 +68,10 @@ std::string base64_encode(uchar const *bytes_to_encode, unsigned int in_len) {
   return ret;
 }
 
+constexpr static bool is_base64(unsigned char c) {
+  return (isalnum(c) || (c == '+') || (c == '/'));
+}
+
 std::string base64_decode(std::string const &encoded_string) {
   int in_len = encoded_string.size();
   int i = 0;
@@ -143,7 +147,8 @@ cv::Mat str2mat(const std::string &s) {
   return img;
 }
 
-bool retPolys2json(std::vector<RetPoly> const &retPolygons, std::string &result) {
+bool retPolys2json(std::vector<RetPoly> const &retPolygons,
+                   std::string &result) {
   rapidjson::Document doc;
   doc.SetObject();
   // 获取分配器
@@ -224,6 +229,26 @@ bool drawRetPoly(cv::Mat &image, RetPoly const &poly,
                cv::Scalar(0, 255, 255));
 
   return true;
+}
+
+void h2642mp4(std::string const &inputFile, std::string const &outputFile) {
+  cv::VideoCapture input_video(inputFile);
+  cv::Size video_size =
+      cv::Size((int)input_video.get(cv::CAP_PROP_FRAME_WIDTH),
+               (int)input_video.get(cv::CAP_PROP_FRAME_HEIGHT));
+  double fps = input_video.get(cv::CAP_PROP_FPS);
+
+  cv::VideoWriter output_video(outputFile,
+                               cv::VideoWriter::fourcc('H', '2', '6', '4'), fps,
+                               video_size, true);
+
+  cv::Mat frame;
+  while (input_video.read(frame)) {
+    output_video.write(frame);
+  }
+
+  input_video.release();
+  output_video.release();
 }
 
 } // namespace utils

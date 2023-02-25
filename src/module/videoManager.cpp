@@ -10,9 +10,9 @@
  */
 
 #include "videoManager.hpp"
+#include "joining_thread.h"
 #include "logger/logger.hpp"
-#include "opencv2/videoio.hpp"
-#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -23,6 +23,15 @@ using namespace std::chrono_literals;
 namespace module::utils {
 
 bool VideoManager::init() {
+
+#if (TARGET_PLATFORM == 0)
+  videoOptions opt;
+  opt.videoIdx = channel;
+  opt.resource = uri;
+  stream = videoSource::Create(opt);
+#elif (TARGET_PLATFORM == 1)
+  // 利用opencv打开视频，获取配置
+  videoOptions opt;
   auto video = cv::VideoCapture();
   video.open(uri);
   opt.height = video.get(cv::CAP_PROP_FRAME_HEIGHT);
@@ -32,21 +41,22 @@ bool VideoManager::init() {
   opt.codec = videoOptions::CodecFromStr(getCodec(fourcc).c_str());
   opt.resource = uri;
   stream = std::unique_ptr<videoSource>(videoSource::Create(opt));
-  if (!stream) {
-    FLOWENGINE_LOGGER_ERROR("jetson source:  failed to create input stream");
+  video.release();
+#endif
+  bool ret = stream->Open();
+  if (!ret || !stream) {
+    FLOWENGINE_LOGGER_ERROR(
+        "VideoManager init:  failed to create input stream");
     return false;
   }
-  video.release();
-  // 读取一帧之后，视频流进入streaming状态
-  bool ret = stream->Open();
+  FLOWENGINE_LOGGER_INFO(
+      "VideoManager init: video initialization is successed!");
   return true;
 }
 
-void VideoManager::streamGet() {
-
-  // 每隔100ms消耗一帧，防止长时间静止
+void VideoManager::consumeFrame() {
   while (isRunning()) {
-    // FLOWENGINE_LOGGER_CRITICAL("Get Frame!");
+    // 每隔100ms消耗一帧，防止长时间静止
     std::this_thread::sleep_for(std::chrono::microseconds(100));
     std::lock_guard lk(m);
     bool ret = stream->Capture(&frame, 1000);
@@ -57,30 +67,29 @@ void VideoManager::streamGet() {
 }
 
 bool VideoManager::run() {
-  if (!isRunning()) {
+  if (!stream->Open()) {
     return false;
-  }
-  consumer = std::make_unique<joining_thread>(&VideoManager::streamGet, this);
+  };
+  consumer =
+      std::make_unique<joining_thread>(&VideoManager::consumeFrame, this);
   return true;
 }
 
 std::shared_ptr<cv::Mat> VideoManager::getcvImage() {
-  // std::lock_guard lk(m);
-  // if (!frame) {
-  //   return std::shared_ptr<cv::Mat>();
-  // }
-  // return std::make_shared<cv::Mat>(cv::Mat(stream->GetHeight(),
-  //                                          stream->GetWidth(), CV_8UC3,
-  //                                          reinterpret_cast<void *>(frame)));
-
   std::lock_guard lk(m);
   bool ret = stream->Capture(&frame, 1000);
   if (!ret) {
+    FLOWENGINE_LOGGER_WARN("Getframe is failed!");
     return nullptr;
   }
+#if (TARGET_PLATFORM == 0)
+  return std::make_shared<cv::Mat>(
+      cv::Mat(getHeight() * 3 / 2, getWidth(), CV_8UC1, frame));
+#elif (TARGET_PLATFORM == 1)
   return std::make_shared<cv::Mat>(cv::Mat(stream->GetHeight(),
                                            stream->GetWidth(), CV_8UC3,
                                            reinterpret_cast<void *>(frame)));
+#endif
 }
 
 } // namespace module::utils

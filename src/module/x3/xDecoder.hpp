@@ -34,14 +34,14 @@ public:
   /**
    * Create a decoder from the provided video options.
    */
-  static std::unique_ptr<XDecoder> create(videoOptions const &options) {
+  static std::unique_ptr<XDecoder> Create(videoOptions const &options) {
     std::unique_ptr<XDecoder> cam =
         std::unique_ptr<XDecoder>(new XDecoder(options));
     if (!cam) {
       return nullptr;
     }
     // initialize decoder (with fallback)
-    if (!cam->init()) {
+    if (!cam->Init()) {
       FLOWENGINE_LOGGER_ERROR("XDecoder -- failed to create device!");
       return nullptr;
     }
@@ -54,13 +54,13 @@ public:
    */
   ~XDecoder() {
     if (mStreaming.load()) {
-      close();
+      Close();
     }
     sp_release_decoder_module(decoder);
   };
 
 public:
-  virtual bool open() override {
+  virtual bool Open() override {
     {
       std::lock_guard lk(m);
       // 启动流
@@ -96,7 +96,7 @@ public:
    * Close the stream.
    * @see videoSource::Close()
    */
-  virtual inline void close() noexcept override {
+  virtual inline void Close() noexcept override {
     std::lock_guard lk(m);
     if (stream->isRunning()) {
       stream->closeStream();
@@ -106,22 +106,22 @@ public:
     free(yuv_data);
   }
 
-  virtual inline size_t getWidth() const noexcept override {
+  virtual inline size_t GetWidth() const noexcept override {
     return stream->getWidth();
   }
 
-  virtual inline size_t getHeight() const noexcept override {
+  virtual inline size_t GetHeight() const noexcept override {
     return stream->getHeight();
   }
 
-  virtual inline size_t getFrameRate() const noexcept override {
+  virtual inline size_t GetFrameRate() const noexcept override {
     return stream->getRate();
   }
 
-  virtual bool capture(void **image,
+  virtual bool Capture(void **image,
                        size_t timeout = DEFAULT_TIMEOUT) override {
     if (!stream->isRunning())
-      if (!open())
+      if (!Open())
         return false;
     int ret = sp_decoder_get_image(decoder, yuv_data);
     if (ret != 0) {
@@ -136,7 +136,7 @@ public:
   /**
    * Return the interface type
    */
-  virtual inline size_t getType() const noexcept override { return Type; }
+  virtual inline size_t GetType() const noexcept override { return Type; }
 
   /**
    * Unique type identifier of decoder class.
@@ -156,7 +156,7 @@ private:
   void *raw_data;
 
 private:
-  virtual bool init() override {
+  virtual bool Init() override {
     decoder = sp_init_decoder_module();
     return true;
   }
@@ -187,7 +187,7 @@ private:
     FLOWENGINE_LOGGER_WARN("streaming is over: {}",
                            std::string(mOptions.resource));
     if (stream->isRunning()) {
-      close();
+      Close();
     }
   }
 };

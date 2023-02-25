@@ -10,13 +10,21 @@
  */
 
 #include "common/common.hpp"
-#include "x3/video_common.hpp"
-#include "x3/xEncoder.hpp"
 #include <any>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
+
+#if (TARGET_PLATFORM == 0)
+#include "x3/video_common.hpp"
+#include "x3/xEncoder.hpp"
+using namespace module::utils;
+#elif (TARGET_PLATFORM == 1)
+#include "videoOptions.h"
+#include "videoOutput.h"
+#elif (TARGET_PLATFORM == 2)
+#endif
 
 namespace module {
 namespace utils {
@@ -24,15 +32,19 @@ namespace utils {
 class VideoRecord : private common::NonCopyable {
 public:
   explicit VideoRecord(videoOptions &&params_) : params(params_) {
+#if (TARGET_PLATFORM == 0)
     channel = ChannelsManager::getInstance().getChannel();
     if (channel < 0) {
       throw std::runtime_error("Channel usage overflow!");
     }
+#endif
   }
 
   ~VideoRecord() {
     destory();
+#if (TARGET_PLATFORM == 0)
     ChannelsManager::getInstance().setChannel(channel);
+#endif
   }
 
   /**

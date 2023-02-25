@@ -17,21 +17,21 @@ int main(int argc, char **argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
   videoOptions opt1{FLAGS_uri, 1920, 1080, 25, 0};
-  std::unique_ptr<XCamera> camera = XCamera::create(opt1);
+  std::unique_ptr<XCamera> camera = XCamera::Create(opt1);
 
   // "rtsp://admin:zkfd123.com@114.242.23.39:9303/Streaming/Channels/101"
   // "csi://0"
   videoOptions opt{FLAGS_uri, 1920, 1080, 25, 1};
-  std::unique_ptr<XEncoder> output = XEncoder::create(opt);
-  output->init();
+  std::unique_ptr<XEncoder> output = XEncoder::Create(opt);
+  output->Init();
 
   void *image;
   int count = 250;
   while (count--) {
-    if(!camera->capture(&image)) {
+    if(!camera->Capture(&image)) {
       FLOWENGINE_LOGGER_CRITICAL("capture is failed!");
     }
-    if(!output->render(&image)) {
+    if(!output->Render(&image)) {
       FLOWENGINE_LOGGER_CRITICAL("render is failed!");
     };
   }

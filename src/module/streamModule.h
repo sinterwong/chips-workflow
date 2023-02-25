@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef __METAENGINE_SUNRISE_DECODER_H
-#define __METAENGINE_SUNRISE_DECODER_H
+#ifndef __FLOWENGINE_STREAM_MODULE_H_
+#define __FLOWENGINE_STREAM_MODULE_H_
 
 #include <any>
 #include <memory>
@@ -23,11 +23,8 @@
 #include "messageBus.h"
 #include "module.hpp"
 
-#if (TARGET_PLATFORM == 0)
-#include "x3/videoManager.hpp"
-#elif (TARGET_PLATFORM == 1)
-#include "jetson/videoManager.hpp"
-#endif
+#include "videoManager.hpp"
+
 using namespace module::utils;
 using common::CameraConfig;
 

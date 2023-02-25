@@ -1,5 +1,5 @@
 #include "gflags/gflags.h"
-#include "x3/videoManager.hpp"
+#include "videoManager.hpp"
 #include "x3/videoSource.hpp"
 #include <chrono>
 #include <opencv2/core/mat.hpp>
