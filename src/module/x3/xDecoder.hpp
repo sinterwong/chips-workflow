@@ -16,7 +16,7 @@
 #include "joining_thread.h"
 #include "logger/logger.hpp"
 #include "videoSource.hpp"
-#include "x3/ffstream.hpp"
+#include "ffstream.hpp"
 
 #include <mutex>
 #include <sp_codec.h>

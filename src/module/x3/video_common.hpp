@@ -11,7 +11,7 @@
 #ifndef _X3_VIDEO_COMMON_HPP_
 #define _X3_VIDEO_COMMON_HPP_
 
-#include "x3/uri.hpp"
+#include "uri.hpp"
 #include <array>
 #include <atomic>
 #include <cassert>
