@@ -21,6 +21,9 @@ DEFINE_string(atype, "assd", "Specify algorithim type.");
 DEFINE_int32(input_height, 335, "Specify input height.");
 DEFINE_int32(input_width, 335, "Specify input width.");
 
+using common::InferResult;
+using common::Shape;
+
 int main(int argc, char **argv) {
 
   gflags::SetUsageMessage("some usage message");
@@ -59,7 +62,7 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  std::array<int, 3> inputShape{FLAGS_input_width, FLAGS_input_height, 3};
+  Shape inputShape{FLAGS_input_width, FLAGS_input_height, 3};
   common::AlgorithmConfig params{FLAGS_model_path,
                                  std::move(inputNames),
                                  std::move(outputNames),
@@ -87,7 +90,7 @@ int main(int argc, char **argv) {
     FLOWENGINE_LOGGER_ERROR("Error algorithm serial {}", FLAGS_atype);
     return -1;
   }
-  infer::Result ret;
+  InferResult ret;
   ret.shape = {image.cols, image.rows, 3};
   FrameInfo frame;
   cv::Mat data;
@@ -122,15 +125,15 @@ int main(int argc, char **argv) {
   }
   std::cout << std::endl;
 
-  det->processOutput(&output, ret);
-  FLOWENGINE_LOGGER_INFO("number of result: {}", ret.detResults.size());
-  for (auto &bbox : ret.detResults) {
-    cv::Rect rect(bbox.bbox[0], bbox.bbox[1], bbox.bbox[2] - bbox.bbox[0],
-                  bbox.bbox[3] - bbox.bbox[1]);
-    cv::rectangle(image, rect, cv::Scalar(0, 0, 255), 2);
-  }
-  cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-  cv::imwrite("test_det_out.jpg", image);
+  // det->processOutput(&output, ret);
+  // FLOWENGINE_LOGGER_INFO("number of result: {}", ret.detResults.size());
+  // for (auto &bbox : ret.detResults) {
+  //   cv::Rect rect(bbox.bbox[0], bbox.bbox[1], bbox.bbox[2] - bbox.bbox[0],
+  //                 bbox.bbox[3] - bbox.bbox[1]);
+  //   cv::rectangle(image, rect, cv::Scalar(0, 0, 255), 2);
+  // }
+  // cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
+  // cv::imwrite("test_det_out.jpg", image);
 
   gflags::ShutDownCommandLineFlags();
   return 0;

@@ -17,7 +17,7 @@
 namespace solution {
 
 bool FrameDifference::update(std::shared_ptr<cv::Mat> &frame,
-                             std::vector<retBox> &bboxes) {
+                             std::vector<RetBox> &bboxes) {
   if (!lastFrame) {
     return false;
   }
@@ -32,7 +32,7 @@ bool FrameDifference::update(std::shared_ptr<cv::Mat> &frame,
 
 //运动物体检测函数声明
 bool FrameDifference::moveDetect(const cv::Mat &temp, const cv::Mat &frame,
-                                 std::vector<retBox> &bboxes) {
+                                 std::vector<RetBox> &bboxes) {
 
   //平滑、帧差或背景差、二值化、膨胀、腐蚀。
   // 1.平滑处理
@@ -89,7 +89,7 @@ bool FrameDifference::moveDetect(const cv::Mat &temp, const cv::Mat &frame,
   std::vector<cv::Rect> boundRect(contours.size());
   for (size_t i = 0; i < contours.size(); i++) {
     boundRect[i] = cv::boundingRect(contours[i]);
-    retBox bbox = {
+    RetBox bbox = {
         name,
         {static_cast<float>(boundRect[i].x), static_cast<float>(boundRect[i].y),
          static_cast<float>(boundRect[i].x + boundRect[i].width),

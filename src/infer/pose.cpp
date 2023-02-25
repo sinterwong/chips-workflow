@@ -24,12 +24,13 @@ bool Pose::processInput(cv::Mat const &input, void **output,
   return true;
 }
 
-bool Pose::processOutput(void **output, Result &result) const {
-  generatePoints(result.poseResults, output);
-  
+bool Pose::processOutput(void **output, InferResult &result) const {
+  auto poseRet = PoseRet();
+  generatePoints(poseRet, output);
+  result.aRet = std::move(poseRet);
   return true;
 }
 
-bool Pose::verifyOutput(Result const &) const { return true; }
+bool Pose::verifyOutput(InferResult const &) const { return true; }
 } // namespace vision
 } // namespace infer

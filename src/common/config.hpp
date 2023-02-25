@@ -15,6 +15,8 @@
 #include <utility>
 #include <vector>
 
+#include "common.hpp"
+
 #ifndef _FLOWENGINE_COMMON_CONFIG_HPP_
 #define _FLOWENGINE_COMMON_CONFIG_HPP_
 
@@ -35,7 +37,7 @@ struct AlgorithmConfig {
   AlgorithmConfig(std::string const &modelPath_,
                   std::vector<std::string> const &inputTensorNames_,
                   std::vector<std::string> const &outputTensorNames_,
-                  std::array<int, 3> const &inputShape_,
+                  Shape const &inputShape_,
                   std::string const &algorithmSerial_, float cond_thr_ = 0.3,
                   float nms_thr_ = 0.5, float alpha_ = 255.0, float beta_ = 0.0,
                   bool isScale_ = true, int batchSize_ = 1)
@@ -50,7 +52,7 @@ struct AlgorithmConfig {
   std::vector<std::string> inputTensorNames;  // input tensor names
   std::vector<std::string> outputTensorNames; // output tensor names
   std::string algorithmSerial;                // 算法系列
-  std::array<int, 3> inputShape;              // 算法需要的输入尺度
+  Shape inputShape;              // 算法需要的输入尺度
   bool isScale;                               // 是否等比例缩放
   float cond_thr;                             // 置信度阈值
   float nms_thr;                              // NMS 阈值

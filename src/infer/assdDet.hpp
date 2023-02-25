@@ -26,7 +26,7 @@ private:
   //!
   //! \brief Verifies that the output is correct and prints it
   //!
-  virtual bool verifyOutput(Result const &) const override;
+  virtual bool verifyOutput(InferResult const &) const override;
 
   //!
   //! \brief Boxes generates rules

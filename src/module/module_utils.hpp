@@ -18,6 +18,11 @@
 #include <string>
 #include <vector>
 
+#include "common/common.hpp"
+
+using common::RetBox;
+using common::RetPoly;
+
 namespace module {
 namespace utils {
 
@@ -57,11 +62,34 @@ static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                         "abcdefghijklmnopqrstuvwxyz"
                                         "0123456789+/";
 
-constexpr static inline bool is_base64(unsigned char c) {
-  return (isalnum(c) || (c == '+') || (c == '/'));
-}
+bool drawRetBox(cv::Mat &image, RetBox const &bbox,
+                cv::Scalar const &scalar = {0, 0, 255});
 
-void wrapH2642mp4(std::string const &h264File, std::string const &mp4File);
+bool drawRetPoly(cv::Mat &image, RetPoly const &poly,
+                 cv::Scalar const &scalar = {0, 0, 255});
+
+/**
+ * @brief h264 to mp4
+ * 
+ * @param inputFile 
+ * @param outputFile 
+ */
+void h2642mp4(std::string const &inputFile, std::string const &outputFile);
+
+/**
+ * @brief Get the Codec object
+ * 
+ * @param fourcc 
+ * @return std::string 
+ */
+inline std::string getCodec(int fourcc) {
+  char a[5];
+  for (int i = 0; i < 4; i++) {
+    a[i] = fourcc >> (i * 8) & 255;
+  }
+  a[4] = '\0';
+  return std::string{a};
+}
 
 } // namespace utils
 } // namespace module

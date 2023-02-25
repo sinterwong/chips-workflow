@@ -20,7 +20,7 @@
 
 namespace solution {
   
-using retBox = std::pair<std::string, std::array<float, 6>>;
+using RetBox = std::pair<std::string, std::array<float, 6>>;
 
 class FrameDifference {
   std::string name;
@@ -28,12 +28,12 @@ class FrameDifference {
   std::shared_ptr<cv::Mat> lastFrame;
 
   bool moveDetect(const cv::Mat &temp, const cv::Mat &frame,
-                  std::vector<retBox> &bboxes);
+                  std::vector<RetBox> &bboxes);
 
 public:
   FrameDifference(std::string const &name) : name(name){};
   void init(std::shared_ptr<cv::Mat> &frame) { lastFrame = frame; };
-  bool update(std::shared_ptr<cv::Mat> &frame, std::vector<retBox> &bboxes);
+  bool update(std::shared_ptr<cv::Mat> &frame, std::vector<RetBox> &bboxes);
   inline bool statue() { return !lastFrame; }
 };
 } // namespace solution

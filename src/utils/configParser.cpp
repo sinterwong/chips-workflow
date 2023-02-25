@@ -10,10 +10,13 @@
  */
 
 #include "configParser.hpp"
+#include "common/common.hpp"
 #include "logger/logger.hpp"
 #include <fstream>
 #include <utility>
 #include <vector>
+
+using common::Shape;
 
 namespace utils {
 
@@ -89,8 +92,7 @@ bool ConfigParser::parseConfig(const char *jsonstr,
           }
 
           rapidjson::Value &ins = params["inputShape"];
-          std::array<int, 3> inputShape{ins[0].GetInt(), ins[1].GetInt(),
-                                        ins[2].GetInt()};
+          Shape inputShape{ins[0].GetInt(), ins[1].GetInt(), ins[2].GetInt()};
 
           pc = common::AlgorithmConfig{
               params["modelPath"].GetString(),

@@ -28,6 +28,7 @@
 
 namespace infer {
 namespace vision {
+using common::AlgoRet;
 
 class Vision {
 public:
@@ -43,12 +44,12 @@ public:
   //!
   //! \brief ProcessInput that the input is correct for infer
   //!
-  virtual bool processOutput(void **, Result &) const = 0;
+  virtual bool processOutput(void **, InferResult &) const = 0;
 
   //!
   //! \brief verifyOutput that the result is correct for infer
   //!
-  virtual bool verifyOutput(Result const &) const = 0;
+  virtual bool verifyOutput(InferResult const &) const = 0;
 
 protected:
   //!< The parameters for the sample.

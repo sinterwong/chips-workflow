@@ -4,19 +4,13 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations")
 FILE(GLOB_RECURSE UTILS_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 FILE(GLOB_RECURSE UTILS_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET_HARDWARE}/*.c)
 
-LINK_DIRECTORIES(
-    ${CURL_LIBRARY_DIR}
-)
 ADD_LIBRARY(utils SHARED  ${UTILS_LIB_SRC})
 TARGET_INCLUDE_DIRECTORIES(utils PUBLIC 
-                            ${3RDPARTY_DIR}/spdlog/include
                             ${PROJECT_INCLUDE_DIR}
                             ${PROJECT_INCLUDE_DIR}/utils
-                            ${OpenCV_INCLUDE_DIRS}
-                            ${CURL_INCLUDE_DIRS}
 )
 
-TARGET_LINK_LIBRARIES(utils ${OpenCV_LIBS} ${CURL_LIBRARIES} module_logger)
+TARGET_LINK_LIBRARIES(utils module_logger)
 
 # transfer all headers to the include directory 
 FILE(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR}/utils)

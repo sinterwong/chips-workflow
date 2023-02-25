@@ -18,15 +18,19 @@
 
 #include "common/common.hpp"
 #include "logger/logger.hpp"
-#include "logicModule.h"
+
+#include "module.hpp"
+
+using common::LogicConfig;
 
 namespace module {
-class HelmetModule : public LogicModule {
+class HelmetModule : Module {
 
 public:
-  HelmetModule(Backend *ptr, const std::string &initName,
-               const std::string &initType,
-               const common::LogicConfig &logicConfig);
+  HelmetModule(Backend *ptr, std::string const &name, std::string const &type,
+               LogicConfig const &logicConfig)
+      : Module(ptr, name, type) {}
+
   ~HelmetModule() {}
 
   virtual void forward(std::vector<forwardMessage> &message) override;

@@ -1,17 +1,17 @@
 /**
  * @file boostMessage.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-13
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
-
 
 #include "boostMessage.h"
 #include "logger/logger.hpp"
+#include "messageBus.h"
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -27,7 +27,7 @@ MessageBus::returnFlag BoostMessageCheakEmpty(
 BoostMessage::BoostMessage() {}
 
 bool BoostMessage::registered(std::string name) {
-  std::cout << "Create module: " << name << std::endl;
+  FLOWENGINE_LOGGER_INFO("Create module: {}", name);
   socketRecv.emplace_back(
       std::make_shared<moodycamel::ConcurrentQueue<queueMessage>>(16));
 
@@ -67,11 +67,14 @@ bool BoostMessage::recv(std::string source, MessageBus::returnFlag &flag,
   }
 
   // auto &recver {socketRecv[iter->second]};
-  auto recver {socketRecv[iter->second]};
+  auto recver{socketRecv[iter->second]};
 
-  // std::cout << source << "'s thread id: " << std::this_thread::get_id() << std::endl;
-  // std::cout << source << "'s recver id: " << recver.get() << std::endl;
-  if(recver == nullptr) {
+  flag = BoostMessageCheakEmpty(recver);
+
+  // std::cout << source << "'s thread id: " << std::this_thread::get_id() <<
+  // std::endl; std::cout << source << "'s recver id: " << recver.get() <<
+  // std::endl;
+  if (recver == nullptr) {
     FLOWENGINE_LOGGER_WARN("{} recver is nullptr!", source);
     return false;
   }

@@ -23,7 +23,7 @@ namespace module::utils {
 
 class XEncoder {
 public:
-  static std::unique_ptr<XEncoder> create(videoOptions const &options);
+  static std::unique_ptr<XEncoder> Create(videoOptions const &options);
 
   virtual ~XEncoder();
 
@@ -33,7 +33,7 @@ public:
    * @return true
    * @return false
    */
-  bool init();
+  bool Init();
 
   /**
    * @brief 开始编码
@@ -41,7 +41,7 @@ public:
    * @return true
    * @return false
    */
-  bool open() noexcept;
+  bool Open() noexcept;
 
   /**
    * @brief 关闭编码
@@ -49,7 +49,7 @@ public:
    * @return true 
    * @return false 
    */
-  bool close() noexcept;
+  bool Close() noexcept;
 
   /**
    * @brief
@@ -59,19 +59,19 @@ public:
    * @return true
    * @return false
    */
-  bool render(void **image);
+  bool Render(void **image);
 
-  inline bool isStreaming() const noexcept { return mStreaming; }
+  inline bool IsStreaming() const noexcept { return mStreaming; }
 
-  inline size_t getWidth() const noexcept { return mOptions.width; }
+  inline size_t GetWidth() const noexcept { return mOptions.width; }
 
-  inline size_t getHeight() const noexcept { return mOptions.height; }
+  inline size_t GetHeight() const noexcept { return mOptions.height; }
 
-  inline size_t getFrameRate() const noexcept { return mOptions.frameRate; }
+  inline size_t GetFrameRate() const noexcept { return mOptions.frameRate; }
 
-  inline const URI &getResource() const noexcept { return mOptions.resource; }
+  inline const URI &GetResource() const noexcept { return mOptions.resource; }
 
-  inline const videoOptions &getOptions() const noexcept { return mOptions; }
+  inline const videoOptions &GetOptions() const noexcept { return mOptions; }
 
 private:
   std::atomic<bool> mStreaming;

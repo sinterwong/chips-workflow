@@ -8,6 +8,8 @@
 #include <memory>
 using namespace module;
 
+using common::Shape;
+
 DEFINE_string(video, "", "Specify the video uri.");
 DEFINE_string(model_path, "", "Specify the model path.");
 
@@ -21,7 +23,8 @@ int main(int argc, char **argv) {
   //     std::make_shared<PipelineModule>("hello", 0);
 
   Backend backend{std::make_unique<BoostMessage>(),
-                  std::make_unique<RouteFramePool>(8)};
+                  std::make_unique<RouteFramePool>(8), 
+                  std::make_unique<AlgorithmManager>()};
   // "rtsp://admin:zkfd123.com@114.242.23.39:9303/Streaming/Channels/101"
   common::CameraConfig cameraConfig{
       "StreamName", "h264", "stream", FLAGS_video, 1920, 1080, 0};
@@ -35,7 +38,7 @@ int main(int argc, char **argv) {
   }
 
   // 算法module
-  std::array<int, 3> inputShape{640, 640, 3};
+  Shape inputShape{640, 640, 3};
   std::vector<std::string> inputNames = {"images"};
   std::vector<std::string> outputNames = {"output"};
   common::AlgorithmConfig params{FLAGS_model_path,

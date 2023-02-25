@@ -15,23 +15,23 @@
 #include <array>
 #include <memory>
 #include <opencv2/opencv.hpp>
+#include <stdexcept>
 #include <unordered_map>
 #include <utility>
 
 namespace module {
 
-StreamModule::StreamModule(Backend *ptr, const std::string &initName,
-                           const std::string &initType,
-                           const common::CameraConfig &_params)
-    : Module(ptr, initName, initType) {
-  cameraResult = CameraResult{static_cast<int>(_params.widthPixel),
-                              static_cast<int>(_params.heightPixel),
-                              25,
-                              _params.cameraId,
-                              _params.videoCode,
-                              _params.flowType,
-                              _params.cameraIp};
-  vm = std::make_unique<VideoManager>(_params.cameraIp);
+StreamModule::StreamModule(Backend *ptr, std::string const &_name,
+                           std::string const &_type,
+                           CameraConfig const &_config)
+    : Module(ptr, _name, _type), config(_config) {
+
+  try {
+    vm = std::make_unique<VideoManager>(config.cameraIp);
+  } catch (const std::runtime_error &e) {
+    FLOWENGINE_LOGGER_ERROR("initRecorder exception: ", e.what());
+    std::runtime_error("StreamModule ctor has failed!");
+  }
 }
 
 void StreamModule::beforeForward() {
@@ -60,7 +60,7 @@ void StreamModule::step() {
   }
   // FLOWENGINE_LOGGER_CRITICAL("Stream forward!");
   // 100ms 处理一帧
-  // std::this_thread::sleep_for(std::chrono::microseconds(100));
+  std::this_thread::sleep_for(std::chrono::microseconds(100));
   forward(message);
   afterForward();
 }
@@ -102,7 +102,6 @@ void StreamModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == "ControlMessage") {
       FLOWENGINE_LOGGER_INFO("{} StreamModule module was done!", name);
-      // std::cout << name << "{} StreamModule module was done!" << std::endl;
       stopFlag.store(true);
       return;
     }
@@ -117,13 +116,17 @@ void StreamModule::forward(std::vector<forwardMessage> &message) {
   FrameBuf fbm = makeFrameBuf(frame, vm->getHeight(), vm->getWidth());
   int returnKey = backendPtr->pool->write(fbm);
 
+  // 报警时所需的视频流的信息
+  AlarmInfo alarmInfo;
+  alarmInfo.cameraId = config.cameraId;
+  alarmInfo.cameraIp = config.cameraIp;
+  alarmInfo.height = vm->getHeight();
+  alarmInfo.width = vm->getWidth();
+
   sendMessage.frameType = vm->getType();
   sendMessage.key = returnKey;
-  sendMessage.cameraResult = cameraResult;
-  sendMessage.cameraResult.heightPixel =
-      vm->getHeight() > 0 ? vm->getHeight() : cameraResult.heightPixel;
-  sendMessage.cameraResult.widthPixel =
-      vm->getWidth() > 0 ? vm->getWidth() : cameraResult.widthPixel;
+  // sendMessage.cameraResult = cameraResult;
+  sendMessage.alarmInfo = std::move(alarmInfo);
   sendMessage.status = 0;
   autoSend(sendMessage);
 }

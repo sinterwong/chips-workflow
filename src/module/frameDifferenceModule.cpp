@@ -25,25 +25,26 @@ FrameDifferenceModule::FrameDifferenceModule(
 FrameDifferenceModule::~FrameDifferenceModule() {}
 
 void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
-  for (auto &[send, type, buf] : message) {
-    if (type == "ControlMessage") {
-      FLOWENGINE_LOGGER_INFO("FreameDifference module was done!");
-      stopFlag.store(true);
-      return;
-    } else if (type == "stream") {
-      auto frameBufMessage = backendPtr->pool->read(buf.key);
-      auto frame =
-          std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
-      if (fd.statue()) {
-        fd.init(frame);
-      } else {
-        fd.update(frame, buf.algorithmResult.bboxes);
-      }
-      if (!buf.algorithmResult.bboxes.empty()) {
-        autoSend(buf);
-      }
-    }
-  }
+  // for (auto &[send, type, buf] : message) {
+  //   if (type == "ControlMessage") {
+  //     // FLOWENGINE_LOGGER_INFO("FreameDifference module was done!");
+  //     std::cout << "FreameDifference module was done!" << std::endl;
+  //     stopFlag.store(true);
+  //     return;
+  //   } else if (type == "stream") {
+  //     auto frameBufMessage = backendPtr->pool->read(buf.key);
+  //     auto frame =
+  //         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
+  //     if (fd.statue()) {
+  //       fd.init(frame);
+  //     } else {
+  //       fd.update(frame, buf.algorithmResult.bboxes);
+  //     }
+  //     if (!buf.algorithmResult.bboxes.empty()) {
+  //       autoSend(buf);
+  //     }
+    // }
+  // }
 }
 FlowEngineModuleRegister(FrameDifferenceModule, Backend *, std::string const &,
                          std::string const &);

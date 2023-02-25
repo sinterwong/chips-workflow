@@ -25,10 +25,10 @@ bool Features::processInput(cv::Mat const &input, void **output,
   return true;
 }
 
-bool Features::processOutput(void **output, Result &result) const {
+bool Features::processOutput(void **output, InferResult &result) const {
   return true;
 }
 
-bool Features::verifyOutput(Result const &) const { return true; }
+bool Features::verifyOutput(InferResult const &) const { return true; }
 } // namespace vision
 } // namespace infer
