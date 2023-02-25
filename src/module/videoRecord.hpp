@@ -80,7 +80,11 @@ public:
   bool record(void *frame);
 
 private:
+#if (TARGET_PLATFORM == 0)
   std::unique_ptr<XEncoder> stream = nullptr;
+#elif (TARGET_PLATFORM == 1)
+  std::unique_ptr<videoOutput> stream = nullptr;
+#endif
   videoOptions params;
   int channel;
 };

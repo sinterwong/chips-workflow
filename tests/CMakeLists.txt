@@ -41,6 +41,7 @@ LINK_LIBRARIES(
     gflags::gflags
     pthread
     spdlog
+    ${CURL_LIBRARIES}
     stdc++fs
 )
 SET(LINK "-Wl,--no-as-needed")

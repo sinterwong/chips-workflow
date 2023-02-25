@@ -21,7 +21,7 @@ IF(TARGET_HARDWARE STREQUAL jetson)
                                 ${Protobuf_INCLUDE_DIR}
                                 ${CUDA_INCLUDE_DIRS}
     )
-    TARGET_LINK_LIBRARIES(module infer jetson-utils module_logger stdc++fs)
+    TARGET_LINK_LIBRARIES(module jetson-utils module_logger)
 ELSEIF(TARGET_HARDWARE STREQUAL x3)
     FILE(GLOB_RECURSE MODULE_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.h)
     FILE(GLOB_RECURSE MODULE_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.c)
@@ -35,7 +35,7 @@ ELSEIF(TARGET_HARDWARE STREQUAL x3)
                                 ${CURL_INCLUDE_DIR}
                                 ${OpenCV_INCLUDE_DIRS}
     )
-    TARGET_LINK_LIBRARIES(module infer)
+    TARGET_LINK_LIBRARIES(module infer module_logger)
 ELSE()
     MESSAGE(WARNING "No valid hardware is specified!")
 ENDIF()
