@@ -23,8 +23,8 @@ using common::Shape;
 using common::InferResult;
 
 using common::ClsRet;
-using common::DetRet;
-using common::PoseRet;
+using common::BBoxes;
+using common::Points;
 using common::ModelInfo;
 
 } // namespace infer

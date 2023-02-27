@@ -23,14 +23,14 @@ inline bool compare(BBox const &a, BBox const &b) {
 
 float iou(std::array<float, 4> const &, std::array<float, 4> const &);
 
-void nms(DetRet &, std::unordered_map<int, DetRet> &, float);
+void nms(BBoxes &, std::unordered_map<int, BBoxes> &, float);
 
 // 复原bbox原图尺寸
-void restoryBoxes(DetRet &results, Shape const &shape,
+void restoryBoxes(BBoxes &results, Shape const &shape,
                   Shape const &inputShape, bool isScale);
 
 // 复原points原始尺寸
-void restoryPoints(PoseRet &results, Shape const &shape,
+void restoryPoints(Points &results, Shape const &shape,
                    Shape const &inputShape, bool isScale);
 } // namespace utils
 } // namespace infer

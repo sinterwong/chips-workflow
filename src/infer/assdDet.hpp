@@ -32,7 +32,7 @@ private:
   //! \brief Boxes generates rules
   //!
   virtual void
-  generateBoxes(std::unordered_map<int, DetRet> &,
+  generateBoxes(std::unordered_map<int, BBoxes> &,
                 void **) const override;
 
   std::vector<float> receptive_field_center_start = {7, 7, 7};

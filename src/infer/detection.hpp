@@ -44,7 +44,7 @@ public:
   virtual bool verifyOutput(InferResult const &) const override;
 
 protected:
-  virtual void generateBoxes(std::unordered_map<int, DetRet> &,
+  virtual void generateBoxes(std::unordered_map<int, BBoxes> &,
                              void **) const = 0;
 };
 } // namespace vision

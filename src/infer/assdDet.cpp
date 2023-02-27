@@ -15,7 +15,7 @@
 
 namespace infer {
 namespace vision {
-void Assd::generateBoxes(std::unordered_map<int, DetRet> &m,
+void Assd::generateBoxes(std::unordered_map<int, BBoxes> &m,
                          void **outputs) const {
 
   float **output = static_cast<float **>(*outputs);
@@ -84,7 +84,7 @@ void Assd::generateBoxes(std::unordered_map<int, DetRet> &m,
 
           if (m.count(det.class_id) == 0) {
             // 目前还没有该类别，需要初始化一下
-            m.emplace(det.class_id, DetRet());
+            m.emplace(det.class_id, BBoxes());
           }
           m[det.class_id].push_back(det);
         }

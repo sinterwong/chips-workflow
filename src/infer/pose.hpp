@@ -43,7 +43,7 @@ public:
   virtual bool verifyOutput(InferResult const &) const override;
 
 protected:
-  virtual void generatePoints(PoseRet &, void **) const = 0;
+  virtual void generatePoints(Points &, void **) const = 0;
 };
 } // namespace vision
 } // namespace infer

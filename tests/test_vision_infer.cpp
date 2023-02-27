@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 
   vision->infer(image_nv12.data, params, ret);
 
-  auto bboxes = std::get_if<common::DetRet>(&ret.aRet);
+  auto bboxes = std::get_if<common::BBoxes>(&ret.aRet);
   if (!bboxes) {
     FLOWENGINE_LOGGER_ERROR("Wrong algorithm type!");
     return -1;

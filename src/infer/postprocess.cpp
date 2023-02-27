@@ -30,7 +30,7 @@ float iou(std::array<float, 4> const &lbox, std::array<float, 4> const &rbox) {
   return interBoxS / (lbox[2] * lbox[3] + rbox[2] * rbox[3] - interBoxS);
 }
 
-void nms(DetRet &res, std::unordered_map<int, DetRet> &temp, float nms_thr) {
+void nms(BBoxes &res, std::unordered_map<int, BBoxes> &temp, float nms_thr) {
   for (auto it = temp.begin(); it != temp.end(); it++) {
     // std::cout << it->second[0].class_id << " --- " << std::endl;
     auto &dets = it->second;
@@ -48,7 +48,7 @@ void nms(DetRet &res, std::unordered_map<int, DetRet> &temp, float nms_thr) {
   }
 }
 
-void restoryBoxes(DetRet &results, Shape const &shape,
+void restoryBoxes(BBoxes &results, Shape const &shape,
                   Shape const &inputShape, bool isScale) {
   float rw, rh;
   if (isScale) {
@@ -72,7 +72,7 @@ void restoryBoxes(DetRet &results, Shape const &shape,
   }
 }
 
-void restoryPoints(PoseRet &results, Shape const &shape,
+void restoryPoints(Points &results, Shape const &shape,
                    Shape const &inputShape, bool isScale) {}
 
 } // namespace utils

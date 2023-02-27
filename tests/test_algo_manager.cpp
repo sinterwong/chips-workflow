@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 
   algo_bus->unregistered("handdet_yolov5");
 
-  auto bboxes = std::get_if<common::DetRet>(&ret.aRet);
+  auto bboxes = std::get_if<common::BBoxes>(&ret.aRet);
   if (!bboxes) {
     FLOWENGINE_LOGGER_ERROR("Wrong algorithm type!");
     return -1;

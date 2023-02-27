@@ -26,7 +26,7 @@ public:
       : Detection(_param, info) {}
 
 private:
-  virtual void generateBoxes(std::unordered_map<int, DetRet> &,
+  virtual void generateBoxes(std::unordered_map<int, BBoxes> &,
                              void **) const override;
 };
 } // namespace vision

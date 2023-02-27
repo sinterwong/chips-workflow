@@ -68,7 +68,7 @@ struct InferParams {
 };
 
 /**
- * @brief bbox 数据
+ * @brief 目标检测框
  *
  */
 struct alignas(float) BBox {
@@ -80,16 +80,16 @@ struct alignas(float) BBox {
 };
 
 // point 数据
-using Point = Shape;
+using Point = std::array<int, 2>;
 
 // 单次分类结果
 using ClsRet = std::pair<int, float>;
 
-// 单次检测的结果
-using DetRet = std::vector<BBox>;
+// 目标检测框集
+using BBoxes = std::vector<BBox>;
 
-// 单次关键点检测的结果
-using PoseRet = std::vector<Point>;
+// 点集
+using Points = std::vector<Point>;
 
 /**
  * @brief 算法类型
@@ -103,7 +103,7 @@ enum class AlgoType {
   Feature
 };
 
-using AlgoRet = std::variant<std::monostate, DetRet, ClsRet, PoseRet>;
+using AlgoRet = std::variant<std::monostate, BBoxes, ClsRet, Points>;
 
 /**
  * @brief 算法推理时返回结果
