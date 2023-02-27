@@ -24,9 +24,8 @@ namespace module {
 class CallingModule : public LogicModule {
 
 public:
-  CallingModule(Backend *ptr, const std::string &initName,
-                const std::string &initType,
-                const common::LogicConfig &logicConfig);
+  CallingModule(backend_ptr ptr, std::string const &name,
+                std::string const &type, LogicConfig const &config);
   ~CallingModule() {}
 
   virtual void forward(std::vector<forwardMessage> &message) override;

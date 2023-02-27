@@ -21,7 +21,7 @@
 
 namespace module {
 
-StreamModule::StreamModule(Backend *ptr, std::string const &_name,
+StreamModule::StreamModule(backend_ptr ptr, std::string const &_name,
                            std::string const &_type,
                            CameraConfig const &_config)
     : Module(ptr, _name, _type), config(_config) {
@@ -114,7 +114,7 @@ void StreamModule::forward(std::vector<forwardMessage> &message) {
     return;
   }
   FrameBuf fbm = makeFrameBuf(frame, vm->getHeight(), vm->getWidth());
-  int returnKey = backendPtr->pool->write(fbm);
+  int returnKey = ptr->pool->write(fbm);
 
   // 报警时所需的视频流的信息
   AlarmInfo alarmInfo;
@@ -130,6 +130,6 @@ void StreamModule::forward(std::vector<forwardMessage> &message) {
   sendMessage.status = 0;
   autoSend(sendMessage);
 }
-FlowEngineModuleRegister(StreamModule, Backend *, std::string const &,
+FlowEngineModuleRegister(StreamModule, backend_ptr, std::string const &,
                          std::string const &, common::CameraConfig const &);
 } // namespace module

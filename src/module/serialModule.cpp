@@ -2,9 +2,9 @@
 // #include "frameMessage.pb.h"
 
 namespace module {
-serialModule::serialModule(Backend *ptr, const std::string &initName,
-                           const std::string &initType)
-    : Module(ptr, initName, initType) {}
+serialModule::serialModule(backend_ptr ptr, std::string const &name,
+                           std::string const &type)
+    : Module(ptr, name, type) {}
 
 void serialModule::forward(std::vector<forwardMessage> &message) {
   // tutorial::FrameMessage buf;
@@ -22,6 +22,6 @@ void serialModule::forward(std::vector<forwardMessage> &message) {
   //    }
   //    autoSend(buf.SerializeAsString());
 }
-FlowEngineModuleRegister(serialModule, Backend *, std::string const &,
+FlowEngineModuleRegister(serialModule, backend_ptr, std::string const &,
                          std::string const &);
 } // namespace module

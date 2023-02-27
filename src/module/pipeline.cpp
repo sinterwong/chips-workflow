@@ -35,25 +35,25 @@ bool PipelineModule::submitModule(ModuleConfigure const &config,
   switch (paramsConfig.GetKind()) {
   case common::ConfigType::Algorithm: { // Algorithm
     atm[config.moduleName] = ObjectFactory::createObject<Module>(
-        config.typeName, &backend, config.moduleName, config.ctype,
+        config.typeName, backendPtr, config.moduleName, config.ctype,
         paramsConfig.GetAlgorithmConfig());
     break;
   }
   case common::ConfigType::Logic: { // Logic
     atm[config.moduleName] = ObjectFactory::createObject<Module>(
-        config.typeName, &backend, config.moduleName, config.ctype,
+        config.typeName, backendPtr, config.moduleName, config.ctype,
         paramsConfig.GetLogicConfig());
     break;
   }
   case common::ConfigType::Output: { // Output
     atm[config.moduleName] = ObjectFactory::createObject<Module>(
-        config.typeName, &backend, config.moduleName, config.ctype,
+        config.typeName, backendPtr, config.moduleName, config.ctype,
         paramsConfig.GetOutputConfig());
     break;
   }
   case common::ConfigType::Stream: { // Stream
     atm[config.moduleName] = ObjectFactory::createObject<Module>(
-        config.typeName, &backend, config.moduleName, config.ctype,
+        config.typeName, backendPtr, config.moduleName, config.ctype,
         paramsConfig.GetCameraConfig());
     break;
   }
@@ -132,7 +132,7 @@ void PipelineModule::stopModule(std::string const &moduleName) {
   detachModule(moduleName);
 
   // 发送终止正在 go 的消息
-  backend.message->send(name, moduleName, type, queueMessage());
+  backendPtr->message->send(name, moduleName, type, queueMessage());
 
   // 从atm中删除对象
   atm.erase(moduleName);
@@ -179,7 +179,7 @@ bool PipelineModule::startPipeline() {
         detachModule(iter->first);
         // 发送终止正在 go 的消息
         // iter->second->stopFlag.store(true);
-        backend.message->send(name, iter->first, type, queueMessage());
+        backendPtr->message->send(name, iter->first, type, queueMessage());
         // 从atm中删除对象
         iter = atm.erase(iter);
       } else {

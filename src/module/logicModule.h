@@ -40,9 +40,9 @@ protected:
   std::unique_ptr<utils::VideoRecord> vr;
 
 public:
-  LogicModule(Backend *ptr, const std::string &initName,
-              const std::string &initType, const LogicConfig &config_)
-      : Module(ptr, initName, initType), config(config_) {}
+  LogicModule(backend_ptr ptr, std::string const &name, std::string const &type,
+              LogicConfig const &config_)
+      : Module(ptr, name, type), config(config_) {}
   virtual ~LogicModule() {}
 
   inline void destoryOutputStream() { vr->destory(); }
@@ -68,7 +68,7 @@ public:
 
   inline void recordVideo(int key, int width, int height, RetBox const &bbox) {
 
-    FrameBuf fbm = backendPtr->pool->read(key);
+    FrameBuf fbm = ptr->pool->read(key);
     auto image = std::any_cast<std::shared_ptr<cv::Mat>>(fbm.read("Mat"));
     if (drawTimes-- > 0) {
       utils::drawRetBox(*image, bbox, cv::Scalar{255, 0, 0});

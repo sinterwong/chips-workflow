@@ -14,10 +14,10 @@
 
 namespace module {
 
-StatusOutputModule::StatusOutputModule(
-    Backend *ptr, const std::string &initName, const std::string &initType,
-    const common::OutputConfig &outputConfig_)
-    : OutputModule(ptr, initName, initType, outputConfig_) {}
+StatusOutputModule::StatusOutputModule(backend_ptr ptr, std::string const &name,
+                                       std::string const &type,
+                                       OutputConfig const &config_)
+    : OutputModule(ptr, name, type, config_) {}
 
 bool StatusOutputModule::postResult(std::string const &url,
                                     StatusInfo const &statusInfo,
@@ -90,6 +90,6 @@ void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
     }
   }
 }
-FlowEngineModuleRegister(StatusOutputModule, Backend *, std::string const &,
-                         std::string const &, const common::OutputConfig &);
+FlowEngineModuleRegister(StatusOutputModule, backend_ptr, std::string const &,
+                         std::string const &, OutputConfig const &);
 } // namespace module

@@ -39,7 +39,7 @@ private:
   std::unique_ptr<VideoManager> vm;
 
 public:
-  StreamModule(Backend *ptr, std::string const &, std::string const &,
+  StreamModule(backend_ptr ptr, std::string const &, std::string const &,
                CameraConfig const &);
 
   ~StreamModule() {}

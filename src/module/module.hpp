@@ -22,14 +22,15 @@
 
 namespace module {
 using forwardMessage = std::tuple<std::string, std::string, queueMessage>;
+using backend_ptr = std::shared_ptr<Backend>;
 
 class Module {
 protected:
-  Backend *backendPtr;
+  backend_ptr ptr;
 
-  std::string name;   // 模块名称
+  std::string name; // 模块名称
 
-  std::string type;   // 模块类型 {stream, output, logic}
+  std::string type; // 模块类型 {stream, output, logic}
 
   std::unordered_map<std::string, int> hash;
 
@@ -44,14 +45,10 @@ protected:
 public:
   std::atomic_bool stopFlag;
 
-  Module(Backend *ptr, const std::string &initName, const std::string &initType)
-      : backendPtr(ptr), name(initName), type(initType) {
-    // backendPtr = ptr;
-    // name = initName;
-    // type = initType;
-
+  Module(backend_ptr ptr_, std::string const &name_, std::string const &type_)
+      : ptr(ptr_), name(name_), type(type_) {
     stopFlag.store(false);
-    backendPtr->message->registered(name);
+    ptr->message->registered(name);
   }
   virtual ~Module() {}
 
@@ -80,7 +77,7 @@ public:
         MessageBus::returnFlag flag;
         std::string Msend, Mtype;
         queueMessage Mbyte;
-        backendPtr->message->recv(name, flag, Msend, Mtype, Mbyte, true);
+        ptr->message->recv(name, flag, Msend, Mtype, Mbyte, true);
         // #ifdef _DEBUG
         //         assert(flag == MessageBus::returnFlag::successWithMore ||
         //                flag == MessageBus::returnFlag::successWithEmpty);
@@ -121,7 +118,7 @@ public:
         // 意味着在不发送的列表中找到了该类型
         continue;
       }
-      auto temp = backendPtr->message->send(name, target, type, buf);
+      auto temp = ptr->message->send(name, target, type, buf);
       ret = ret and temp;
     }
     return ret;
@@ -134,7 +131,7 @@ public:
       auto iter = std::find(types_.begin(), types_.end(), sendtype_);
       if (iter != types_.end()) {
         // 意味着在不发送的列表中找到了该类型
-        auto temp = backendPtr->message->send(name, target, type, buf);
+        auto temp = ptr->message->send(name, target, type, buf);
         ret = ret and temp;
       }
     }
@@ -145,7 +142,7 @@ public:
     bool ret = false;
     std::lock_guard<std::mutex> lk(_m);
     for (auto &target : sendModule) {
-      auto temp = backendPtr->message->send(name, target, type, buf);
+      auto temp = ptr->message->send(name, target, type, buf);
       ret = ret and temp;
     }
     return ret;

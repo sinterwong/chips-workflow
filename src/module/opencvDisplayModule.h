@@ -13,8 +13,8 @@ protected:
   cv::Mat frame;
 
 public:
-  OpencvDisplayModule(Backend *ptr, const std::string &initName,
-                      const std::string &initType);
+  OpencvDisplayModule(backend_ptr ptr, std::string const &name,
+                      std::string const &type);
 
   virtual void forward(std::vector<forwardMessage> &message) override;
 };

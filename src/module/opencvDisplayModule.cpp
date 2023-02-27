@@ -1,10 +1,10 @@
 #include "opencvDisplayModule.h"
 
 namespace module {
-OpencvDisplayModule::OpencvDisplayModule(Backend *ptr,
-                                         const std::string &initName,
-                                         const std::string &initType)
-    : Module(ptr, initName, initType) {}
+OpencvDisplayModule::OpencvDisplayModule(backend_ptr ptr,
+                                         std::string const &name,
+                                         std::string const &type)
+    : Module(ptr, name, type) {}
 
 void OpencvDisplayModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
@@ -13,13 +13,13 @@ void OpencvDisplayModule::forward(std::vector<forwardMessage> &message) {
     // height = buf.cameraResult.heightPixel;
     // width = buf.cameraResult.widthPixel;
 
-    auto frameBufMessage = backendPtr->pool->read(buf.key);
+    auto frameBufMessage = ptr->pool->read(buf.key);
     auto framePtr = std::any_cast<cv::Mat>(frameBufMessage.read("Mat"));
 
     cv::imshow("image", framePtr);
     cv::waitKey(20);
   }
 }
-FlowEngineModuleRegister(OpencvDisplayModule, Backend *, std::string const &,
+FlowEngineModuleRegister(OpencvDisplayModule, backend_ptr, std::string const &,
                          std::string const &);
 } // namespace module

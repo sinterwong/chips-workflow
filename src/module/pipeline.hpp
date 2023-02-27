@@ -30,8 +30,8 @@
 #include <vector>
 
 namespace module {
-using utils::pipelineParams;
 using infer::AlgorithmManager;
+using utils::pipelineParams;
 
 class PipelineModule {
 private:
@@ -39,10 +39,9 @@ private:
   std::string type = "ControlMessage";
   std::string config;
   utils::ConfigParser configParser;
-
-  Backend backend{std::make_unique<BoostMessage>(),
-                  std::make_unique<RouteFramePool>(2),
-                  std::make_unique<AlgorithmManager>()};
+  backend_ptr backendPtr = std::make_shared<Backend>(
+      std::make_unique<BoostMessage>(), std::make_unique<RouteFramePool>(2),
+      std::make_unique<AlgorithmManager>());
   // std::unique_ptr<thread_pool> pool;
   std::unique_ptr<thread_pool> pool;
   std::unordered_map<std::string, std::shared_ptr<Module>> atm;
@@ -91,7 +90,7 @@ private:
   void terminate() {
     // 向所有模块发送终止信号
     for (auto iter = atm.begin(); iter != atm.end(); ++iter) {
-      backend.message->send(name, iter->first, type, queueMessage());
+      backendPtr->message->send(name, iter->first, type, queueMessage());
       // iter->second->stopFlag.store(true);
     }
   }

@@ -28,8 +28,8 @@ private:
   solution::FrameDifference fd;
 
 public:
-  FrameDifferenceModule(Backend *ptr, const std::string &initName,
-                        const std::string &initType);
+  FrameDifferenceModule(backend_ptr ptr, std::string const &name,
+                        std::string const &type);
 
   ~FrameDifferenceModule();
 

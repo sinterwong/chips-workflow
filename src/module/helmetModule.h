@@ -27,8 +27,8 @@ namespace module {
 class HelmetModule : Module {
 
 public:
-  HelmetModule(Backend *ptr, std::string const &name, std::string const &type,
-               LogicConfig const &logicConfig)
+  HelmetModule(backend_ptr ptr, std::string const &name,
+               std::string const &type, LogicConfig const &logicConfig)
       : Module(ptr, name, type) {}
 
   ~HelmetModule() {}

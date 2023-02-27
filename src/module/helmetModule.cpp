@@ -19,9 +19,9 @@
 namespace module {
 
 /**
- * @brief 
- * 
- * @param message 
+ * @brief
+ *
+ * @param message
  */
 void HelmetModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
@@ -33,6 +33,6 @@ void HelmetModule::forward(std::vector<forwardMessage> &message) {
   }
 }
 
-FlowEngineModuleRegister(HelmetModule, Backend *, std::string const &,
-                         std::string const &, common::LogicConfig const &);
+FlowEngineModuleRegister(HelmetModule, backend_ptr, std::string const &,
+                         std::string const &, LogicConfig const &);
 } // namespace module

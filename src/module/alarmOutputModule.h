@@ -29,9 +29,8 @@ namespace module {
 class AlarmOutputModule : public OutputModule {
 
 public:
-  AlarmOutputModule(Backend *ptr, const std::string &initName,
-                    const std::string &initType,
-                    const common::OutputConfig &outputConfig);
+  AlarmOutputModule(backend_ptr ptr, std::string const &name,
+                    std::string const &type, OutputConfig const &config);
   ~AlarmOutputModule() {}
 
   virtual void forward(std::vector<forwardMessage> &message) override;

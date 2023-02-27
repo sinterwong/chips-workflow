@@ -45,8 +45,8 @@ private:
   common::CameraConfig params;
 
 public:
-  StreamGenerator(Backend *ptr, const std::string &initName,
-                     const std::string &initType,
+  StreamGenerator(backend_ptr ptr, std::string const &name,
+                     std::string const &type,
                      const common::CameraConfig &_params);
 
   ~StreamGenerator() {}

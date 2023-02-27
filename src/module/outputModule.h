@@ -28,8 +28,10 @@
 #include "module.hpp"
 
 namespace module {
+using common::OutputConfig;
 
-static size_t curl_callback(void *ptr, size_t size, size_t nmemb, std::string *data) {
+static size_t curl_callback(void *ptr, size_t size, size_t nmemb,
+                            std::string *data) {
   data->append((char *)ptr, size * nmemb);
   return size * nmemb;
 }
@@ -39,11 +41,9 @@ protected:
   common::OutputConfig config;
 
 public:
-  OutputModule(Backend *ptr, const std::string &initName,
-               const std::string &initType,
-               const common::OutputConfig &outputConfig_)
-      : Module(ptr, initName, initType),
-        config(std::move(outputConfig_)) {}
+  OutputModule(backend_ptr ptr, std::string const &name,
+               std::string const &type, OutputConfig const &config_)
+      : Module(ptr, name, type), config(config_) {}
   ~OutputModule() {}
 };
 } // namespace module

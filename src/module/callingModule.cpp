@@ -17,10 +17,9 @@
 
 namespace module {
 
-CallingModule::CallingModule(Backend *ptr, const std::string &initName,
-                             const std::string &initType,
-                             const common::LogicConfig &logicConfig)
-    : LogicModule(ptr, initName, initType, logicConfig) {}
+CallingModule::CallingModule(backend_ptr ptr, std::string const &name,
+                             std::string const &type, LogicConfig const &config)
+    : LogicModule(ptr, name, type, config) {}
 
 /**
  * @brief
@@ -35,6 +34,6 @@ void CallingModule::forward(std::vector<forwardMessage> &message) {
   }
 }
 
-FlowEngineModuleRegister(CallingModule, Backend *, std::string const &,
-                         std::string const &, common::LogicConfig const &);
+FlowEngineModuleRegister(CallingModule, backend_ptr, std::string const &,
+                         std::string const &, LogicConfig const &);
 } // namespace module

@@ -58,10 +58,10 @@ FrameBuf makeFrameBuf(uchar3 *image, int height, int width) {
   return temp;
 }
 
-StreamGenerator::StreamGenerator(Backend *ptr, const std::string &initName,
-                                 const std::string &initType,
+StreamGenerator::StreamGenerator(backend_ptr ptr, std::string const &name,
+                                 std::string const &type,
                                  const common::CameraConfig &_params)
-    : Module(ptr, initName, initType), params(_params) {
+    : Module(ptr, name, type), params(_params) {
 
   opt.height = params.heightPixel;
   opt.width = params.widthPixel;
@@ -118,7 +118,7 @@ void StreamGenerator::forward(std::vector<forwardMessage> &message) {
   } else {
     FrameBuf frameBufMessage =
         makeFrameBuf(frame, inputStream->GetHeight(), inputStream->GetWidth());
-    int returnKey = backendPtr->pool->write(frameBufMessage);
+    int returnKey = ptr->pool->write(frameBufMessage);
     sendMessage.frameType = ColorType::RGB888;
     sendMessage.key = returnKey;
     sendMessage.cameraResult = cameraResult;
@@ -127,6 +127,6 @@ void StreamGenerator::forward(std::vector<forwardMessage> &message) {
   }
 }
 
-FlowEngineModuleRegister(StreamGenerator, Backend *, std::string const &,
+FlowEngineModuleRegister(StreamGenerator, backend_ptr, std::string const &,
                          std::string const &, common::CameraConfig const &);
 } // namespace module

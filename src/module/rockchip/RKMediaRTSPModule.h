@@ -48,12 +48,12 @@ protected:
     MPP_CHN_S stEncChn;
 
 public:
-    RKMediaRTSPModule(Backend *ptr,
+    RKMediaRTSPModule(backend_ptr ptr,
                       const std::string &streamName,
                       int width,
                       int height,
-                      const std::string &initName,
-                      const std::string &initType,
+                      std::string const &name,
+                      std::string const &type,
                       
                              );
 
