@@ -7,11 +7,11 @@
 #include <opencv2/imgproc/types_c.h>
 #include <sp_vio.h>
 
-#include "infer_utils.hpp"
+#include "utils/time_utils.hpp"
 #include "logger/logger.hpp"
 #include "preprocess.hpp"
 
-using infer::utils::measureTime;
+using utils::measureTime;
 using infer::utils::RGB2NV12;
 
 DEFINE_string(uri, "", "Specify the uri image.");

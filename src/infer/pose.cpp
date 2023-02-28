@@ -9,7 +9,6 @@
  * 
  */
 #include "pose.hpp"
-#include "infer_utils.hpp"
 #include <algorithm>
 #include <array>
 #include <vector>

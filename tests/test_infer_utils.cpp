@@ -1,6 +1,6 @@
 #include "gflags/gflags.h"
 #include "infer/preprocess.hpp"
-#include "infer_utils.hpp"
+#include "utils/time_utils.hpp"
 #include "logger/logger.hpp"
 #include <chrono>
 #include <memory>
@@ -14,6 +14,7 @@ DEFINE_string(image_path, "", "Specify the path of image.");
 
 using namespace std::chrono_literals;
 using namespace infer::utils;
+using namespace utils;
 int main(int argc, char **argv) {
   gflags::SetUsageMessage("some usage message");
   gflags::SetVersionString("1.0.0");
