@@ -1,16 +1,16 @@
 #include "gflags/gflags.h"
-#include "paramersCenter.hpp"
+#include "module_config.hpp"
 
 DEFINE_string(image_path, "", "Specify the path of image.");
 
-using module::ModuleParameterCenter;
+using module::ModuleConfig;
 
 int main(int argc, char **argv) {
   gflags::SetUsageMessage("some usage message");
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-  ModuleParameterCenter center;
+  ModuleConfig center;
 
   // 创建SmokingMonitor
   AttentionArea area;

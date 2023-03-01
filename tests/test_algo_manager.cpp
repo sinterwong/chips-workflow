@@ -7,7 +7,6 @@
 
 #include "logger/logger.hpp"
 #include "messageBus.h"
-#include "paramersCenter.hpp"
 #include "preprocess.hpp"
 
 #include "infer/algorithmManager.hpp"
