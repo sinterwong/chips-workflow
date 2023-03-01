@@ -13,6 +13,7 @@
 #include "core/factory.hpp"
 #include "preprocess.hpp"
 #include "vision.hpp"
+#include <cstdlib>
 #include <memory>
 #include <mutex>
 #include <opencv2/core/hal/interface.h>
@@ -27,14 +28,19 @@ using common::RetPoly;
 using utils::cropImage;
 
 bool VisionInfer::init() {
-  instance = std::make_shared<AlgoInference>(config);
-  instance->initialize();
-  instance->getModelInfo(modelInfo);
-  vision = ObjectFactory::createObject<vision::Vision>(config.algorithmSerial,
-                                                       config, modelInfo);
+
+  std::string serial;
+  config.visitParams([this, &serial](auto &params) {
+    instance = std::make_shared<AlgoInference>(params);
+    instance->initialize();
+    instance->getModelInfo(modelInfo);
+
+    vision = ObjectFactory::createObject<vision::Vision>(params.serial, params,
+                                                         modelInfo);
+    serial = params.serial;
+  });
   if (!vision) {
-    FLOWENGINE_LOGGER_ERROR("Error algorithm serial {}",
-                            config.algorithmSerial);
+    FLOWENGINE_LOGGER_ERROR("Error algorithm serial {}", serial);
     return false;
   }
   return true;

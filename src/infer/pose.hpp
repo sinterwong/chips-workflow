@@ -22,7 +22,7 @@ class Pose : public Vision {
   //! \brief construction
   //!
 public:
-  Pose(const common::AlgorithmConfig &_param, ModelInfo const &_info)
+  Pose(const AlgoConfig &_param, ModelInfo const &_info)
       : Vision(_param, _info) {}
 
   //!

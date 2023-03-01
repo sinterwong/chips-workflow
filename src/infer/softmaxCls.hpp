@@ -21,7 +21,7 @@ class Softmax : public Classifier {
   //! \brief construction
   //!
 public:
-  Softmax(const common::AlgorithmConfig &_param, ModelInfo const &info)
+  Softmax(const AlgoConfig &_param, ModelInfo const &info)
       : Classifier(_param, info) {}
 
 private:

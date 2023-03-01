@@ -23,7 +23,7 @@ class Features : public Vision {
   //! \brief construction
   //!
 public:
-  Features(const common::AlgorithmConfig &_param, ModelInfo const &_info)
+  Features(const AlgoConfig &_param, ModelInfo const &_info)
       : Vision(_param, _info) {}
 
   //!

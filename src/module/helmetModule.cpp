@@ -34,5 +34,5 @@ void HelmetModule::forward(std::vector<forwardMessage> &message) {
 }
 
 FlowEngineModuleRegister(HelmetModule, backend_ptr, std::string const &,
-                         std::string const &, LogicConfig const &);
+                         std::string const &, LogicBase const &);
 } // namespace module

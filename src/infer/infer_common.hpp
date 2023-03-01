@@ -27,6 +27,11 @@ using common::BBoxes;
 using common::Points;
 using common::ModelInfo;
 
+using common::AlgoConfig;
+using common::AlgoBase;
+using common::ClassAlgo;
+using common::DetAlgo;
+
 } // namespace infer
 
 #endif

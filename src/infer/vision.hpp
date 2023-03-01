@@ -24,7 +24,7 @@
 #include "infer_common.hpp"
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgproc.hpp>
-#include "common/config.hpp"
+
 
 namespace infer {
 namespace vision {
@@ -32,7 +32,7 @@ using common::AlgoRet;
 
 class Vision {
 public:
-  Vision(const common::AlgorithmConfig &_param, ModelInfo const &_info) : mParams(_param), modelInfo(_info) {}
+  Vision(const AlgoConfig &_param, ModelInfo const &_info) : mParams(_param), modelInfo(_info) {}
 
   virtual ~Vision(){};
 
@@ -53,7 +53,7 @@ public:
 
 protected:
   //!< The parameters for the sample.
-  common::AlgorithmConfig mParams;
+  AlgoConfig mParams;
 
   //!< The information of model.
   ModelInfo modelInfo;

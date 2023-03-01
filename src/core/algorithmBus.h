@@ -10,23 +10,23 @@
  */
 
 #include "common/common.hpp"
-#include "common/config.hpp"
+
 
 #ifndef __FLOWCORE_ALGORITHM_BUS_H_
 #define __FLOWCORE_ALGORITHM_BUS_H_
 
-using common::AlgorithmConfig;
 using common::InferParams;
 using common::InferResult;
+using common::AlgoConfig;
 
 class AlgorithmBus {
 public:
   AlgorithmBus() = default;
-  AlgorithmBus(AlgorithmConfig const &);
+  AlgorithmBus(AlgoConfig const &);
 
   virtual ~AlgorithmBus() {}
 
-  virtual bool registered(std::string const &, AlgorithmConfig const &) = 0;
+  virtual bool registered(std::string const &, AlgoConfig const &) = 0;
 
   virtual bool unregistered(std::string const &) = 0;
 

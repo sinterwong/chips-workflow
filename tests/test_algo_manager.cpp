@@ -5,9 +5,9 @@
 #include <utility>
 #include <vector>
 
-#include "common/config.hpp"
 #include "logger/logger.hpp"
 #include "messageBus.h"
+#include "paramersCenter.hpp"
 #include "preprocess.hpp"
 
 #include "infer/algorithmManager.hpp"
@@ -15,7 +15,8 @@
 DEFINE_string(image_path, "", "Specify image path.");
 DEFINE_string(model_path, "", "Specify the yolo model path.");
 
-using common::AlgorithmConfig;
+using common::AlgoBase;
+using common::DetAlgo;
 using common::InferParams;
 using common::InferResult;
 using common::Shape;
@@ -41,17 +42,22 @@ int main(int argc, char **argv) {
   infer::utils::RGB2NV12(image_rgb, image_nv12);
 
   Shape inputShape{640, 640, 3};
-  AlgorithmConfig config{FLAGS_model_path,
-                         std::move(inputNames),
-                         std::move(outputNames),
-                         std::move(inputShape),
-                         "Yolo",
-                         0.3,
-                         0.4,
-                         alpha,
-                         0,
-                         false,
-                         1};
+  AlgoBase base_config{
+      1,
+      std::move(inputNames),
+      std::move(outputNames),
+      FLAGS_model_path,
+      "Yolo",
+      std::move(inputShape),
+      false,
+      alpha,
+      0,
+  };
+
+  DetAlgo det_config{std::move(base_config), 0.3, 0.4};
+
+  AlgoConfig config;
+  config.setParams(std::move(det_config));
 
   std::vector<RetBox> regions{{"hello", {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}}};
 

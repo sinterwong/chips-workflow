@@ -12,7 +12,6 @@
 #ifndef _FLOWENGINE_COMMON_COMMON_HPP_
 #define _FLOWENGINE_COMMON_COMMON_HPP_
 
-#include "algo_header.hpp"
 #include "infer_header.hpp"
 #include "module_header.hpp"
 

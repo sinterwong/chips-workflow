@@ -23,8 +23,10 @@ class Detection : public Vision {
   //! \brief construction
   //!
 public:
-  Detection(const common::AlgorithmConfig &_param, ModelInfo const &_info)
-      : Vision(_param, _info) {}
+  Detection(const AlgoConfig &_param, ModelInfo const &_info)
+      : Vision(_param, _info) {
+    config = mParams.getParams<DetAlgo>();
+  }
 
   //!
   //! \brief ProcessInput that the input is correct for infer
@@ -44,6 +46,7 @@ public:
   virtual bool verifyOutput(InferResult const &) const override;
 
 protected:
+  DetAlgo *config;
   virtual void generateBoxes(std::unordered_map<int, BBoxes> &,
                              void **) const = 0;
 };

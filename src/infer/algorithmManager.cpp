@@ -19,7 +19,7 @@
 
 namespace infer {
 bool AlgorithmManager::registered(std::string const &name,
-                                  AlgorithmConfig const &config) {
+                                  AlgoConfig const &config) {
   std::lock_guard lk(m);
   auto iter = name2algo.find(name);
   if (iter != name2algo.end()) {

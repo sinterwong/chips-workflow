@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "common/common.hpp"
-#include "common/config.hpp"
+
 #include "logger/logger.hpp"
 #include "messageBus.h"
 #include "module.hpp"
@@ -26,7 +26,7 @@
 #include "videoManager.hpp"
 
 using namespace module::utils;
-using common::CameraConfig;
+using common::StreamBase;
 
 namespace module {
 
@@ -34,13 +34,13 @@ class StreamModule : public Module {
 
 private:
   // CameraResult cameraResult;
-  CameraConfig config;
+  StreamBase config;
 
   std::unique_ptr<VideoManager> vm;
 
 public:
   StreamModule(backend_ptr ptr, std::string const &, std::string const &,
-               CameraConfig const &);
+               StreamBase const &);
 
   ~StreamModule() {}
 

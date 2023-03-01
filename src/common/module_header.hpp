@@ -9,7 +9,6 @@
  *
  */
 
-#include "algo_header.hpp"
 #include "infer_header.hpp"
 #include <chrono>
 
@@ -68,7 +67,7 @@ using algo_pipelines = std::vector<std::pair<SupportedAlgo, std::string>>;
  * @brief 逻辑的基本参数，logic包含报警时的配置
  *
  */
-struct AlarmBase {
+struct LogicBase {
   std::string outputDir; // 报警内容存储路径
   int videDuration;      // 报警视频录制时长
   bool isDraw;           // 报警图像是否需要标记报警信息
@@ -94,49 +93,37 @@ struct InferInterval {
   std::chrono::seconds interval{3}; // 间隔时间
 };
 
-struct Base : public AttentionArea, public AlarmBase, public InferInterval {
-  template <typename... Args>
-  Base(Args &&...args)
-      : AttentionArea(std::forward<Args>(args)...),
-        AlarmBase(std::forward<Args>(args)...),
-        InferInterval(std::forward<Args>(args)...) {}
+/**
+ * @brief 未佩戴安全帽识别
+ *
+ */
+struct WithoutHelmet : public AttentionArea,
+                       public LogicBase,
+                       public InferInterval {
+  WithoutHelmet(AttentionArea &&aaera, LogicBase &&alarm,
+                InferInterval &&interval)
+      : AttentionArea(aaera), LogicBase(alarm), InferInterval(interval) {}
 };
 
-struct WithoutHelmetMonitor : public Base {
-  template <typename... Args>
-  WithoutHelmetMonitor(Args &&...args) : Base(std::forward<Args>(args)...) {}
+/**
+ * @brief 吸烟
+ *
+ */
+struct SmokingMonitor : public AttentionArea,
+                        public LogicBase,
+                        public InferInterval {
+  SmokingMonitor(AttentionArea &&aaera, LogicBase &&alarm,
+                 InferInterval &&interval)
+      : AttentionArea(aaera), LogicBase(alarm), InferInterval(interval) {}
 };
 
-struct SmokingMonitor : public Base {
-  template <typename... Args>
-  SmokingMonitor(Args &&...args) : Base(std::forward<Args>(args)...) {}
-};
-
-struct ExtinguisherMonitor : public Base {
-  template <typename... Args>
-  ExtinguisherMonitor(Args &&...args) : Base(std::forward<Args>(args)...) {}
-};
-
-// 定义一个参数中心
-class ModuleParameterCenter {
-public:
-  // 将所有参数类型存储在一个 std::variant 中
-  using Params = std::variant<StreamBase, OutputBase, WithoutHelmetMonitor,
-                              SmokingMonitor, ExtinguisherMonitor>;
-
-  // 设置参数
-  template <typename T> void setParams(T params) {
-    params_ = std::move(params);
-  }
-
-  // 访问参数
-  template <typename Func> void visitParams(Func &&func) {
-    std::visit([&](auto &&params) { std::forward<Func>(func)(params); },
-               params_);
-  }
-
-private:
-  Params params_;
+/**
+ * @brief 灭火器
+ *
+ */
+struct ExtinguisherMonitor : public AttentionArea, public LogicBase {
+  ExtinguisherMonitor(AttentionArea &&aaera, LogicBase &&alarm)
+      : AttentionArea(aaera), LogicBase(alarm) {}
 };
 
 } // namespace common

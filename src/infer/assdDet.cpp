@@ -48,7 +48,7 @@ void Assd::generateBoxes(std::unordered_map<int, BBoxes> &m,
         float center_start = receptive_field_center_start[i];
         float stride = receptive_field_stride[i];
 
-        if (output[i][k] > mParams.cond_thr) {
+        if (output[i][k] > config->cond_thr) {
           float RF_center_x = center_start + stride * float(x);
           float RF_center_y = center_start + stride * float(y);
           float x1 =
@@ -69,9 +69,9 @@ void Assd::generateBoxes(std::unordered_map<int, BBoxes> &m,
           float re_y2 = std::max(y1, y2);
           re_x1 = re_x1 < 0 ? 0 : re_x1;
           re_y1 = re_y1 < 0 ? 0 : re_y1;
-          re_x2 = re_x2 > mParams.inputShape[0] - 1 ? mParams.inputShape[0] - 1
+          re_x2 = re_x2 > config->inputShape[0] - 1 ? config->inputShape[0] - 1
                                                     : re_x2;
-          re_y2 = re_y2 > mParams.inputShape[1] - 1 ? mParams.inputShape[1] - 1
+          re_y2 = re_y2 > config->inputShape[1] - 1 ? config->inputShape[1] - 1
                                                     : re_y2;
           float w = re_x2 - re_x1;
           float h = re_y2 - re_y1;
@@ -95,8 +95,7 @@ void Assd::generateBoxes(std::unordered_map<int, BBoxes> &m,
 
 bool Assd::verifyOutput(InferResult const &result) const { return true; }
 
-FlowEngineModuleRegister(Assd, const common::AlgorithmConfig &,
-                         ModelInfo const &);
+FlowEngineModuleRegister(Assd, AlgoConfig const &, ModelInfo const &);
 
 } // namespace vision
 } // namespace infer

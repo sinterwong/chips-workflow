@@ -8,9 +8,9 @@
  * @copyright Copyright (c) 2023
  *
  */
+#include "softmaxCls.hpp"
 #include "core/factory.hpp"
 #include "logger/logger.hpp"
-#include "softmaxCls.hpp"
 
 namespace infer {
 namespace vision {
@@ -41,7 +41,6 @@ ClsRet Softmax::generateClass(float *output) const {
   return ClsRet{idx, val};
 }
 
-FlowEngineModuleRegister(Softmax, const common::AlgorithmConfig &,
-                         ModelInfo const &);
+FlowEngineModuleRegister(Softmax, AlgoConfig const &, ModelInfo const &);
 } // namespace vision
 } // namespace infer

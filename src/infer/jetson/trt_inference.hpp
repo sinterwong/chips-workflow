@@ -21,7 +21,7 @@
 #include <array>
 #include <cmath>
 #include <memory>
-#include "common/config.hpp"
+
 
 #define IMAGE_MAX_SIZE 1200 * 1200 * 3
 
@@ -32,7 +32,7 @@ public:
   //!
   //! \brief construction
   //!
-  AlgoInference(const common::AlgorithmConfig &_param) : mParams(_param) {
+  AlgoInference(const AlgoBase &_param) : mParams(_param) {
     CHECK(cudaStreamCreate(&processStream));
     // prepare input data cache in pinned memory
     CHECK(cudaMallocHost((void **)&imageHost, IMAGE_MAX_SIZE));
@@ -85,7 +85,7 @@ private:
   UniquePtr<nvinfer1::IExecutionContext> context{nullptr};
 protected:
   //!< The parameters for the sample.
-  common::AlgorithmConfig mParams;
+  AlgoBase mParams;
   //!< The dimensions of the input to the network.
   std::vector<Dims> inputDims;
   //!< The dimensions of the output to the network.

@@ -23,12 +23,13 @@
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 
-#include "common/config.hpp"
 #include "logger/logger.hpp"
 #include "module.hpp"
 
+#include "common/common.hpp"
+
 namespace module {
-using common::OutputConfig;
+using common::OutputBase;
 
 static size_t curl_callback(void *ptr, size_t size, size_t nmemb,
                             std::string *data) {
@@ -38,11 +39,11 @@ static size_t curl_callback(void *ptr, size_t size, size_t nmemb,
 
 class OutputModule : public Module {
 protected:
-  common::OutputConfig config;
+  OutputBase config;
 
 public:
   OutputModule(backend_ptr ptr, std::string const &name,
-               std::string const &type, OutputConfig const &config_)
+               std::string const &type, OutputBase const &config_)
       : Module(ptr, name, type), config(config_) {}
   ~OutputModule() {}
 };

@@ -13,6 +13,8 @@
 DEFINE_string(image_path, "", "Specify image path.");
 DEFINE_string(model_path, "", "Specify the yolo model path.");
 
+using common::AlgoBase;
+using common::DetAlgo;
 using common::InferResult;
 using common::Shape;
 using infer::VisionInfer;
@@ -37,19 +39,25 @@ int main(int argc, char **argv) {
   infer::utils::RGB2NV12(image_rgb, image_nv12);
 
   Shape inputShape{640, 640, 3};
-  common::AlgorithmConfig config{FLAGS_model_path,
-                                 std::move(inputNames),
-                                 std::move(outputNames),
-                                 std::move(inputShape),
-                                 "Yolo",
-                                 0.3,
-                                 0.4,
-                                 alpha,
-                                 0,
-                                 false,
-                                 1};
+  AlgoBase base_config{
+      1,
+      std::move(inputNames),
+      std::move(outputNames),
+      FLAGS_model_path,
+      "Yolo",
+      std::move(inputShape),
+      false,
+      alpha,
+      0,
+  };
 
-  std::shared_ptr<AlgoInfer> vision = std::make_shared<VisionInfer>(config);
+  DetAlgo det_config{std::move(base_config), 0.3, 0.4};
+
+  AlgoConfig center;
+
+  center.setParams(det_config);
+
+  std::shared_ptr<AlgoInfer> vision = std::make_shared<VisionInfer>(center);
   if (!vision->init()) {
     FLOWENGINE_LOGGER_ERROR("Failed to init vison");
     return -1;

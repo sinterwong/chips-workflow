@@ -18,7 +18,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "common/config.hpp"
+#include "common/common.hpp"
 #include "logger/logger.hpp"
 #include "messageBus.h"
 #include "module.hpp"
@@ -27,7 +27,7 @@
 
 #include "videoRecord.hpp"
 
-using common::LogicConfig;
+using common::LogicBase;
 
 namespace module {
 namespace filesystem = std::experimental::filesystem;
@@ -36,12 +36,12 @@ protected:
   bool isRecord = false; // 是否是保存视频状态
   int frameCount = 0;    // 保存帧数
   int drawTimes = 0;     // 视频上画的次数
-  LogicConfig config;    // 逻辑参数
+  LogicBase config;      // 逻辑参数
   std::unique_ptr<utils::VideoRecord> vr;
 
 public:
   LogicModule(backend_ptr ptr, std::string const &name, std::string const &type,
-              LogicConfig const &config_)
+              LogicBase const &config_)
       : Module(ptr, name, type), config(config_) {}
   virtual ~LogicModule() {}
 

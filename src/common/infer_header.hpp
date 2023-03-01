@@ -130,6 +130,8 @@ struct AlgoBase {
   bool isScale;          // 预处理时是否等比例缩放
   float alpha;           // 预处理时除数
   float beta;            // 预处理时减数
+
+  AlgoBase() = default;
 };
 
 /**
@@ -139,13 +141,71 @@ struct AlgoBase {
 struct DetAlgo : public AlgoBase {
   float cond_thr; // 置信度阈值
   float nms_thr;  // NMS 阈值
+
+  DetAlgo() = default;
+  DetAlgo(AlgoBase &&algoBase, float cond_thr_, float nms_thr_)
+      : AlgoBase(algoBase), cond_thr(cond_thr_), nms_thr(nms_thr_) {}
 };
 
 /**
  * @brief 分类算法
  *
  */
-struct ClassAlgo : public AlgoBase {};
+struct ClassAlgo : public AlgoBase {
+  ClassAlgo() = default;
+  ClassAlgo(AlgoBase &&algoBase) : AlgoBase(algoBase) {}
+};
+
+class AlgoConfig {
+public:
+  // 将所有参数类型存储在一个 std::variant 中
+  using Params = std::variant<DetAlgo, ClassAlgo>;
+
+  // 设置参数
+  template <typename T> void setParams(T params) {
+    params_ = std::move(params);
+  }
+
+  // 访问参数
+  template <typename Func> void visitParams(Func &&func) {
+    std::visit([&](auto &params) { std::forward<Func>(func)(params); },
+               params_);
+  }
+
+  // 获取参数
+  template <typename T> T *getParams() { return std::get_if<T>(&params_); }
+
+private:
+  Params params_;
+};
+
+/**
+ * @brief 算法类型
+ *
+ */
+enum class AlgoType {
+  Classifier = 0,
+  Detecton,
+  Segmentation,
+  KeyPoint,
+  Feature
+};
+
+/**
+ * @brief 目前已经支持的算法种类
+ *
+ */
+enum class SupportedAlgo : uint32_t {
+  CocoDet = 0,
+  HandDet,
+  HeadDet,
+  FireDet,
+  SmogDet,
+  SmokeCallCls,
+  ExtinguisherCls,
+  OiltubeCls,
+  EarthlineCls,
+};
 
 } // namespace common
 #endif

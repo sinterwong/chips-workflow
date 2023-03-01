@@ -19,7 +19,7 @@ class Assd : public Detection {
   //! \brief construction
   //!
 public:
-  Assd(const common::AlgorithmConfig &_param, ModelInfo const &info)
+  Assd(const AlgoConfig &_param, ModelInfo const &info)
       : Detection(_param, info){}
 
 private:

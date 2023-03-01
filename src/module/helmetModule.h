@@ -16,19 +16,17 @@
 #include <memory>
 #include <vector>
 
-#include "common/common.hpp"
 #include "logger/logger.hpp"
 
+#include "logicModule.h"
 #include "module.hpp"
-
-using common::LogicConfig;
 
 namespace module {
 class HelmetModule : Module {
 
 public:
   HelmetModule(backend_ptr ptr, std::string const &name,
-               std::string const &type, LogicConfig const &logicConfig)
+               std::string const &type, LogicBase const &logicConfig)
       : Module(ptr, name, type) {}
 
   ~HelmetModule() {}

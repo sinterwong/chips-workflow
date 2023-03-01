@@ -10,18 +10,18 @@
  */
 
 #include "common/common.hpp"
-#include "common/config.hpp"
+
 
 #ifndef __FLOWCORE_ALGO_INFER_H_
 #define __FLOWCORE_ALGO_INFER_H_
 
-using common::AlgorithmConfig;
 using common::InferParams;
 using common::InferResult;
+using common::AlgoConfig;
 
 class AlgoInfer {
 public:
-  AlgoInfer(AlgorithmConfig const &config_) : config(config_) {}
+  AlgoInfer(AlgoConfig const &config_) : config(config_) {}
   /**
    * @brief 初始化算法
    *
@@ -48,6 +48,6 @@ public:
   virtual bool destory() = 0;
 
 protected:
-  AlgorithmConfig config;
+  AlgoConfig config;
 };
 #endif

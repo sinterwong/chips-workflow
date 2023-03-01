@@ -23,12 +23,11 @@ using namespace infer::trt;
 #endif
 
 namespace infer {
-using common::AlgorithmConfig;
 using common::InferResult;
 
 class VisionInfer : public AlgoInfer {
 public:
-  VisionInfer(AlgorithmConfig const& config_) : AlgoInfer(config_) {}
+  VisionInfer(AlgoConfig const& config_) : AlgoInfer(config_) {}
   /**
    * @brief 初始化算法
    *

@@ -21,8 +21,10 @@ class Classifier : public Vision {
   //! \brief construction
   //!
 public:
-  Classifier(const common::AlgorithmConfig &_param, ModelInfo const &_info)
-      : Vision(_param, _info) {}
+  Classifier(const AlgoConfig &_param, ModelInfo const &_info)
+      : Vision(_param, _info) {
+    config = mParams.getParams<ClassAlgo>();
+  }
 
   //!
   //! \brief ProcessInput that the input is correct for infer
@@ -42,6 +44,7 @@ public:
   virtual bool verifyOutput(InferResult const &) const override;
 
 protected:
+  ClassAlgo *config;
   virtual ClsRet generateClass(float *output) const = 0;
 };
 } // namespace vision

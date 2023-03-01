@@ -16,7 +16,7 @@ namespace module {
 
 StatusOutputModule::StatusOutputModule(backend_ptr ptr, std::string const &name,
                                        std::string const &type,
-                                       OutputConfig const &config_)
+                                       OutputBase const &config_)
     : OutputModule(ptr, name, type, config_) {}
 
 bool StatusOutputModule::postResult(std::string const &url,
@@ -91,5 +91,5 @@ void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
   }
 }
 FlowEngineModuleRegister(StatusOutputModule, backend_ptr, std::string const &,
-                         std::string const &, OutputConfig const &);
+                         std::string const &, OutputBase const &);
 } // namespace module

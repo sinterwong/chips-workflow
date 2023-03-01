@@ -31,10 +31,10 @@ bool Detection::processOutput(void **output, InferResult &result) const {
   std::unordered_map<int, BBoxes> cls2bbox;
   generateBoxes(cls2bbox, output);
   auto detRet = BBoxes();
-  utils::nms(detRet, cls2bbox, mParams.nms_thr);
+  utils::nms(detRet, cls2bbox, config->nms_thr);
   // rect 还原成原始大小
-  utils::restoryBoxes(detRet, result.shape, mParams.inputShape,
-                           mParams.isScale);
+  utils::restoryBoxes(detRet, result.shape, config->inputShape,
+                      config->isScale);
   BBoxes::iterator it = detRet.begin();
   // 清除掉不符合要求的框
   for (; it != detRet.end();) {

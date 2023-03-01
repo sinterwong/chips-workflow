@@ -26,7 +26,7 @@ public:
   virtual ~AlgorithmManager() {}
 
   virtual bool registered(std::string const &,
-                          AlgorithmConfig const &) override;
+                          AlgoConfig const &) override;
 
   virtual bool unregistered(std::string const &) override;
 
