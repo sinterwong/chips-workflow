@@ -1,9 +1,9 @@
 #include "gflags/gflags.h"
-#include "module_config.hpp"
+#include "common/common.hpp"
 
 DEFINE_string(image_path, "", "Specify the path of image.");
 
-using module::ModuleConfig;
+using namespace common;
 
 int main(int argc, char **argv) {
   gflags::SetUsageMessage("some usage message");

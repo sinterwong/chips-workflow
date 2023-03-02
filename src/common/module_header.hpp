@@ -24,15 +24,15 @@ using svector = std::vector<std::string>;
  * @brief 组件的类型
  *
  */
-enum class ModuleTypes { Stream, Output, Logic };
+enum class MessageType { None, Stream, Status, Close };
 
 /**
  * @brief 组件的信息
  *
  */
 struct ModuleInfo {
-  ModuleTypes moduleType; // 组件类型
   std::string moduleName; // 组件名称
+  std::string moduleType; // 组件类型
   std::string sendName;   // 下游组件
   std::string recvName;   // 上游组件
   std::string className;  // 反射类名称
@@ -124,6 +124,34 @@ struct SmokingMonitor : public AttentionArea,
 struct ExtinguisherMonitor : public AttentionArea, public LogicBase {
   ExtinguisherMonitor(AttentionArea &&aaera, LogicBase &&alarm)
       : AttentionArea(aaera), LogicBase(alarm) {}
+};
+
+/**
+ * @brief module 参数中心
+ *
+ */
+class ModuleConfig {
+public:
+  // 将所有参数类型存储在一个 std::variant 中
+  using Params = std::variant<StreamBase, OutputBase, WithoutHelmet,
+                              SmokingMonitor, ExtinguisherMonitor>;
+
+  // 设置参数
+  template <typename T> void setParams(T params) {
+    params_ = std::move(params);
+  }
+
+  // 访问参数
+  template <typename Func> void visitParams(Func &&func) {
+    std::visit([&](auto &&params) { std::forward<Func>(func)(params); },
+               params_);
+  }
+
+  // 获取参数
+  template <typename T> T *getParams() { return std::get_if<T>(&params_); }
+
+private:
+  Params params_;
 };
 
 } // namespace common

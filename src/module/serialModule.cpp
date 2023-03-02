@@ -3,7 +3,7 @@
 
 namespace module {
 serialModule::serialModule(backend_ptr ptr, std::string const &name,
-                           std::string const &type)
+                           MessageType const &type)
     : Module(ptr, name, type) {}
 
 void serialModule::forward(std::vector<forwardMessage> &message) {
@@ -23,5 +23,5 @@ void serialModule::forward(std::vector<forwardMessage> &message) {
   //    autoSend(buf.SerializeAsString());
 }
 FlowEngineModuleRegister(serialModule, backend_ptr, std::string const &,
-                         std::string const &);
+                         MessageType const &);
 } // namespace module

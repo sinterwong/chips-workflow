@@ -132,7 +132,8 @@ void PipelineModule::stopModule(std::string const &moduleName) {
   detachModule(moduleName);
 
   // 发送终止正在 go 的消息
-  backendPtr->message->send(name, moduleName, type, queueMessage());
+  backendPtr->message->send(name, moduleName, MessageType::Close,
+                            queueMessage());
 
   // 从atm中删除对象
   atm.erase(moduleName);
@@ -179,7 +180,8 @@ bool PipelineModule::startPipeline() {
         detachModule(iter->first);
         // 发送终止正在 go 的消息
         // iter->second->stopFlag.store(true);
-        backendPtr->message->send(name, iter->first, type, queueMessage());
+        backendPtr->message->send(name, iter->first, MessageType::Close,
+                                  queueMessage());
         // 从atm中删除对象
         iter = atm.erase(iter);
       } else {

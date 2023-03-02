@@ -36,7 +36,6 @@ using utils::pipelineParams;
 class PipelineModule {
 private:
   std::string name = "Control";
-  std::string type = "ControlMessage";
   std::string config;
   utils::ConfigParser configParser;
   backend_ptr backendPtr = std::make_shared<Backend>(
@@ -90,7 +89,8 @@ private:
   void terminate() {
     // 向所有模块发送终止信号
     for (auto iter = atm.begin(); iter != atm.end(); ++iter) {
-      backendPtr->message->send(name, iter->first, type, queueMessage());
+      backendPtr->message->send(name, iter->first, MessageType::Close,
+                                queueMessage());
       // iter->second->stopFlag.store(true);
     }
   }

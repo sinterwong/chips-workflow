@@ -53,7 +53,7 @@ public:
                       int width,
                       int height,
                       std::string const &name,
-                      std::string const &type,
+                      MessageType const &type,
                       
                              );
 

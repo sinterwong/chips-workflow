@@ -20,8 +20,10 @@
 #include "factory.hpp"
 #include "logger/logger.hpp"
 
+using common::MessageType;
+
 namespace module {
-using forwardMessage = std::tuple<std::string, std::string, queueMessage>;
+using forwardMessage = std::tuple<std::string, MessageType, queueMessage>;
 using backend_ptr = std::shared_ptr<Backend>;
 
 class Module {
@@ -30,11 +32,7 @@ protected:
 
   std::string name; // 模块名称
 
-  std::string type; // 模块类型 {stream, output, logic}
-
-  std::unordered_map<std::string, int> hash;
-
-  std::vector<forwardMessage> message;
+  MessageType type; // 模块类型 {stream, output, logic}
 
   bool loop;
 
@@ -45,7 +43,7 @@ protected:
 public:
   std::atomic_bool stopFlag;
 
-  Module(backend_ptr ptr_, std::string const &name_, std::string const &type_)
+  Module(backend_ptr ptr_, std::string const &name_, MessageType const &type_)
       : ptr(ptr_), name(name_), type(type_) {
     stopFlag.store(false);
     ptr->message->registered(name);
@@ -64,65 +62,51 @@ public:
     while (!stopFlag.load()) {
       step();
     }
+    ptr->message->unregistered(name);
   }
 
   virtual void step() {
-    message.clear();
-    hash.clear();
+    std::unordered_map<std::string, forwardMessage> mselector;
     loop = false;
 
     beforeGetMessage();
     if (!recvModule.empty()) {
-      while (message.empty() || loop) {
+      while (mselector.empty() || loop) {
         MessageBus::returnFlag flag;
-        std::string Msend, Mtype;
-        queueMessage Mbyte;
-        ptr->message->recv(name, flag, Msend, Mtype, Mbyte, true);
-        // #ifdef _DEBUG
-        //         assert(flag == MessageBus::returnFlag::successWithMore ||
-        //                flag == MessageBus::returnFlag::successWithEmpty);
-        // #endif
-        auto iter = hash.find(Msend);
-        if (iter == hash.end()) {
-          hash.insert(std::make_pair(Msend, message.size()));
-          message.emplace_back(std::make_tuple(Msend, Mtype, Mbyte));
-        } else {
-          auto key = iter->second;
-          message[key] = std::make_tuple(Msend, Mtype, Mbyte);
+        std::string sender;
+        MessageType stype;
+        queueMessage message;
+        loop = ptr->message->recv(name, flag, sender, stype, message, true);
+        if (!loop) {  // 消息收集为空，执行下一次任务
+          continue;
         }
-        loop = flag == MessageBus::returnFlag::successWithMore;
+        // 如果存在同一发送者的消息，只处理一次，用新的去覆盖旧的即可
+        mselector[sender] = std::make_tuple(std::move(sender), std::move(stype),
+                                            std::move(message));
       }
       std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
     beforeForward();
-
-    forward(message);
+    
+    // 将收集到的消息转换成待处理消息后去处理
+    std::vector<forwardMessage> messages;
+    messages.reserve(mselector.size());
+    std::transform(std::make_move_iterator(mselector.begin()),
+                   std::make_move_iterator(mselector.end()),
+                   std::back_inserter(messages),
+                   [](auto &&pair) { return std::move(pair.second); });
+    forward(messages);
     afterForward();
   }
 
   /**
-   * @brief 不向指定类型的模块发送
+   * @brief 向指定的类型发送消息
    *
    * @param buf
    * @param types_
    * @return true
    * @return false
    */
-  bool sendWithoutTypes(queueMessage const &buf,
-                        std::vector<std::string> const &types_) {
-    bool ret = false;
-    for (auto &target : sendModule) {
-      std::string sendtype_ = target.substr(0, target.find("_"));
-      auto iter = std::find(types_.begin(), types_.end(), sendtype_);
-      if (iter != types_.end()) {
-        // 意味着在不发送的列表中找到了该类型
-        continue;
-      }
-      auto temp = ptr->message->send(name, target, type, buf);
-      ret = ret and temp;
-    }
-    return ret;
-  }
   bool sendWithTypes(queueMessage const &buf,
                      std::vector<std::string> const &types_) {
     bool ret = false;

@@ -43,7 +43,7 @@ protected:
 
 public:
   OutputModule(backend_ptr ptr, std::string const &name,
-               std::string const &type, OutputBase const &config_)
+               MessageType const &type, OutputBase const &config_)
       : Module(ptr, name, type), config(config_) {}
   ~OutputModule() {}
 };

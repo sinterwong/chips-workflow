@@ -5,7 +5,7 @@ RKMediaVOModule::RKMediaVOModule(backend_ptr ptr,
                                  std::tuple<int, int> videoSize,
                                  std::tuple<int, int> screenSize,
                                  std::string const &name,
-                                 std::string const &type,
+                                 MessageType const &type,
                                  
                                        )
         : Module(ptr, name, type)
@@ -55,7 +55,7 @@ void RKMediaVOModule::forward(
     bool ret;
     for (auto&[send, type, buf]: message)
     {
-        assert(type == "stream");
+        assert(type == MessageType::Stream);
 
         auto frameBufMessage = ptr->pool->read(buf.key);
 

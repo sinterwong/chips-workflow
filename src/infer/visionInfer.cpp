@@ -31,6 +31,7 @@ bool VisionInfer::init() {
 
   std::string serial;
   config.visitParams([this, &serial](auto &params) {
+    serial = params.serial;
     instance = std::make_shared<AlgoInference>(params);
     if (!instance->initialize()) {
       FLOWENGINE_LOGGER_ERROR("VisionInfer initialize is failed!");
@@ -39,7 +40,6 @@ bool VisionInfer::init() {
     instance->getModelInfo(modelInfo);
     vision = ObjectFactory::createObject<vision::Vision>(params.serial, params,
                                                          modelInfo);
-    serial = params.serial;
   });
 
   if (!vision) {

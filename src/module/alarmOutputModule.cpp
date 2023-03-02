@@ -19,7 +19,7 @@
 namespace module {
 
 AlarmOutputModule::AlarmOutputModule(backend_ptr ptr, std::string const &name,
-                                     std::string const &type,
+                                     MessageType const &type,
                                      OutputBase const &config)
     : OutputModule(ptr, name, type, config) {}
 
@@ -100,7 +100,7 @@ bool AlarmOutputModule::postResult(std::string const &url,
 
 void AlarmOutputModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
-    if (type == "ControlMessage") {
+    if (type == MessageType::Close) {
       FLOWENGINE_LOGGER_INFO("{} AlarmOutputModule module was done!", name);
       stopFlag.store(true);
       return;
@@ -114,5 +114,5 @@ void AlarmOutputModule::forward(std::vector<forwardMessage> &message) {
 }
 
 FlowEngineModuleRegister(AlarmOutputModule, backend_ptr, std::string const &,
-                         std::string const &, OutputBase const &);
+                         MessageType const &, OutputBase const &);
 } // namespace module

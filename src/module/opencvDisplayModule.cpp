@@ -3,12 +3,12 @@
 namespace module {
 OpencvDisplayModule::OpencvDisplayModule(backend_ptr ptr,
                                          std::string const &name,
-                                         std::string const &type)
+                                         MessageType const &type)
     : Module(ptr, name, type) {}
 
 void OpencvDisplayModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
-    assert(type == "stream");
+    assert(type == MessageType::Stream);
     // int height, width;
     // height = buf.cameraResult.heightPixel;
     // width = buf.cameraResult.widthPixel;
@@ -21,5 +21,5 @@ void OpencvDisplayModule::forward(std::vector<forwardMessage> &message) {
   }
 }
 FlowEngineModuleRegister(OpencvDisplayModule, backend_ptr, std::string const &,
-                         std::string const &);
+                         MessageType const &);
 } // namespace module

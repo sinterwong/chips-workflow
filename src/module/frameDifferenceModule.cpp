@@ -21,19 +21,19 @@
 namespace module {
 FrameDifferenceModule::FrameDifferenceModule(backend_ptr ptr,
                                              std::string const &name,
-                                             std::string const &type)
+                                             MessageType const &type)
     : Module(ptr, name, type), fd(name) {}
 
 FrameDifferenceModule::~FrameDifferenceModule() {}
 
 void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
   // for (auto &[send, type, buf] : message) {
-  //   if (type == "ControlMessage") {
+  //   if (type == MessageType::Close) {
   //     // FLOWENGINE_LOGGER_INFO("FreameDifference module was done!");
   //     std::cout << "FreameDifference module was done!" << std::endl;
   //     stopFlag.store(true);
   //     return;
-  //   } else if (type == "stream") {
+  //   } else if (type == MessageType::Stream) {
   //     auto frameBufMessage = ptr->pool->read(buf.key);
   //     auto frame =
   //         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
@@ -49,5 +49,5 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
   // }
 }
 FlowEngineModuleRegister(FrameDifferenceModule, backend_ptr,
-                         std::string const &, std::string const &);
+                         std::string const &, MessageType &);
 } // namespace module

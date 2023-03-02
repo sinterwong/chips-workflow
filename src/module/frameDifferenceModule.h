@@ -29,7 +29,7 @@ private:
 
 public:
   FrameDifferenceModule(backend_ptr ptr, std::string const &name,
-                        std::string const &type);
+                        MessageType const &type);
 
   ~FrameDifferenceModule();
 

@@ -36,13 +36,12 @@ protected:
   bool isRecord = false; // 是否是保存视频状态
   int frameCount = 0;    // 保存帧数
   int drawTimes = 0;     // 视频上画的次数
-  LogicBase config;      // 逻辑参数
+  LogicBase* config;      // 逻辑参数
   std::unique_ptr<utils::VideoRecord> vr;
 
 public:
-  LogicModule(backend_ptr ptr, std::string const &name, std::string const &type,
-              LogicBase const &config_)
-      : Module(ptr, name, type), config(config_) {}
+  LogicModule(backend_ptr ptr, std::string const &name, MessageType const &type)
+      : Module(ptr, name, type) {}
   virtual ~LogicModule() {}
 
   inline void destoryOutputStream() { vr->destory(); }
@@ -50,7 +49,7 @@ public:
   inline bool initRecorder(std::string const &path, int width, int height,
                            int rate) {
     isRecord = true;
-    frameCount = config.videDuration * rate;
+    frameCount = config->videDuration * rate;
     drawTimes = floor(frameCount / 3);
     videoOptions params;
     params.resource = path;
@@ -86,12 +85,12 @@ public:
                                 RetBox const &bbox) {
     // 生成本次报警的唯一ID
     alarmInfo.alarmId = utils::generate_hex(16);
-    alarmInfo.alarmFile = config.outputDir + "/" + alarmInfo.alarmId;
-    alarmInfo.prepareDelayInSec = config.videDuration;
+    alarmInfo.alarmFile = config->outputDir + "/" + alarmInfo.alarmId;
+    alarmInfo.prepareDelayInSec = config->videDuration;
     alarmInfo.alarmDetails = detail;
     alarmInfo.alarmType = name;
-    alarmInfo.page = config.page;
-    alarmInfo.eventId = config.eventId;
+    alarmInfo.page = config->page;
+    alarmInfo.eventId = config->eventId;
 
     // 生成报警文件夹
     filesystem::create_directories(alarmInfo.alarmFile);
@@ -100,7 +99,7 @@ public:
   inline void saveAlarmImage(std::string const &path, cv::Mat const &frame,
                              ColorType const ctype, RetBox const &bbox) {
     cv::Mat showImage;
-    if (config.isDraw) {
+    if (config->isDraw) {
       // 临时画个图（后续根据前端参数来决定返回的图片是否带有画图标记）
       showImage = frame.clone();
       switch (ctype) {

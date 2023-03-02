@@ -30,7 +30,7 @@ private:
 
 public:
   cskTrackModule(backend_ptr ptr, std::string const &name,
-                 std::string const &type);
+                 MessageType const &type);
 
   ~cskTrackModule();
 

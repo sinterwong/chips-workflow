@@ -15,7 +15,7 @@
 namespace module {
 
 StatusOutputModule::StatusOutputModule(backend_ptr ptr, std::string const &name,
-                                       std::string const &type,
+                                       MessageType const &type,
                                        OutputBase const &config_)
     : OutputModule(ptr, name, type, config_) {}
 
@@ -74,7 +74,7 @@ bool StatusOutputModule::postResult(std::string const &url,
 
 void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
-    if (type == "ControlMessage") {
+    if (type == MessageType::Close) {
       FLOWENGINE_LOGGER_INFO("{} StatusOutputModule module was done!", name);
       stopFlag.store(true);
       return;
@@ -91,5 +91,5 @@ void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
   }
 }
 FlowEngineModuleRegister(StatusOutputModule, backend_ptr, std::string const &,
-                         std::string const &, OutputBase const &);
+                         MessageType const &, OutputBase const &);
 } // namespace module

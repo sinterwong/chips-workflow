@@ -14,7 +14,7 @@ protected:
 
 public:
   OpencvDisplayModule(backend_ptr ptr, std::string const &name,
-                      std::string const &type);
+                      MessageType const &type);
 
   virtual void forward(std::vector<forwardMessage> &message) override;
 };

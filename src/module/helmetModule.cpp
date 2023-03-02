@@ -25,7 +25,7 @@ namespace module {
  */
 void HelmetModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
-    if (type == "ControlMessage") {
+    if (type == MessageType::Close) {
       FLOWENGINE_LOGGER_INFO("{} HelmetModule module was done!", name);
       stopFlag.store(true);
       return;
@@ -34,5 +34,5 @@ void HelmetModule::forward(std::vector<forwardMessage> &message) {
 }
 
 FlowEngineModuleRegister(HelmetModule, backend_ptr, std::string const &,
-                         std::string const &, LogicBase const &);
+                         MessageType const &, LogicBase const &);
 } // namespace module

@@ -1,17 +1,17 @@
 #include "cskTrackModule.h"
 namespace module {
 cskTrackModule::cskTrackModule(backend_ptr ptr, std::string const &name,
-                               std::string const &type)
+                               MessageType const &type)
     : Module(ptr, name, type) {}
 
 cskTrackModule::~cskTrackModule() {}
 
 void cskTrackModule::forward(std::vector<forwardMessage> &message) {
   // for (auto &[send, type, buf] : message) {
-  //   if (type == "ControlMessage") {
+  //   if (type == MessageType::Close) {
   //     std::cout << name << "{} CSKTrackModule module was done!" << std::endl;
   //     return;
-  //   } else if (type == "stream") {
+  //   } else if (type == MessageType::Stream) {
   //     if (moduleFlag == init || moduleFlag == tracking) {
   //       auto frameBufMessage = ptr->pool->read(buf.key);
 
@@ -62,5 +62,5 @@ cv::Rect cskTrackModule::floatArrayToCvRect(const std::array<float, 4> &a) {
   return cv::Rect(a[0], a[1], a[2], a[3]);
 }
 FlowEngineModuleRegister(cskTrackModule, backend_ptr, std::string const &,
-                         std::string const &);
+                         MessageType const &);
 } // namespace module

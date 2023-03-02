@@ -22,7 +22,7 @@
 namespace module {
 
 StreamModule::StreamModule(backend_ptr ptr, std::string const &_name,
-                           std::string const &_type, StreamBase const &_config)
+                           MessageType const &_type, StreamBase const &_config)
     : Module(ptr, _name, _type), config(_config) {
 
   try {
@@ -48,19 +48,25 @@ void StreamModule::beforeForward() {
 };
 
 void StreamModule::step() {
-  message.clear();
-  hash.clear();
-  loop = false;
-
   beforeGetMessage();
   beforeForward();
   if (!vm->isRunning()) {
     return;
   }
-  // FLOWENGINE_LOGGER_CRITICAL("Stream forward!");
-  // 100ms 处理一帧
-  std::this_thread::sleep_for(std::chrono::microseconds(100));
-  forward(message);
+
+  // 按目前的设计只需要监测Close消息类型。
+  MessageBus::returnFlag flag;
+  std::string sender;
+  MessageType stype = MessageType::None;
+  queueMessage message;
+  ptr->message->recv(name, flag, sender, stype, message, false);
+  if (stype == MessageType::Close) {
+    FLOWENGINE_LOGGER_INFO("{} StreamModule module was done!", name);
+    stopFlag.store(true);
+    return;
+  }
+  std::vector<forwardMessage> messages;
+  forward(messages);
   afterForward();
 }
 
@@ -99,7 +105,7 @@ FrameBuf makeFrameBuf(std::shared_ptr<cv::Mat> frame, int height, int width) {
 
 void StreamModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
-    if (type == "ControlMessage") {
+    if (type == MessageType::Close) {
       FLOWENGINE_LOGGER_INFO("{} StreamModule module was done!", name);
       stopFlag.store(true);
       return;
@@ -130,5 +136,5 @@ void StreamModule::forward(std::vector<forwardMessage> &message) {
   autoSend(sendMessage);
 }
 FlowEngineModuleRegister(StreamModule, backend_ptr, std::string const &,
-                         std::string const &, StreamBase const &);
+                         MessageType const &, StreamBase const &);
 } // namespace module

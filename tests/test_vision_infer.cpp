@@ -13,6 +13,7 @@
 DEFINE_string(image_path, "", "Specify image path.");
 DEFINE_string(model_path, "", "Specify the yolo model path.");
 
+using common::RetBox;
 using common::AlgoBase;
 using common::DetAlgo;
 using common::InferResult;

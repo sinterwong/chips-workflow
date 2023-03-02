@@ -56,7 +56,7 @@ public:
     RKMediaCameraModule(backend_ptr ptr,
                        const std::string &iqfile,
                        std::string const &name,
-                       std::string const &type,
+                       MessageType const &type,
                        
                                );
 

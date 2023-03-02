@@ -27,7 +27,7 @@ RKMediaRTSPModule::RKMediaRTSPModule(backend_ptr ptr,
                                      int width,
                                      int height,
                                      std::string const &name,
-                                     std::string const &type,
+                                     MessageType const &type,
                                      
                                      )
         : Module(ptr, name, type)
@@ -153,7 +153,7 @@ void RKMediaRTSPModule::forward(
 {
     for (auto&[send, type, buf]: message)
     {
-        assert(type == "stream");
+        assert(type == MessageType::Stream);
         auto frameBufMessage = ptr->pool->read(buf.key);
 
         assert(height == videoHeight);

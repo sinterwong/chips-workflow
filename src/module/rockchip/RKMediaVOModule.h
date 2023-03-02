@@ -57,7 +57,7 @@ public:
                     std::tuple<int, int> videoSize,
                     std::tuple<int, int> screenSize,
                     std::string const &name,
-                    std::string const &type,
+                    MessageType const &type,
                     
                          );
 

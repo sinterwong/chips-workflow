@@ -26,7 +26,7 @@ class HelmetModule : Module {
 
 public:
   HelmetModule(backend_ptr ptr, std::string const &name,
-               std::string const &type, LogicBase const &logicConfig)
+               MessageType const &type, LogicBase const &logicConfig)
       : Module(ptr, name, type) {}
 
   ~HelmetModule() {}

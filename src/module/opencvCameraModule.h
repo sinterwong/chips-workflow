@@ -29,10 +29,10 @@ private:
 
 public:
   OpencvCameraModule(backend_ptr ptr, const std::string &fileName,
-                     std::string const &name, std::string const &type);
+                     std::string const &name, MessageType const &type);
 
   OpencvCameraModule(backend_ptr ptr, const int capNumber,
-                     std::string const &name, std::string const &type);
+                     std::string const &name, MessageType const &type);
 
   void forward(std::vector<forwardMessage> &message) override;
 
