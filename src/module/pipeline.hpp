@@ -18,10 +18,9 @@
 #include "logger/logger.hpp"
 #include "module.hpp"
 #include "thread_pool.h"
-#include "utils/configParser.hpp"
-// #include "BS_thread_pool.hpp"
-
 #include "algorithmManager.hpp"
+#include "configParser.hpp"
+
 #include <algorithm>
 #include <any>
 #include <memory>
@@ -30,13 +29,16 @@
 #include <vector>
 
 namespace module {
+
+using common::ModuleConfig;
+using common::ModuleInfo;
 using infer::AlgorithmManager;
-using utils::pipelineParams;
+using utils::PipelineParams;
 
 class PipelineModule {
 private:
-  std::string name = "Control";
-  std::string config;
+  std::string name = "Administrator";
+  std::string config_path;
   utils::ConfigParser configParser;
   backend_ptr backendPtr = std::make_shared<Backend>(
       std::make_unique<BoostMessage>(), std::make_unique<RouteFramePool>(2),
@@ -54,8 +56,7 @@ private:
    * @return true
    * @return false
    */
-  bool submitModule(common::ModuleConfigure const &config,
-                    common::ParamsConfig const &paramsConfig);
+  bool submitModule(ModuleInfo const &info, ModuleConfig const &config);
 
   /**
    * @brief 终止并删除模块
@@ -84,14 +85,13 @@ private:
 
   bool startPipeline();
 
-  bool parseConfigs(std::string const &uri, std::vector<pipelineParams> &);
+  bool parseConfigs(std::string const &uri, std::vector<PipelineParams> &);
 
   void terminate() {
     // 向所有模块发送终止信号
     for (auto iter = atm.begin(); iter != atm.end(); ++iter) {
       backendPtr->message->send(name, iter->first, MessageType::Close,
                                 queueMessage());
-      // iter->second->stopFlag.store(true);
     }
   }
 

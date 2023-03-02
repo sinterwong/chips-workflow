@@ -21,7 +21,7 @@ using namespace std::chrono_literals;
 using svector = std::vector<std::string>;
 
 /**
- * @brief 组件的类型
+ * @brief 组件之间发送消息的类型
  *
  */
 enum class MessageType { None, Stream, Status, Close };
@@ -133,7 +133,7 @@ struct ExtinguisherMonitor : public AttentionArea, public LogicBase {
 class ModuleConfig {
 public:
   // 将所有参数类型存储在一个 std::variant 中
-  using Params = std::variant<StreamBase, OutputBase, WithoutHelmet,
+  using Params = std::variant<AlgoConfig, StreamBase, OutputBase, WithoutHelmet,
                               SmokingMonitor, ExtinguisherMonitor>;
 
   // 设置参数

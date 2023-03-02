@@ -23,8 +23,7 @@
 using common::RetBox;
 using common::RetPoly;
 
-namespace module {
-namespace utils {
+namespace module::utils {
 
 inline unsigned int random_char() {
   std::random_device rd;
@@ -70,17 +69,17 @@ bool drawRetPoly(cv::Mat &image, RetPoly const &poly,
 
 /**
  * @brief h264 to mp4
- * 
- * @param inputFile 
- * @param outputFile 
+ *
+ * @param inputFile
+ * @param outputFile
  */
 void h2642mp4(std::string const &inputFile, std::string const &outputFile);
 
 /**
  * @brief Get the Codec object
- * 
- * @param fourcc 
- * @return std::string 
+ *
+ * @param fourcc
+ * @return std::string
  */
 inline std::string getCodec(int fourcc) {
   char a[5];
@@ -91,5 +90,4 @@ inline std::string getCodec(int fourcc) {
   return std::string{a};
 }
 
-} // namespace utils
-} // namespace module
+} // namespace module::utils

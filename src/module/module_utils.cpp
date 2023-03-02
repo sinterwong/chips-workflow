@@ -17,8 +17,7 @@
 #include "rapidjson/writer.h"
 #include <vector>
 
-namespace module {
-namespace utils {
+namespace module::utils {
 std::string base64_encode(uchar const *bytes_to_encode, unsigned int in_len) {
   std::string ret;
 
@@ -251,5 +250,4 @@ void h2642mp4(std::string const &inputFile, std::string const &outputFile) {
   output_video.release();
 }
 
-} // namespace utils
-} // namespace module
+} // namespace module::utils

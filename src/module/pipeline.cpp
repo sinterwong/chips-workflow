@@ -11,70 +11,37 @@
 
 #include "pipeline.hpp"
 #include "factory.hpp"
+#include "logger/logger.hpp"
 #include "module.hpp"
-#include "utils/configParser.hpp"
 #include <algorithm>
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
 namespace module {
-using utils::ModuleConfigure;
-using utils::ParamsConfig;
 
-PipelineModule::PipelineModule(std::string const &config_, size_t workers_n)
-    : config(config_) {
+PipelineModule::PipelineModule(std::string const &config_path_, size_t workers_n)
+    : config_path(config_path_) {
   pool = std::unique_ptr<thread_pool>{std::make_unique<thread_pool>()};
   pool->start(workers_n);
-  // pool =
-  // std::unique_ptr<BS::thread_pool>(std::make_unique(BS::thread_pool(workers_n)));
 }
 
-bool PipelineModule::submitModule(ModuleConfigure const &config,
-                                  ParamsConfig const &paramsConfig) {
-  switch (paramsConfig.GetKind()) {
-  case common::ConfigType::Algorithm: { // Algorithm
-    atm[config.moduleName] = ObjectFactory::createObject<Module>(
-        config.typeName, backendPtr, config.moduleName, config.ctype,
-        paramsConfig.GetAlgorithmConfig());
-    break;
-  }
-  case common::ConfigType::Logic: { // Logic
-    atm[config.moduleName] = ObjectFactory::createObject<Module>(
-        config.typeName, backendPtr, config.moduleName, config.ctype,
-        paramsConfig.GetLogicConfig());
-    break;
-  }
-  case common::ConfigType::Output: { // Output
-    atm[config.moduleName] = ObjectFactory::createObject<Module>(
-        config.typeName, backendPtr, config.moduleName, config.ctype,
-        paramsConfig.GetOutputConfig());
-    break;
-  }
-  case common::ConfigType::Stream: { // Stream
-    atm[config.moduleName] = ObjectFactory::createObject<Module>(
-        config.typeName, backendPtr, config.moduleName, config.ctype,
-        paramsConfig.GetCameraConfig());
-    break;
-  }
-  default: {
-    break;
-  }
-  }
+bool PipelineModule::submitModule(ModuleInfo const &info,
+                                  ModuleConfig const &config) {
+  atm[info.moduleName] = ObjectFactory::createObject<Module>(
+      info.className, backendPtr, info.moduleName, info.moduleType, config);
 
-  if (atm[config.moduleName] == nullptr) {
-    std::cout << config.moduleName << " is nullptr!!!!!!!!!!!!!!!!!!"
-              << std::endl;
-    exit(-1);
+  if (atm[info.moduleName] == nullptr) {
+    FLOWENGINE_LOGGER_ERROR("Module {} fails to be started!", info.moduleName);
+    return false;
   }
-  atm[config.moduleName]->addRecvModule(name); // 关联上控制模块
-
-  pool->submit(&Module::go, atm.at(config.moduleName));
+  atm[info.moduleName]->addRecvModule(name); // 关联管理员模块
+  pool->submit(&Module::go, atm.at(info.moduleName));
   return true;
 }
 
 bool PipelineModule::parseConfigs(std::string const &path,
-                                  std::vector<pipelineParams> &pipelines) {
+                                  std::vector<PipelineParams> &pipelines) {
   std::string content;
   if (!configParser.readFile(path, content)) {
     FLOWENGINE_LOGGER_ERROR("config parse: read file is failed!");
@@ -151,13 +118,13 @@ bool PipelineModule::startPipeline() {
     }
   }
 
-  std::vector<pipelineParams> pipelines;
-  if (!parseConfigs(config, pipelines)) {
+  std::vector<PipelineParams> pipelines;
+  if (!parseConfigs(config_path, pipelines)) {
     FLOWENGINE_LOGGER_ERROR("parse config error");
     return false;
   }
   std::vector<std::string> currentModules;
-  std::vector<ModuleConfigure> moduleRelations;
+  std::vector<ModuleInfo> moduleRelations;
   // run 起来所有模块并且制作所有需要关联的模块, 后续可能会有所扩展
   for (auto &pipeline : pipelines) {
     for (auto &config : pipeline) {
