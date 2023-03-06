@@ -180,28 +180,27 @@ private:
 };
 
 /**
- * @brief 算法类型
+ * @brief 支持的算法系列
  *
  */
-enum class AlgoType {
-  Classifier = 0,
-  Detecton,
-  Segmentation,
-  KeyPoint,
-  Feature
+enum class AlgoSerial : uint16_t {
+  Yolo = 0,
+  Assd,
+  Softmax,
 };
 
 /**
  * @brief 目前已经支持的算法种类
  *
  */
-enum class SupportedAlgo : uint32_t {
+enum class SupportedAlgo : uint16_t {
   CocoDet = 0,
   HandDet,
   HeadDet,
   FireDet,
   SmogDet,
   SmokeCallCls,
+  HelmetCls,
   ExtinguisherCls,
   OiltubeCls,
   EarthlineCls,

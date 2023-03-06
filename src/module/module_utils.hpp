@@ -20,6 +20,9 @@
 
 #include "common/common.hpp"
 
+#ifndef __FLOWENGINE_MODULE_UTILS_H_
+#define __FLOWENGINE_MODULE_UTILS_H_
+
 using common::RetBox;
 using common::RetPoly;
 
@@ -90,4 +93,10 @@ inline std::string getCodec(int fourcc) {
   return std::string{a};
 }
 
+bool readFile(std::string const &filename, std::string &ret);
+
+bool writeJson(std::string const &config, std::string const &outPath);
+
 } // namespace module::utils
+
+#endif

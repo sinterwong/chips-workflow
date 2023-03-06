@@ -10,12 +10,18 @@
  */
 
 #include "module_utils.hpp"
+#include <fstream>
 
+#include "logger/logger.hpp"
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
+
+#include <nlohmann/json.hpp>
 #include <vector>
+
+using json = nlohmann::json;
 
 namespace module::utils {
 std::string base64_encode(uchar const *bytes_to_encode, unsigned int in_len) {
@@ -248,6 +254,29 @@ void h2642mp4(std::string const &inputFile, std::string const &outputFile) {
 
   input_video.release();
   output_video.release();
+}
+
+bool readFile(std::string const &filename, std::string &ret) {
+  std::ifstream input_file(filename);
+  if (!input_file.is_open()) {
+    FLOWENGINE_LOGGER_ERROR("Failed to open file: '{}'", filename);
+    return false;
+  }
+  ret = std::string((std::istreambuf_iterator<char>(input_file)),
+                    std::istreambuf_iterator<char>());
+  return true;
+}
+
+bool writeJson(std::string const &config, std::string const &outPath) {
+  FLOWENGINE_LOGGER_INFO("Writing json....");
+  json j = json::parse(config);
+  std::ofstream out(outPath);
+  if (!out.is_open()) {
+    FLOWENGINE_LOGGER_ERROR("Failed to open file: '{}'", outPath);
+    return false;
+  }
+  out << j.dump(4);
+  return true;
 }
 
 } // namespace module::utils

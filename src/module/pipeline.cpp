@@ -18,6 +18,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "module_utils.hpp"
+
 namespace module {
 
 PipelineModule::PipelineModule(std::string const &config_path_, size_t workers_n)
@@ -43,7 +45,7 @@ bool PipelineModule::submitModule(ModuleInfo const &info,
 bool PipelineModule::parseConfigs(std::string const &path,
                                   std::vector<PipelineParams> &pipelines) {
   std::string content;
-  if (!configParser.readFile(path, content)) {
+  if (!utils::readFile(path, content)) {
     FLOWENGINE_LOGGER_ERROR("config parse: read file is failed!");
     return false;
   }
@@ -53,7 +55,7 @@ bool PipelineModule::parseConfigs(std::string const &path,
     return false;
   }
 
-  if (!configParser.writeJson("{}", path)) {
+  if (!utils::writeJson("{}", path)) {
     FLOWENGINE_LOGGER_INFO("config parse: clean json file is failed!");
     return false;
   }

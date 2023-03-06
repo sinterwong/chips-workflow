@@ -36,6 +36,15 @@ struct ModuleInfo {
   std::string sendName;   // 下游组件
   std::string recvName;   // 上游组件
   std::string className;  // 反射类名称
+
+  friend std::ostream &operator<<(std::ostream &os, ModuleInfo &param) {
+    os << "moduleName: " << param.moduleName << "\n"
+       << "moduleType: " << param.moduleType << "\n"
+       << "sendName: " << param.sendName << "\n"
+       << "recvName: " << param.recvName << "\n"
+       << "className: " << param.className << std::endl;
+    return os;
+  }
 };
 
 /**
