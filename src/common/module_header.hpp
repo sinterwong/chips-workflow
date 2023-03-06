@@ -142,8 +142,9 @@ struct ExtinguisherMonitor : public AttentionArea, public LogicBase {
 class ModuleConfig {
 public:
   // 将所有参数类型存储在一个 std::variant 中
-  using Params = std::variant<AlgoConfig, StreamBase, OutputBase, WithoutHelmet,
-                              SmokingMonitor, ExtinguisherMonitor>;
+  using Params =
+      std::variant<AlgoConfig, StreamBase, OutputBase, LogicBase, WithoutHelmet,
+                   SmokingMonitor, ExtinguisherMonitor>;
 
   // 设置参数
   template <typename T> void setParams(T params) {

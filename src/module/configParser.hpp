@@ -68,7 +68,6 @@ private:
       std::make_pair("helmetCls", SupportedAlgo::HelmetCls),
       std::make_pair("smokeCls", SupportedAlgo::SmokeCallCls),
       std::make_pair("extinguisherCls", SupportedAlgo::ExtinguisherCls),
-      std::make_pair("extinguisherCls", SupportedAlgo::ExtinguisherCls),
   };
 
 public:

@@ -31,6 +31,7 @@ using common::ExtinguisherMonitor;
 using common::InferInterval;
 using common::LogicBase;
 using common::OutputBase;
+using common::Point;
 using common::SmokingMonitor;
 using common::StreamBase;
 using common::WithoutHelmet;
@@ -82,6 +83,7 @@ bool ConfigParser::parseConfig(std::string const &path,
       switch (type) {
       case ModuleType::Stream: {
         StreamBase stream_config;
+        stream_config.cameraName = info.moduleName;
         stream_config.uri = p["cameraIp"].get<std::string>();
         stream_config.videoCode = p["videoCode"].get<std::string>();
         stream_config.flowType = p["flowType"].get<std::string>();
@@ -153,7 +155,7 @@ bool ConfigParser::parseConfig(std::string const &path,
         base_config.threshold = p["threshold"].get<float>();
         base_config.videDuration = p["video_duration"].get<int>();
         base_config.isDraw = true;
-        base_config.algoPipelines = std::move(algoPipes);
+        // base_config.algoPipelines = algoPipes;
 
         SupportedFunction func = moduleMapping[info.className];
         switch (func) {
@@ -161,6 +163,9 @@ bool ConfigParser::parseConfig(std::string const &path,
           // TODO 未来每个模块都可以有自己特定的超参数
           AttentionArea aarea;
           auto region = p["region"].get<std::vector<int>>();
+          for (size_t i = 1; i < region.size() - 1; i++) {
+            aarea.region.push_back(Point{region.at(i - 1), region.at(i)});
+          }
           InferInterval interval;
           WithoutHelmet config_{std::move(aarea), std::move(base_config),
                                 std::move(interval)};
@@ -171,6 +176,9 @@ bool ConfigParser::parseConfig(std::string const &path,
           // TODO 未来每个模块都可以有自己特定的超参数
           AttentionArea aarea;
           auto region = p["region"].get<std::vector<int>>();
+          for (size_t i = 1; i < region.size() - 1; i++) {
+            aarea.region.push_back(Point{region.at(i - 1), region.at(i)});
+          }
           InferInterval interval;
           SmokingMonitor config_{std::move(aarea), std::move(base_config),
                                  std::move(interval)};
@@ -181,6 +189,9 @@ bool ConfigParser::parseConfig(std::string const &path,
           // TODO 未来每个模块都可以有自己特定的超参数
           AttentionArea aarea;
           auto region = p["region"].get<std::vector<int>>();
+          for (size_t i = 1; i < region.size() - 1; i++) {
+            aarea.region.push_back(Point{region.at(i - 1), region.at(i)});
+          }
           ExtinguisherMonitor config_{std::move(aarea), std::move(base_config)};
           config.setParams(std::move(config_));
           break;
@@ -214,10 +225,28 @@ bool ConfigParser::parseConfig(std::string const &path,
     for (auto &param : params) {
       // 这里只会查到一个logic，尾部的上面已经过滤掉了
       if (param.first.moduleType == "logic") {
+        // algoPipes;
         param.first.sendName = std::move(outputName);
-        break;
+
+        auto ctype = moduleMapping[param.first.className];
+        switch (ctype) {
+        case SupportedFunction::HelmetModule: {
+          auto p = param.second.getParams<WithoutHelmet>();
+          p->algoPipelines = std::move(algoPipes);
+          break;
+        }
+        case SupportedFunction::ExtinguisherMonitor: {
+          auto p = param.second.getParams<ExtinguisherMonitor>();
+          p->algoPipelines = std::move(algoPipes);
+          break;
+        }
+        case SupportedFunction::SmokingModule: {
+          auto p = param.second.getParams<SmokingMonitor>();
+          p->algoPipelines = std::move(algoPipes);
+          break;
+        }
+        }
       }
-      // output也不用管，本来就是logic发的
     }
     pipelines.push_back(params);
   }
