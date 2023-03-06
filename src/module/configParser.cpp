@@ -163,8 +163,8 @@ bool ConfigParser::parseConfig(std::string const &path,
           // TODO 未来每个模块都可以有自己特定的超参数
           AttentionArea aarea;
           auto region = p["region"].get<std::vector<int>>();
-          for (size_t i = 1; i < region.size() - 1; i++) {
-            aarea.region.push_back(Point{region.at(i - 1), region.at(i)});
+          for (size_t i = 0; i < region.size(); i+=2) {
+            aarea.region.push_back(Point{region.at(i), region.at(i + 1)});
           }
           InferInterval interval;
           WithoutHelmet config_{std::move(aarea), std::move(base_config),
@@ -176,8 +176,8 @@ bool ConfigParser::parseConfig(std::string const &path,
           // TODO 未来每个模块都可以有自己特定的超参数
           AttentionArea aarea;
           auto region = p["region"].get<std::vector<int>>();
-          for (size_t i = 1; i < region.size() - 1; i++) {
-            aarea.region.push_back(Point{region.at(i - 1), region.at(i)});
+          for (size_t i = 0; i < region.size(); i+=2) {
+            aarea.region.push_back(Point{region.at(i), region.at(i + 1)});
           }
           InferInterval interval;
           SmokingMonitor config_{std::move(aarea), std::move(base_config),
@@ -189,8 +189,8 @@ bool ConfigParser::parseConfig(std::string const &path,
           // TODO 未来每个模块都可以有自己特定的超参数
           AttentionArea aarea;
           auto region = p["region"].get<std::vector<int>>();
-          for (size_t i = 1; i < region.size() - 1; i++) {
-            aarea.region.push_back(Point{region.at(i - 1), region.at(i)});
+          for (size_t i = 0; i < region.size(); i+=2) {
+            aarea.region.push_back(Point{region.at(i), region.at(i + 1)});
           }
           ExtinguisherMonitor config_{std::move(aarea), std::move(base_config)};
           config.setParams(std::move(config_));

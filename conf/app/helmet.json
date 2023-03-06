@@ -36,10 +36,10 @@
           "page": "1_0_0",
           "recvName": "stream_8677cd23-9813-4152-aa58-43fa0d1858aa",
           "region": [
-            0,
-            0,
-            0,
-            0
+            100,
+            100,
+            500,
+            500
           ],
           "sendName": "algorithm_headDet_x3_1673517182659",
           "sub_type": "HelmetModule",
@@ -108,10 +108,10 @@
           "page": "1_0_0",
           "recvName": "algorithm_helmetCls_x3_1673517182647",
           "region": [
-            0,
-            0,
-            0,
-            0
+            100,
+            100,
+            500,
+            500
           ],
           "sendName": "output_alarm_01_1673517182674",
           "sub_type": "HelmetModule",
