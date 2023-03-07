@@ -22,7 +22,8 @@
 
 namespace module {
 
-PipelineModule::PipelineModule(std::string const &config_path_, size_t workers_n)
+PipelineModule::PipelineModule(std::string const &config_path_,
+                               size_t workers_n)
     : config_path(config_path_) {
   pool = std::unique_ptr<thread_pool>{std::make_unique<thread_pool>()};
   pool->start(workers_n);
@@ -44,17 +45,12 @@ bool PipelineModule::submitModule(ModuleInfo const &info,
 
 bool PipelineModule::parseConfigs(std::string const &path,
                                   std::vector<PipelineParams> &pipelines) {
-  std::string content;
-  if (!utils::readFile(path, content)) {
-    FLOWENGINE_LOGGER_ERROR("config parse: read file is failed!");
-    return false;
-  }
-
-  if (!configParser.parseConfig(content.c_str(), pipelines)) {
+  if (!configParser.parseConfig(path, pipelines)) {
     FLOWENGINE_LOGGER_INFO("config parse: parseParams is failed!");
     return false;
   }
 
+  // 写入
   if (!utils::writeJson("{}", path)) {
     FLOWENGINE_LOGGER_INFO("config parse: clean json file is failed!");
     return false;
@@ -109,16 +105,12 @@ void PipelineModule::stopModule(std::string const &moduleName) {
 }
 
 bool PipelineModule::startPipeline() {
-  // 开始之前 先检查目前存在的模块状态是否已经停止（针对摄像头等外部因素）
-  std::unordered_map<std::string, std::shared_ptr<Module>>::iterator iter;
-  for (iter = atm.begin(); iter != atm.end();) {
-    if (iter->second->stopFlag.load()) {
-      // 该模块已经停止
-      iter = atm.erase(iter);
-    } else {
-      ++iter;
-    }
-  }
+
+  // 清除已经停止的模块（针对摄像头等外部因素）
+  atm.erase(
+      std::remove_if(atm.begin(), atm.end(),
+                     [](const auto &kv) { return kv.second->stopFlag.load(); }),
+      atm.end());
 
   std::vector<PipelineParams> pipelines;
   if (!parseConfigs(config_path, pipelines)) {
@@ -139,7 +131,7 @@ bool PipelineModule::startPipeline() {
   }
   // 清掉已经停用的模块
   if (!currentModules.empty()) {
-    std::unordered_map<std::string, std::shared_ptr<Module>>::iterator iter;
+    std::unordered_map<std::string, module_ptr>::iterator iter;
     for (iter = atm.begin(); iter != atm.end();) {
       auto it =
           std::find(currentModules.begin(), currentModules.end(), iter->first);
@@ -169,7 +161,10 @@ bool PipelineModule::startPipeline() {
 
 void PipelineModule::run() {
   while (true) {
+    // 现在的方式是一个大json，里面包含了所有的pipelines，需要自行判断模块增删改
     startPipeline();
+
+    // 后续可以提供一系列的路由，如新增模块，删除模块，单帧推理等
     std::this_thread::sleep_for(std::chrono::seconds(30));
     // terminate();  // 终止所有任务
     // break;

@@ -35,6 +35,8 @@ using common::ModuleInfo;
 using infer::AlgorithmManager;
 using utils::PipelineParams;
 
+using module_ptr = std::shared_ptr<Module>;
+
 class PipelineModule {
 private:
   std::string name = "Administrator";
@@ -45,7 +47,7 @@ private:
       std::make_unique<AlgorithmManager>());
   // std::unique_ptr<thread_pool> pool;
   std::unique_ptr<thread_pool> pool;
-  std::unordered_map<std::string, std::shared_ptr<Module>> atm;
+  std::unordered_map<std::string, module_ptr> atm;
 
 private:
   /**
