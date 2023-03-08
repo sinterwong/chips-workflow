@@ -10,6 +10,8 @@
  */
 
 #include "module_utils.hpp"
+#include "logger/logger.hpp"
+#include <experimental/filesystem>
 
 namespace module {
 namespace utils {
@@ -138,23 +140,29 @@ cv::Mat str2mat(const std::string &s) {
 }
 
 void wrapH2642mp4(std::string const &h264File, std::string const &mp4File) {
-  cv::VideoCapture input_video(h264File);
-  cv::Size video_size =
-      cv::Size((int)input_video.get(cv::CAP_PROP_FRAME_WIDTH),
-               (int)input_video.get(cv::CAP_PROP_FRAME_HEIGHT));
-  double fps = input_video.get(cv::CAP_PROP_FPS);
+  if (!std::experimental::filesystem::exists(h264File)) {
+    return;
+  };
+  FLOWENGINE_LOGGER_INFO("Wrap to mp4...");
+  // cv::VideoCapture input_video(h264File);
+  // cv::Size video_size =
+  //     cv::Size((int)input_video.get(cv::CAP_PROP_FRAME_WIDTH),
+  //              (int)input_video.get(cv::CAP_PROP_FRAME_HEIGHT));
+  // double fps = input_video.get(cv::CAP_PROP_FPS);
 
-  cv::VideoWriter output_video(mp4File,
-                               cv::VideoWriter::fourcc('H', '2', '6', '4'), fps,
-                               video_size, true);
+  // cv::VideoWriter output_video(mp4File,
+  //                              cv::VideoWriter::fourcc('H', '2', '6', '4'), fps,
+  //                              video_size, true);
 
-  cv::Mat frame;
-  while (input_video.read(frame)) {
-    output_video.write(frame);
-  }
+  // cv::Mat frame;
+  // while (input_video.read(frame)) {
+  //   output_video.write(frame);
+  // }
 
-  input_video.release();
-  output_video.release();
+  // input_video.release();
+  // output_video.release();
+  std::string cmd = "ffmpeg -i " + h264File + " -c:v copy " + mp4File;
+  std::system(cmd.c_str());
 }
 
 } // namespace utils
