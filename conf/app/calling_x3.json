@@ -4,7 +4,7 @@
       "Pipeline": [
         {
           "Id": 95,
-          "cameraIp": "rtsp://admin:zkfd123.com@114.242.23.39:9303/Streaming/Channels/101",
+          "cameraIp": "rtsp://114.242.23.39:6554/live/test2",
           "flowType": "rtsp",
           "height": 1080,
           "name": "stream_8677cd23-9813-4152-aa58-43fa0d1858aa",
@@ -17,7 +17,7 @@
         },
         {
           "Id": 95,
-          "cameraIp": "rtsp://admin:zkfd123.com@114.242.23.39:9303/Streaming/Channels/101",
+          "cameraIp": "rtsp://114.242.23.39:6554/live/test2",
           "flowType": "rtsp",
           "height": 1080,
           "name": "stream_8677cd23-9813-4152-aa58-43fa0d1858aa",
