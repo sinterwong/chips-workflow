@@ -60,5 +60,8 @@ static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 constexpr static inline bool is_base64(unsigned char c) {
   return (isalnum(c) || (c == '+') || (c == '/'));
 }
+
+void wrapH2642mp4(std::string const &h264File, std::string const &mp4File);
+
 } // namespace utils
 } // namespace module

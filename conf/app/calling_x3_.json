@@ -4,7 +4,7 @@
       "Pipeline": [
         {
           "Id": 95,
-          "cameraIp": "rtsp://114.242.23.39:6554/live/test2",
+          "cameraIp": "rtsp://admin:zkfd123.com@114.242.23.39:9303/Streaming/Channels/101",
           "flowType": "rtsp",
           "height": 1080,
           "name": "stream_8677cd23-9813-4152-aa58-43fa0d1858aa",
@@ -17,7 +17,7 @@
         },
         {
           "Id": 95,
-          "cameraIp": "rtsp://114.242.23.39:6554/live/test2",
+          "cameraIp": "rtsp://admin:zkfd123.com@114.242.23.39:9303/Streaming/Channels/101",
           "flowType": "rtsp",
           "height": 1080,
           "name": "stream_8677cd23-9813-4152-aa58-43fa0d1858aa",
@@ -84,12 +84,12 @@
             "data"
           ],
           "inputShape": [
-            64,
-            64,
+            96,
+            96,
             3
           ],
           "isScale": false,
-          "modelPath": "/opt/deploy/flowengine/models/classifier/resnet/resnet_64x64_nv12.bin",
+          "modelPath": "/root/workspace/softwares/flowengine/models/temp_nv12.bin",
           "name": "algorithm_phoneCls_x3_1673517182647",
           "nms_thr": 0,
           "outputNames": [

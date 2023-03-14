@@ -12,7 +12,10 @@
 #include "logger/logger.hpp"
 #include <algorithm>
 #include <cassert>
+#include <filesystem>
 #include <memory>
+
+#include "module_utils.hpp"
 
 namespace module {
 namespace utils {
@@ -34,7 +37,23 @@ bool VideoRecord::check() const noexcept {
 }
 
 void VideoRecord::destory() noexcept {
-  // 不做处理, XEncoder 在析构的时候会自行释放
+  // if (!stream->close()) {
+  //   return;
+  // }
+  // 将视频转成mp4格式
+  std::string &location = params.resource.location;
+  std::string renamed = location.substr(0, location.find(".")) + ".h264";
+  std::cout << renamed << std::endl;
+  std::filesystem::path oldPath(location);
+  std::filesystem::path newPath(renamed);
+  try {
+    std::filesystem::rename(oldPath, newPath);
+    FLOWENGINE_LOGGER_INFO("文件重命名成功");
+  } catch (const std::filesystem::filesystem_error &e) {
+    FLOWENGINE_LOGGER_ERROR("文件重命名失败：{}", e.what());
+    return;
+  }
+  wrapH2642mp4(renamed, location);
 }
 
 bool VideoRecord::record(void *frame) {
