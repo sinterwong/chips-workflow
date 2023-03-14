@@ -1,16 +1,16 @@
 /**
  * @file streamModule.h
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-12-06
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
- 
-#ifndef __METAENGINE_SUNRISE_DECODER_H
-#define __METAENGINE_SUNRISE_DECODER_H
+
+#ifndef __FLOWENGINE_STREAM_MODULE_H_
+#define __FLOWENGINE_STREAM_MODULE_H_
 
 #include <any>
 #include <memory>
@@ -18,31 +18,30 @@
 #include <vector>
 
 #include "common/common.hpp"
-#include "common/config.hpp"
+
 #include "logger/logger.hpp"
 #include "messageBus.h"
 #include "module.hpp"
 
-#if (TARGET_PLATFORM == 0)
-#include "x3/videoManager.hpp"
-#elif (TARGET_PLATFORM == 1)
-#include "jetson/videoManager.hpp"
-#endif
+#include "videoManager.hpp"
+
 using namespace module::utils;
+using common::ModuleConfig;
+using common::StreamBase;
 
 namespace module {
 
 class StreamModule : public Module {
 
 private:
-  CameraResult cameraResult;
+  // CameraResult cameraResult;
+  std::unique_ptr<StreamBase> config;
 
   std::unique_ptr<VideoManager> vm;
 
 public:
-  StreamModule(Backend *ptr, const std::string &initName,
-                  const std::string &initType,
-                  const common::CameraConfig &_params);
+  StreamModule(backend_ptr ptr, std::string const &, MessageType const &,
+               ModuleConfig &);
 
   ~StreamModule() {}
 

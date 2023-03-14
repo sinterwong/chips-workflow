@@ -15,23 +15,23 @@
 #include <array>
 #include <memory>
 #include <opencv2/opencv.hpp>
+#include <stdexcept>
 #include <unordered_map>
 #include <utility>
 
 namespace module {
 
-StreamModule::StreamModule(Backend *ptr, const std::string &initName,
-                           const std::string &initType,
-                           const common::CameraConfig &_params)
-    : Module(ptr, initName, initType) {
-  cameraResult = CameraResult{static_cast<int>(_params.widthPixel),
-                              static_cast<int>(_params.heightPixel),
-                              25,
-                              _params.cameraId,
-                              _params.videoCode,
-                              _params.flowType,
-                              _params.cameraIp};
-  vm = std::make_unique<VideoManager>(_params.cameraIp);
+StreamModule::StreamModule(backend_ptr ptr, std::string const &_name,
+                           MessageType const &_type, ModuleConfig &_config)
+    : Module(ptr, _name, _type) {
+
+  config = std::unique_ptr<StreamBase>(_config.getParams<StreamBase>());
+  try {
+    vm = std::make_unique<VideoManager>(config->uri);
+  } catch (const std::runtime_error &e) {
+    FLOWENGINE_LOGGER_ERROR("initRecorder exception: ", e.what());
+    std::runtime_error("StreamModule ctor has failed!");
+  }
 }
 
 void StreamModule::beforeForward() {
@@ -49,19 +49,25 @@ void StreamModule::beforeForward() {
 };
 
 void StreamModule::step() {
-  message.clear();
-  hash.clear();
-  loop = false;
-
   beforeGetMessage();
   beforeForward();
   if (!vm->isRunning()) {
     return;
   }
-  // FLOWENGINE_LOGGER_CRITICAL("Stream forward!");
-  // 100ms 处理一帧
-  // std::this_thread::sleep_for(std::chrono::microseconds(100));
-  forward(message);
+
+  // 按目前的设计只需要监测Close消息类型。
+  MessageBus::returnFlag flag;
+  std::string sender;
+  MessageType stype = MessageType::None;
+  queueMessage message;
+  ptr->message->recv(name, flag, sender, stype, message, false);
+  if (stype == MessageType::Close) {
+    FLOWENGINE_LOGGER_INFO("{} StreamModule module was done!", name);
+    stopFlag.store(true);
+    return;
+  }
+  std::vector<forwardMessage> messages;
+  forward(messages);
   afterForward();
 }
 
@@ -100,9 +106,8 @@ FrameBuf makeFrameBuf(std::shared_ptr<cv::Mat> frame, int height, int width) {
 
 void StreamModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
-    if (type == "ControlMessage") {
+    if (type == MessageType::Close) {
       FLOWENGINE_LOGGER_INFO("{} StreamModule module was done!", name);
-      // std::cout << name << "{} StreamModule module was done!" << std::endl;
       stopFlag.store(true);
       return;
     }
@@ -115,18 +120,22 @@ void StreamModule::forward(std::vector<forwardMessage> &message) {
     return;
   }
   FrameBuf fbm = makeFrameBuf(frame, vm->getHeight(), vm->getWidth());
-  int returnKey = backendPtr->pool->write(fbm);
+  int returnKey = ptr->pool->write(fbm);
+
+  // 报警时所需的视频流的信息
+  AlarmInfo alarmInfo;
+  alarmInfo.cameraId = config->cameraId;
+  alarmInfo.cameraIp = config->uri;
+  alarmInfo.height = vm->getHeight();
+  alarmInfo.width = vm->getWidth();
 
   sendMessage.frameType = vm->getType();
   sendMessage.key = returnKey;
-  sendMessage.cameraResult = cameraResult;
-  sendMessage.cameraResult.heightPixel =
-      vm->getHeight() > 0 ? vm->getHeight() : cameraResult.heightPixel;
-  sendMessage.cameraResult.widthPixel =
-      vm->getWidth() > 0 ? vm->getWidth() : cameraResult.widthPixel;
+  // sendMessage.cameraResult = cameraResult;
+  sendMessage.alarmInfo = std::move(alarmInfo);
   sendMessage.status = 0;
   autoSend(sendMessage);
 }
-FlowEngineModuleRegister(StreamModule, Backend *, std::string const &,
-                         std::string const &, common::CameraConfig const &);
+FlowEngineModuleRegister(StreamModule, backend_ptr, std::string const &,
+                         MessageType const &, ModuleConfig &);
 } // namespace module

@@ -10,14 +10,15 @@
  */
 
 #include "statusOutputModule.h"
+#include "pipeline.hpp"
 #include <fstream>
 
 namespace module {
 
-StatusOutputModule::StatusOutputModule(
-    Backend *ptr, const std::string &initName, const std::string &initType,
-    const common::OutputConfig &outputConfig_)
-    : OutputModule(ptr, initName, initType, outputConfig_) {}
+StatusOutputModule::StatusOutputModule(backend_ptr ptr, std::string const &name,
+                                       MessageType const &type,
+                                       ModuleConfig &config_)
+    : OutputModule(ptr, name, type, std::move(config_)) {}
 
 bool StatusOutputModule::postResult(std::string const &url,
                                     StatusInfo const &statusInfo,
@@ -74,17 +75,15 @@ bool StatusOutputModule::postResult(std::string const &url,
 
 void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
-    if (type == "ControlMessage") {
-      // FLOWENGINE_LOGGER_INFO("{} StatusOutputModule module was done!", name);
-      std::cout << name << "{} StatusOutputModule module was done!"
-                << std::endl;
+    if (type == MessageType::Close) {
+      FLOWENGINE_LOGGER_INFO("{} StatusOutputModule module was done!", name);
       stopFlag.store(true);
       return;
     }
     if (buf.status == 2 || count++ >= 500) {
       StatusInfo statusInfo{send, buf.status};
       std::string response;
-      if (!postResult(config.url, statusInfo, response)) {
+      if (!postResult(config->url, statusInfo, response)) {
         FLOWENGINE_LOGGER_ERROR("StatusOutputModule.forward: post result was "
                                 "failed, please check!");
       }
@@ -92,6 +91,6 @@ void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
     }
   }
 }
-FlowEngineModuleRegister(StatusOutputModule, Backend *, std::string const &,
-                         std::string const &, const common::OutputConfig &);
+FlowEngineModuleRegister(StatusOutputModule, backend_ptr, std::string const &,
+                         MessageType const &, ModuleConfig &);
 } // namespace module

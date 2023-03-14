@@ -15,21 +15,21 @@ int main(int argc, char **argv) {
   // "rtsp://admin:zkfd123.com@114.242.23.39:9303/Streaming/Channels/101"
   // "csi://0"
   videoOptions opt{FLAGS_uri, 2560, 1440, 25, 0};
-  std::unique_ptr<videoSource> camera = videoSource::create(opt);
-  camera->open();
+  std::unique_ptr<videoSource> camera = videoSource::Create(opt);
+  camera->Open();
 
   // std::this_thread::sleep_for(20s);
   void *image;
   int count = 500;
   while (count--) {
-    camera->capture(&image);
+    camera->Capture(&image);
     if (count % 10 != 0) {
       continue;
     }
-    std::cout << count << ": " << camera->getHeight() << ", "
-              << camera->getWidth() << std::endl;
-    cv::Mat nv12_image = cv::Mat(camera->getHeight() * 3 / 2,
-                                 camera->getWidth(), CV_8UC1, image);
+    std::cout << count << ": " << camera->GetHeight() << ", "
+              << camera->GetWidth() << std::endl;
+    cv::Mat nv12_image = cv::Mat(camera->GetHeight() * 3 / 2,
+                                 camera->GetWidth(), CV_8UC1, image);
     if (!nv12_image.empty()) {
       cv::imwrite("test_xvideo.jpg", nv12_image);
     }

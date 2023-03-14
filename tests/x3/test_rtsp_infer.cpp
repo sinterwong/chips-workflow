@@ -21,6 +21,8 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
+using Shape = std::array<int, 3>;
+
 DEFINE_string(video, "", "Specify the video uri.");
 DEFINE_string(model_path, "", "Specify the model path.");
 
@@ -86,8 +88,8 @@ void nms(std::vector<DetectionRet> &res,
 }
 
 void restoryBoxes(std::vector<DetectionRet> &results,
-                       std::array<int, 3> const &shape,
-                       std::array<int, 3> const &inputShape,
+                       Shape const &shape,
+                       Shape const &inputShape,
                        bool isScale = true) {
   float rw, rh;
   if (isScale) {

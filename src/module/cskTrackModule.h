@@ -29,8 +29,8 @@ private:
   cv::Rect floatArrayToCvRect(const std::array<float, 4> &a);
 
 public:
-  cskTrackModule(Backend *ptr, const std::string &initName,
-                 const std::string &initType);
+  cskTrackModule(backend_ptr ptr, std::string const &name,
+                 MessageType const &type);
 
   ~cskTrackModule();
 

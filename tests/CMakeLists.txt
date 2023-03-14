@@ -21,7 +21,7 @@ LINK_DIRECTORIES(
     ${OPENSSL_LIBRARY_DIR}
     ${X3_DIRECTORIES}
 )
-SET(FE_LIBS core license module module_logger infer utils)
+SET(FE_LIBS core license module module_logger infer)
 IF(TARGET_HARDWARE STREQUAL "x3")
     MESSAGE(STATUS "Loading X3 dependent libraries")
     SET(CHIPS_DEPAND_LIBS ${X3_LIBS})
@@ -41,6 +41,7 @@ LINK_LIBRARIES(
     gflags::gflags
     pthread
     spdlog
+    ${CURL_LIBRARIES}
     stdc++fs
 )
 SET(LINK "-Wl,--no-as-needed")
@@ -52,7 +53,7 @@ FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
     STRING(REPLACE ".cpp" "" testname ${sourcefilewithoutpath})
     ADD_EXECUTABLE( ${testname} ${sourcefile})
-    TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} core utils module module_logger stdc++fs)
+    TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} core module module_logger stdc++fs)
     SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin/tests)
 
     INSTALL(TARGETS ${testname}

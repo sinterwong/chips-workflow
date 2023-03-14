@@ -1,47 +1,46 @@
 /**
  * @file boostMessage.h
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.2
  * @date 2022-08-05
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 #ifndef FLOWCORE_BOOSTMESSAGE_H
 #define FLOWCORE_BOOSTMESSAGE_H
 
 #include <memory>
+#include <shared_mutex>
 #include <unordered_map>
 #include <vector>
 
-#include <condition_variable>
-
-#include "concurrentqueue.h"
 #include "concurrentqueue.h"
 #include "messageBus.h"
 
+using cqueue = moodycamel::ConcurrentQueue<queueMessage>;
+using cqueue_ptr = std::shared_ptr<cqueue>;
+
 class BoostMessage : public MessageBus {
-protected:
-  std::unordered_map<std::string, int> name2Queue;
-  std::vector<std::shared_ptr<moodycamel::ConcurrentQueue<queueMessage>>> socketRecv;
+
+private:
+  std::unordered_map<std::string, cqueue_ptr> name2Queue;
+  std::shared_mutex m;
 
 public:
   BoostMessage();
 
-  bool registered(std::string name) override;
+  virtual bool registered(std::string const &name) override;
 
-  bool send(std::string source, std::string target, std::string type,
-            queueMessage message) override;
+  virtual bool unregistered(std::string const &name) override;
 
-  /*
-   * structured Binding (C++ 17) for tuple with string has unknown problem
-   * about double free of ptr.
-   * So it also use a traditional way to pass the result.
-   * */
-  bool recv(std::string source, returnFlag &flag, std::string &send,
-            std::string &type, queueMessage &byte,
-            bool waitFlag = true) override;
+  virtual bool send(std::string const &source, std::string const &target,
+                    MessageType const &type, queueMessage message) override;
+
+  virtual bool recv(std::string const &name, returnFlag &flag,
+                    std::string &sender, MessageType &type,
+                    queueMessage &message, bool waitFlag = true) override;
 };
 
 #endif // FLOWCORE_BOOSTMESSAGE_H

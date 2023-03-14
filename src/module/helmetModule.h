@@ -11,22 +11,28 @@
 
 #ifndef __METAENGINE_HELMET_MODULE_H_
 #define __METAENGINE_HELMET_MODULE_H_
-
 #include <any>
 #include <memory>
 #include <vector>
-
-#include "common/common.hpp"
 #include "logger/logger.hpp"
-#include "logicModule.h"
+#include "module.hpp"
+#include "common/common.hpp"
+
+using common::WithoutHelmet;
+using common::ModuleConfig;
 
 namespace module {
-class HelmetModule : public LogicModule {
+class HelmetModule : Module {
+
+  std::unique_ptr<WithoutHelmet> config;
 
 public:
-  HelmetModule(Backend *ptr, const std::string &initName,
-               const std::string &initType,
-               const common::LogicConfig &logicConfig);
+  HelmetModule(backend_ptr ptr, std::string const &name,
+               MessageType const &type, ModuleConfig &config_)
+      : Module(ptr, name, type) {
+    config = std::unique_ptr<WithoutHelmet>(config_.getParams<WithoutHelmet>());
+  }
+
   ~HelmetModule() {}
 
   virtual void forward(std::vector<forwardMessage> &message) override;

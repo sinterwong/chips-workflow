@@ -28,11 +28,11 @@ private:
   // tutorial::FrameMessage buf;
 
 public:
-  OpencvCameraModule(Backend *ptr, const std::string &fileName,
-                     const std::string &initName, const std::string &initType);
+  OpencvCameraModule(backend_ptr ptr, const std::string &fileName,
+                     std::string const &name, MessageType const &type);
 
-  OpencvCameraModule(Backend *ptr, const int capNumber,
-                     const std::string &initName, const std::string &initType);
+  OpencvCameraModule(backend_ptr ptr, const int capNumber,
+                     std::string const &name, MessageType const &type);
 
   void forward(std::vector<forwardMessage> &message) override;
 

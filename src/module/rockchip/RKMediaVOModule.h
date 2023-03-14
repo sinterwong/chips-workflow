@@ -52,12 +52,12 @@ protected:
     MPP_CHN_S stEncChn;
 
 public:
-    RKMediaVOModule(Backend *ptr,
+    RKMediaVOModule(backend_ptr ptr,
                     const std::string &streamName,
                     std::tuple<int, int> videoSize,
                     std::tuple<int, int> screenSize,
-                    const std::string &initName,
-                    const std::string &initType,
+                    std::string const &name,
+                    MessageType const &type,
                     
                          );
 
