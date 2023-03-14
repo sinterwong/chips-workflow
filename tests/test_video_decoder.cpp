@@ -3,12 +3,8 @@
 #include <chrono>
 #include <opencv2/imgcodecs.hpp>
 
-#if (TARGET_PLATFORM == 0)
-#include "x3/videoManager.hpp"
-using namespace module::utils;
-#elif (TARGET_PLATFORM == 1)
-#include "jetson/videoManager.hpp"
-#endif
+#include "videoManager.hpp"
+
 using namespace module;
 using namespace std::chrono_literals;
 

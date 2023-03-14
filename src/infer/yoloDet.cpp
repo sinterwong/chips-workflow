@@ -18,19 +18,19 @@
 namespace infer {
 namespace vision {
 
-void Yolo::generateBoxes(std::unordered_map<int, DetRet> &m,
+void Yolo::generateBoxes(std::unordered_map<int, BBoxes> &m,
                          void **outputs) const {
   float **output = reinterpret_cast<float **>(*outputs);
   for (int i = 0; i < modelInfo.output_count; ++i) {
     int numAnchors = modelInfo.outputShapes[i].at(1);
     int num = modelInfo.outputShapes[i].at(2);
     for (int j = 0; j < numAnchors * num; j += num) {
-      if (output[i][j + 4] <= mParams.cond_thr)
+      if (output[i][j + 4] <= config->cond_thr)
         continue;
       // std::cout << output[i][j + 0] << ", " << output[i][j + 1] << ", "
       //           << output[i][j + 2] << ", " << output[i][j + 3] << ", "
       //           << output[i][j + 4] << ", " << output[i][j + 5] << std::endl;
-      DetectionResult det;
+      BBox det;
       det.class_id = std::distance(
           output[i] + j + 5,
           std::max_element(output[i] + j + 5, output[i] + j + num));
@@ -38,14 +38,13 @@ void Yolo::generateBoxes(std::unordered_map<int, DetRet> &m,
       det.det_confidence = output[i][real_idx];
       memcpy(&det, &output[i][j], 5 * sizeof(float));
       if (m.count(det.class_id) == 0)
-        m.emplace(det.class_id, DetRet());
+        m.emplace(det.class_id, BBoxes());
       m[det.class_id].push_back(det);
     }
   }
 }
 
-FlowEngineModuleRegister(Yolo, const common::AlgorithmConfig &,
-                         ModelInfo const &);
+FlowEngineModuleRegister(Yolo, AlgoConfig const &, ModelInfo const &);
 
 } // namespace vision
 } // namespace infer

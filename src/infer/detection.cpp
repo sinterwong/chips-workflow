@@ -11,6 +11,7 @@
  */
 #include "detection.hpp"
 #include "postprocess.hpp"
+#include "vision.hpp"
 #include <algorithm>
 #include <array>
 #include <unordered_map>
@@ -26,26 +27,28 @@ bool Detection::processInput(cv::Mat const &input, void **output,
   return true;
 }
 
-bool Detection::processOutput(void **output, Result &result) const {
-  std::unordered_map<int, DetRet> cls2bbox;
+bool Detection::processOutput(void **output, InferResult &result) const {
+  std::unordered_map<int, BBoxes> cls2bbox;
   generateBoxes(cls2bbox, output);
-  utils::nms(result.detResults, cls2bbox, mParams.nms_thr);
+  auto detRet = BBoxes();
+  utils::nms(detRet, cls2bbox, config->nms_thr);
   // rect 还原成原始大小
-  utils::restoryBoxes(result.detResults, result.shape, mParams.inputShape,
-                           mParams.isScale);
-  DetRet::iterator it = result.detResults.begin();
+  utils::restoryBoxes(detRet, result.shape, config->inputShape,
+                      config->isScale);
+  BBoxes::iterator it = detRet.begin();
   // 清除掉不符合要求的框
-  for (; it != result.detResults.end();) {
+  for (; it != detRet.end();) {
     int area = (it->bbox[3] - it->bbox[1]) * (it->bbox[2] - it->bbox[0]);
     if (area < 2 * 2)
-      it = result.detResults.erase(it);
+      it = detRet.erase(it);
     else
       // 迭代器指向下一个元素位置
       ++it;
   }
+  result.aRet = std::move(detRet);
   return true;
 }
 
-bool Detection::verifyOutput(Result const &) const { return true; }
+bool Detection::verifyOutput(InferResult const &) const { return true; }
 } // namespace vision
 } // namespace infer

@@ -15,7 +15,7 @@
 
 namespace infer {
 namespace vision {
-void Assd::generateBoxes(std::unordered_map<int, DetRet> &m,
+void Assd::generateBoxes(std::unordered_map<int, BBoxes> &m,
                          void **outputs) const {
 
   float **output = static_cast<float **>(*outputs);
@@ -48,7 +48,7 @@ void Assd::generateBoxes(std::unordered_map<int, DetRet> &m,
         float center_start = receptive_field_center_start[i];
         float stride = receptive_field_stride[i];
 
-        if (output[i][k] > mParams.cond_thr) {
+        if (output[i][k] > config->cond_thr) {
           float RF_center_x = center_start + stride * float(x);
           float RF_center_y = center_start + stride * float(y);
           float x1 =
@@ -69,22 +69,22 @@ void Assd::generateBoxes(std::unordered_map<int, DetRet> &m,
           float re_y2 = std::max(y1, y2);
           re_x1 = re_x1 < 0 ? 0 : re_x1;
           re_y1 = re_y1 < 0 ? 0 : re_y1;
-          re_x2 = re_x2 > mParams.inputShape[0] - 1 ? mParams.inputShape[0] - 1
+          re_x2 = re_x2 > config->inputShape[0] - 1 ? config->inputShape[0] - 1
                                                     : re_x2;
-          re_y2 = re_y2 > mParams.inputShape[1] - 1 ? mParams.inputShape[1] - 1
+          re_y2 = re_y2 > config->inputShape[1] - 1 ? config->inputShape[1] - 1
                                                     : re_y2;
           float w = re_x2 - re_x1;
           float h = re_y2 - re_y1;
           float cx = re_x2 - w / 2.;
           float cy = re_y2 - h / 2.;
-          DetectionResult det;
+          BBox det;
           det.class_id = 0;
           det.bbox = {cx, cy, w, h};
           det.class_confidence = output[i][k];
 
           if (m.count(det.class_id) == 0) {
             // 目前还没有该类别，需要初始化一下
-            m.emplace(det.class_id, DetRet());
+            m.emplace(det.class_id, BBoxes());
           }
           m[det.class_id].push_back(det);
         }
@@ -93,10 +93,9 @@ void Assd::generateBoxes(std::unordered_map<int, DetRet> &m,
   }
 }
 
-bool Assd::verifyOutput(Result const &result) const { return true; }
+bool Assd::verifyOutput(InferResult const &result) const { return true; }
 
-FlowEngineModuleRegister(Assd, const common::AlgorithmConfig &,
-                         ModelInfo const &);
+FlowEngineModuleRegister(Assd, AlgoConfig const &, ModelInfo const &);
 
 } // namespace vision
 } // namespace infer

@@ -1,5 +1,5 @@
 #include "gflags/gflags.h"
-#include "x3/videoManager.hpp"
+#include "videoManager.hpp"
 #include "x3/videoSource.hpp"
 #include <chrono>
 #include <opencv2/core/mat.hpp>
@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
     if (count % 10 != 0) {
       continue;
     }
-    if (nv12_image && !nv12_image->empty()) {
+    if (!nv12_image->empty()) {
       cv::imwrite("test_xvideo.jpg", *nv12_image);
     }
   }

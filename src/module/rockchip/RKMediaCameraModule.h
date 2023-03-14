@@ -53,10 +53,10 @@ protected:
     MEDIA_BUFFER mb = NULL;
     tutorial::FrameMessage buf;
 public:
-    RKMediaCameraModule(Backend *ptr,
+    RKMediaCameraModule(backend_ptr ptr,
                        const std::string &iqfile,
-                       const std::string &initName,
-                       const std::string &initType,
+                       std::string const &name,
+                       MessageType const &type,
                        
                                );
 

@@ -1,6 +1,6 @@
 #include "gflags/gflags.h"
 #include "infer/preprocess.hpp"
-#include "infer_utils.hpp"
+#include "utils/time_utils.hpp"
 #include "logger/logger.hpp"
 #include <chrono>
 #include <memory>
@@ -14,6 +14,7 @@ DEFINE_string(image_path, "", "Specify the path of image.");
 
 using namespace std::chrono_literals;
 using namespace infer::utils;
+using namespace utils;
 int main(int argc, char **argv) {
   gflags::SetUsageMessage("some usage message");
   gflags::SetVersionString("1.0.0");
@@ -44,22 +45,76 @@ int main(int argc, char **argv) {
   // nv12 croped
   cv::Mat image_nv12_croped;
   auto test_nv12_crop = [&image_nv12, &image_nv12_croped]() {
-    cv::Rect2i roi = {0, 0, 512, 512};
+    cv::Rect2i roi = {0, 0, 1920, 1080};
     cropImage(image_nv12, image_nv12_croped, roi, common::ColorType::NV12);
   };
   auto nv12_crop_cost = measureTime(test_nv12_crop);
   FLOWENGINE_LOGGER_INFO("NV12 crop image cost time: {} ms",
                          static_cast<float>(nv12_crop_cost) / 1000);
 
-  for (int i = 0; i < 1000; i++) {
+  cv::Mat image_nv12_resized;
+  for (int i = 0; i < 10; i++) {
+    // // nv12 resize
+    // cv::Mat image_nv12_resized;
+    // auto test_nv12_resize = [&image_nv12_croped, &image_nv12_resized]() {
+    //   cv::Mat temp;
+    //   NV12toRGB(image_nv12_croped, temp);
+    //   std::array<int, 2> shape{640, 640};
+    //   resizeInput(temp, false, shape);
+    //   RGB2NV12(temp, image_nv12_resized);
+    // };
+    // auto nv12_resize_cost = measureTime(test_nv12_resize);
+    // FLOWENGINE_LOGGER_INFO("NV12 resize image cost time: {} ms",
+    //                        static_cast<float>(nv12_resize_cost) / 1000);
+
     // nv12 resize
-    cv::Mat image_nv12_resized;
     auto test_nv12_resize = [&image_nv12_croped, &image_nv12_resized]() {
-      cv::Mat temp;
-      NV12toRGB(image_nv12_croped, temp);
       std::array<int, 2> shape{640, 640};
-      resizeInput(temp, false, shape);
-      RGB2NV12(temp, image_nv12_resized);
+      int y_rows = image_nv12_croped.rows * 2 / 3;
+      cv::Mat y = image_nv12_croped.rowRange(0, y_rows).colRange(
+          0, image_nv12_croped.cols);
+      cv::Mat uv = image_nv12_croped.rowRange(y_rows, image_nv12_croped.rows)
+                       .colRange(0, image_nv12_croped.cols);
+
+      // 将UV分别重塑为两个矩阵
+      cv::Mat u = uv.rowRange(0, uv.rows / 2).colRange(0, uv.cols / 2);
+      cv::Mat v = uv.rowRange(uv.rows / 2, uv.rows).colRange(0, uv.cols / 2);
+
+      cv::Mat y_resized, u_resized, v_resized;
+      cv::resize(y, y_resized, cv::Size(shape.at(0), shape.at(1)));
+      cv::resize(u, u_resized, cv::Size(shape.at(0) / 2, shape.at(1)) / 2);
+      cv::resize(v, v_resized, cv::Size(shape.at(0) / 2, shape.at(1)) / 2);
+      // cv::imwrite("y_resized.jpg", y_resized);
+      // cv::imwrite("u_resized.jpg", u_resized);
+      // cv::imwrite("v_resized.jpg", v_resized);
+
+      image_nv12_resized.create(cv::Size(shape.at(0), shape.at(1) * 3 / 2),
+                                CV_8UC1);
+      y_resized.copyTo(image_nv12_resized.rowRange(0, y_resized.rows)
+                           .colRange(0, y_resized.cols));
+      // 将重采样后的U和V分量并入一个矩阵中
+      cv::Mat uvInterleaved =
+          image_nv12_resized.rowRange(y_resized.rows, image_nv12_resized.rows)
+              .colRange(0, image_nv12_resized.cols);
+
+      // 将U和V矩阵分别复制到UV通道中，每个U/V对应一个2x2的位置
+      for (int row = 0; row < uvInterleaved.rows / 2; ++row) {
+        uchar *uvInterleavedRow = uvInterleaved.ptr<uchar>(2 * row);
+        uchar *uRow = u_resized.ptr<uchar>(row);
+        uchar *vRow = v_resized.ptr<uchar>(row);
+
+        for (int col = 0; col < uvInterleaved.cols / 2; ++col) {
+          uvInterleavedRow[2 * col] = uRow[col];
+          uvInterleavedRow[2 * col + 1] = vRow[col];
+        }
+
+        uvInterleavedRow = uvInterleaved.ptr<uchar>(2 * row + 1);
+
+        for (int col = 0; col < uvInterleaved.cols / 2; ++col) {
+          uvInterleavedRow[2 * col] = uRow[col];
+          uvInterleavedRow[2 * col + 1] = vRow[col];
+        }
+      }
     };
     auto nv12_resize_cost = measureTime(test_nv12_resize);
     FLOWENGINE_LOGGER_INFO("NV12 resize image cost time: {} ms",
@@ -69,10 +124,11 @@ int main(int argc, char **argv) {
   cv::imwrite("rgb_image.jpg", image_rgb);
   cv::imwrite("nv12_image.jpg", image_nv12);
   cv::imwrite("nv12_croped_image.jpg", image_nv12_croped);
+  cv::imwrite("nv12_resized_image.jpg", image_nv12_resized);
 
-  cv::Mat image_croped_bgr;
-  cv::cvtColor(image_nv12_croped, image_croped_bgr, CV_YUV2BGR_NV12);
-  cv::imwrite("brg_croped_image.jpg", image_croped_bgr);
+  cv::Mat image_resized_bgr;
+  cv::cvtColor(image_nv12_resized, image_resized_bgr, CV_YUV2BGR_NV12);
+  cv::imwrite("bgr_resized_image.jpg", image_resized_bgr);
 
   return 0;
 }

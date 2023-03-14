@@ -18,7 +18,7 @@
 
 #include "common/common.hpp"
 #include "logger/logger.hpp"
-#include "core/module.hpp"
+#include "module.hpp"
 #include "module/pipeline.hpp"
 
 #include "license/licenseVerifier.hpp"

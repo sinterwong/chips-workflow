@@ -1,23 +1,23 @@
 /**
  * @file boostMessage.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-13
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
-
 
 #include "boostMessage.h"
 #include "logger/logger.hpp"
+#include "messageBus.h"
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 #include <thread>
 
-MessageBus::returnFlag BoostMessageCheakEmpty(
-    const std::shared_ptr<moodycamel::ConcurrentQueue<queueMessage>> &q) {
+MessageBus::returnFlag BoostMessageCheakEmpty(cqueue_ptr const &q) {
   if (q->size_approx() == 0)
     return MessageBus::returnFlag::successWithEmpty;
   else
@@ -26,74 +26,69 @@ MessageBus::returnFlag BoostMessageCheakEmpty(
 
 BoostMessage::BoostMessage() {}
 
-bool BoostMessage::registered(std::string name) {
-  std::cout << "Create module: " << name << std::endl;
-  socketRecv.emplace_back(
-      std::make_shared<moodycamel::ConcurrentQueue<queueMessage>>(16));
-
-  int location = socketRecv.size() - 1;
-  name2Queue.insert(std::make_pair(name, location));
-
+bool BoostMessage::registered(std::string const &name) {
+  std::lock_guard lk(m);
+  name2Queue.insert(std::make_pair(name, std::make_shared<cqueue>(12)));
+  FLOWENGINE_LOGGER_INFO("Register {} module", name);
   return true;
 }
 
-bool BoostMessage::send(std::string source, std::string target,
-                        std::string type, queueMessage message) {
+bool BoostMessage::unregistered(std::string const &name) {
+  std::lock_guard lk(m);
+  auto iter = name2Queue.find(name);
+  if (iter == name2Queue.end())
+    FLOWENGINE_LOGGER_ERROR("Unregister {} module is failed!", name);
+  return false;
+  name2Queue.erase(iter);
+  FLOWENGINE_LOGGER_INFO("{} module has unregistered", name);
+  return true;
+}
+
+bool BoostMessage::send(std::string const &source, std::string const &target,
+                        MessageType const &type, queueMessage message) {
+  std::shared_lock lk(m);
   auto iter = name2Queue.find(target);
   if (iter == name2Queue.end())
     return false;
 
-  int key = iter->second;
+  auto q_ptr = iter->second;
 
   message.send = source;
   message.recv = target;
   message.messageType = type;
 
-  socketRecv[key]->enqueue(message);
+  q_ptr->enqueue(message);
   return true;
 }
 
-bool BoostMessage::recv(std::string source, MessageBus::returnFlag &flag,
-                        std::string &send, std::string &type,
-                        queueMessage &byte, bool waitFlag) {
-  auto iter = name2Queue.find(source);
+bool BoostMessage::recv(std::string const &name, MessageBus::returnFlag &flag,
+                        std::string &send, MessageType &type,
+                        queueMessage &message, bool waitFlag) {
+  std::shared_lock lk(m);
+  auto iter = name2Queue.find(name);
 
   if (iter == name2Queue.end()) {
     flag = MessageBus::returnFlag::null;
     send = "";
-    type = "";
-    byte = queueMessage();
+    type = MessageType::None;
+    message = queueMessage();
+    FLOWENGINE_LOGGER_ERROR("{} is not registered!", name);
     return false;
   }
-
-  // auto &recver {socketRecv[iter->second]};
-  auto recver {socketRecv[iter->second]};
-
-  // std::cout << source << "'s thread id: " << std::this_thread::get_id() << std::endl;
-  // std::cout << source << "'s recver id: " << recver.get() << std::endl;
-  if(recver == nullptr) {
-    FLOWENGINE_LOGGER_WARN("{} recver is nullptr!", source);
-    return false;
-  }
-  assert(recver);
-
-  bool first = true;
-
-  while (first || waitFlag) {
-    // if (recver->size_approx() > 0) {
-    if (recver->size_approx() > 0) {
-      recver->try_dequeue(byte);
-      send = byte.send;
-      type = byte.messageType;
+  cqueue_ptr receiver = iter->second;
+  flag = BoostMessageCheakEmpty(receiver);
+  do {
+    if (receiver->size_approx() > 0) {
+      receiver->try_dequeue(message);
+      send = message.send;
+      type = message.messageType;
       return true;
     }
     if (waitFlag)
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    first = false;
-  }
-  flag = MessageBus::returnFlag::null;
+  } while (waitFlag);
   send = "";
-  type = "";
-  byte = queueMessage();
+  type = MessageType::None;
+  message = queueMessage();
   return false;
 }

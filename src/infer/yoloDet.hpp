@@ -22,11 +22,11 @@ class Yolo : public Detection {
   //! \brief construction
   //!
 public:
-  Yolo(const common::AlgorithmConfig &_param, ModelInfo const &info)
+  Yolo(const AlgoConfig &_param, ModelInfo const &info)
       : Detection(_param, info) {}
 
 private:
-  virtual void generateBoxes(std::unordered_map<int, DetRet> &,
+  virtual void generateBoxes(std::unordered_map<int, BBoxes> &,
                              void **) const override;
 };
 } // namespace vision

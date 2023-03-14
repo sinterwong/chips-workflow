@@ -10,7 +10,8 @@
  */
 #ifndef _X3_VIDEO_COMMON_HPP_
 #define _X3_VIDEO_COMMON_HPP_
-#include "x3/uri.hpp"
+
+#include "uri.hpp"
 #include <array>
 #include <atomic>
 #include <cassert>
@@ -62,6 +63,10 @@ private:
   const int size = channelsStatus.size();
 };
 
+/**
+ * @brief 视频组件初始化时的选项
+ * 
+ */
 struct videoOptions {
   URI resource;
   int width;
@@ -69,5 +74,6 @@ struct videoOptions {
   int frameRate;
   int videoIdx;
 };
+
 } // namespace module::utils
 #endif

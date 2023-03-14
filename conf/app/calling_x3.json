@@ -43,7 +43,7 @@
           ],
           "sendName": "algorithm_handDet_x3_1673517182659",
           "sub_type": "CallingModule",
-          "threshold": "0.3",
+          "threshold": 0.3,
           "type": "logic",
           "video_duration": 10,
           "width": "1080"
@@ -75,7 +75,7 @@
           "type": "algorithm"
         },
         {
-          "algo_serial": "Resnet",
+          "algo_serial": "Softmax",
           "alpha": 0,
           "batchSize": 1,
           "beta": 0,
@@ -115,7 +115,7 @@
           ],
           "sendName": "output_alarm_01_1673517182674",
           "sub_type": "CallingModule",
-          "threshold": "0.3",
+          "threshold": 0.3,
           "type": "logic",
           "video_duration": 10,
           "width": "1080"

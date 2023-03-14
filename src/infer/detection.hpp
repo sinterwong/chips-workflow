@@ -18,14 +18,15 @@
 
 namespace infer {
 namespace vision {
-
 class Detection : public Vision {
   //!
   //! \brief construction
   //!
 public:
-  Detection(const common::AlgorithmConfig &_param, ModelInfo const &_info)
-      : Vision(_param, _info) {}
+  Detection(const AlgoConfig &_param, ModelInfo const &_info)
+      : Vision(_param, _info) {
+    config = mParams.getParams<DetAlgo>();
+  }
 
   //!
   //! \brief ProcessInput that the input is correct for infer
@@ -37,17 +38,17 @@ public:
   //!
   //! \brief Postprocessing that the output is correct and prints it
   //!
-  virtual bool processOutput(void **, Result &) const override;
+  virtual bool processOutput(void **, InferResult &) const override;
 
   //!
   //! \brief verifyOutput that the result is correct for infer
   //!
-  virtual bool verifyOutput(Result const &) const override;
+  virtual bool verifyOutput(InferResult const &) const override;
 
 protected:
-  virtual void
-  generateBoxes(std::unordered_map<int, DetRet> &,
-                void **) const = 0;
+  DetAlgo *config;
+  virtual void generateBoxes(std::unordered_map<int, BBoxes> &,
+                             void **) const = 0;
 };
 } // namespace vision
 } // namespace infer

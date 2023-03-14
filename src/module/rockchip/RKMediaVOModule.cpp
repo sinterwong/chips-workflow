@@ -1,14 +1,14 @@
 #include "RKMediaVOModule.h"
 
-RKMediaVOModule::RKMediaVOModule(Backend *ptr,
+RKMediaVOModule::RKMediaVOModule(backend_ptr ptr,
                                  const std::string &streamName,
                                  std::tuple<int, int> videoSize,
                                  std::tuple<int, int> screenSize,
-                                 const std::string &initName,
-                                 const std::string &initType,
+                                 std::string const &name,
+                                 MessageType const &type,
                                  
                                        )
-        : Module(ptr, initName, initType)
+        : Module(ptr, name, type)
 {
     bool ret;
     initSuccess = true;
@@ -55,9 +55,9 @@ void RKMediaVOModule::forward(
     bool ret;
     for (auto&[send, type, buf]: message)
     {
-        assert(type == "stream");
+        assert(type == MessageType::Stream);
 
-        auto frameBufMessage = backendPtr->pool->read(buf.key);
+        auto frameBufMessage = ptr->pool->read(buf.key);
 
         assert(height == videoHeight);
         assert(width == videoWidth);

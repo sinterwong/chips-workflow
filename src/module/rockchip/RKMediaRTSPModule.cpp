@@ -22,15 +22,15 @@ void video_packet_cb(MEDIA_BUFFER mb)
     packet_cnt++;
 }
 
-RKMediaRTSPModule::RKMediaRTSPModule(Backend *ptr,
+RKMediaRTSPModule::RKMediaRTSPModule(backend_ptr ptr,
                                      const std::string &streamName,
                                      int width,
                                      int height,
-                                     const std::string &initName,
-                                     const std::string &initType,
+                                     std::string const &name,
+                                     MessageType const &type,
                                      
                                      )
-        : Module(ptr, initName, initType)
+        : Module(ptr, name, type)
 {
     bool ret;
     initSuccess = true;
@@ -153,8 +153,8 @@ void RKMediaRTSPModule::forward(
 {
     for (auto&[send, type, buf]: message)
     {
-        assert(type == "stream");
-        auto frameBufMessage = backendPtr->pool->read(buf.key);
+        assert(type == MessageType::Stream);
+        auto frameBufMessage = ptr->pool->read(buf.key);
 
         assert(height == videoHeight);
         assert(width == videoWidth);

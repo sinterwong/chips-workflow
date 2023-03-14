@@ -15,19 +15,19 @@
 #include <cstddef>
 
 namespace module::utils {
-std::unique_ptr<videoSource> videoSource::create(videoOptions const &options) {
+std::unique_ptr<videoSource> videoSource::Create(videoOptions const &options) {
   std::unique_ptr<videoSource> src;
   URI const &uri = options.resource;
   if (uri.protocol == "file" || uri.protocol == "rtsp") {
-    src = XDecoder::create(options);
+    src = XDecoder::Create(options);
   } else if (uri.protocol == "csi" || uri.protocol == "v4l2") {
-    src = XCamera::create(options);
+    src = XCamera::Create(options);
   } else {
     FLOWENGINE_LOGGER_ERROR("videoSource -- unsupported protocol {}",
                             uri.protocol.size() > 0 ? uri.protocol : "null");
   }
   FLOWENGINE_LOGGER_INFO("create {} from {}", src->typeTostr(),
-                         src->getResource().string);
+                         src->GetResource().string);
   return src;
 }
 
