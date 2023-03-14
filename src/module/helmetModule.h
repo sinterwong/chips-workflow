@@ -11,23 +11,27 @@
 
 #ifndef __METAENGINE_HELMET_MODULE_H_
 #define __METAENGINE_HELMET_MODULE_H_
-
 #include <any>
 #include <memory>
 #include <vector>
-
 #include "logger/logger.hpp"
-
-#include "logicModule.h"
 #include "module.hpp"
+#include "common/common.hpp"
+
+using common::WithoutHelmet;
+using common::ModuleConfig;
 
 namespace module {
 class HelmetModule : Module {
 
+  std::unique_ptr<WithoutHelmet> config;
+
 public:
   HelmetModule(backend_ptr ptr, std::string const &name,
-               MessageType const &type, LogicBase const &logicConfig)
-      : Module(ptr, name, type) {}
+               MessageType const &type, ModuleConfig &config_)
+      : Module(ptr, name, type) {
+    config = std::unique_ptr<WithoutHelmet>(config_.getParams<WithoutHelmet>());
+  }
 
   ~HelmetModule() {}
 

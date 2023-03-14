@@ -20,8 +20,8 @@ namespace module {
 
 AlarmOutputModule::AlarmOutputModule(backend_ptr ptr, std::string const &name,
                                      MessageType const &type,
-                                     OutputBase const &config)
-    : OutputModule(ptr, name, type, config) {}
+                                     ModuleConfig &config_)
+    : OutputModule(ptr, name, type, std::move(config_)) {}
 
 bool AlarmOutputModule::postResult(std::string const &url,
                                    AlarmInfo const &alarmInfo,
@@ -106,7 +106,7 @@ void AlarmOutputModule::forward(std::vector<forwardMessage> &message) {
       return;
     }
     std::string response;
-    if (!postResult(config.url, buf.alarmInfo, response)) {
+    if (!postResult(config->url, buf.alarmInfo, response)) {
       FLOWENGINE_LOGGER_ERROR(
           "AlarmOutputModule.forward: post result was failed, please check!");
     }
@@ -114,5 +114,5 @@ void AlarmOutputModule::forward(std::vector<forwardMessage> &message) {
 }
 
 FlowEngineModuleRegister(AlarmOutputModule, backend_ptr, std::string const &,
-                         MessageType const &, OutputBase const &);
+                         MessageType const &, ModuleConfig &);
 } // namespace module

@@ -26,6 +26,7 @@
 #include "videoManager.hpp"
 
 using namespace module::utils;
+using common::ModuleConfig;
 using common::StreamBase;
 
 namespace module {
@@ -34,13 +35,13 @@ class StreamModule : public Module {
 
 private:
   // CameraResult cameraResult;
-  StreamBase config;
+  std::unique_ptr<StreamBase> config;
 
   std::unique_ptr<VideoManager> vm;
 
 public:
   StreamModule(backend_ptr ptr, std::string const &, MessageType const &,
-               StreamBase const &);
+               ModuleConfig &);
 
   ~StreamModule() {}
 

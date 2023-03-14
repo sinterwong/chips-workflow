@@ -11,28 +11,29 @@
 
 #include "configParser.hpp"
 #include "logger/logger.hpp"
-#include "logicModule.h"
 
 #include "module_utils.hpp"
 #include "nlohmann/json.hpp"
 
+#include <array>
 #include <cstddef>
 #include <pstl/glue_algorithm_defs.h>
 #include <string>
 #include <utility>
+#include <vector>
 
 using common::algo_pipelines;
 using common::AlgoBase;
 using common::AlgoConfig;
+using common::AlgoParams;
 using common::AttentionArea;
 using common::ClassAlgo;
 using common::DetAlgo;
-using common::ExtinguisherMonitor;
+using common::GeneralMonitor;
 using common::InferInterval;
 using common::LogicBase;
 using common::OutputBase;
 using common::Point;
-using common::SmokingMonitor;
 using common::StreamBase;
 using common::WithoutHelmet;
 
@@ -40,7 +41,8 @@ using json = nlohmann::json;
 
 namespace module::utils {
 bool ConfigParser::parseConfig(std::string const &path,
-                               std::vector<PipelineParams> &pipelines) {
+                               std::vector<PipelineParams> &pipelines,
+                               std::vector<AlgorithmParams> &algorithms) {
   // 读取 JSON 文件
   std::string fileContents;
   if (!readFile(path, fileContents)) {
@@ -56,6 +58,42 @@ bool ConfigParser::parseConfig(std::string const &path,
     return false;
   }
 
+  // 获取算法配置
+  json algos = config["Algorithms"];
+  for (auto const &algo : algos) {
+    AlgoBase algo_base;
+    algo_base.modelPath = algo["modelPath"].get<std::string>();
+    algo_base.serial = algo["algo_serial"].get<std::string>();
+    algo_base.batchSize = algo["batchSize"].get<int>();
+    algo_base.isScale = algo["isScale"].get<bool>();
+    algo_base.alpha = algo["alpha"].get<float>();
+    algo_base.beta = algo["beta"].get<float>();
+    algo_base.inputShape = algo["inputShape"].get<std::array<int, 3>>();
+    algo_base.inputNames = algo["inputNames"].get<std::vector<std::string>>();
+    algo_base.outputNames = algo["outputNames"].get<std::vector<std::string>>();
+
+    std::string name = algo["name"].get<std::string>();
+
+    AlgoConfig algo_config; // 算法参数中心
+    auto algo_serial = algoSerialMapping.at(algo_base.serial);
+    switch (algo_serial) {
+    case common::AlgoSerial::Yolo:
+    case common::AlgoSerial::Assd: {
+      float cond_thr = algo["cond_thr"].get<float>();
+      float nms_thr = algo["nms_thr"].get<float>();
+      DetAlgo det_config{std::move(algo_base), cond_thr, nms_thr};
+      algo_config.setParams(std::move(det_config));
+      break;
+    }
+    case common::AlgoSerial::Softmax: {
+      ClassAlgo cls_config{std::move(algo_base)};
+      algo_config.setParams(std::move(cls_config));
+      break;
+    }
+    }
+    algorithms.emplace_back(std::pair{std::move(name), std::move(algo_config)});
+  }
+
   // 获取Pipelines数组
   json pipes = config["Pipelines"];
 
@@ -63,9 +101,6 @@ bool ConfigParser::parseConfig(std::string const &path,
   for (auto const &pipe : pipes) {
     // 一个pipeline的所有参数
     PipelineParams params;
-
-    // TODO 目前算法和模块平级，需要在获取算法模块的同时构造pipeline信息
-    algo_pipelines algoPipes;
 
     // 解析 pipeline 中的参数
     for (const auto &p : pipe["Pipeline"]) {
@@ -100,50 +135,7 @@ bool ConfigParser::parseConfig(std::string const &path,
         break;
       }
       case ModuleType::Algorithm: {
-        // TODO 只能先根据名字来判断是什么类型的算法。。。
-        std::string algo_name;
-        std::string &module_name = info.moduleName;
-        std::size_t start_pos = module_name.find("_");
-        if (start_pos != std::string::npos) {
-          start_pos += 1;
-          std::size_t end_pos = module_name.find("_", start_pos);
-          if (end_pos != std::string::npos) {
-            algo_name = module_name.substr(start_pos, end_pos - start_pos);
-          }
-        }
-        // TODO 收集算法pipe
-        algoPipes.emplace_back(
-            std::make_pair(algoMapping.at(algo_name), module_name));
-        AlgoBase algo_base;
-        algo_base.modelPath = p["modelPath"].get<std::string>();
-        algo_base.serial = p["algo_serial"].get<std::string>();
-        algo_base.batchSize = p["batchSize"].get<int>();
-        algo_base.isScale = p["isScale"].get<bool>();
-        algo_base.alpha = p["alpha"].get<float>();
-        algo_base.beta = p["beta"].get<float>();
-        algo_base.inputShape = p["inputShape"].get<std::array<int, 3>>();
-        algo_base.inputNames = p["inputNames"].get<std::vector<std::string>>();
-        algo_base.outputNames =
-            p["outputNames"].get<std::vector<std::string>>();
-
-        AlgoConfig algo_config; // 算法参数中心
-        auto algo_serial = algoSerialMapping.at(algo_base.serial);
-        switch (algo_serial) {
-        case common::AlgoSerial::Yolo:
-        case common::AlgoSerial::Assd: {
-          float cond_thr = p["cond_thr"].get<float>();
-          float nms_thr = p["nms_thr"].get<float>();
-          DetAlgo det_config{std::move(algo_base), cond_thr, nms_thr};
-          algo_config.setParams(std::move(det_config));
-          break;
-        }
-        case common::AlgoSerial::Softmax: {
-          ClassAlgo cls_config{std::move(algo_base)};
-          algo_config.setParams(std::move(cls_config));
-          break;
-        }
-        }
-        config.setParams(algo_config);
+        // TODO 未来单独的算法组件
         break;
       }
       case ModuleType::Logic: {
@@ -155,15 +147,22 @@ bool ConfigParser::parseConfig(std::string const &path,
         base_config.threshold = p["threshold"].get<float>();
         base_config.videDuration = p["video_duration"].get<int>();
         base_config.isDraw = true;
-        // base_config.algoPipelines = algoPipes;
+
+        json apipes = p["algo_pipe"];
+        for (auto const &ap : apipes) {
+          AlgoParams params; // 特定参数
+          params.attentions = ap["attention"].get<std::vector<int>>();
+          base_config.algoPipelines.emplace_back(
+              std::pair{ap["name"].get<std::string>(), std::move(params)});
+        }
 
         SupportedFunction func = moduleMapping[info.className];
         switch (func) {
         case SupportedFunction::HelmetModule: {
-          // TODO 未来每个模块都可以有自己特定的超参数
+          // TODO 特定模块示例，未来可以新增很多特定化的参数
           AttentionArea aarea;
           auto region = p["region"].get<std::vector<int>>();
-          for (size_t i = 0; i < region.size(); i+=2) {
+          for (size_t i = 0; i < region.size(); i += 2) {
             aarea.region.push_back(Point{region.at(i), region.at(i + 1)});
           }
           InferInterval interval;
@@ -172,81 +171,24 @@ bool ConfigParser::parseConfig(std::string const &path,
           config.setParams(std::move(config_));
           break;
         }
-        case SupportedFunction::SmokingModule: {
-          // TODO 未来每个模块都可以有自己特定的超参数
+        case SupportedFunction::GeneralModule: {
+          // 通用模块
           AttentionArea aarea;
           auto region = p["region"].get<std::vector<int>>();
-          for (size_t i = 0; i < region.size(); i+=2) {
+          for (size_t i = 0; i < region.size(); i += 2) {
             aarea.region.push_back(Point{region.at(i), region.at(i + 1)});
           }
           InferInterval interval;
-          SmokingMonitor config_{std::move(aarea), std::move(base_config),
+          GeneralMonitor config_{std::move(aarea), std::move(base_config),
                                  std::move(interval)};
           config.setParams(std::move(config_));
           break;
         }
-        case SupportedFunction::ExtinguisherMonitor:
-          // TODO 未来每个模块都可以有自己特定的超参数
-          AttentionArea aarea;
-          auto region = p["region"].get<std::vector<int>>();
-          for (size_t i = 0; i < region.size(); i+=2) {
-            aarea.region.push_back(Point{region.at(i), region.at(i + 1)});
-          }
-          ExtinguisherMonitor config_{std::move(aarea), std::move(base_config)};
-          config.setParams(std::move(config_));
-          break;
         }
         break;
       }
       }
       params.emplace_back(ModuleParams{std::make_pair(info, config)});
-    }
-
-    // TODO 模块的收发发生了变化，这里也需要临时的处理
-    // TODO 删除掉recv是算法类型的logic
-    params.erase(std::remove_if(params.begin(), params.end(),
-                                [](auto &p) {
-                                  auto &recvName = p.first.recvName;
-                                  std::string recvType =
-                                      recvName.substr(0, recvName.find("_"));
-                                  return p.first.moduleType == "logic" &&
-                                         recvType == "algorithm";
-                                }),
-                 params.end());
-
-    // 目前都是单线的算法，因此只需要logic的尾部就可以
-    std::string outputName;
-    for (auto &param : params) {
-      if (param.first.moduleType == "output") {
-        outputName = param.first.moduleName;
-      }
-    }
-
-    for (auto &param : params) {
-      // 这里只会查到一个logic，尾部的上面已经过滤掉了
-      if (param.first.moduleType == "logic") {
-        // algoPipes;
-        param.first.sendName = std::move(outputName);
-
-        auto ctype = moduleMapping[param.first.className];
-        switch (ctype) {
-        case SupportedFunction::HelmetModule: {
-          auto p = param.second.getParams<WithoutHelmet>();
-          p->algoPipelines = std::move(algoPipes);
-          break;
-        }
-        case SupportedFunction::ExtinguisherMonitor: {
-          auto p = param.second.getParams<ExtinguisherMonitor>();
-          p->algoPipelines = std::move(algoPipes);
-          break;
-        }
-        case SupportedFunction::SmokingModule: {
-          auto p = param.second.getParams<SmokingMonitor>();
-          p->algoPipelines = std::move(algoPipes);
-          break;
-        }
-        }
-      }
     }
     pipelines.push_back(params);
   }

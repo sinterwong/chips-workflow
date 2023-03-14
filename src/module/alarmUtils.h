@@ -31,25 +31,23 @@ using common::LogicBase;
 
 namespace module {
 namespace filesystem = std::experimental::filesystem;
-class LogicModule : public Module {
+class AlarmUtils {
 protected:
   bool isRecord = false; // 是否是保存视频状态
   int frameCount = 0;    // 保存帧数
   int drawTimes = 0;     // 视频上画的次数
-  LogicBase* config;      // 逻辑参数
   std::unique_ptr<utils::VideoRecord> vr;
 
 public:
-  LogicModule(backend_ptr ptr, std::string const &name, MessageType const &type)
-      : Module(ptr, name, type) {}
-  virtual ~LogicModule() {}
+  AlarmUtils() {}
+  virtual ~AlarmUtils() {}
 
   inline void destoryOutputStream() { vr->destory(); }
 
   inline bool initRecorder(std::string const &path, int width, int height,
-                           int rate) {
+                           int rate, int videDuration) {
     isRecord = true;
-    frameCount = config->videDuration * rate;
+    frameCount = videDuration * rate;
     drawTimes = floor(frameCount / 3);
     videoOptions params;
     params.resource = path;
@@ -65,14 +63,11 @@ public:
     return vr->init();
   }
 
-  inline void recordVideo(int key, int width, int height, RetBox const &bbox) {
-
-    FrameBuf fbm = ptr->pool->read(key);
-    auto image = std::any_cast<std::shared_ptr<cv::Mat>>(fbm.read("Mat"));
+  inline void recordVideo(cv::Mat &frame, RetBox const &bbox) {
     if (drawTimes-- > 0) {
-      utils::drawRetBox(*image, bbox, cv::Scalar{255, 0, 0});
+      utils::drawRetBox(frame, bbox, cv::Scalar{255, 0, 0});
     }
-    vr->record(image->data);
+    vr->record(frame.data);
     if (!vr->check() || --frameCount <= 0) {
       isRecord = false;
       frameCount = 0;
@@ -81,8 +76,9 @@ public:
     }
   }
 
-  inline void generateAlarmInfo(AlarmInfo &alarmInfo, std::string const &detail,
-                                RetBox const &bbox) {
+  inline void generateAlarmInfo(std::string const &name, AlarmInfo &alarmInfo,
+                                std::string const &detail, RetBox const &bbox,
+                                LogicBase *config) {
     // 生成本次报警的唯一ID
     alarmInfo.alarmId = utils::generate_hex(16);
     alarmInfo.alarmFile = config->outputDir + "/" + alarmInfo.alarmId;
@@ -97,9 +93,10 @@ public:
   }
 
   inline void saveAlarmImage(std::string const &path, cv::Mat const &frame,
-                             ColorType const ctype, RetBox const &bbox) {
+                             ColorType const ctype, RetBox const &bbox,
+                             bool isDraw = true) {
     cv::Mat showImage;
-    if (config->isDraw) {
+    if (isDraw) {
       // 临时画个图（后续根据前端参数来决定返回的图片是否带有画图标记）
       showImage = frame.clone();
       switch (ctype) {

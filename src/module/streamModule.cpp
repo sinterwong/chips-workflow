@@ -22,11 +22,12 @@
 namespace module {
 
 StreamModule::StreamModule(backend_ptr ptr, std::string const &_name,
-                           MessageType const &_type, StreamBase const &_config)
-    : Module(ptr, _name, _type), config(_config) {
+                           MessageType const &_type, ModuleConfig &_config)
+    : Module(ptr, _name, _type) {
 
+  config = std::unique_ptr<StreamBase>(_config.getParams<StreamBase>());
   try {
-    vm = std::make_unique<VideoManager>(config.uri);
+    vm = std::make_unique<VideoManager>(config->uri);
   } catch (const std::runtime_error &e) {
     FLOWENGINE_LOGGER_ERROR("initRecorder exception: ", e.what());
     std::runtime_error("StreamModule ctor has failed!");
@@ -123,8 +124,8 @@ void StreamModule::forward(std::vector<forwardMessage> &message) {
 
   // 报警时所需的视频流的信息
   AlarmInfo alarmInfo;
-  alarmInfo.cameraId = config.cameraId;
-  alarmInfo.cameraIp = config.uri;
+  alarmInfo.cameraId = config->cameraId;
+  alarmInfo.cameraIp = config->uri;
   alarmInfo.height = vm->getHeight();
   alarmInfo.width = vm->getWidth();
 
@@ -136,5 +137,5 @@ void StreamModule::forward(std::vector<forwardMessage> &message) {
   autoSend(sendMessage);
 }
 FlowEngineModuleRegister(StreamModule, backend_ptr, std::string const &,
-                         MessageType const &, StreamBase const &);
+                         MessageType const &, ModuleConfig &);
 } // namespace module

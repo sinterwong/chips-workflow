@@ -30,6 +30,7 @@
 
 namespace module {
 using common::OutputBase;
+using common::ModuleConfig;
 
 static size_t curl_callback(void *ptr, size_t size, size_t nmemb,
                             std::string *data) {
@@ -39,12 +40,14 @@ static size_t curl_callback(void *ptr, size_t size, size_t nmemb,
 
 class OutputModule : public Module {
 protected:
-  OutputBase config;
+  std::unique_ptr<OutputBase> config;
 
 public:
   OutputModule(backend_ptr ptr, std::string const &name,
-               MessageType const &type, OutputBase const &config_)
-      : Module(ptr, name, type), config(config_) {}
+               MessageType const &type, ModuleConfig &&config_)
+      : Module(ptr, name, type){
+        config = std::unique_ptr<OutputBase>(config_.getParams<OutputBase>());
+      }
   ~OutputModule() {}
 };
 } // namespace module

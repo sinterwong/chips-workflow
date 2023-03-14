@@ -4,6 +4,9 @@ DEFINE_string(config_path, "", "Specify the path of image.");
 
 using namespace module::utils;
 
+using common::ClassAlgo;
+using common::DetAlgo;
+
 int main(int argc, char **argv) {
   gflags::SetUsageMessage("some usage message");
   gflags::SetVersionString("1.0.0");
@@ -11,8 +14,24 @@ int main(int argc, char **argv) {
 
   ConfigParser parser;
   std::vector<PipelineParams> pipelines;
+  std::vector<AlgorithmParams> algorithms;
 
-  parser.parseConfig(FLAGS_config_path, pipelines);
+  parser.parseConfig(FLAGS_config_path, pipelines, algorithms);
+
+  for (auto &algo : algorithms) {
+    std::cout << algo.first << std::endl;
+    algo.second.visitParams([](auto &&params) {
+      // 对于不同类型的参数，可以根据其类型进行不同的处理
+      using T = std::decay_t<decltype(params)>; // 获取参数的实际类型
+      if constexpr (std::is_same_v<T, DetAlgo>) {
+        std::cout << "DetAlgo: " << params.serial << "\n";
+      } else if constexpr (std::is_same_v<T, ClassAlgo>) {
+        std::cout << "ClassAlgo: " << params.serial << "\n";
+      } else {
+        std::cout << "Unknown params\n";
+      }
+    });
+  }
 
   for (auto &pipe : pipelines) {
     for (auto &module : pipe) {
@@ -45,7 +64,8 @@ int main(int argc, char **argv) {
         }
 
         for (auto &ap : config->algoPipelines) {
-          std::cout << ap.second << std::endl;
+          std::cout << ap.first << ", " << ap.second.attentions.at(0)
+                    << std::endl;
         }
 
         std::cout << "threshold: " << config->threshold << std::endl;

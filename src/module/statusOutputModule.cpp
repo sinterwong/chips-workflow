@@ -10,14 +10,15 @@
  */
 
 #include "statusOutputModule.h"
+#include "pipeline.hpp"
 #include <fstream>
 
 namespace module {
 
 StatusOutputModule::StatusOutputModule(backend_ptr ptr, std::string const &name,
                                        MessageType const &type,
-                                       OutputBase const &config_)
-    : OutputModule(ptr, name, type, config_) {}
+                                       ModuleConfig &config_)
+    : OutputModule(ptr, name, type, std::move(config_)) {}
 
 bool StatusOutputModule::postResult(std::string const &url,
                                     StatusInfo const &statusInfo,
@@ -82,7 +83,7 @@ void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
     if (buf.status == 2 || count++ >= 500) {
       StatusInfo statusInfo{send, buf.status};
       std::string response;
-      if (!postResult(config.url, statusInfo, response)) {
+      if (!postResult(config->url, statusInfo, response)) {
         FLOWENGINE_LOGGER_ERROR("StatusOutputModule.forward: post result was "
                                 "failed, please check!");
       }
@@ -91,5 +92,5 @@ void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
   }
 }
 FlowEngineModuleRegister(StatusOutputModule, backend_ptr, std::string const &,
-                         MessageType const &, OutputBase const &);
+                         MessageType const &, ModuleConfig &);
 } // namespace module

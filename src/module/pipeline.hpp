@@ -12,18 +12,20 @@
 #ifndef __METAENGINE_STATUE_CONTROL_H
 #define __METAENGINE_STATUE_CONTROL_H
 
+#include "algorithmManager.hpp"
 #include "backend.h"
 #include "boostMessage.h"
 #include "common/common.hpp"
+#include "configParser.hpp"
 #include "logger/logger.hpp"
 #include "module.hpp"
 #include "thread_pool.h"
-#include "algorithmManager.hpp"
-#include "configParser.hpp"
 
 #include <algorithm>
 #include <any>
+#include <chrono>
 #include <memory>
+#include <thread>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -33,6 +35,7 @@ namespace module {
 using common::ModuleConfig;
 using common::ModuleInfo;
 using infer::AlgorithmManager;
+using utils::AlgorithmParams;
 using utils::PipelineParams;
 
 using module_ptr = std::shared_ptr<Module>;
@@ -85,16 +88,44 @@ private:
    */
   void detachModule(std::string const &moduleName);
 
+  /**
+   * @brief 注册提交算法模块
+   *
+   * @param name
+   * @param config
+   * @return true
+   * @return false
+   */
+  bool submitAlgo(std::string const &name, AlgoConfig const &config);
+
+  /**
+   * @brief 关闭算法
+   *
+   * @param name
+   * @param config
+   * @return true
+   * @return false
+   */
+  bool stopAlgo(std::string const &name);
+
+  /**
+   * @brief 定时刷新算法pipeline
+   *
+   * @return true
+   * @return false
+   */
   bool startPipeline();
 
-  bool parseConfigs(std::string const &uri, std::vector<PipelineParams> &);
+  bool parseConfigs(std::string const &uri, std::vector<PipelineParams> &,
+                    std::vector<AlgorithmParams> &);
 
   void terminate() {
     // 向所有模块发送终止信号
-    for (auto iter = atm.begin(); iter != atm.end(); ++iter) {
-      backendPtr->message->send(name, iter->first, MessageType::Close,
-                                queueMessage());
-    }
+    // for (auto iter = atm.begin(); iter != atm.end(); ++iter) {
+    //   backendPtr->message->send(name, iter->first, MessageType::Close,
+    //                             queueMessage());
+    // }
+    std::this_thread::sleep_for(std::chrono::seconds(5));
   }
 
 public:

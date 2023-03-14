@@ -130,6 +130,7 @@ struct AlgoBase {
   bool isScale;          // 预处理时是否等比例缩放
   float alpha;           // 预处理时除数
   float beta;            // 预处理时减数
+  float cond_thr;        // 置信度阈值
 
   AlgoBase() = default;
 };
@@ -139,12 +140,11 @@ struct AlgoBase {
  *
  */
 struct DetAlgo : public AlgoBase {
-  float cond_thr; // 置信度阈值
-  float nms_thr;  // NMS 阈值
+  float nms_thr; // NMS 阈值
 
   DetAlgo() = default;
   DetAlgo(AlgoBase &&algoBase, float cond_thr_, float nms_thr_)
-      : AlgoBase(algoBase), cond_thr(cond_thr_), nms_thr(nms_thr_) {}
+      : AlgoBase(algoBase), nms_thr(nms_thr_) {}
 };
 
 /**

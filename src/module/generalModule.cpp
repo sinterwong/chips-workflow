@@ -9,7 +9,7 @@
  *
  */
 
-#include "helmetModule.h"
+#include "generalModule.h"
 #include "pipeline.hpp"
 #include <cstddef>
 #include <cstdlib>
@@ -24,16 +24,18 @@ namespace module {
  *
  * @param message
  */
-void HelmetModule::forward(std::vector<forwardMessage> &message) {
+void GeneralModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == MessageType::Close) {
       FLOWENGINE_LOGGER_INFO("{} HelmetModule module was done!", name);
       stopFlag.store(true);
       return;
     }
+
+    // 此处开始逻辑编写
   }
 }
 
-FlowEngineModuleRegister(HelmetModule, backend_ptr, std::string const &,
+FlowEngineModuleRegister(GeneralModule, backend_ptr, std::string const &,
                          MessageType const &, ModuleConfig &);
 } // namespace module

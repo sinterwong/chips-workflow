@@ -69,8 +69,16 @@ struct OutputBase {
   std::string url; // 通信的url
 };
 
+/**
+ * @brief 针对算法结果处理方式的特定参数
+ *
+ */
+struct AlgoParams {
+  std::vector<int> attentions;
+};
+
 // 功能模块中需要启动使用的算法
-using algo_pipelines = std::vector<std::pair<SupportedAlgo, std::string>>;
+using algo_pipelines = std::vector<std::pair<std::string, AlgoParams>>;
 
 /**
  * @brief 逻辑的基本参数，logic包含报警时的配置
@@ -115,24 +123,15 @@ struct WithoutHelmet : public AttentionArea,
 };
 
 /**
- * @brief 吸烟
+ * @brief 通用模块
  *
  */
-struct SmokingMonitor : public AttentionArea,
+struct GeneralMonitor : public AttentionArea,
                         public LogicBase,
                         public InferInterval {
-  SmokingMonitor(AttentionArea &&aaera, LogicBase &&alarm,
+  GeneralMonitor(AttentionArea &&aaera, LogicBase &&alarm,
                  InferInterval &&interval)
       : AttentionArea(aaera), LogicBase(alarm), InferInterval(interval) {}
-};
-
-/**
- * @brief 灭火器
- *
- */
-struct ExtinguisherMonitor : public AttentionArea, public LogicBase {
-  ExtinguisherMonitor(AttentionArea &&aaera, LogicBase &&alarm)
-      : AttentionArea(aaera), LogicBase(alarm) {}
 };
 
 /**
@@ -142,9 +141,8 @@ struct ExtinguisherMonitor : public AttentionArea, public LogicBase {
 class ModuleConfig {
 public:
   // 将所有参数类型存储在一个 std::variant 中
-  using Params =
-      std::variant<AlgoConfig, StreamBase, OutputBase, LogicBase, WithoutHelmet,
-                   SmokingMonitor, ExtinguisherMonitor>;
+  using Params = std::variant<StreamBase, OutputBase, LogicBase, WithoutHelmet,
+                              GeneralMonitor>;
 
   // 设置参数
   template <typename T> void setParams(T params) {

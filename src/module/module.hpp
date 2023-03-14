@@ -48,7 +48,7 @@ public:
     stopFlag.store(false);
     ptr->message->registered(name);
   }
-  virtual ~Module() {}
+  virtual ~Module() { stopFlag.store(false); }
 
   virtual void beforeGetMessage(){};
 
@@ -77,7 +77,7 @@ public:
         MessageType stype;
         queueMessage message;
         loop = ptr->message->recv(name, flag, sender, stype, message, true);
-        if (!loop) {  // 消息收集为空，执行下一次任务
+        if (!loop) { // 消息收集为空，执行下一次任务
           continue;
         }
         // 如果存在同一发送者的消息，只处理一次，用新的去覆盖旧的即可
@@ -87,7 +87,7 @@ public:
       std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
     beforeForward();
-    
+
     // 将收集到的消息转换成待处理消息后去处理
     std::vector<forwardMessage> messages;
     messages.reserve(mselector.size());

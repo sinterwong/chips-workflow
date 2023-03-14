@@ -14,15 +14,17 @@
 #include "common/common.hpp"
 #include <unordered_map>
 
+using common::AlgoConfig;
 using common::AlgoSerial;
-using common::SupportedAlgo;
 using common::ModuleConfig;
 using common::ModuleInfo;
+using common::SupportedAlgo;
 
 namespace module::utils {
 
 using ModuleParams = std::pair<ModuleInfo, ModuleConfig>;
 using PipelineParams = std::vector<ModuleParams>;
+using AlgorithmParams = std::pair<std::string, AlgoConfig>;
 
 /**
  * @brief 组件的类型
@@ -30,19 +32,14 @@ using PipelineParams = std::vector<ModuleParams>;
  */
 enum class ModuleType { Algorithm, Stream, Output, Logic };
 
-enum class SupportedFunction {
-  HelmetModule = 0,
-  ExtinguisherMonitor,
-  SmokingModule,
-};
+enum class SupportedFunction { HelmetModule = 0, GeneralModule };
 
 class ConfigParser {
 private:
   // 模块映射
   std::unordered_map<std::string, SupportedFunction> moduleMapping{
       std::make_pair("HelmetModule", SupportedFunction::HelmetModule),
-      std::make_pair("ExtinguisherMonitor", SupportedFunction::ExtinguisherMonitor),
-      std::make_pair("SmokingModule", SupportedFunction::SmokingModule),
+      std::make_pair("GeneralModule", SupportedFunction::GeneralModule),
   };
 
   // 配置参数类型
@@ -72,8 +69,8 @@ private:
 
 public:
   bool parseConfig(std::string const &path,
-                   std::vector<PipelineParams> &pipelines);
-
+                   std::vector<PipelineParams> &pipelines,
+                   std::vector<AlgorithmParams> &algorithms);
 };
 
 } // namespace module::utils
