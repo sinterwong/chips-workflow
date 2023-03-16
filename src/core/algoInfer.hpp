@@ -11,13 +11,14 @@
 
 #include "common/common.hpp"
 
-
 #ifndef __FLOWCORE_ALGO_INFER_H_
 #define __FLOWCORE_ALGO_INFER_H_
 
+using common::AlgoConfig;
+using common::AlgoRetType;
+using common::AlgoSerial;
 using common::InferParams;
 using common::InferResult;
-using common::AlgoConfig;
 
 class AlgoInfer {
 public:
@@ -38,6 +39,18 @@ public:
    * @return false
    */
   virtual bool infer(void *data, InferParams const &, InferResult &ret) = 0;
+
+  /**
+   * @brief 获取算法类型
+   *
+   */
+  virtual AlgoRetType getType() const noexcept = 0;
+
+  /**
+   * @brief 获取算法系列
+   *
+   */
+  virtual AlgoSerial getSerial() const noexcept = 0;
 
   /**
    * @brief 关闭算法

@@ -10,13 +10,13 @@
  */
 
 #include "module_utils.hpp"
-#include <fstream>
-#include <experimental/filesystem>
 #include "logger/logger.hpp"
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
+#include <experimental/filesystem>
+#include <fstream>
 
 #include <nlohmann/json.hpp>
 #include <vector>
@@ -216,6 +216,9 @@ bool retBoxes2json(std::vector<RetBox> const &retBoxes, std::string &result) {
 bool drawRetBox(cv::Mat &image, RetBox const &bbox, cv::Scalar const &scalar) {
   cv::Rect rect(bbox.second[0], bbox.second[1], bbox.second[2] - bbox.second[0],
                 bbox.second[3] - bbox.second[1]);
+  if (rect.area() == 0) {
+    return false;
+  }
   cv::rectangle(image, rect, scalar, 2);
   cv::putText(image, bbox.first, cv::Point(rect.x, rect.y - 1),
               cv::FONT_HERSHEY_PLAIN, 2, {255, 255, 255});

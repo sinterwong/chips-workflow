@@ -39,7 +39,7 @@ public:
   //!
   //! \brief ProcessInput that the input is correct for infer
   //!
-  virtual bool processInput(cv::Mat const &, void **, common::ColorType, common::ColorType) const = 0;
+  virtual bool processInput(cv::Mat const &, void **, common::ColorType) const = 0;
 
   //!
   //! \brief ProcessInput that the input is correct for infer

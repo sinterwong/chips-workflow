@@ -16,9 +16,9 @@
 #include "joining_thread.h"
 #include "logger/logger.hpp"
 #include "videoSource.hpp"
-#include "ffstream.hpp"
 
 #include <mutex>
+#include <shared_mutex>
 #include <sp_codec.h>
 #include <sp_vio.h>
 
@@ -162,13 +162,11 @@ private:
   }
 
   std::unique_ptr<joining_thread> producter; // 生产者
-  std::mutex m;
+  std::shared_mutex m;
   void producting() {
     int ret;
     while (stream->isRunning()) {
-      std::lock_guard lk(m);
-      if (!stream->isRunning())
-        break;
+      std::shared_lock lk(m);
       std::this_thread::sleep_for(20ms);
       int bufSize = stream->getRawFrame(&raw_data);
       if (bufSize < 0) {
@@ -186,9 +184,7 @@ private:
     }
     FLOWENGINE_LOGGER_WARN("streaming is over: {}",
                            std::string(mOptions.resource));
-    if (stream->isRunning()) {
-      Close();
-    }
+    Close();
   }
 };
 } // namespace module::utils

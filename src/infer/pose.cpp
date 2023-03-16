@@ -1,12 +1,12 @@
 /**
  * @file pose.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-12-22
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 #include "pose.hpp"
 #include <algorithm>
@@ -17,7 +17,7 @@ namespace infer {
 namespace vision {
 
 bool Pose::processInput(cv::Mat const &input, void **output,
-                             common::ColorType, common::ColorType) const {
+                        common::ColorType) const {
   // 后面可以根据需求，实现基于opencv的预处理，比如resize和图片类型转换（bgr->rgb,
   // bgr->nv12, nv12->bgr..)
   return true;

@@ -27,7 +27,7 @@ using common::InferResult;
 
 class VisionInfer : public AlgoInfer {
 public:
-  VisionInfer(AlgoConfig const& config_) : AlgoInfer(config_) {}
+  VisionInfer(AlgoConfig const &config_) : AlgoInfer(config_) {}
   /**
    * @brief 初始化算法
    *
@@ -36,14 +36,25 @@ public:
    */
   virtual bool init() override;
 
-  virtual bool infer(void* data, InferParams const &, InferResult &ret) override;
+  virtual bool infer(void *data, InferParams const &,
+                     InferResult &ret) override;
 
   virtual bool destory() override;
+
+  virtual AlgoRetType getType() const noexcept override { return retType; };
+
+  virtual AlgoSerial getSerial() const noexcept override { return serial; };
 
 private:
   std::mutex m;
   std::shared_ptr<AlgoInference> instance;
   std::shared_ptr<vision::Vision> vision;
   ModelInfo modelInfo;
+
+  // 算法返回结果的类型
+  AlgoRetType retType;
+
+  // 算法的系列
+  AlgoSerial serial;
 };
 } // namespace infer

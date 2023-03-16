@@ -29,11 +29,12 @@ using common::AlgoParams;
 using common::AttentionArea;
 using common::ClassAlgo;
 using common::DetAlgo;
-using common::GeneralMonitor;
+using common::DetClsMonitor;
 using common::InferInterval;
 using common::LogicBase;
 using common::OutputBase;
 using common::Point;
+using common::Points;
 using common::StreamBase;
 using common::WithoutHelmet;
 
@@ -71,17 +72,17 @@ bool ConfigParser::parseConfig(std::string const &path,
     algo_base.inputShape = algo["inputShape"].get<std::array<int, 3>>();
     algo_base.inputNames = algo["inputNames"].get<std::vector<std::string>>();
     algo_base.outputNames = algo["outputNames"].get<std::vector<std::string>>();
+    algo_base.cond_thr = algo["cond_thr"].get<float>();
 
     std::string name = algo["name"].get<std::string>();
 
     AlgoConfig algo_config; // 算法参数中心
-    auto algo_serial = algoSerialMapping.at(algo_base.serial);
+    auto algo_serial = common::algoSerialMapping.at(algo_base.serial);
     switch (algo_serial) {
     case common::AlgoSerial::Yolo:
     case common::AlgoSerial::Assd: {
-      float cond_thr = algo["cond_thr"].get<float>();
       float nms_thr = algo["nms_thr"].get<float>();
-      DetAlgo det_config{std::move(algo_base), cond_thr, nms_thr};
+      DetAlgo det_config{std::move(algo_base), nms_thr};
       algo_config.setParams(std::move(det_config));
       break;
     }
@@ -152,6 +153,8 @@ bool ConfigParser::parseConfig(std::string const &path,
         for (auto const &ap : apipes) {
           AlgoParams params; // 特定参数
           params.attentions = ap["attention"].get<std::vector<int>>();
+          params.basedNames = ap["basedNames"].get<std::vector<std::string>>();
+          params.cropScaling = ap["cropScaling"].get<float>();
           base_config.algoPipelines.emplace_back(
               std::pair{ap["name"].get<std::string>(), std::move(params)});
         }
@@ -160,10 +163,15 @@ bool ConfigParser::parseConfig(std::string const &path,
         switch (func) {
         case SupportedFunction::HelmetModule: {
           // TODO 特定模块示例，未来可以新增很多特定化的参数
+          // 通用模块
           AttentionArea aarea;
-          auto region = p["region"].get<std::vector<int>>();
-          for (size_t i = 0; i < region.size(); i += 2) {
-            aarea.region.push_back(Point{region.at(i), region.at(i + 1)});
+          auto regions = p["regions"];
+          for (auto const &region : regions) {
+            Points ret;
+            for (size_t i = 0; i < region.size(); i += 2) {
+              ret.push_back(Point{region.at(i), region.at(i + 1)});
+            }
+            aarea.regions.emplace_back(ret);
           }
           InferInterval interval;
           WithoutHelmet config_{std::move(aarea), std::move(base_config),
@@ -171,16 +179,21 @@ bool ConfigParser::parseConfig(std::string const &path,
           config.setParams(std::move(config_));
           break;
         }
-        case SupportedFunction::GeneralModule: {
+        case SupportedFunction::DetClsModule: {
           // 通用模块
           AttentionArea aarea;
-          auto region = p["region"].get<std::vector<int>>();
-          for (size_t i = 0; i < region.size(); i += 2) {
-            aarea.region.push_back(Point{region.at(i), region.at(i + 1)});
+          auto regions = p["regions"];
+          for (auto const &region : regions) {
+            Points ret;
+            for (size_t i = 0; i < region.size(); i += 2) {
+              ret.push_back(Point{region.at(i), region.at(i + 1)});
+            }
+            aarea.regions.emplace_back(ret);
           }
+
           InferInterval interval;
-          GeneralMonitor config_{std::move(aarea), std::move(base_config),
-                                 std::move(interval)};
+          DetClsMonitor config_{std::move(aarea), std::move(base_config),
+                                std::move(interval)};
           config.setParams(std::move(config_));
           break;
         }

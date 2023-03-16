@@ -36,9 +36,8 @@ bool PipelineModule::submitModule(ModuleInfo const &info,
                                   ModuleConfig const &config) {
   atm[info.moduleName] = ObjectFactory::createObject<Module>(
       info.className, backendPtr, info.moduleName, info.moduleType, config);
-
   if (!atm[info.moduleName]) {
-    FLOWENGINE_LOGGER_ERROR("Module {} fails to be started!", info.moduleName);
+    FLOWENGINE_LOGGER_ERROR("{} is failed to start!", info.moduleName);
     return false;
   }
   atm[info.moduleName]->addRecvModule(name); // 关联管理员模块
@@ -143,7 +142,7 @@ bool PipelineModule::startPipeline() {
   }
 
   // 启动算法
-  for (auto const& algo : algorithms) {
+  for (auto const &algo : algorithms) {
     submitAlgo(algo.first, algo.second);
   }
 
@@ -154,7 +153,7 @@ bool PipelineModule::startPipeline() {
   std::vector<ModuleInfo> moduleRelations;
   for (auto &pipeline : pipelines) {
     for (auto &config : pipeline) {
-      currentModules.emplace_back(config.first.moduleName);
+      currentModules.push_back(config.first.moduleName);
       moduleRelations.push_back(config.first);
 
       if (atm.find(config.first.moduleName) == atm.end()) {
@@ -170,7 +169,7 @@ bool PipelineModule::startPipeline() {
 
   // 关闭停用的组件
   if (!currentModules.empty()) {
-    std::unordered_map<std::string, std::shared_ptr<Module>>::iterator iter;
+    std::unordered_map<std::string, module_ptr>::iterator iter;
     for (iter = atm.begin(); iter != atm.end();) {
       auto it =
           std::find(currentModules.begin(), currentModules.end(), iter->first);

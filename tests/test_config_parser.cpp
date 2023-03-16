@@ -58,9 +58,11 @@ int main(int argc, char **argv) {
           return -1;
         }
         std::cout << "region: " << std::endl;
-        for (auto &p : config->region) {
-          std::cout << "x: " << p.at(0) << ", "
-                    << "y:" << p.at(1) << std::endl;
+        for (auto &region : config->regions) {
+          for (auto &p : region) {
+            std::cout << "x: " << p.at(0) << ", "
+                      << "y:" << p.at(1) << std::endl;
+          }
         }
 
         for (auto &ap : config->algoPipelines) {

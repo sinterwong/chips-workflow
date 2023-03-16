@@ -17,7 +17,6 @@ INCLUDE_DIRECTORIES(
 
 LINK_DIRECTORIES(
     ${OpenCV_LIBRARY_DIR}
-    ${CURL_LIBRARY_DIR}
     ${OPENSSL_LIBRARY_DIR}
     ${X3_DIRECTORIES}
 )
@@ -35,13 +34,11 @@ ENDIF()
 LINK_LIBRARIES(
     ${OpenCV_LIBS}
     ${Protobuf_LIBRARY}
-    ${CURL_LIBS}
     ${OPENSSL_LIBS}
     ${FE_LIBS}
     gflags::gflags
     pthread
     spdlog
-    ${CURL_LIBRARIES}
     stdc++fs
 )
 SET(LINK "-Wl,--no-as-needed")

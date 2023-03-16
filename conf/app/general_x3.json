@@ -28,7 +28,7 @@
       "alpha": 0,
       "batchSize": 1,
       "beta": 0,
-      "cond_thr": 0,
+      "cond_thr": 0.3,
       "inputNames": [
         "data"
       ],
@@ -81,14 +81,22 @@
           "name": "logic_calling_95_1673517182740",
           "page": "1_0_0",
           "recvName": "stream_8677cd23-9813-4152-aa58-43fa0d1858aa",
-          "region": [
-            0,
-            0,
-            0,
-            0
+          "regions": [
+            [
+              100,
+              100,
+              500,
+              500
+            ],
+            [
+              200,
+              50,
+              900,
+              600
+            ]
           ],
           "sendName": "output_alarm_01_1673517182674",
-          "sub_type": "GeneralModule",
+          "sub_type": "DetClsModule",
           "threshold": 0.3,
           "type": "logic",
           "video_duration": 10,
@@ -98,13 +106,21 @@
               "name": "algorithm_handDet_x3_1673517182659",
               "attention": [
                 0
-              ]
+              ],
+              "basedNames": [
+                "regions"
+              ],
+              "cropScaling": 0
             },
             {
               "name": "algorithm_phoneCls_x3_1673517182647",
               "attention": [
-                0
-              ]
+                0, 1, 2
+              ],
+              "basedNames": [
+                "algorithm_handDet_x3_1673517182659"
+              ],
+              "cropScaling": 0.5
             }
           ]
         },

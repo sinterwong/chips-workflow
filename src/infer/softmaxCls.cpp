@@ -15,7 +15,10 @@
 namespace infer {
 namespace vision {
 
-ClsRet Softmax::generateClass(float *output) const {
+ClsRet Softmax::generateClass(void **outputs) const {
+  float **out = reinterpret_cast<float **>(*outputs);
+  float* output = out[0];
+
   int outputSize = modelInfo.outputShapes[0].at(1);
 
   float val{0.0};

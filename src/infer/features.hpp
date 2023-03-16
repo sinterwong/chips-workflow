@@ -1,12 +1,12 @@
 /**
  * @file pose.hpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-12-22
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 #ifndef __INFERENCE_VISION_FEATURES_H_
 #define __INFERENCE_VISION_FEATURES_H_
@@ -30,7 +30,6 @@ public:
   //! \brief ProcessInput that the input is correct for infer
   //!
   virtual bool processInput(cv::Mat const &input, void **output,
-                            common::ColorType,
                             common::ColorType) const override;
 
   //!
@@ -42,7 +41,6 @@ public:
   //! \brief verifyOutput that the result is correct for infer
   //!
   virtual bool verifyOutput(InferResult const &) const override;
-
 };
 } // namespace vision
 } // namespace infer

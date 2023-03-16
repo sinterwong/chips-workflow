@@ -11,13 +11,14 @@
 
 #include "common/common.hpp"
 
-
 #ifndef __FLOWCORE_ALGORITHM_BUS_H_
 #define __FLOWCORE_ALGORITHM_BUS_H_
 
+using common::AlgoConfig;
+using common::AlgoRetType;
+using common::AlgoSerial;
 using common::InferParams;
 using common::InferResult;
-using common::AlgoConfig;
 
 class AlgorithmBus {
 public:
@@ -32,5 +33,9 @@ public:
 
   virtual bool infer(std::string const &, void *, InferParams const &,
                      InferResult &) = 0;
+
+  virtual AlgoRetType getType(std::string const &) const noexcept = 0;
+
+  virtual AlgoSerial getSerial(std::string const &) const noexcept = 0;
 };
 #endif

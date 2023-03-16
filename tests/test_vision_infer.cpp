@@ -50,9 +50,10 @@ int main(int argc, char **argv) {
       false,
       alpha,
       0,
+      0.3,
   };
 
-  DetAlgo det_config{std::move(base_config), 0.3, 0.4};
+  DetAlgo det_config{std::move(base_config), 0.4};
 
   AlgoConfig center;
 
@@ -64,12 +65,12 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  std::vector<RetBox> regions{{"hello", {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}}};
+  RetBox region{"hello", {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
 
   InferParams params{std::string("hello"),
                      ColorType::NV12,
                      0.5,
-                     regions,
+                     region,
                      {image_nv12.cols, image_nv12.rows, image_nv12.channels()}};
   InferResult ret;
 

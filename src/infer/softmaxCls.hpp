@@ -25,7 +25,7 @@ public:
       : Classifier(_param, info) {}
 
 private:
-  ClsRet generateClass(float *output) const override;
+  ClsRet generateClass(void **output) const override;
 };
 } // namespace vision
 } // namespace infer

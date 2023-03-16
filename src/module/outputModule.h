@@ -29,8 +29,8 @@
 #include "common/common.hpp"
 
 namespace module {
-using common::OutputBase;
 using common::ModuleConfig;
+using common::OutputBase;
 
 static size_t curl_callback(void *ptr, size_t size, size_t nmemb,
                             std::string *data) {
@@ -44,10 +44,10 @@ protected:
 
 public:
   OutputModule(backend_ptr ptr, std::string const &name,
-               MessageType const &type, ModuleConfig &&config_)
-      : Module(ptr, name, type){
-        config = std::unique_ptr<OutputBase>(config_.getParams<OutputBase>());
-      }
+               MessageType const &type, ModuleConfig &config_)
+      : Module(ptr, name, type) {
+    config = std::make_unique<OutputBase>(*config_.getParams<OutputBase>());
+  }
   ~OutputModule() {}
 };
 } // namespace module
