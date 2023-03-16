@@ -22,6 +22,7 @@
 #include <opencv2/core/types.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <unordered_map>
+#include <vector>
 
 namespace module {
 
@@ -37,8 +38,6 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
       stopFlag.store(true);
       return;
     }
-
-    FLOWENGINE_LOGGER_INFO("DetClsModule is liveliness");
 
     // 读取图片
     FrameBuf frameBufMessage = ptr->pool->read(buf.key);
@@ -59,11 +58,10 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
     }
     algoRegions["regions"] = std::move(regions);
 
-    FLOWENGINE_LOGGER_CRITICAL("hello");
-
     // 根据提供的配置执行算法，
     auto &apipes = config->algoPipelines;
     for (auto const &ap : apipes) {
+      algoRegions[ap.first] = std::vector<common::RetBox>();
       auto &attentions = ap.second.attentions; // 哪些类别将被保留
       auto &basedNames = ap.second.basedNames; // 基于哪些算法的结果去执行
       for (auto const &bn : basedNames) {
@@ -98,7 +96,7 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
                                 {region.second[0], region.second[1],
                                  region.second[2], region.second[3],
                                  cls->second, static_cast<float>(cls->first)}};
-
+            algoRegions[ap.first].emplace_back(std::move(b));
             break;
           }
           case common::AlgoRetType::Detection: {
@@ -116,10 +114,10 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
               }
               // 记录算法结果
               common::RetBox b = {ap.first,
-                                  {region.second[0] + bbox.bbox[0],
-                                   region.second[1] + bbox.bbox[1],
-                                   region.second[2] + bbox.bbox[0],
-                                   region.second[3] + bbox.bbox[1],
+                                  {bbox.bbox[0] + region.second[0],
+                                   bbox.bbox[1] + region.second[1],
+                                   bbox.bbox[2] + region.second[0],
+                                   bbox.bbox[3] + region.second[1],
                                    bbox.det_confidence, bbox.class_id}};
               algoRegions[ap.first].emplace_back(std::move(b));
             }
@@ -136,12 +134,19 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
 
     // 至此，所有的算法模块执行完成，整合算法结果判断是否报警
     auto lastPipeName = apipes.at(apipes.size() - 1).first;
+    auto &alarmRegions = algoRegions.at(lastPipeName);
     cv::Mat showImage = image->clone();
-    for (auto const& alarmBox : algoRegions.at(lastPipeName)) {
-      utils::drawRetBox(showImage, alarmBox);
+    cv::cvtColor(showImage, showImage, cv::COLOR_YUV2BGR_NV12);
+    if (alarmRegions.size() > 0) {
+      FLOWENGINE_LOGGER_CRITICAL("{} is alarming!", name);
+      for (auto const &alarmBox : algoRegions.at(lastPipeName)) {
+        FLOWENGINE_LOGGER_INFO("{}, {}, {}!", alarmBox.first,
+                               alarmBox.second[4], alarmBox.second[5]);
+        utils::drawRetBox(showImage, alarmBox);
+      }
+      cv::imwrite("temp.jpg", showImage);
+      autoSend(buf);
     }
-    cv::imwrite("temp.jpg", showImage);
-    autoSend(buf);
   }
 }
 

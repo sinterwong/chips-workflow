@@ -35,7 +35,7 @@ ELSEIF(TARGET_HARDWARE STREQUAL x3)
                                 ${CURL_INCLUDE_DIR}
                                 ${OpenCV_INCLUDE_DIRS}
     )
-    TARGET_LINK_LIBRARIES(module infer module_logger)
+    TARGET_LINK_LIBRARIES(module infer module_logger ${CURL_LIBRARIES})
 ELSE()
     MESSAGE(WARNING "No valid hardware is specified!")
 ENDIF()

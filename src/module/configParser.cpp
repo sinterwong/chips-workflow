@@ -72,6 +72,7 @@ bool ConfigParser::parseConfig(std::string const &path,
     algo_base.inputShape = algo["inputShape"].get<std::array<int, 3>>();
     algo_base.inputNames = algo["inputNames"].get<std::vector<std::string>>();
     algo_base.outputNames = algo["outputNames"].get<std::vector<std::string>>();
+    algo_base.cond_thr = algo["cond_thr"].get<float>();
 
     std::string name = algo["name"].get<std::string>();
 
@@ -80,9 +81,8 @@ bool ConfigParser::parseConfig(std::string const &path,
     switch (algo_serial) {
     case common::AlgoSerial::Yolo:
     case common::AlgoSerial::Assd: {
-      float cond_thr = algo["cond_thr"].get<float>();
       float nms_thr = algo["nms_thr"].get<float>();
-      DetAlgo det_config{std::move(algo_base), cond_thr, nms_thr};
+      DetAlgo det_config{std::move(algo_base), nms_thr};
       algo_config.setParams(std::move(det_config));
       break;
     }
@@ -193,7 +193,7 @@ bool ConfigParser::parseConfig(std::string const &path,
 
           InferInterval interval;
           DetClsMonitor config_{std::move(aarea), std::move(base_config),
-                                 std::move(interval)};
+                                std::move(interval)};
           config.setParams(std::move(config_));
           break;
         }

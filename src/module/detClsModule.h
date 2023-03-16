@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef __METAENGINE_GENERAL_MODULE_H_
-#define __METAENGINE_GENERAL_MODULE_H_
+#ifndef __METAENGINE_DETCLS_GENERAL_MODULE_H_
+#define __METAENGINE_DETCLS_GENERAL_MODULE_H_
 
 #include "common/common.hpp"
 #include "logger/logger.hpp"

@@ -155,7 +155,7 @@ struct DetAlgo : public AlgoBase {
   float nms_thr; // NMS 阈值
 
   DetAlgo() = default;
-  DetAlgo(AlgoBase &&algoBase, float cond_thr_, float nms_thr_)
+  DetAlgo(AlgoBase &&algoBase, float nms_thr_)
       : AlgoBase(algoBase), nms_thr(nms_thr_) {}
 };
 

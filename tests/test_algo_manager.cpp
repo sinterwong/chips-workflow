@@ -52,9 +52,10 @@ int main(int argc, char **argv) {
       false,
       alpha,
       0,
+      0.3,
   };
 
-  DetAlgo det_config{std::move(base_config), 0.3, 0.4};
+  DetAlgo det_config{std::move(base_config), 0.4};
 
   AlgoConfig config;
   config.setParams(std::move(det_config));

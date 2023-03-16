@@ -28,7 +28,7 @@
       "alpha": 0,
       "batchSize": 1,
       "beta": 0,
-      "cond_thr": 0,
+      "cond_thr": 0.3,
       "inputNames": [
         "data"
       ],
@@ -115,7 +115,7 @@
             {
               "name": "algorithm_phoneCls_x3_1673517182647",
               "attention": [
-                0
+                0, 1, 2
               ],
               "basedNames": [
                 "algorithm_handDet_x3_1673517182659"
