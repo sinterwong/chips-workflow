@@ -44,7 +44,7 @@ public:
 
 protected:
   ClassAlgo *config;
-  virtual ClsRet generateClass(float *output) const = 0;
+  virtual ClsRet generateClass(void **output) const = 0;
 };
 } // namespace vision
 } // namespace infer

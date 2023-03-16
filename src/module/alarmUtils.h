@@ -40,9 +40,13 @@ protected:
 
 public:
   AlarmUtils() {}
-  virtual ~AlarmUtils() {}
+  virtual ~AlarmUtils() { destoryOutputStream(); }
 
-  inline void destoryOutputStream() { vr->destory(); }
+  inline void destoryOutputStream() {
+    if (isRecording()) {
+      vr->destory();
+    }
+  }
 
   inline bool initRecorder(std::string const &path, int width, int height,
                            int rate, int videDuration) {
@@ -76,9 +80,11 @@ public:
     }
   }
 
+  inline bool isRecording() { return isRecord; }
+
   inline void generateAlarmInfo(std::string const &name, AlarmInfo &alarmInfo,
                                 std::string const &detail, RetBox const &bbox,
-                                LogicBase *config) {
+                                LogicBase const *const config) {
     // 生成本次报警的唯一ID
     alarmInfo.alarmId = utils::generate_hex(16);
     alarmInfo.alarmFile = config->outputDir + "/" + alarmInfo.alarmId;
@@ -112,6 +118,8 @@ public:
       case ColorType::None:
         break;
       }
+      // 画报警框
+      utils::drawRetBox(showImage, bbox);
     } else {
       showImage = frame;
     }
@@ -120,9 +128,6 @@ public:
     // auto pos = name.find("_");
     // alarmBox.first = name.substr(pos + 1).substr(0, name.substr(pos +
     // 1).find("_"));
-
-    // 画报警框
-    utils::drawRetBox(showImage, bbox);
 
     // 输出alarm image
     cv::imwrite(path, showImage);

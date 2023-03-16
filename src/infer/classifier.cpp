@@ -22,8 +22,7 @@ bool Classifier::processInput(cv::Mat const &input, void **output,
 }
 
 bool Classifier::processOutput(void **output, InferResult &result) const {
-  float *out = reinterpret_cast<float *>(output[0]);
-  auto clsRet = generateClass(out);
+  auto clsRet = generateClass(output);
   result.aRet = std::move(clsRet);
   return true;
 }

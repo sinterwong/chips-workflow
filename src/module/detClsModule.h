@@ -12,12 +12,9 @@
 #ifndef __METAENGINE_DETCLS_GENERAL_MODULE_H_
 #define __METAENGINE_DETCLS_GENERAL_MODULE_H_
 
-#include "common/common.hpp"
-#include "logger/logger.hpp"
 #include "module.hpp"
-#include <any>
-#include <memory>
-#include <vector>
+
+#include "alarmUtils.h"
 
 using common::DetClsMonitor;
 using common::ModuleConfig;
@@ -38,6 +35,10 @@ public:
   ~DetClsModule() {}
 
   virtual void forward(std::vector<forwardMessage> &message) override;
+
+private:
+  AlarmUtils alarmUtils;
+  RetBox alarmBox = {name, {0, 0, 0, 0, 0, 0}};
 };
 } // namespace module
 #endif // __METAENGINE_HELMET_MODULE_H_

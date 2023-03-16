@@ -10,19 +10,11 @@
  */
 
 #include "detClsModule.h"
-#include <cstddef>
-#include <cstdlib>
-#include <experimental/filesystem>
-
-#include "infer/preprocess.hpp"
 #include "logger/logger.hpp"
-#include "module_utils.hpp"
+
+#include <vector>
 
 #include <opencv2/core/mat.hpp>
-#include <opencv2/core/types.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <unordered_map>
-#include <vector>
 
 namespace module {
 
@@ -43,6 +35,11 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
     FrameBuf frameBufMessage = ptr->pool->read(buf.key);
     auto image =
         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
+
+    if (alarmUtils.isRecording()) {
+      alarmUtils.recordVideo(*image, alarmBox);
+      continue;
+    }
 
     // 各个算法结果的区域
     std::unordered_map<std::string, std::vector<common::RetBox>> algoRegions;
@@ -135,17 +132,29 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
     // 至此，所有的算法模块执行完成，整合算法结果判断是否报警
     auto lastPipeName = apipes.at(apipes.size() - 1).first;
     auto &alarmRegions = algoRegions.at(lastPipeName);
-    cv::Mat showImage = image->clone();
-    cv::cvtColor(showImage, showImage, cv::COLOR_YUV2BGR_NV12);
     if (alarmRegions.size() > 0) {
-      FLOWENGINE_LOGGER_CRITICAL("{} is alarming!", name);
-      for (auto const &alarmBox : algoRegions.at(lastPipeName)) {
-        FLOWENGINE_LOGGER_INFO("{}, {}, {}!", alarmBox.first,
-                               alarmBox.second[4], alarmBox.second[5]);
-        utils::drawRetBox(showImage, alarmBox);
+      for (auto const &box : algoRegions.at(lastPipeName)) {
+        alarmBox = box;
+        if (alarmBox.second[4] > config->threshold) {
+          FLOWENGINE_LOGGER_CRITICAL("{}: {}, {}, {}!", name, alarmBox.first,
+                                     alarmBox.second[4], alarmBox.second[5]);
+          // 生成报警信息
+          alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在报警行为",
+                                       alarmBox, config.get());
+          // 生成报警图片
+          alarmUtils.saveAlarmImage(buf.alarmInfo.alarmFile + "/" +
+                                        buf.alarmInfo.alarmId + ".jpg",
+                                    *image, buf.frameType, alarmBox);
+
+          // 初始化报警视频
+          alarmUtils.initRecorder(buf.alarmInfo.alarmFile + "/" +
+                                      buf.alarmInfo.alarmId + ".mp4",
+                                  buf.alarmInfo.width, buf.alarmInfo.height, 25,
+                                  config->videDuration);
+        }
       }
-      cv::imwrite("temp.jpg", showImage);
       autoSend(buf);
+      break;
     }
   }
 }

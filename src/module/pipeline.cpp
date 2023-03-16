@@ -162,11 +162,6 @@ bool PipelineModule::startPipeline() {
     }
   }
 
-  // TODO 打印目前已经启动的所有模块
-  for (auto const &a : atm) {
-    FLOWENGINE_LOGGER_CRITICAL("started module name: {}", a.first);
-  }
-
   // 模块已经全部启动，将模块关联
   for (auto &mc : moduleRelations) {
     attachModule(mc.moduleName, mc.sendName, mc.recvName);
