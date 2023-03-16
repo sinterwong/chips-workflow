@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
   LogicBase alarm;
   InferInterval inferInterval;
 
-  GeneralMonitor smoking{std::move(area), std::move(alarm),
+  DetClsMonitor smoking{std::move(area), std::move(alarm),
                          std::move(inferInterval)};
 
   center.setParams(std::move(smoking));
@@ -27,8 +27,8 @@ int main(int argc, char **argv) {
     using T = std::decay_t<decltype(params)>; // 获取参数的实际类型
     if constexpr (std::is_same_v<T, StreamBase>) {
       std::cout << "StreamBase: " << params.uri << "\n";
-    } else if constexpr (std::is_same_v<T, GeneralMonitor>) {
-      std::cout << "GeneralMonitor: " << params.interval.count() << "\n";
+    } else if constexpr (std::is_same_v<T, DetClsMonitor>) {
+      std::cout << "DetClsMonitor: " << params.interval.count() << "\n";
     } else if constexpr (std::is_same_v<T, WithoutHelmet>) {
       std::cout << "WithoutHelmetMonitor: " << params.outputDir << "\n";
     } else {

@@ -14,6 +14,7 @@
 #include <getopt.h>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 #include <variant>
 #include <vector>
 
@@ -66,9 +67,20 @@ struct InferParams {
   std::string name;            // 调用逻辑的名称
   ColorType frameType;         // frameType
   float cropScaling;           // 截图时候需要缩放的比例
-  std::vector<RetBox> regions; // bboxes
+  RetBox region; // bboxes
   Shape shape;                 // 图像的尺寸
   // std::vector<int> attentionClasses; // [0, 2, 10...] logic中操作
+};
+
+/**
+ * @brief 算法类型
+ *
+ */
+enum class AlgoRetType : uint16_t {
+  Classifier = 0,
+  Detection,
+  Pose,
+  Feature,
 };
 
 /**
@@ -189,6 +201,20 @@ enum class AlgoSerial : uint16_t {
   Softmax,
 };
 
+// 算法系列映射
+static std::unordered_map<std::string, AlgoSerial> algoSerialMapping{
+    std::make_pair("Yolo", AlgoSerial::Yolo),
+    std::make_pair("Assd", AlgoSerial::Assd),
+    std::make_pair("Softmax", AlgoSerial::Softmax),
+};
+
+// 算法系列映射算法类型
+static std::unordered_map<AlgoSerial, AlgoRetType> serial2TypeMapping{
+    std::make_pair(AlgoSerial::Yolo, AlgoRetType::Detection),
+    std::make_pair(AlgoSerial::Assd, AlgoRetType::Detection),
+    std::make_pair(AlgoSerial::Softmax, AlgoRetType::Classifier),
+};
+
 /**
  * @brief 目前已经支持的算法种类
  *
@@ -204,6 +230,16 @@ enum class SupportedAlgo : uint16_t {
   ExtinguisherCls,
   OiltubeCls,
   EarthlineCls,
+};
+
+// TODO 支持的算法功能映射
+static std::unordered_map<std::string, SupportedAlgo> algoMapping{
+    std::make_pair("handDet", SupportedAlgo::HandDet),
+    std::make_pair("headDet", SupportedAlgo::HeadDet),
+    std::make_pair("phoneCls", SupportedAlgo::SmokeCallCls),
+    std::make_pair("helmetCls", SupportedAlgo::HelmetCls),
+    std::make_pair("smokeCls", SupportedAlgo::SmokeCallCls),
+    std::make_pair("extinguisherCls", SupportedAlgo::ExtinguisherCls),
 };
 
 } // namespace common

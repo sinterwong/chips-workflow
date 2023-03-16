@@ -18,11 +18,6 @@
 
 namespace module {
 
-AlarmOutputModule::AlarmOutputModule(backend_ptr ptr, std::string const &name,
-                                     MessageType const &type,
-                                     ModuleConfig &config_)
-    : OutputModule(ptr, name, type, std::move(config_)) {}
-
 bool AlarmOutputModule::postResult(std::string const &url,
                                    AlarmInfo const &alarmInfo,
                                    std::string &result) {

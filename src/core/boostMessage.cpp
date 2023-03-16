@@ -77,18 +77,25 @@ bool BoostMessage::recv(std::string const &name, MessageBus::returnFlag &flag,
   }
   cqueue_ptr receiver = iter->second;
   flag = BoostMessageCheakEmpty(receiver);
-  do {
-    if (receiver->size_approx() > 0) {
-      receiver->try_dequeue(message);
-      send = message.send;
-      type = message.messageType;
-      return true;
-    }
-    if (waitFlag)
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-  } while (waitFlag);
-  send = "";
-  type = MessageType::None;
-  message = queueMessage();
-  return false;
+  // do {
+  //   if (receiver->size_approx() > 0) {
+  //     receiver->try_dequeue(message);
+  //     send = message.send;
+  //     type = message.messageType;
+  //     return true;
+  //   }
+  //   if (waitFlag)
+  //     std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  // } while (waitFlag);
+  if (receiver->size_approx() > 0) {
+    receiver->try_dequeue(message);
+    send = message.send;
+    type = message.messageType;
+    return true;
+  } else {
+    send = "";
+    type = MessageType::None;
+    message = queueMessage();
+    return false;
+  }
 }

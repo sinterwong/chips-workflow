@@ -10,15 +10,9 @@
  */
 
 #include "statusOutputModule.h"
-#include "pipeline.hpp"
 #include <fstream>
 
 namespace module {
-
-StatusOutputModule::StatusOutputModule(backend_ptr ptr, std::string const &name,
-                                       MessageType const &type,
-                                       ModuleConfig &config_)
-    : OutputModule(ptr, name, type, std::move(config_)) {}
 
 bool StatusOutputModule::postResult(std::string const &url,
                                     StatusInfo const &statusInfo,

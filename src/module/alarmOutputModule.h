@@ -30,7 +30,8 @@ class AlarmOutputModule : public OutputModule {
 
 public:
   AlarmOutputModule(backend_ptr ptr, std::string const &name,
-                    MessageType const &type, ModuleConfig &config_);
+                    MessageType const &type, ModuleConfig &config_)
+      : OutputModule(ptr, name, type, config_) {}
   ~AlarmOutputModule() {}
 
   virtual void forward(std::vector<forwardMessage> &message) override;

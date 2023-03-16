@@ -40,7 +40,6 @@ private:
   int channel;
 #elif (TARGET_PLATFORM == 1)
   uchar3 *frame = nullptr;
-  int mmzIndex; // 循环索引
 #endif
 
   void consumeFrame();
@@ -53,21 +52,21 @@ public:
   inline bool isRunning() { return stream && stream->IsStreaming(); }
 
   inline int getHeight() {
-    if (stream) {
+    if (isRunning()) {
       return stream->GetHeight();
     }
     return -1;
   }
 
   inline int getWidth() {
-    if (stream) {
+    if (isRunning()) {
       return stream->GetWidth();
     }
     return -1;
   }
 
   inline int getRate() {
-    if (stream) {
+    if (isRunning()) {
       return stream->GetFrameRate();
     }
     return -1;

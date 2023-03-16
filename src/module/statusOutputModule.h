@@ -34,7 +34,8 @@ private:
 
 public:
   StatusOutputModule(backend_ptr ptr, std::string const &name,
-                     MessageType const &type, ModuleConfig &config_);
+                     MessageType const &type, ModuleConfig &config_)
+      : OutputModule(ptr, name, type, config_) {}
   ~StatusOutputModule() {}
 
   virtual void forward(std::vector<forwardMessage> &message) override;

@@ -1,5 +1,5 @@
 /**
- * @file helmetModule.h
+ * @file detClsModule.h
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
@@ -19,22 +19,23 @@
 #include <memory>
 #include <vector>
 
+using common::DetClsMonitor;
 using common::ModuleConfig;
-using common::GeneralMonitor;
 
 namespace module {
-class GeneralModule : Module {
+class DetClsModule : Module {
 
-  std::unique_ptr<GeneralMonitor> config;
+  std::unique_ptr<DetClsMonitor> config;
 
 public:
-  GeneralModule(backend_ptr ptr, std::string const &name,
-                MessageType const &type, ModuleConfig &config_)
+  DetClsModule(backend_ptr ptr, std::string const &name,
+               MessageType const &type, ModuleConfig &config_)
       : Module(ptr, name, type) {
-    config = std::unique_ptr<GeneralMonitor>(config_.getParams<GeneralMonitor>());
+    config =
+        std::make_unique<DetClsMonitor>(*config_.getParams<DetClsMonitor>());
   }
 
-  ~GeneralModule() {}
+  ~DetClsModule() {}
 
   virtual void forward(std::vector<forwardMessage> &message) override;
 };

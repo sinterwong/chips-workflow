@@ -30,7 +30,7 @@ public:
   HelmetModule(backend_ptr ptr, std::string const &name,
                MessageType const &type, ModuleConfig &config_)
       : Module(ptr, name, type) {
-    config = std::unique_ptr<WithoutHelmet>(config_.getParams<WithoutHelmet>());
+    config = std::make_unique<WithoutHelmet>(*config_.getParams<WithoutHelmet>());
   }
 
   ~HelmetModule() {}

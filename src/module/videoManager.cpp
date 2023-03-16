@@ -46,14 +46,6 @@ bool VideoManager::init() {
   stream = std::unique_ptr<videoSource>(videoSource::Create(opt));
   video.release();
 #endif
-  bool ret = stream->Open();
-  if (!ret || !stream) {
-    FLOWENGINE_LOGGER_ERROR(
-        "VideoManager init:  failed to create input stream");
-    return false;
-  }
-  FLOWENGINE_LOGGER_INFO(
-      "VideoManager init: video initialization is successed!");
   return true;
 }
 
@@ -72,7 +64,7 @@ void VideoManager::consumeFrame() {
 bool VideoManager::run() {
   if (!stream->Open()) {
     return false;
-  };
+  }
   consumer =
       std::make_unique<joining_thread>(&VideoManager::consumeFrame, this);
   return true;

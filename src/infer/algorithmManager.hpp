@@ -25,13 +25,21 @@ class AlgorithmManager : public AlgorithmBus {
 public:
   virtual ~AlgorithmManager() {}
 
-  virtual bool registered(std::string const &,
-                          AlgoConfig const &) override;
+  virtual bool registered(std::string const &, AlgoConfig const &) override;
 
   virtual bool unregistered(std::string const &) override;
 
   virtual bool infer(std::string const &, void *, InferParams const &,
                      InferResult &) override;
+
+  virtual AlgoRetType getType(std::string const &name) const noexcept override {
+    return name2algo.at(name)->getType();
+  };
+
+  virtual AlgoSerial
+  getSerial(std::string const &name) const noexcept override {
+    return name2algo.at(name)->getSerial();
+  };
 
 protected:
   // 名称索引算法

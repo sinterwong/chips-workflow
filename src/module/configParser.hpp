@@ -15,10 +15,8 @@
 #include <unordered_map>
 
 using common::AlgoConfig;
-using common::AlgoSerial;
 using common::ModuleConfig;
 using common::ModuleInfo;
-using common::SupportedAlgo;
 
 namespace module::utils {
 
@@ -32,14 +30,14 @@ using AlgorithmParams = std::pair<std::string, AlgoConfig>;
  */
 enum class ModuleType { Algorithm, Stream, Output, Logic };
 
-enum class SupportedFunction { HelmetModule = 0, GeneralModule };
+enum class SupportedFunction { HelmetModule = 0, DetClsModule };
 
 class ConfigParser {
 private:
   // 模块映射
   std::unordered_map<std::string, SupportedFunction> moduleMapping{
       std::make_pair("HelmetModule", SupportedFunction::HelmetModule),
-      std::make_pair("GeneralModule", SupportedFunction::GeneralModule),
+      std::make_pair("DetClsModule", SupportedFunction::DetClsModule),
   };
 
   // 配置参数类型
@@ -48,23 +46,6 @@ private:
       std::make_pair("algorithm", ModuleType::Algorithm),
       std::make_pair("output", ModuleType::Output),
       std::make_pair("logic", ModuleType::Logic),
-  };
-
-  // 算法系列映射
-  std::unordered_map<std::string, AlgoSerial> algoSerialMapping{
-      std::make_pair("Yolo", AlgoSerial::Yolo),
-      std::make_pair("Assd", AlgoSerial::Assd),
-      std::make_pair("Softmax", AlgoSerial::Softmax),
-  };
-
-  // TODO 支持的算法功能映射
-  std::unordered_map<std::string, SupportedAlgo> algoMapping{
-      std::make_pair("handDet", SupportedAlgo::HandDet),
-      std::make_pair("headDet", SupportedAlgo::HeadDet),
-      std::make_pair("phoneCls", SupportedAlgo::SmokeCallCls),
-      std::make_pair("helmetCls", SupportedAlgo::HelmetCls),
-      std::make_pair("smokeCls", SupportedAlgo::SmokeCallCls),
-      std::make_pair("extinguisherCls", SupportedAlgo::ExtinguisherCls),
   };
 
 public:
