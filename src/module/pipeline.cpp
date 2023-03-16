@@ -65,10 +65,10 @@ bool PipelineModule::parseConfigs(std::string const &path,
   }
 
   // 写入
-  // if (!utils::writeJson("{}", path)) {
-  //   FLOWENGINE_LOGGER_INFO("config parse: clean json file is failed!");
-  //   return false;
-  // }
+  if (!utils::writeJson("{}", path)) {
+    FLOWENGINE_LOGGER_INFO("config parse: clean json file is failed!");
+    return false;
+  }
   return true;
 }
 
