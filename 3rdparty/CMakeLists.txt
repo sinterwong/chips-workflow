@@ -21,6 +21,9 @@ FILE(COPY rapidjson DESTINATION ${PROJECT_INCLUDE_DIR})
 # Copy nlohmann to ${PROJECT_INCLUDE_DIR}
 FILE(COPY nlohmann DESTINATION ${PROJECT_INCLUDE_DIR})
 
+# Copy crow to ${PROJECT_INCLUDE_DIR}
+FILE(COPY crow DESTINATION ${PROJECT_INCLUDE_DIR})
+
 #MESSAGE(INFO "--------------------------------")
 #SET(NN_STATIC_LIB ON CACHE BOOL "enable static library building of nanomsg")
 #SET(NN_TESTS OFF CACHE BOOL "disable test building of nanomsg")
