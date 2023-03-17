@@ -12,7 +12,7 @@
       // "program": "/root/workspace/projects/flowengine/build/aarch64/bin/test_xcamera",
       // "program": "/root/workspace/projects/flowengine/build/aarch64/bin/test_decoder",
       "args": [
-               "--config_path=${workspaceFolder}/conf/app/calling_extinguisher.json",
+               "--config_path=${workspaceFolder}/conf/app/general_nx.json",
                "--num_workers=32",
 
               //  "--image_path=/root/workspace/projects/flowengine/tests/data/data/test.jpg",

@@ -15,7 +15,6 @@
 #include "module.hpp"
 #include <algorithm>
 #include <memory>
-#include <pstl/glue_algorithm_defs.h>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>

@@ -13,7 +13,6 @@
 #include "module_utils.hpp"
 #include <algorithm>
 #include <cassert>
-#include <filesystem>
 #include <memory>
 
 namespace module {
@@ -44,6 +43,7 @@ void VideoRecord::destory() noexcept {
   }
   stream = nullptr;
 #if (TARGET_PLATFORM == 0)
+  #include <filesystem>
   // 将视频转成mp4格式
   std::string &location = params.resource.location;
   std::string renamed = location.substr(0, location.find(".")) + ".h264";
