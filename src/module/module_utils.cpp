@@ -11,10 +11,6 @@
 
 #include "module_utils.hpp"
 #include "logger/logger.hpp"
-#include "rapidjson/document.h"
-#include "rapidjson/prettywriter.h"
-#include "rapidjson/stringbuffer.h"
-#include "rapidjson/writer.h"
 #include <experimental/filesystem>
 #include <fstream>
 
@@ -154,62 +150,36 @@ cv::Mat str2mat(const std::string &s) {
 
 bool retPolys2json(std::vector<RetPoly> const &retPolygons,
                    std::string &result) {
-  rapidjson::Document doc;
-  doc.SetObject();
-  // 获取分配器
-  rapidjson::Document::AllocatorType &allocator = doc.GetAllocator();
-
-  if (!retPolygons.empty()) {
-    rapidjson::Value polys(rapidjson::kArrayType);
-    for (int i = 0; i < static_cast<int>(retPolygons.size()); i++) {
-      rapidjson::Value polygon;
-      polygon.SetObject();
-      rapidjson::Value coord(rapidjson::kArrayType);
-      for (auto v : retPolygons[i].second) {
-        coord.PushBack(v, allocator);
-      }
-      polygon.AddMember("coord", coord, allocator);
-      rapidjson::Value className(retPolygons[i].first.c_str(), allocator);
-      polygon.AddMember("class_name", className, allocator);
-      polys.PushBack(polygon, allocator);
-    }
-    doc.AddMember("polygons", polys, allocator);
+  if (retPolygons.empty()) {
+    result = "{}";
+    return false;
   }
-
-  rapidjson::StringBuffer buffer;
-  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-  doc.Accept(writer);
-  result = std::string(buffer.GetString());
+  json polys;
+  for (auto const &poly : retPolygons) {
+    json polygon;
+    json coord(poly.second); // array type
+    polygon["coord"] = coord;
+    polygon["class_name"] = poly.first;
+    polys.push_back(polygon);
+  }
+  result = polys.dump();
   return true;
 }
 
 bool retBoxes2json(std::vector<RetBox> const &retBoxes, std::string &result) {
-  rapidjson::Document doc;
-  doc.SetObject();
-  // 获取分配器
-  rapidjson::Document::AllocatorType &allocator = doc.GetAllocator();
-
-  if (!retBoxes.empty()) {
-    rapidjson::Value bboxes(rapidjson::kArrayType);
-    for (int i = 0; i < static_cast<int>(retBoxes.size()); i++) {
-      rapidjson::Value bbox;
-      bbox.SetObject();
-      rapidjson::Value coord(rapidjson::kArrayType);
-      for (auto v : retBoxes[i].second) {
-        coord.PushBack(v, allocator);
-      }
-      bbox.AddMember("coord", coord, allocator);
-      rapidjson::Value className(retBoxes[i].first.c_str(), allocator);
-      bbox.AddMember("class_name", className, allocator);
-      bboxes.PushBack(bbox, allocator);
-    }
-    doc.AddMember("bboxes", bboxes, allocator);
+  if (retBoxes.empty()) {
+    result = "{}";
+    return false;
   }
-
-  rapidjson::StringBuffer buffer;
-  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-  doc.Accept(writer);
-  result = std::string(buffer.GetString());
+  json bboxes;
+  for (auto const &bbox : retBoxes) {
+    json b;
+    json coord = bbox.second;
+    b["coord"] = coord;
+    b["class_name"] = bbox.first;
+    bboxes.push_back(b);
+  }
+  result = bboxes.dump();
   return true;
 }
 

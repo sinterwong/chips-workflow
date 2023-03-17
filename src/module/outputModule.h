@@ -18,10 +18,6 @@
 #include <vector>
 
 #include "messageBus.h"
-#include "rapidjson/document.h"
-#include "rapidjson/prettywriter.h"
-#include "rapidjson/stringbuffer.h"
-#include "rapidjson/writer.h"
 
 #include "logger/logger.hpp"
 #include "module.hpp"
