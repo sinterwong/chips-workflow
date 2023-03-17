@@ -18,10 +18,10 @@ IF(TARGET_HARDWARE STREQUAL jetson)
                                 ${PROJECT_INCLUDE_DIR}/jetson-utils
                                 ${CURL_INCLUDE_DIR}
                                 ${OpenCV_INCLUDE_DIRS}
-                                ${Protobuf_INCLUDE_DIR}
                                 ${CUDA_INCLUDE_DIRS}
+                                ${FFMPEG_INCLUDE_DIR}
     )
-    TARGET_LINK_LIBRARIES(module jetson-utils module_logger)
+    TARGET_LINK_LIBRARIES(module jetson-utils module_logger ${CURL_LIBRARIES})
 ELSEIF(TARGET_HARDWARE STREQUAL x3)
     FILE(GLOB MODULE_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.h)
     FILE(GLOB MODULE_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.c)

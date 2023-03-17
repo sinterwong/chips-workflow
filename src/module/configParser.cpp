@@ -17,7 +17,6 @@
 
 #include <array>
 #include <cstddef>
-#include <pstl/glue_algorithm_defs.h>
 #include <string>
 #include <utility>
 #include <vector>

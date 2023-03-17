@@ -13,8 +13,10 @@
 #include "module_utils.hpp"
 #include <algorithm>
 #include <cassert>
-#include <filesystem>
+#include <experimental/filesystem>
 #include <memory>
+
+using namespace std::experimental;
 
 namespace module {
 namespace utils {
@@ -47,13 +49,12 @@ void VideoRecord::destory() noexcept {
   // 将视频转成mp4格式
   std::string &location = params.resource.location;
   std::string renamed = location.substr(0, location.find(".")) + ".h264";
-  std::cout << renamed << std::endl;
-  std::filesystem::path oldPath(location);
-  std::filesystem::path newPath(renamed);
+  filesystem::path oldPath(location);
+  filesystem::path newPath(renamed);
   try {
-    std::filesystem::rename(oldPath, newPath);
+    filesystem::rename(oldPath, newPath);
     FLOWENGINE_LOGGER_INFO("文件重命名成功");
-  } catch (const std::filesystem::filesystem_error &e) {
+  } catch (const filesystem::filesystem_error &e) {
     FLOWENGINE_LOGGER_ERROR("文件重命名失败：{}", e.what());
     return;
   }

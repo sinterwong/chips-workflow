@@ -8,9 +8,6 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/module
     ${PROJECT_INCLUDE_DIR}/jetson-utils
     ${OpenCV_INCLUDE_DIRS}
-    ${Protobuf_INCLUDE_DIR}
-    ${OPENSSL_INCLUDE_DIR}
-    ${CURL_INCLUDE_DIR}
     ${CUDA_INCLUDE_DIRS}
     ${X3_INCLUDE}
 )
@@ -33,9 +30,9 @@ ENDIF()
 
 LINK_LIBRARIES(
     ${OpenCV_LIBS}
-    ${Protobuf_LIBRARY}
     ${OPENSSL_LIBS}
     ${FE_LIBS}
+    ${CURL_LIBRARIES}
     gflags::gflags
     pthread
     spdlog

@@ -5,7 +5,10 @@
 
 #include "logger/logger.hpp"
 #include "logging.h"
-#include <filesystem>
+// #include <filesystem>
+#include <experimental/filesystem>
+
+using namespace std::experimental;
 
 namespace module::utils {
 
@@ -48,7 +51,7 @@ bool URI::Parse(std::string const &uri) {
       protocol = "v4l2";
     } else if (string.find(".") != std::string::npos ||
                string.find("/") != std::string::npos ||
-               std::filesystem::exists(string)) {
+               filesystem::exists(string)) {
       protocol = "file";
     } else if (sscanf(string.c_str(), "%i", &port) == 1) {
       protocol = "csi";
@@ -66,8 +69,7 @@ bool URI::Parse(std::string const &uri) {
     string = protocol + "://";
 
     if (protocol == "file")
-      string +=
-          std::filesystem::absolute(location); // URI paths should be absolute
+      string += filesystem::absolute(location); // URI paths should be absolute
     else
       string += location;
   }
@@ -94,7 +96,7 @@ bool URI::Parse(std::string const &uri) {
       port = 0;
     }
   } else if (protocol == "file") {
-    std::filesystem::path p(location);
+    filesystem::path p(location);
     extension = p.extension();
   } else {
     // search for ip/port format

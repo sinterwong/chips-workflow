@@ -15,7 +15,6 @@
 #include "module.hpp"
 #include <algorithm>
 #include <memory>
-#include <pstl/glue_algorithm_defs.h>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -65,10 +64,10 @@ bool PipelineModule::parseConfigs(std::string const &path,
   }
 
   // 写入
-  // if (!utils::writeJson("{}", path)) {
-  //   FLOWENGINE_LOGGER_INFO("config parse: clean json file is failed!");
-  //   return false;
-  // }
+  if (!utils::writeJson("{}", path)) {
+    FLOWENGINE_LOGGER_INFO("config parse: clean json file is failed!");
+    return false;
+  }
   return true;
 }
 
