@@ -101,7 +101,7 @@ struct LogicBase {
  *
  */
 struct AttentionArea {
-  std::vector<Points> regions; // 划定区域
+  std::vector<Points2i> regions; // 划定区域
 };
 
 /**

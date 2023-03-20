@@ -64,11 +64,11 @@ using RetPoly = std::pair<std::string, std::array<float, 9>>;
  *
  */
 struct InferParams {
-  std::string name;            // 调用逻辑的名称
-  ColorType frameType;         // frameType
-  float cropScaling;           // 截图时候需要缩放的比例
-  RetBox region; // bboxes
-  Shape shape;                 // 图像的尺寸
+  std::string name;    // 调用逻辑的名称
+  ColorType frameType; // frameType
+  float cropScaling;   // 截图时候需要缩放的比例
+  RetBox region;       // bboxes
+  Shape shape;         // 图像的尺寸
   // std::vector<int> attentionClasses; // [0, 2, 10...] logic中操作
 };
 
@@ -90,13 +90,14 @@ enum class AlgoRetType : uint16_t {
 struct alignas(float) BBox {
   // x y w h
   std::array<float, 4> bbox; // [x1, y1, x2, y2]
-  float det_confidence;
-  float class_id;
   float class_confidence;
+  float class_id;
+  float det_confidence;
 };
 
 // point 数据
-using Point = std::array<int, 2>;
+using Point2i = std::array<int, 2>;
+using Point2f = std::array<float, 2>;
 
 // 单次分类结果
 using ClsRet = std::pair<int, float>;
@@ -105,10 +106,21 @@ using ClsRet = std::pair<int, float>;
 using BBoxes = std::vector<BBox>;
 
 // 点集
-using Points = std::vector<Point>;
+using Points2i = std::vector<Point2i>;
+using Points2f = std::vector<Point2f>;
+
+// 关键点框
+struct KeypointsBox {
+  BBox bbox;       // 目标检测框
+  Points2f points; // 框中的关键点
+};
+
+// 关键点框集
+using KeypointsBoxes = std::vector<KeypointsBox>;
 
 // 算法结果
-using AlgoRet = std::variant<std::monostate, BBoxes, ClsRet, Points>;
+using AlgoRet =
+    std::variant<std::monostate, BBoxes, ClsRet, Points2f, KeypointsBoxes>;
 
 /**
  * @brief 算法推理时返回结果

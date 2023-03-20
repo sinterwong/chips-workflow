@@ -24,7 +24,7 @@ bool Pose::processInput(cv::Mat const &input, void **output,
 }
 
 bool Pose::processOutput(void **output, InferResult &result) const {
-  auto poseRet = Points();
+  auto poseRet = Points2f();
   generatePoints(poseRet, output);
   result.aRet = std::move(poseRet);
   return true;
