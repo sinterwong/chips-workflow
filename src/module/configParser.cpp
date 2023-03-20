@@ -32,8 +32,8 @@ using common::DetClsMonitor;
 using common::InferInterval;
 using common::LogicBase;
 using common::OutputBase;
-using common::Point;
-using common::Points;
+using common::Point2i;
+using common::Points2i;
 using common::StreamBase;
 using common::WithoutHelmet;
 
@@ -166,9 +166,9 @@ bool ConfigParser::parseConfig(std::string const &path,
           AttentionArea aarea;
           auto regions = p["regions"];
           for (auto const &region : regions) {
-            Points ret;
+            Points2i ret;
             for (size_t i = 0; i < region.size(); i += 2) {
-              ret.push_back(Point{region.at(i), region.at(i + 1)});
+              ret.push_back(Point2i{region.at(i), region.at(i + 1)});
             }
             aarea.regions.emplace_back(ret);
           }
@@ -183,9 +183,9 @@ bool ConfigParser::parseConfig(std::string const &path,
           AttentionArea aarea;
           auto regions = p["regions"];
           for (auto const &region : regions) {
-            Points ret;
+            Points2i ret;
             for (size_t i = 0; i < region.size(); i += 2) {
-              ret.push_back(Point{region.at(i), region.at(i + 1)});
+              ret.push_back(Point2i{region.at(i), region.at(i + 1)});
             }
             aarea.regions.emplace_back(ret);
           }

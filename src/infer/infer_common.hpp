@@ -17,14 +17,16 @@
 
 namespace infer {
 using common::BBox;
-using common::Point;
+using common::Point2f;
+using common::KeypointsBox;
+using common::KeypointsBoxes;
 using common::Shape;
 
 using common::InferResult;
 
 using common::ClsRet;
 using common::BBoxes;
-using common::Points;
+using common::Points2f;
 using common::ModelInfo;
 
 using common::AlgoConfig;

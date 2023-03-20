@@ -11,6 +11,7 @@
 
 #include "postprocess.hpp"
 #include "logger/logger.hpp"
+#include <algorithm>
 
 namespace infer {
 namespace utils {
@@ -33,8 +34,10 @@ float iou(std::array<float, 4> const &lbox, std::array<float, 4> const &rbox) {
 void nms(BBoxes &res, std::unordered_map<int, BBoxes> &temp, float nms_thr) {
   for (auto it = temp.begin(); it != temp.end(); it++) {
     // std::cout << it->second[0].class_id << " --- " << std::endl;
-    auto &dets = it->second;
-    std::sort(dets.begin(), dets.end(), compare);
+    BBoxes &dets = it->second;
+    std::sort(dets.begin(), dets.end(), [](BBox const &a, BBox const &b) {
+      return a.det_confidence > b.det_confidence;
+    });
     for (size_t i = 0; i < dets.size(); ++i) {
       auto &item = dets[i];
       res.push_back(item);
@@ -48,9 +51,30 @@ void nms(BBoxes &res, std::unordered_map<int, BBoxes> &temp, float nms_thr) {
   }
 }
 
-void restoryBoxes(BBoxes &results, Shape const &shape,
+void nms_kbox(KeypointsBoxes &res,
+              std::unordered_map<int, KeypointsBoxes> &temp, float nms_thr) {
+  for (auto it = temp.begin(); it != temp.end(); it++) {
+    // std::cout << it->second[0].class_id << " --- " << std::endl;
+    KeypointsBoxes &kboxes = it->second;
+    std::sort(kboxes.begin(), kboxes.end(),
+              [](KeypointsBox const &a, KeypointsBox const &b) {
+                return a.bbox.det_confidence > b.bbox.det_confidence;
+              });
+    for (size_t i = 0; i < kboxes.size(); ++i) {
+      auto &item = kboxes[i];
+      res.push_back(item);
+      for (size_t j = i + 1; j < kboxes.size(); ++j) {
+        if (iou(item.bbox.bbox, kboxes[j].bbox.bbox) > nms_thr) {
+          kboxes.erase(kboxes.begin() + j);
+          --j;
+        }
+      }
+    }
+  }
+}
+
+void scale_ration(float &rw, float &rh, Shape const &shape,
                   Shape const &inputShape, bool isScale) {
-  float rw, rh;
   if (isScale) {
     rw = std::min(inputShape[0] * 1.0 / shape.at(0),
                   inputShape[1] * 1.0 / shape.at(1));
@@ -59,21 +83,61 @@ void restoryBoxes(BBoxes &results, Shape const &shape,
     rw = inputShape[0] * 1.0 / shape.at(0);
     rh = inputShape[1] * 1.0 / shape.at(1);
   }
+}
 
-  for (auto &ret : results) {
-    int l = (ret.bbox[0] - ret.bbox[2] / 2.f) / rw;
-    int t = (ret.bbox[1] - ret.bbox[3] / 2.f) / rh;
-    int r = (ret.bbox[0] + ret.bbox[2] / 2.f) / rw;
-    int b = (ret.bbox[1] + ret.bbox[3] / 2.f) / rh;
-    ret.bbox[0] = l > 0 ? l : 0;
-    ret.bbox[1] = t > 0 ? t : 0;
-    ret.bbox[2] = r < shape[0] ? r : shape[0];
-    ret.bbox[3] = b < shape[1] ? b : shape[1];
+void restoryBox(BBox &ret, float rw, float rh, Shape const &shape) {
+  int l = (ret.bbox[0] - ret.bbox[2] / 2.f) / rw;
+  int t = (ret.bbox[1] - ret.bbox[3] / 2.f) / rh;
+  int r = (ret.bbox[0] + ret.bbox[2] / 2.f) / rw;
+  int b = (ret.bbox[1] + ret.bbox[3] / 2.f) / rh;
+  ret.bbox[0] = l > 0 ? l : 0;
+  ret.bbox[1] = t > 0 ? t : 0;
+  ret.bbox[2] = r < shape[0] ? r : shape[0];
+  ret.bbox[3] = b < shape[1] ? b : shape[1];
+}
+
+void restoryPoints(Points2f &results, float rw, float rh) {
+  for (auto &point : results) {
+    point[0] /= rw;
+    point[1] /= rh;
   }
 }
 
-void restoryPoints(Points &results, Shape const &shape,
-                   Shape const &inputShape, bool isScale) {}
+/**
+ * @brief 恢复原始比例坐标
+ *
+ * @param results
+ * @param shape
+ * @param inputShape
+ * @param isScale
+ */
+void restoryBoxes(BBoxes &results, Shape const &shape, Shape const &inputShape,
+                  bool isScale) {
+  float rw, rh;
+  scale_ration(rw, rh, shape, inputShape, isScale);
+
+  for (auto &ret : results) {
+    restoryBox(ret, rw, rh, shape);
+  }
+}
+
+/**
+ * @brief 恢复原始比例坐标
+ *
+ * @param results
+ * @param shape
+ * @param inputShape
+ * @param isScale
+ */
+void restoryKeypointsBoxes(KeypointsBoxes &results, Shape const &shape,
+                           Shape const &inputShape, bool isScale) {
+  float rw, rh;
+  scale_ration(rw, rh, shape, inputShape, isScale);
+  for (auto &ret : results) {
+    restoryBox(ret.bbox, rw, rh, shape); // 恢复bbox
+    restoryPoints(ret.points, rw, rh);   // 恢复points
+  }
+}
 
 } // namespace utils
 } // namespace infer
