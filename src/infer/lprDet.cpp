@@ -70,7 +70,7 @@ void LPRDet::generateKeypointsBoxes(std::unordered_map<int, KeypointsBoxes> &m,
     if (output[0][i + 4] <= config->cond_thr)
       continue;
     KeypointsBox kBox;
-    for (int p = 0; p < 8; p += 2) {
+    for (int p = 5; p < 13; p += 2) {
       kBox.points.push_back(Point2f{output[0][i + p], output[0][i + p + 1]});
     }
     kBox.bbox.class_id = std::distance(

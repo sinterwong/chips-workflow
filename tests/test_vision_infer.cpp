@@ -1,8 +1,10 @@
 #include <gflags/gflags.h>
 #include <memory>
+#include <opencv2/core/types.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "logger/logger.hpp"
@@ -13,10 +15,10 @@
 DEFINE_string(image_path, "", "Specify image path.");
 DEFINE_string(model_path, "", "Specify the yolo model path.");
 
-using common::RetBox;
 using common::AlgoBase;
 using common::DetAlgo;
 using common::InferResult;
+using common::RetBox;
 using common::Shape;
 using infer::VisionInfer;
 
@@ -30,7 +32,7 @@ int main(int argc, char **argv) {
   std::vector<std::string> inputNames;
   std::vector<std::string> outputNames;
   float alpha = 0;
-  inputNames = {"images"};
+  inputNames = {"input"};
   outputNames = {"output"};
   alpha = 255.0;
   cv::Mat image_rgb;
@@ -45,7 +47,7 @@ int main(int argc, char **argv) {
       std::move(inputNames),
       std::move(outputNames),
       FLAGS_model_path,
-      "Yolo",
+      "LPRDet",
       std::move(inputShape),
       false,
       alpha,
@@ -61,7 +63,7 @@ int main(int argc, char **argv) {
 
   std::shared_ptr<AlgoInfer> vision = std::make_shared<VisionInfer>(center);
   if (!vision->init()) {
-    FLOWENGINE_LOGGER_ERROR("Failed to init vison");
+    FLOWENGINE_LOGGER_ERROR("Failed to init vision");
     return -1;
   }
 
@@ -76,7 +78,9 @@ int main(int argc, char **argv) {
 
   vision->infer(image_nv12.data, params, ret);
 
-  auto bboxes = std::get_if<common::BBoxes>(&ret.aRet);
+  // auto bboxes = std::get_if<common::BBoxes>(&ret.aRet);
+  auto bboxes = std::get_if<common::KeypointsBoxes>(&ret.aRet);
+
   if (!bboxes) {
     FLOWENGINE_LOGGER_ERROR("Wrong algorithm type!");
     return -1;
@@ -84,9 +88,20 @@ int main(int argc, char **argv) {
 
   FLOWENGINE_LOGGER_INFO("number of result: {}", bboxes->size());
   for (auto &bbox : *bboxes) {
-    cv::Rect rect(bbox.bbox[0], bbox.bbox[1], bbox.bbox[2] - bbox.bbox[0],
-                  bbox.bbox[3] - bbox.bbox[1]);
+    // cv::Rect rect(bbox.bbox[0], bbox.bbox[1], bbox.bbox[2] - bbox.bbox[0],
+    //               bbox.bbox[3] - bbox.bbox[1]);
+    // cv::rectangle(image_bgr, rect, cv::Scalar(0, 0, 255), 2);
+
+    cv::Rect rect(bbox.bbox.bbox[0], bbox.bbox.bbox[1],
+                  bbox.bbox.bbox[2] - bbox.bbox.bbox[0],
+                  bbox.bbox.bbox[3] - bbox.bbox.bbox[1]);
     cv::rectangle(image_bgr, rect, cv::Scalar(0, 0, 255), 2);
+    for (auto &p : bbox.points) {
+      cv::circle(
+          image_bgr,
+          cv::Point{static_cast<int>(p.at(0)), static_cast<int>(p.at(1))}, 3,
+          cv::Scalar{255, 255, 0});
+    }
   }
   cv::imwrite("test_vision_infer_out.jpg", image_bgr);
 

@@ -79,6 +79,7 @@ bool ConfigParser::parseConfig(std::string const &path,
     auto algo_serial = common::algoSerialMapping.at(algo_base.serial);
     switch (algo_serial) {
     case common::AlgoSerial::Yolo:
+    case common::AlgoSerial::LPRDet:
     case common::AlgoSerial::Assd: {
       float nms_thr = algo["nms_thr"].get<float>();
       DetAlgo det_config{std::move(algo_base), nms_thr};

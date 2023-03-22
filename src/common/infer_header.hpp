@@ -210,6 +210,7 @@ private:
 enum class AlgoSerial : uint16_t {
   Yolo = 0,
   Assd,
+  LPRDet,
   Softmax,
 };
 
@@ -217,6 +218,7 @@ enum class AlgoSerial : uint16_t {
 static std::unordered_map<std::string, AlgoSerial> algoSerialMapping{
     std::make_pair("Yolo", AlgoSerial::Yolo),
     std::make_pair("Assd", AlgoSerial::Assd),
+    std::make_pair("LPRDet", AlgoSerial::LPRDet),
     std::make_pair("Softmax", AlgoSerial::Softmax),
 };
 
@@ -224,6 +226,7 @@ static std::unordered_map<std::string, AlgoSerial> algoSerialMapping{
 static std::unordered_map<AlgoSerial, AlgoRetType> serial2TypeMapping{
     std::make_pair(AlgoSerial::Yolo, AlgoRetType::Detection),
     std::make_pair(AlgoSerial::Assd, AlgoRetType::Detection),
+    std::make_pair(AlgoSerial::LPRDet, AlgoRetType::Detection),
     std::make_pair(AlgoSerial::Softmax, AlgoRetType::Classifier),
 };
 
