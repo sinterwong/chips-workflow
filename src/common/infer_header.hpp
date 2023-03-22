@@ -79,6 +79,7 @@ struct InferParams {
 enum class AlgoRetType : uint16_t {
   Classifier = 0,
   Detection,
+  OCR,
   Pose,
   Feature,
 };
@@ -105,6 +106,9 @@ using ClsRet = std::pair<int, float>;
 // 目标检测框集
 using BBoxes = std::vector<BBox>;
 
+// 字符识别结果
+using CharsRet = std::vector<int>;
+
 // 点集
 using Points2i = std::vector<Point2i>;
 using Points2f = std::vector<Point2f>;
@@ -119,8 +123,8 @@ struct KeypointsBox {
 using KeypointsBoxes = std::vector<KeypointsBox>;
 
 // 算法结果
-using AlgoRet =
-    std::variant<std::monostate, BBoxes, ClsRet, Points2f, KeypointsBoxes>;
+using AlgoRet = std::variant<std::monostate, BBoxes, ClsRet, CharsRet, Points2f,
+                             KeypointsBoxes>;
 
 /**
  * @brief 算法推理时返回结果
@@ -211,6 +215,7 @@ enum class AlgoSerial : uint16_t {
   Yolo = 0,
   Assd,
   LPRDet,
+  CRNN,
   Softmax,
 };
 
@@ -219,6 +224,7 @@ static std::unordered_map<std::string, AlgoSerial> algoSerialMapping{
     std::make_pair("Yolo", AlgoSerial::Yolo),
     std::make_pair("Assd", AlgoSerial::Assd),
     std::make_pair("LPRDet", AlgoSerial::LPRDet),
+    std::make_pair("CRNN", AlgoSerial::CRNN),
     std::make_pair("Softmax", AlgoSerial::Softmax),
 };
 
@@ -227,6 +233,7 @@ static std::unordered_map<AlgoSerial, AlgoRetType> serial2TypeMapping{
     std::make_pair(AlgoSerial::Yolo, AlgoRetType::Detection),
     std::make_pair(AlgoSerial::Assd, AlgoRetType::Detection),
     std::make_pair(AlgoSerial::LPRDet, AlgoRetType::Detection),
+    std::make_pair(AlgoSerial::CRNN, AlgoRetType::OCR),
     std::make_pair(AlgoSerial::Softmax, AlgoRetType::Classifier),
 };
 

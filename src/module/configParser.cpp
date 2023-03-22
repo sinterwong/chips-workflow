@@ -86,6 +86,7 @@ bool ConfigParser::parseConfig(std::string const &path,
       algo_config.setParams(std::move(det_config));
       break;
     }
+    case common::AlgoSerial::CRNN: 
     case common::AlgoSerial::Softmax: {
       ClassAlgo cls_config{std::move(algo_base)};
       algo_config.setParams(std::move(cls_config));

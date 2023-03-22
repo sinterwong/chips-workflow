@@ -149,8 +149,15 @@ void YUV444toNV12(cv::Mat const &input, cv::Mat &output) {
 // template<typename ColorType Src=ColorType::RGB888>
 void RGB2NV12(cv::Mat const &input, cv::Mat &output) {
   // 这里图片的宽高必须是偶数，否则直接卡死这里
+  cv::Rect rect {0, 0, input.cols, input.rows};
+  if (rect.width % 2 != 0)
+    rect.width -= 1;
+  if (rect.height % 2 != 0) {
+    rect.height -= 1;
+  }
+  cv::Mat in_temp = input(rect);
   cv::Mat temp;
-  cv::cvtColor(input, temp, cv::COLOR_RGB2YUV_I420);
+  cv::cvtColor(in_temp, temp, cv::COLOR_RGB2YUV_I420);
   YU122NV12(temp, output);
 
   // cv::cvtColor(input, temp, cv::COLOR_RGB2YUV);
