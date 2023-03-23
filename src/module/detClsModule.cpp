@@ -53,6 +53,10 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
            static_cast<float>(area[1][0]), static_cast<float>(area[1][1]), 0.0,
            0.0}});
     }
+    if (regions.empty()) {
+      // 前端没有画框
+      regions.emplace_back(common::RetBox{name, {0, 0, 0, 0, 0, 0}});
+    }
     algoRegions["regions"] = std::move(regions);
 
     // 根据提供的配置执行算法，

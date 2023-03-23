@@ -146,7 +146,6 @@ bool ConfigParser::parseConfig(std::string const &path,
         base_config.outputDir = p["alarm_output_dir"].get<std::string>();
         base_config.eventId = p["event_id"].get<int>();
         base_config.page = p["page"].get<std::string>();
-        base_config.threshold = p["threshold"].get<float>();
         base_config.videDuration = p["video_duration"].get<int>();
         base_config.isDraw = true;
 
