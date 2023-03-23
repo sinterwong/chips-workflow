@@ -945,7 +945,7 @@ bool loadEngineToEnv(const std::string &engine, int DLACore, bool safe,
   }
   runtime->setErrorRecorder(&gRecorder);
   env.engine.reset(
-      runtime->deserializeCudaEngine(engineData.data(), fsize, nullptr));
+      runtime->deserializeCudaEngine(engineData.data(), fsize));
   return env.engine != nullptr;
 }
 } // namespace
