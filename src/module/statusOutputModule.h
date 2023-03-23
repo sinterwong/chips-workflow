@@ -33,9 +33,9 @@ private:
   int count = 0;
 
 public:
-  StatusOutputModule(Backend *ptr, const std::string &initName,
-                     const std::string &initType,
-                     const common::OutputConfig &outputConfig);
+  StatusOutputModule(backend_ptr ptr, std::string const &name,
+                     MessageType const &type, ModuleConfig &config_)
+      : OutputModule(ptr, name, type, config_) {}
   ~StatusOutputModule() {}
 
   virtual void forward(std::vector<forwardMessage> &message) override;

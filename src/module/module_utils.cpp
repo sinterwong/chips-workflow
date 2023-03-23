@@ -1,18 +1,25 @@
 /**
  * @file module_utils.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-11-21
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include "module_utils.hpp"
+#include "logger/logger.hpp"
+#include <experimental/filesystem>
+#include <fstream>
 
-namespace module {
-namespace utils {
+#include <nlohmann/json.hpp>
+#include <vector>
+
+using json = nlohmann::json;
+
+namespace module::utils {
 std::string base64_encode(uchar const *bytes_to_encode, unsigned int in_len) {
   std::string ret;
 
@@ -60,6 +67,10 @@ std::string base64_encode(uchar const *bytes_to_encode, unsigned int in_len) {
   }
 
   return ret;
+}
+
+constexpr static bool is_base64(unsigned char c) {
+  return (isalnum(c) || (c == '+') || (c == '/'));
 }
 
 std::string base64_decode(std::string const &encoded_string) {
@@ -137,5 +148,126 @@ cv::Mat str2mat(const std::string &s) {
   return img;
 }
 
-} // namespace utils
-} // namespace module
+bool retPolys2json(std::vector<RetPoly> const &retPolygons,
+                   std::string &result) {
+  if (retPolygons.empty()) {
+    result = "{}";
+    return false;
+  }
+  json polys;
+  for (auto const &poly : retPolygons) {
+    json polygon;
+    json coord(poly.second); // array type
+    polygon["coord"] = coord;
+    polygon["class_name"] = poly.first;
+    polys.push_back(polygon);
+  }
+  result = polys.dump();
+  return true;
+}
+
+bool retBoxes2json(std::vector<RetBox> const &retBoxes, std::string &result) {
+  if (retBoxes.empty()) {
+    result = "{}";
+    return false;
+  }
+  json bboxes;
+  for (auto const &bbox : retBoxes) {
+    json b;
+    json coord = bbox.second;
+    b["coord"] = coord;
+    b["class_name"] = bbox.first;
+    bboxes.push_back(b);
+  }
+  result = bboxes.dump();
+  return true;
+}
+
+bool drawRetBox(cv::Mat &image, RetBox const &bbox, cv::Scalar const &scalar) {
+  cv::Rect rect(bbox.second[0], bbox.second[1], bbox.second[2] - bbox.second[0],
+                bbox.second[3] - bbox.second[1]);
+  if (rect.area() == 0) {
+    return false;
+  }
+  cv::rectangle(image, rect, scalar, 2);
+  cv::putText(image, bbox.first, cv::Point(rect.x, rect.y - 1),
+              cv::FONT_HERSHEY_PLAIN, 2, {255, 255, 255});
+  return true;
+}
+
+bool drawRetPoly(cv::Mat &image, RetPoly const &poly,
+                 cv::Scalar const &scalar) {
+  std::vector<cv::Point> fillContSingle;
+  for (int i = 0; i < static_cast<int>(poly.second.size()); i += 2) {
+    fillContSingle.emplace_back(
+        cv::Point{static_cast<int>(poly.second[i]),
+                  static_cast<int>(poly.second[i + 1])});
+  }
+  cv::fillPoly(image, std::vector<std::vector<cv::Point>>{fillContSingle},
+               cv::Scalar(0, 255, 255));
+
+  return true;
+}
+
+void wrapH2642mp4(std::string const &h264File, std::string const &mp4File) {
+  if (!std::experimental::filesystem::exists(h264File)) {
+    return;
+  };
+  FLOWENGINE_LOGGER_INFO("Wrap to mp4...");
+  // cv::VideoCapture input_video(h264File);
+  // cv::Size video_size =
+  //     cv::Size((int)input_video.get(cv::CAP_PROP_FRAME_WIDTH),
+  //              (int)input_video.get(cv::CAP_PROP_FRAME_HEIGHT));
+  // double fps = input_video.get(cv::CAP_PROP_FPS);
+
+  // cv::VideoWriter output_video(mp4File,
+  //                              cv::VideoWriter::fourcc('H', '2', '6', '4'),
+  //                              fps, video_size, true);
+
+  // cv::Mat frame;
+  // while (input_video.read(frame)) {
+  //   output_video.write(frame);
+  // }
+
+  // input_video.release();
+  // output_video.release();
+  std::string cmd = "ffmpeg -i " + h264File + " -c:v copy " + mp4File;
+  int ret = std::system(cmd.c_str());
+  if (ret == -1) {
+    perror("system");
+    std::exit(EXIT_FAILURE);
+  } else {
+    if (WIFEXITED(ret)) {
+      int status = WEXITSTATUS(ret);
+      FLOWENGINE_LOGGER_INFO("Command exited with status {}", status);
+    } else if (WIFSIGNALED(ret)) {
+      int sig = WTERMSIG(ret);
+      FLOWENGINE_LOGGER_INFO("Command was terminated by signal {}", sig);
+    }
+  }
+}
+
+bool readFile(std::string const &filename, std::string &ret) {
+  std::ifstream input_file(filename);
+  if (!input_file.is_open()) {
+    FLOWENGINE_LOGGER_ERROR("Failed to open file: '{}'", filename);
+    return false;
+  }
+  ret = std::string((std::istreambuf_iterator<char>(input_file)),
+                    std::istreambuf_iterator<char>());
+  return true;
+}
+
+bool writeJson(std::string const &config, std::string const &outPath) {
+  FLOWENGINE_LOGGER_INFO("Writing json....");
+  json j = json::parse(config);
+  std::ofstream out(outPath);
+  if (!out.is_open()) {
+    FLOWENGINE_LOGGER_ERROR("Failed to open file: '{}'", outPath);
+    return false;
+  }
+  out << j.dump(4);
+  return true;
+}
+
+} // namespace module::utils

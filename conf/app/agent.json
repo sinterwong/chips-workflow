@@ -1,0 +1,563 @@
+{
+  "Pipelines": [
+    {
+      "Pipeline": [
+        {
+          "Id": 127,
+          "cameraIp": "rtsp://114.242.23.39:6554/live/test1",
+          "flowType": "rtsp",
+          "height": 1080,
+          "name": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "recvName": "",
+          "sendName": "logic_clothes_127_1679492491721",
+          "sub_type": "StreamModule",
+          "type": "stream",
+          "videoCode": "h264",
+          "width": 1920
+        },
+        {
+          "alarm_output_dir": "/public/alarm/data",
+          "algo_pipe": [
+            {
+              "attention": [
+                0
+              ],
+              "basedNames": [
+                "regions"
+              ],
+              "cropScaling": 0,
+              "name": "algorithm_personDet_1679492491704"
+            },
+            {
+              "attention": [
+                0
+              ],
+              "basedNames": [
+                "algorithm_personDet_1679492491704"
+              ],
+              "cropScaling": 0,
+              "name": "algorithm_overallCls_1679492491707"
+            }
+          ],
+          "event_id": 22,
+          "height": "1920",
+          "name": "logic_clothes_127_1679492491721",
+          "page": "1_44_",
+          "recvName": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "sendName": "output_alarm_new_1679492491709",
+          "sub_type": "DetClsModule",
+          "type": "logic",
+          "video_duration": 10,
+          "width": "1080"
+        },
+        {
+          "name": "output_alarm_new_1679492491709",
+          "recvName": "logic_clothes_127_1679492491721",
+          "sendName": "",
+          "sub_type": "AlarmOutputModule",
+          "type": "output",
+          "url": "http://localhost:9876/v1/flow/alarm"
+        },
+        {
+          "Id": 127,
+          "cameraIp": "rtsp://114.242.23.39:6554/live/test1",
+          "flowType": "rtsp",
+          "height": 1080,
+          "name": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "recvName": "",
+          "sendName": "output_heartbeat_status_1679492491699",
+          "sub_type": "StreamModule",
+          "type": "stream",
+          "videoCode": "h264",
+          "width": 1920
+        },
+        {
+          "name": "output_heartbeat_status_1679492491699",
+          "recvName": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "sendName": "",
+          "sub_type": "StatusOutputModule",
+          "type": "output",
+          "url": "http://localhost:9876/v1/flow/heartbeat"
+        }
+      ]
+    },
+    {
+      "Pipeline": [
+        {
+          "Id": 127,
+          "cameraIp": "rtsp://114.242.23.39:6554/live/test1",
+          "flowType": "rtsp",
+          "height": 1080,
+          "name": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "recvName": "",
+          "sendName": "logic_helmetless_127_1679492491724",
+          "sub_type": "StreamModule",
+          "type": "stream",
+          "videoCode": "h264",
+          "width": 1920
+        },
+        {
+          "alarm_output_dir": "/public/alarm/data",
+          "algo_pipe": [
+            {
+              "attention": [
+                0
+              ],
+              "basedNames": [
+                "regions"
+              ],
+              "cropScaling": 0,
+              "name": "algorithm_headDet_1679492491692"
+            },
+            {
+              "attention": [
+                0
+              ],
+              "basedNames": [
+                "algorithm_headDet_1679492491692"
+              ],
+              "cropScaling": 0.5,
+              "name": "algorithm_helmetCls_1679492491698"
+            }
+          ],
+          "event_id": 23,
+          "height": "1920",
+          "name": "logic_helmetless_127_1679492491724",
+          "page": "1_44_",
+          "recvName": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "sendName": "output_alarm_new_1679492491709",
+          "sub_type": "DetClsModule",
+          "type": "logic",
+          "video_duration": 10,
+          "width": "1080"
+        },
+        {
+          "name": "output_alarm_new_1679492491709",
+          "recvName": "logic_helmetless_127_1679492491724",
+          "sendName": "",
+          "sub_type": "AlarmOutputModule",
+          "type": "output",
+          "url": "http://localhost:9876/v1/flow/alarm"
+        },
+        {
+          "Id": 127,
+          "cameraIp": "rtsp://114.242.23.39:6554/live/test1",
+          "flowType": "rtsp",
+          "height": 1080,
+          "name": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "recvName": "",
+          "sendName": "output_heartbeat_status_1679492491699",
+          "sub_type": "StreamModule",
+          "type": "stream",
+          "videoCode": "h264",
+          "width": 1920
+        },
+        {
+          "name": "output_heartbeat_status_1679492491699",
+          "recvName": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "sendName": "",
+          "sub_type": "StatusOutputModule",
+          "type": "output",
+          "url": "http://localhost:9876/v1/flow/heartbeat"
+        }
+      ]
+    },
+    {
+      "Pipeline": [
+        {
+          "Id": 127,
+          "cameraIp": "rtsp://114.242.23.39:6554/live/test1",
+          "flowType": "rtsp",
+          "height": 1080,
+          "name": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "recvName": "",
+          "sendName": "logic_mhq_127_1679492491727",
+          "sub_type": "StreamModule",
+          "type": "stream",
+          "videoCode": "h264",
+          "width": 1920
+        },
+        {
+          "alarm_output_dir": "/public/alarm/data",
+          "algo_pipe": [
+            {
+              "attention": [
+                0
+              ],
+              "basedNames": [
+                "regions"
+              ],
+              "cropScaling": 0,
+              "name": "algorithm_extinguisherCls_1679492491688"
+            }
+          ],
+          "event_id": 24,
+          "height": "1920",
+          "name": "logic_mhq_127_1679492491727",
+          "page": "1_44_",
+          "recvName": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "regions": [
+            [
+              1497,
+              617,
+              1791,
+              974
+            ]
+          ],
+          "sendName": "output_alarm_new_1679492491709",
+          "sub_type": "DetClsModule",
+          "type": "logic",
+          "video_duration": 10,
+          "width": "1080"
+        },
+        {
+          "name": "output_alarm_new_1679492491709",
+          "recvName": "logic_mhq_127_1679492491727",
+          "sendName": "",
+          "sub_type": "AlarmOutputModule",
+          "type": "output",
+          "url": "http://localhost:9876/v1/flow/alarm"
+        },
+        {
+          "Id": 127,
+          "cameraIp": "rtsp://114.242.23.39:6554/live/test1",
+          "flowType": "rtsp",
+          "height": 1080,
+          "name": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "recvName": "",
+          "sendName": "output_heartbeat_status_1679492491699",
+          "sub_type": "StreamModule",
+          "type": "stream",
+          "videoCode": "h264",
+          "width": 1920
+        },
+        {
+          "name": "output_heartbeat_status_1679492491699",
+          "recvName": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "sendName": "",
+          "sub_type": "StatusOutputModule",
+          "type": "output",
+          "url": "http://localhost:9876/v1/flow/heartbeat"
+        }
+      ]
+    },
+    {
+      "Pipeline": [
+        {
+          "Id": 127,
+          "cameraIp": "rtsp://114.242.23.39:6554/live/test1",
+          "flowType": "rtsp",
+          "height": 1080,
+          "name": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "recvName": "",
+          "sendName": "logic_oiltube_127_1679492491729",
+          "sub_type": "StreamModule",
+          "type": "stream",
+          "videoCode": "h264",
+          "width": 1920
+        },
+        {
+          "alarm_output_dir": "/public/alarm/data",
+          "algo_pipe": [
+            {
+              "attention": [
+                0
+              ],
+              "basedNames": [
+                "regions"
+              ],
+              "cropScaling": 0,
+              "name": "algorithm_oiltubeCls_1679492491703"
+            }
+          ],
+          "event_id": 26,
+          "height": "1920",
+          "name": "logic_oiltube_127_1679492491729",
+          "page": "1_44_",
+          "recvName": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "regions": [
+            [
+              268,
+              409,
+              1043,
+              836
+            ]
+          ],
+          "sendName": "output_alarm_new_1679492491709",
+          "sub_type": "DetClsModule",
+          "type": "logic",
+          "video_duration": 10,
+          "width": "1080"
+        },
+        {
+          "name": "output_alarm_new_1679492491709",
+          "recvName": "logic_oiltube_127_1679492491729",
+          "sendName": "",
+          "sub_type": "AlarmOutputModule",
+          "type": "output",
+          "url": "http://localhost:9876/v1/flow/alarm"
+        },
+        {
+          "Id": 127,
+          "cameraIp": "rtsp://114.242.23.39:6554/live/test1",
+          "flowType": "rtsp",
+          "height": 1080,
+          "name": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "recvName": "",
+          "sendName": "output_heartbeat_status_1679492491699",
+          "sub_type": "StreamModule",
+          "type": "stream",
+          "videoCode": "h264",
+          "width": 1920
+        },
+        {
+          "name": "output_heartbeat_status_1679492491699",
+          "recvName": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "sendName": "",
+          "sub_type": "StatusOutputModule",
+          "type": "output",
+          "url": "http://localhost:9876/v1/flow/heartbeat"
+        }
+      ]
+    },
+    {
+      "Pipeline": [
+        {
+          "Id": 127,
+          "cameraIp": "rtsp://114.242.23.39:6554/live/test1",
+          "flowType": "rtsp",
+          "height": 1080,
+          "name": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "recvName": "",
+          "sendName": "logic_earthwire_127_1679492560879",
+          "sub_type": "StreamModule",
+          "type": "stream",
+          "videoCode": "h264",
+          "width": 1920
+        },
+        {
+          "alarm_output_dir": "/public/alarm/data",
+          "algo_pipe": [
+            {
+              "attention": [
+                0
+              ],
+              "basedNames": [
+                "regions"
+              ],
+              "cropScaling": 0,
+              "name": "algorithm_earthwireCls_1679492491690"
+            }
+          ],
+          "event_id": 27,
+          "height": "1920",
+          "name": "logic_earthwire_127_1679492560879",
+          "page": "1_44_",
+          "recvName": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "regions": [],
+          "sendName": "output_alarm_new_1679492491709",
+          "sub_type": "DetClsModule",
+          "type": "logic",
+          "video_duration": 10,
+          "width": "1080"
+        },
+        {
+          "name": "output_alarm_new_1679492491709",
+          "recvName": "logic_earthwire_127_1679492560879",
+          "sendName": "",
+          "sub_type": "AlarmOutputModule",
+          "type": "output",
+          "url": "http://localhost:9876/v1/flow/alarm"
+        },
+        {
+          "Id": 127,
+          "cameraIp": "rtsp://114.242.23.39:6554/live/test1",
+          "flowType": "rtsp",
+          "height": 1080,
+          "name": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "recvName": "",
+          "sendName": "output_heartbeat_status_1679492491699",
+          "sub_type": "StreamModule",
+          "type": "stream",
+          "videoCode": "h264",
+          "width": 1920
+        },
+        {
+          "name": "output_heartbeat_status_1679492491699",
+          "recvName": "stream_bad0ca2b-5e63-4442-8f08-f0e1f72b2a1e",
+          "sendName": "",
+          "sub_type": "StatusOutputModule",
+          "type": "output",
+          "url": "http://localhost:9876/v1/flow/heartbeat"
+        }
+      ]
+    }
+  ],
+  "Algorithms": [
+    {
+      "algo_serial": "Softmax",
+      "alpha": 255,
+      "batchSize": 16,
+      "beta": 0,
+      "cond_thr": 0,
+      "inputNames": [
+        "input"
+      ],
+      "inputShape": [
+        64,
+        64,
+        3
+      ],
+      "isScale": false,
+      "modelPath": "/opt/deploy/models/mhq1.engine",
+      "name": "algorithm_extinguisherCls_1679492491688",
+      "nms_thr": 0,
+      "outputNames": [
+        "output"
+      ],
+      "sub_type": "ClassifierModule"
+    },
+    {
+      "algo_serial": "Yolo",
+      "alpha": 255,
+      "batchSize": 16,
+      "beta": 0,
+      "cond_thr": 0.4,
+      "inputNames": [
+        "images"
+      ],
+      "inputShape": [
+        640,
+        640,
+        3
+      ],
+      "isScale": true,
+      "modelPath": "/opt/deploy/models/personnx.engine",
+      "name": "algorithm_personDet_1679492491704",
+      "nms_thr": 0.45,
+      "outputNames": [
+        "output"
+      ],
+      "recvName": "web-camera-01",
+      "sendName": "",
+      "sub_type": "DetectModule"
+    },
+    {
+      "algo_serial": "Softmax",
+      "alpha": 255,
+      "batchSize": 16,
+      "beta": 0,
+      "cond_thr": 0,
+      "inputNames": [
+        "input"
+      ],
+      "inputShape": [
+        32,
+        96,
+        3
+      ],
+      "isScale": false,
+      "modelPath": "/opt/deploy/models/clothes1.engine",
+      "name": "algorithm_overallCls_1679492491707",
+      "nms_thr": 0,
+      "outputNames": [
+        "output"
+      ],
+      "sub_type": "ClassifierModule"
+    },
+    {
+      "algo_serial": "Yolo",
+      "alpha": 255,
+      "batchSize": 16,
+      "beta": 0,
+      "cond_thr": 0.4,
+      "inputNames": [
+        "images"
+      ],
+      "inputShape": [
+        640,
+        640,
+        3
+      ],
+      "isScale": true,
+      "modelPath": "/opt/deploy/models/head1.engine",
+      "name": "algorithm_headDet_1679492491692",
+      "nms_thr": 0.45,
+      "outputNames": [
+        "output"
+      ],
+      "recvName": "web-camera-01",
+      "sendName": "",
+      "sub_type": "DetectModule"
+    },
+    {
+      "algo_serial": "Softmax",
+      "alpha": 255,
+      "batchSize": 16,
+      "beta": 0,
+      "cond_thr": 0,
+      "inputNames": [
+        "input"
+      ],
+      "inputShape": [
+        64,
+        64,
+        3
+      ],
+      "isScale": false,
+      "modelPath": "/opt/deploy/models/line1.engine",
+      "name": "algorithm_earthwireCls_1679492491690",
+      "nms_thr": 0,
+      "outputNames": [
+        "output"
+      ],
+      "sub_type": "ClassifierModule"
+    },
+    {
+      "algo_serial": "Softmax",
+      "alpha": 255,
+      "batchSize": 16,
+      "beta": 0,
+      "cond_thr": 0,
+      "inputNames": [
+        "input"
+      ],
+      "inputShape": [
+        32,
+        32,
+        3
+      ],
+      "isScale": false,
+      "modelPath": "/opt/deploy/models/helmet1.engine",
+      "name": "algorithm_helmetCls_1679492491698",
+      "nms_thr": 0,
+      "outputNames": [
+        "output"
+      ],
+      "sub_type": "ClassifierModule"
+    },
+    {
+      "algo_serial": "Softmax",
+      "alpha": 255,
+      "batchSize": 16,
+      "beta": 0,
+      "cond_thr": 0,
+      "inputNames": [
+        "input"
+      ],
+      "inputShape": [
+        64,
+        96,
+        3
+      ],
+      "isScale": false,
+      "modelPath": "/opt/deploy/models/youguan1.engine",
+      "name": "algorithm_oiltubeCls_1679492491703",
+      "nms_thr": 0,
+      "outputNames": [
+        "output"
+      ],
+      "sub_type": "ClassifierModule"
+    }
+  ]
+}

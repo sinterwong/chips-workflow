@@ -12,36 +12,45 @@
 #ifndef __METAENGINE_STATUE_CONTROL_H
 #define __METAENGINE_STATUE_CONTROL_H
 
+#include "algorithmManager.hpp"
 #include "backend.h"
 #include "boostMessage.h"
 #include "common/common.hpp"
+#include "configParser.hpp"
 #include "logger/logger.hpp"
 #include "module.hpp"
 #include "thread_pool.h"
-#include "utils/configParser.hpp"
-// #include "BS_thread_pool.hpp"
 
 #include <algorithm>
 #include <any>
+#include <chrono>
 #include <memory>
+#include <thread>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
 namespace module {
-using utils::pipelineParams;
+
+using common::ModuleConfig;
+using common::ModuleInfo;
+using infer::AlgorithmManager;
+using utils::AlgorithmParams;
+using utils::PipelineParams;
+
+using module_ptr = std::shared_ptr<Module>;
 
 class PipelineModule {
 private:
-  std::string name = "Control";
-  std::string type = "ControlMessage";
-  std::string config;
+  std::string name = "Administrator";
+  std::string config_path;
   utils::ConfigParser configParser;
-  Backend backend{std::make_unique<BoostMessage>(),
-                  std::make_unique<RouteFramePool>(2)};
+  backend_ptr backendPtr = std::make_shared<Backend>(
+      std::make_unique<BoostMessage>(), std::make_unique<RouteFramePool>(2),
+      std::make_unique<AlgorithmManager>());
   // std::unique_ptr<thread_pool> pool;
   std::unique_ptr<thread_pool> pool;
-  std::unordered_map<std::string, std::shared_ptr<Module>> atm;
+  std::unordered_map<std::string, module_ptr> atm;
 
 private:
   /**
@@ -52,8 +61,7 @@ private:
    * @return true
    * @return false
    */
-  bool submitModule(common::ModuleConfigure const &config,
-                    common::ParamsConfig const &paramsConfig);
+  bool submitModule(ModuleInfo const &info, ModuleConfig const &config);
 
   /**
    * @brief 终止并删除模块
@@ -80,16 +88,44 @@ private:
    */
   void detachModule(std::string const &moduleName);
 
+  /**
+   * @brief 注册提交算法模块
+   *
+   * @param name
+   * @param config
+   * @return true
+   * @return false
+   */
+  bool submitAlgo(std::string const &name, AlgoConfig const &config);
+
+  /**
+   * @brief 关闭算法
+   *
+   * @param name
+   * @param config
+   * @return true
+   * @return false
+   */
+  bool stopAlgo(std::string const &name);
+
+  /**
+   * @brief 定时刷新算法pipeline
+   *
+   * @return true
+   * @return false
+   */
   bool startPipeline();
 
-  bool parseConfigs(std::string const &uri, std::vector<pipelineParams> &);
+  bool parseConfigs(std::string const &uri, std::vector<PipelineParams> &,
+                    std::vector<AlgorithmParams> &);
 
   void terminate() {
     // 向所有模块发送终止信号
-    for (auto iter = atm.begin(); iter != atm.end(); ++iter) {
-      backend.message->send(name, iter->first, type, queueMessage());
-      // iter->second->stopFlag.store(true);
-    }
+    // for (auto iter = atm.begin(); iter != atm.end(); ++iter) {
+    //   backendPtr->message->send(name, iter->first, MessageType::Close,
+    //                             queueMessage());
+    // }
+    std::this_thread::sleep_for(std::chrono::seconds(5));
   }
 
 public:

@@ -14,7 +14,7 @@
 
 #include "inference.h"
 #include "logger/logger.hpp"
-#include "common/config.hpp"
+
 
 #include <opencv2/core/mat.hpp>
 #include <sp_bpu.h>
@@ -41,7 +41,7 @@ public:
   //!
   //! \brief construction
   //!
-  AlgoInference(const common::AlgorithmConfig &_param) : mParams(_param) {}
+  AlgoInference(const AlgoBase &_param) : mParams(_param) {}
 
   //!
   //! \brief destruction
@@ -80,7 +80,7 @@ private:
 
 private:
   //!< The parameters for the sample.
-  common::AlgorithmConfig mParams;
+  AlgoBase mParams;
   // output
   int output_count;
   hbDNNTensor *output_tensor;

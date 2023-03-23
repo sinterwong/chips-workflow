@@ -842,7 +842,7 @@ bool timeDeserialize(InferenceEnvironment &iEnv) {
       deserializeOK = (safeEngine != nullptr);
     } else {
       engine.reset(rt->deserializeCudaEngine(
-          serializedEngine->data(), serializedEngine->size(), nullptr));
+          serializedEngine->data(), serializedEngine->size()));
       deserializeOK = (engine != nullptr);
     }
     auto endClock = std::chrono::high_resolution_clock::now();

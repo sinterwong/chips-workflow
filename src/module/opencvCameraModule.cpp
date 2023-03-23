@@ -35,10 +35,10 @@ FrameBuf makeFrameBuf(std::shared_ptr<cv::Mat> mat) {
   return temp;
 }
 
-OpencvCameraModule::OpencvCameraModule(Backend *ptr, const std::string &file,
-                                       const std::string &initName,
-                                       const std::string &initType)
-    : Module(ptr, initName, initType) {
+OpencvCameraModule::OpencvCameraModule(backend_ptr ptr, const std::string &file,
+                                       std::string const &name,
+                                       MessageType const &type)
+    : Module(ptr, name, type) {
   readFile = true;
   fileName = file;
   cameraNumber = -1;
@@ -46,10 +46,10 @@ OpencvCameraModule::OpencvCameraModule(Backend *ptr, const std::string &file,
   cap = cv::VideoCapture(fileName);
 }
 
-OpencvCameraModule::OpencvCameraModule(Backend *ptr, const int capNumber,
-                                       const std::string &initName,
-                                       const std::string &initType)
-    : Module(ptr, initName, initType) {
+OpencvCameraModule::OpencvCameraModule(backend_ptr ptr, const int capNumber,
+                                       std::string const &name,
+                                       MessageType const &type)
+    : Module(ptr, name, type) {
   readFile = false;
   fileName = "";
   cameraNumber = capNumber;
@@ -65,12 +65,18 @@ void OpencvCameraModule::forward(std::vector<forwardMessage> &message) {
   if (ret) {
     FrameBuf frameBufMessage = makeFrameBuf(frame);
 
-    int returnKey = backendPtr->pool->write(frameBufMessage);
+    int returnKey = ptr->pool->write(frameBufMessage);
 
     queueMessage sendMessage;
+
+    // 报警时所需的视频流的信息
+    AlarmInfo alarmInfo;
+    alarmInfo.cameraId = 0;
+    alarmInfo.cameraIp = fileName;
+    alarmInfo.height = frame->rows;
+    alarmInfo.width = frame->cols;
+
     sendMessage.frameType = ColorType::BGR888;
-    sendMessage.cameraResult.heightPixel = frame->rows;
-    sendMessage.cameraResult.widthPixel = frame->cols;
     sendMessage.key = returnKey;
     autoSend(sendMessage);
   } else {
@@ -83,6 +89,6 @@ void OpencvCameraModule::afterForward() {
     std::this_thread::sleep_for(std::chrono::milliseconds(60));
   }
 }
-FlowEngineModuleRegister(OpencvCameraModule, Backend *, std::string const &,
-                         std::string const &, std::string const &);
+FlowEngineModuleRegister(OpencvCameraModule, backend_ptr, std::string const &,
+                         std::string const &, MessageType const &);
 } // namespace module

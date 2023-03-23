@@ -8,33 +8,18 @@
  * @copyright Copyright (c) 2022
  *
  */
-#include <array>
-#include <cstdint>
-#include <getopt.h>
-#include <iostream>
-#include <string>
-#include <vector>
 
 #ifndef _FLOWENGINE_COMMON_COMMON_HPP_
 #define _FLOWENGINE_COMMON_COMMON_HPP_
 
+#include "infer_header.hpp"
+#include "module_header.hpp"
+
 namespace common {
 /**
- * @brief 颜色类型
+ * @brief no copy type
  *
  */
-enum class ColorType { None = 0, RGB888, BGR888, NV12 };
-
-/**
- * @brief 帧信息
- *
- */
-struct FrameInfo {
-  std::array<int, 3> shape;
-  ColorType type;
-  void **data;
-};
-
 struct NonCopyable {
   NonCopyable() = default;
   NonCopyable(const NonCopyable &) = delete;

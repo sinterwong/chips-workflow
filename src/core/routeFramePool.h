@@ -1,12 +1,12 @@
 /**
  * @file routeFramePool.h
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.2
  * @date 2022-07-20
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #ifndef METAENGINE_ROUTEFRAMEPOOL_H
@@ -18,8 +18,8 @@
 #include <functional>
 #include <iostream>
 #include <map>
-#include <vector>
 #include <shared_mutex>
+#include <vector>
 
 enum frameDataType {
   FLOAT32,
@@ -27,12 +27,17 @@ enum frameDataType {
   UINT8,
 };
 
+class FrameBuf;
+
+using getFrameBufFunc =
+    std::function<std::any(std::vector<std::any> &, FrameBuf *)>;
+
+using delFrameBufFunc = std::function<void(std::vector<std::any> &)>;
+
 class FrameBuf {
 protected:
-  std::map<std::string,
-           std::function<std::any(std::vector<std::any> &, FrameBuf *)>>
-      mapFunction;
-  std::function<void(std::vector<std::any> &)> delFunction;
+  std::map<std::string, getFrameBufFunc> mapFunction;
+  delFrameBufFunc delFunction;
   std::vector<std::any> dataList;
 
 public:
@@ -43,13 +48,8 @@ public:
 
   std::any read(std::string str = "void*");
 
-  void write(
-      std::vector<std::any>,
-      std::map<std::string,
-               std::function<std::any(std::vector<std::any> &, FrameBuf *)>
-               >,
-      std::function<void(std::vector<std::any> &)>,
-      std::tuple<int, int, int, frameDataType>);
+  void write(std::vector<std::any>, std::map<std::string, getFrameBufFunc>,
+             delFrameBufFunc, std::tuple<int, int, int, frameDataType>);
 
   void del();
 };

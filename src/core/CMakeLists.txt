@@ -4,7 +4,6 @@ FILE(GLOB LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}
 FILE(GLOB LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
 ADD_LIBRARY(core SHARED ${LIB_HEAD} ${LIB_SRC})
 TARGET_INCLUDE_DIRECTORIES(core PUBLIC 
-                            ${3RDPARTY_DIR}/spdlog/include
                             ${PROJECT_INCLUDE_DIR} 
                             ${Protobuf_INCLUDE_DIR})
 TARGET_LINK_LIBRARIES(core ${Protobuf_LIBRARY} module_logger)

@@ -19,20 +19,20 @@ class Assd : public Detection {
   //! \brief construction
   //!
 public:
-  Assd(const common::AlgorithmConfig &_param, ModelInfo const &info)
+  Assd(const AlgoConfig &_param, ModelInfo const &info)
       : Detection(_param, info){}
 
 private:
   //!
   //! \brief Verifies that the output is correct and prints it
   //!
-  virtual bool verifyOutput(Result const &) const override;
+  virtual bool verifyOutput(InferResult const &) const override;
 
   //!
   //! \brief Boxes generates rules
   //!
   virtual void
-  generateBoxes(std::unordered_map<int, DetRet> &,
+  generateBoxes(std::unordered_map<int, BBoxes> &,
                 void **) const override;
 
   std::vector<float> receptive_field_center_start = {7, 7, 7};

@@ -8,20 +8,16 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/module
     ${PROJECT_INCLUDE_DIR}/jetson-utils
     ${OpenCV_INCLUDE_DIRS}
-    ${Protobuf_INCLUDE_DIR}
-    ${OPENSSL_INCLUDE_DIR}
-    ${CURL_INCLUDE_DIR}
     ${CUDA_INCLUDE_DIRS}
     ${X3_INCLUDE}
 )
 
 LINK_DIRECTORIES(
     ${OpenCV_LIBRARY_DIR}
-    ${CURL_LIBRARY_DIR}
     ${OPENSSL_LIBRARY_DIR}
     ${X3_DIRECTORIES}
 )
-SET(FE_LIBS core license module module_logger infer utils)
+SET(FE_LIBS core license module module_logger infer)
 IF(TARGET_HARDWARE STREQUAL "x3")
     MESSAGE(STATUS "Loading X3 dependent libraries")
     SET(CHIPS_DEPAND_LIBS ${X3_LIBS})
@@ -34,10 +30,9 @@ ENDIF()
 
 LINK_LIBRARIES(
     ${OpenCV_LIBS}
-    ${Protobuf_LIBRARY}
-    ${CURL_LIBS}
     ${OPENSSL_LIBS}
     ${FE_LIBS}
+    ${CURL_LIBRARIES}
     gflags::gflags
     pthread
     spdlog
@@ -52,7 +47,7 @@ FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
     STRING(REPLACE ".cpp" "" testname ${sourcefilewithoutpath})
     ADD_EXECUTABLE( ${testname} ${sourcefile})
-    TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} core utils module module_logger stdc++fs)
+    TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} core module module_logger stdc++fs)
     SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin/tests)
 
     INSTALL(TARGETS ${testname}

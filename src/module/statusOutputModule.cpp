@@ -12,12 +12,11 @@
 #include "statusOutputModule.h"
 #include <fstream>
 
-namespace module {
+#include <nlohmann/json.hpp>
 
-StatusOutputModule::StatusOutputModule(
-    Backend *ptr, const std::string &initName, const std::string &initType,
-    const common::OutputConfig &outputConfig_)
-    : OutputModule(ptr, initName, initType, outputConfig_) {}
+using json = nlohmann::json;
+
+namespace module {
 
 bool StatusOutputModule::postResult(std::string const &url,
                                     StatusInfo const &statusInfo,
@@ -33,26 +32,11 @@ bool StatusOutputModule::postResult(std::string const &url,
   curl_easy_setopt(curl, CURLOPT_POST, 1); // 设置为非0表示本次操作为POST
   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
-  rapidjson::Document doc;
-  doc.SetObject(); // key-value 相当与map
+  json info;
+  info["name"] = statusInfo.moduleName;
+  info["state"] = statusInfo.status;
 
-  rapidjson::Document::AllocatorType &allocator =
-      doc.GetAllocator(); // 获取分配器
-
-  // /*
-  // Add member
-  rapidjson::Value moduleName(statusInfo.moduleName.c_str(), allocator);
-  doc.AddMember("name", moduleName, allocator);
-  // --------------------
-  doc.AddMember("state", statusInfo.status, allocator);
-  // */
-
-  rapidjson::StringBuffer buffer;
-  // PrettyWriter是格式化的json，如果是Writer则是换行空格压缩后的json
-  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-  doc.Accept(writer);
-
-  std::string out = std::string(buffer.GetString());
+  std::string out = info.dump();
 
   curl_easy_setopt(curl, CURLOPT_POSTFIELDS, out.c_str());
   curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, out.length());
@@ -74,17 +58,15 @@ bool StatusOutputModule::postResult(std::string const &url,
 
 void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
-    if (type == "ControlMessage") {
-      // FLOWENGINE_LOGGER_INFO("{} StatusOutputModule module was done!", name);
-      std::cout << name << "{} StatusOutputModule module was done!"
-                << std::endl;
+    if (type == MessageType::Close) {
+      FLOWENGINE_LOGGER_INFO("{} StatusOutputModule module was done!", name);
       stopFlag.store(true);
       return;
     }
     if (buf.status == 2 || count++ >= 500) {
       StatusInfo statusInfo{send, buf.status};
       std::string response;
-      if (!postResult(config.url, statusInfo, response)) {
+      if (!postResult(config->url, statusInfo, response)) {
         FLOWENGINE_LOGGER_ERROR("StatusOutputModule.forward: post result was "
                                 "failed, please check!");
       }
@@ -92,6 +74,6 @@ void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
     }
   }
 }
-FlowEngineModuleRegister(StatusOutputModule, Backend *, std::string const &,
-                         std::string const &, const common::OutputConfig &);
+FlowEngineModuleRegister(StatusOutputModule, backend_ptr, std::string const &,
+                         MessageType const &, ModuleConfig &);
 } // namespace module

@@ -11,82 +11,60 @@
 
 #include "pipeline.hpp"
 #include "factory.hpp"
+#include "logger/logger.hpp"
 #include "module.hpp"
-#include "utils/configParser.hpp"
 #include <algorithm>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
+#include <utility>
 #include <vector>
 
-namespace module {
-using utils::ModuleConfigure;
-using utils::ParamsConfig;
+#include "module_utils.hpp"
 
-PipelineModule::PipelineModule(std::string const &config_, size_t workers_n)
-    : config(config_) {
+namespace module {
+
+PipelineModule::PipelineModule(std::string const &config_path_,
+                               size_t workers_n)
+    : config_path(config_path_) {
   pool = std::unique_ptr<thread_pool>{std::make_unique<thread_pool>()};
   pool->start(workers_n);
-  // pool =
-  // std::unique_ptr<BS::thread_pool>(std::make_unique(BS::thread_pool(workers_n)));
 }
 
-bool PipelineModule::submitModule(ModuleConfigure const &config,
-                                  ParamsConfig const &paramsConfig) {
-  switch (paramsConfig.GetKind()) {
-  case common::ConfigType::Algorithm: { // Algorithm
-    atm[config.moduleName] = ObjectFactory::createObject<Module>(
-        config.typeName, &backend, config.moduleName, config.ctype,
-        paramsConfig.GetAlgorithmConfig());
-    break;
+bool PipelineModule::submitModule(ModuleInfo const &info,
+                                  ModuleConfig const &config) {
+  atm[info.moduleName] = ObjectFactory::createObject<Module>(
+      info.className, backendPtr, info.moduleName, info.moduleType, config);
+  if (!atm[info.moduleName]) {
+    FLOWENGINE_LOGGER_ERROR("{} is failed to start!", info.moduleName);
+    return false;
   }
-  case common::ConfigType::Logic: { // Logic
-    atm[config.moduleName] = ObjectFactory::createObject<Module>(
-        config.typeName, &backend, config.moduleName, config.ctype,
-        paramsConfig.GetLogicConfig());
-    break;
-  }
-  case common::ConfigType::Output: { // Output
-    atm[config.moduleName] = ObjectFactory::createObject<Module>(
-        config.typeName, &backend, config.moduleName, config.ctype,
-        paramsConfig.GetOutputConfig());
-    break;
-  }
-  case common::ConfigType::Stream: { // Stream
-    atm[config.moduleName] = ObjectFactory::createObject<Module>(
-        config.typeName, &backend, config.moduleName, config.ctype,
-        paramsConfig.GetCameraConfig());
-    break;
-  }
-  default: {
-    break;
-  }
-  }
+  atm[info.moduleName]->addRecvModule(name); // 关联管理员模块
+  pool->submit(&Module::go, atm.at(info.moduleName));
+  return true;
+}
 
-  if (atm[config.moduleName] == nullptr) {
-    std::cout << config.moduleName << " is nullptr!!!!!!!!!!!!!!!!!!"
-              << std::endl;
-    exit(-1);
-  }
-  atm[config.moduleName]->addRecvModule(name); // 关联上控制模块
+bool PipelineModule::submitAlgo(std::string const &name,
+                                AlgoConfig const &config) {
+  backendPtr->algo->registered(name, config);
+  return true;
+}
 
-  pool->submit(&Module::go, atm.at(config.moduleName));
+bool PipelineModule::stopAlgo(std::string const &name) {
+  backendPtr->algo->unregistered(name);
   return true;
 }
 
 bool PipelineModule::parseConfigs(std::string const &path,
-                                  std::vector<pipelineParams> &pipelines) {
-  std::string content;
-  if (!configParser.readFile(path, content)) {
-    FLOWENGINE_LOGGER_ERROR("config parse: read file is failed!");
-    return false;
-  }
-
-  if (!configParser.parseConfig(content.c_str(), pipelines)) {
+                                  std::vector<PipelineParams> &pipelines,
+                                  std::vector<AlgorithmParams> &algorithms) {
+  if (!configParser.parseConfig(path, pipelines, algorithms)) {
     FLOWENGINE_LOGGER_INFO("config parse: parseParams is failed!");
     return false;
   }
 
-  if (!configParser.writeJson("{}", path)) {
+  // 写入
+  if (!utils::writeJson("{}", path)) {
     FLOWENGINE_LOGGER_INFO("config parse: clean json file is failed!");
     return false;
   }
@@ -114,6 +92,7 @@ void PipelineModule::detachModule(std::string const &moduleName) {
     FLOWENGINE_LOGGER_ERROR("{} is not runing", moduleName);
     return;
   }
+  // 关掉与之关联的消息接收与消息发送
   for (auto &sm : atm.at(moduleName)->getSendModule()) {
     atm.at(sm)->delRecvModule(moduleName);
   };
@@ -132,73 +111,89 @@ void PipelineModule::stopModule(std::string const &moduleName) {
   detachModule(moduleName);
 
   // 发送终止正在 go 的消息
-  backend.message->send(name, moduleName, type, queueMessage());
+  backendPtr->message->send(name, moduleName, MessageType::Close,
+                            queueMessage());
 
   // 从atm中删除对象
   atm.erase(moduleName);
 }
 
+/**
+ * @brief 根据配置文件的更新启动或者关闭pipeline
+ * 1. 解析配置文件，获取模块关联信息和各个模块的配置参数
+ * 2. 将配置中没有启动的模块和算法启动
+ * 3. 建立模块之间的关系
+ * 4. 关闭已经停止的模块以及前端已经关闭的模块
+ * 5. 启动算法模块
+ * 6. 关闭停用的算法 TODO
+ *
+ * @return true
+ * @return false
+ */
 bool PipelineModule::startPipeline() {
-  // 开始之前 先检查目前存在的模块状态是否已经停止（针对摄像头等外部因素）
-  std::unordered_map<std::string, std::shared_ptr<Module>>::iterator iter;
-  for (iter = atm.begin(); iter != atm.end();) {
-    if (iter->second->stopFlag.load()) {
-      // 该模块已经停止
-      iter = atm.erase(iter);
-    } else {
-      ++iter;
-    }
-  }
 
-  std::vector<pipelineParams> pipelines;
-  if (!parseConfigs(config, pipelines)) {
+  // 暂时不考虑sever的形式
+  std::vector<PipelineParams> pipelines;
+  std::vector<AlgorithmParams> algorithms;
+  if (!parseConfigs(config_path, pipelines, algorithms)) {
     FLOWENGINE_LOGGER_ERROR("parse config error");
     return false;
   }
+
+  // 启动算法
+  for (auto const &algo : algorithms) {
+    submitAlgo(algo.first, algo.second);
+  }
+
+  // TODO 关停目前没有使用的算法
+
+  // 启动pipeline
   std::vector<std::string> currentModules;
-  std::vector<ModuleConfigure> moduleRelations;
-  // run 起来所有模块并且制作所有需要关联的模块, 后续可能会有所扩展
+  std::vector<ModuleInfo> moduleRelations;
   for (auto &pipeline : pipelines) {
     for (auto &config : pipeline) {
       currentModules.push_back(config.first.moduleName);
       moduleRelations.push_back(config.first);
+
       if (atm.find(config.first.moduleName) == atm.end()) {
         submitModule(config.first, config.second);
       }
     }
   }
-  // 清掉已经停用的模块
+
+  // 模块已经全部启动，将模块关联
+  for (auto &mc : moduleRelations) {
+    attachModule(mc.moduleName, mc.sendName, mc.recvName);
+  }
+
+  // 关闭停用的组件
   if (!currentModules.empty()) {
-    std::unordered_map<std::string, std::shared_ptr<Module>>::iterator iter;
+    std::unordered_map<std::string, module_ptr>::iterator iter;
     for (iter = atm.begin(); iter != atm.end();) {
       auto it =
           std::find(currentModules.begin(), currentModules.end(), iter->first);
       if (it == currentModules.end()) {
-        // 说明该模块需要关闭（函数中存在删除atm的部分）
         // 解除关联
         detachModule(iter->first);
         // 发送终止正在 go 的消息
-        // iter->second->stopFlag.store(true);
-        backend.message->send(name, iter->first, type, queueMessage());
+        backendPtr->message->send(name, iter->first, MessageType::Close,
+                                  queueMessage());
         // 从atm中删除对象
         iter = atm.erase(iter);
       } else {
         ++iter;
       }
     }
-
-    // 关联模块
-    for (auto &mc : moduleRelations) {
-      attachModule(mc.moduleName, mc.sendName, mc.recvName);
-    }
   }
-
   return true;
 }
 
 void PipelineModule::run() {
   while (true) {
+    // 现在的方式是一个大json，里面包含了所有的pipelines，需要自行判断模块增删改
     startPipeline();
+
+    // 后续可以提供一系列的路由，如新增模块，删除模块，单帧推理等
     std::this_thread::sleep_for(std::chrono::seconds(30));
     // terminate();  // 终止所有任务
     // break;

@@ -10,10 +10,10 @@
  */
 
 #include "jetson/trt_inference.hpp"
-#include "infer_utils.hpp"
 #include "jetson/logger.h"
 #include "jetson/preprocess.h"
 #include "jetson/standard.h"
+
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -26,6 +26,8 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 #include <vector>
+
+#include "infer/preprocess.hpp"
 
 namespace infer {
 namespace trt {
@@ -69,11 +71,11 @@ bool AlgoInference::initialize() {
   }
 
   // set the input and output dims
-  for (auto &name : mParams.inputTensorNames) {
+  for (auto &name : mParams.inputNames) {
     auto index = mEngine->getBindingIndex(name.c_str());
     inputDims.push_back(mEngine->getBindingDimensions(index));
   }
-  for (auto &name : mParams.outputTensorNames) {
+  for (auto &name : mParams.outputNames) {
     auto index = mEngine->getBindingIndex(name.c_str());
     outputDims.push_back(mEngine->getBindingDimensions(index));
   }
@@ -100,21 +102,19 @@ bool AlgoInference::infer(FrameInfo &inputs, void **outputs) {
   buffers->copyOutputToHost();
 
   float** output = reinterpret_cast<float**>(*outputs);
-  for (int i = 0; i < mParams.outputTensorNames.size(); ++i) {
+  for (int i = 0; i < mParams.outputNames.size(); ++i) {
     output[i] = static_cast<float *>(
-        buffers->getHostBuffer(mParams.outputTensorNames[i]));
+        buffers->getHostBuffer(mParams.outputNames[i]));
   }
   return true;
 }
 
 bool AlgoInference::processInput(void *inputs) {
   float *deviceInputBuffer = static_cast<float *>(
-      buffers->getDeviceBuffer(mParams.inputTensorNames[0])); // explicit batch
+      buffers->getDeviceBuffer(mParams.inputNames[0])); // explicit batch
   auto inputData = reinterpret_cast<FrameInfo *>(inputs);
   cv::Mat image{inputData->shape[1], inputData->shape[0], CV_8UC3, *inputData->data};
   // cv::imwrite("temp_out.jpg", image);
-
-  int image_size = image.cols * image.rows * image.channels();
 
   std::array<int, 2> shape = {mParams.inputShape.at(0),
                               mParams.inputShape.at(1)};
@@ -162,7 +162,7 @@ void AlgoInference::getModelInfo(ModelInfo &info) const {
     std::vector<int> shape{dim.d, dim.d + dim.nbDims};
     outputShapes.emplace_back(shape);
   }
-  info.output_count = mParams.outputTensorNames.size();
+  info.output_count = mParams.outputNames.size();
   info.outputShapes = std::move(outputShapes);
 }
 } // namespace trt

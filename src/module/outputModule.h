@@ -18,32 +18,32 @@
 #include <vector>
 
 #include "messageBus.h"
-#include "rapidjson/document.h"
-#include "rapidjson/prettywriter.h"
-#include "rapidjson/stringbuffer.h"
-#include "rapidjson/writer.h"
 
-#include "common/config.hpp"
 #include "logger/logger.hpp"
 #include "module.hpp"
 
-namespace module {
+#include "common/common.hpp"
 
-static size_t curl_callback(void *ptr, size_t size, size_t nmemb, std::string *data) {
+namespace module {
+using common::ModuleConfig;
+using common::OutputBase;
+
+static size_t curl_callback(void *ptr, size_t size, size_t nmemb,
+                            std::string *data) {
   data->append((char *)ptr, size * nmemb);
   return size * nmemb;
 }
 
 class OutputModule : public Module {
 protected:
-  common::OutputConfig config;
+  std::unique_ptr<OutputBase> config;
 
 public:
-  OutputModule(Backend *ptr, const std::string &initName,
-               const std::string &initType,
-               const common::OutputConfig &outputConfig_)
-      : Module(ptr, initName, initType),
-        config(std::move(outputConfig_)) {}
+  OutputModule(backend_ptr ptr, std::string const &name,
+               MessageType const &type, ModuleConfig &config_)
+      : Module(ptr, name, type) {
+    config = std::make_unique<OutputBase>(*config_.getParams<OutputBase>());
+  }
   ~OutputModule() {}
 };
 } // namespace module
