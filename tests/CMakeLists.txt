@@ -7,6 +7,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/infer
     ${PROJECT_INCLUDE_DIR}/module
     ${PROJECT_INCLUDE_DIR}/jetson-utils
+    ${3RDPARTY_ROOT}/eigen
     ${OpenCV_INCLUDE_DIRS}
     ${CUDA_INCLUDE_DIRS}
     ${X3_INCLUDE}

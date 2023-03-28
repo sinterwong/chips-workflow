@@ -119,6 +119,11 @@ struct KeypointsBox {
   Points2f points; // 框中的关键点
 };
 
+// 特征
+struct Eigenvector {
+  std::vector<float> value;
+};
+
 // 关键点框集
 using KeypointsBoxes = std::vector<KeypointsBox>;
 
