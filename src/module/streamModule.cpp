@@ -61,7 +61,8 @@ StreamModule::StreamModule(backend_ptr ptr, std::string const &_name,
   config = std::make_unique<StreamBase>(*_config.getParams<StreamBase>());
 
   try {
-    vm = std::make_unique<VideoManager>(config->uri);
+    vm = std::make_unique<VideoManager>(config->uri, config->width,
+                                        config->height);
   } catch (const std::runtime_error &e) {
     FLOWENGINE_LOGGER_ERROR("initRecorder exception: ", e.what());
     std::runtime_error("StreamModule ctor has failed!");

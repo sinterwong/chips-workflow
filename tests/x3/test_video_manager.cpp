@@ -20,8 +20,6 @@ int main(int argc, char **argv) {
   vm.init();
   vm.run();
 
-  std::this_thread::sleep_for(200ms);
-
   int count = 500;
   while (count--) {
 

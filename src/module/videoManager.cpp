@@ -31,6 +31,8 @@ bool VideoManager::init() {
   videoOptions opt;
   opt.videoIdx = channel;
   opt.resource = uri;
+  opt.height = h;
+  opt.width = w;
   stream = videoSource::Create(opt);
 #elif (TARGET_PLATFORM == 1)
   // 利用opencv打开视频，获取配置
