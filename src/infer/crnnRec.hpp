@@ -27,7 +27,7 @@ public:
 private:
   CharsRet generateChars(void **output) const override;
 
-  CharsRet decodePlate(CharsRet const &) const;
+  CharsRet decodeChars(CharsRet const &) const;
 };
 } // namespace vision
 } // namespace infer

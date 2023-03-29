@@ -41,6 +41,10 @@ public:
   //! \brief verifyOutput that the result is correct for infer
   //!
   virtual bool verifyOutput(InferResult const &) const override;
+
+protected:
+  ClassAlgo *config;
+  virtual Eigenvector generateFeature(void **output) const = 0;
 };
 } // namespace vision
 } // namespace infer

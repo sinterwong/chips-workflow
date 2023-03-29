@@ -26,6 +26,7 @@ using common::InferResult;
 
 using common::ClsRet;
 using common::CharsRet;
+using common::Eigenvector;
 using common::BBoxes;
 using common::Points2f;
 using common::ModelInfo;

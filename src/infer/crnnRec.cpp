@@ -18,7 +18,7 @@
 namespace infer {
 namespace vision {
 
-CharsRet CRNN::decodePlate(CharsRet const &preds) const {
+CharsRet CRNN::decodeChars(CharsRet const &preds) const {
   CharsRet ret;
   int pre = 0;
   for (size_t i = 0; i < preds.size(); ++i) {
@@ -42,7 +42,7 @@ CharsRet CRNN::generateChars(void **outputs) const {
                                              output + (i + 1) * numClasses));
     predIds.push_back(idx);
   }
-  return decodePlate(predIds);
+  return decodeChars(predIds);
 }
 
 FlowEngineModuleRegister(CRNN, AlgoConfig const &, ModelInfo const &);

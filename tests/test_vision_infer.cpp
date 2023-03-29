@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
   cv::Mat image_nv12;
   infer::utils::RGB2NV12(image_rgb, image_nv12);
 
-  Shape inputShape{48, 168, 3};
+  Shape inputShape{176, 48, 3};
   AlgoBase base_config{
       1,
       std::move(inputNames),
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 
   InferParams params{std::string("hello"),
                      ColorType::NV12,
-                     0.5,
+                     0.0,
                      region,
                      {image_nv12.cols, image_nv12.rows, image_nv12.channels()}};
   InferResult ret;
@@ -113,7 +113,9 @@ int main(int argc, char **argv) {
   //   }
   // }
   // cv::imwrite("test_vision_infer_out.jpg", image_bgr);
-
+  
+  
+  cv::imwrite("test_vision_infer_nv12.jpg", image_nv12);
   for (auto &c : *chars) {
     std::cout << c << ", ";
   }
