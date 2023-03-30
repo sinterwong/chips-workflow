@@ -87,13 +87,29 @@ using algo_pipelines = std::vector<std::pair<std::string, AlgoParams>>;
  *
  */
 struct LogicBase {
+  algo_pipelines algoPipelines; // 算法执行的pipeline
+};
+
+/**
+ * @brief 报警逻辑的参数
+ *
+ */
+struct AlarmBase {
   std::string outputDir; // 报警内容存储路径
-  int videDuration;      // 报警视频录制时长
+  int videoDuration;     // 报警视频录制时长
   bool isDraw;           // 报警图像是否需要标记报警信息
+  int eventId;           // unknow，需要原路返回给后端
+  std::string page;      // unknow，需要原路返回给后端
+};
+
+/**
+ * @brief 阈值判断类型的报警参数
+ *
+ */
+struct CategoryAlarmConfig : public LogicBase, public AlarmBase {
+  CategoryAlarmConfig(LogicBase &&lbase, AlarmBase &&abase, float threshold_)
+      : LogicBase(lbase), AlarmBase(abase), threshold(threshold_) {}
   float threshold; // 报警阈值（计算规则自行在不同的功能中定义）
-  algo_pipelines algoPipelines;
-  int eventId;      // unknow，需要原路返回给后端
-  std::string page; // unknow，需要原路返回给后端
 };
 
 /**
@@ -113,27 +129,31 @@ struct InferInterval {
 };
 
 /**
- * @brief 未佩戴安全帽识别
+ * @brief OCR类型的算法逻辑
  *
  */
-struct WithoutHelmet : public AttentionArea,
-                       public LogicBase,
-                       public InferInterval {
-  WithoutHelmet(AttentionArea &&aaera, LogicBase &&alarm,
-                InferInterval &&interval)
-      : AttentionArea(aaera), LogicBase(alarm), InferInterval(interval) {}
+struct CharsRecoConfig : public AttentionArea,
+                         public LogicBase,
+                         public InferInterval {
+  CharsRecoConfig(AttentionArea &&aaera, LogicBase &&alarm,
+                  InferInterval &&interval, std::string &&chars_)
+      : AttentionArea(aaera), LogicBase(alarm), InferInterval(interval),
+        chars(chars_) {}
+
+  std::string chars; // 需要匹配的字符集
 };
 
 /**
- * @brief 通用模块
+ * @brief 依靠检测与分类类型的报警模块
  *
  */
 struct DetClsMonitor : public AttentionArea,
-                       public LogicBase,
+                       public CategoryAlarmConfig,
                        public InferInterval {
-  DetClsMonitor(AttentionArea &&aaera, LogicBase &&alarm,
+  DetClsMonitor(AttentionArea &&aaera, CategoryAlarmConfig &&calarm,
                 InferInterval &&interval)
-      : AttentionArea(aaera), LogicBase(alarm), InferInterval(interval) {}
+      : AttentionArea(aaera), CategoryAlarmConfig(calarm),
+        InferInterval(interval) {}
 };
 
 /**
@@ -143,8 +163,8 @@ struct DetClsMonitor : public AttentionArea,
 class ModuleConfig {
 public:
   // 将所有参数类型存储在一个 std::variant 中
-  using Params = std::variant<StreamBase, OutputBase, LogicBase, WithoutHelmet,
-                              DetClsMonitor>;
+  using Params = std::variant<StreamBase, OutputBase, LogicBase,
+                              CharsRecoConfig, DetClsMonitor>;
 
   // 设置参数
   template <typename T> void setParams(T params) {

@@ -1,5 +1,5 @@
-#include "gflags/gflags.h"
 #include "common/common.hpp"
+#include "gflags/gflags.h"
 
 DEFINE_string(image_path, "", "Specify the path of image.");
 
@@ -14,13 +14,13 @@ int main(int argc, char **argv) {
 
   // 创建SmokingMonitor
   AttentionArea area;
-  LogicBase alarm;
+  CategoryAlarmConfig alarm{LogicBase(), AlarmBase(), 0.0};
   InferInterval inferInterval;
 
-  DetClsMonitor smoking{std::move(area), std::move(alarm),
-                         std::move(inferInterval)};
+  DetClsMonitor detcls{std::move(area), std::move(alarm),
+                        std::move(inferInterval)};
 
-  center.setParams(std::move(smoking));
+  center.setParams(std::move(detcls));
   // 访问参数
   center.visitParams([](auto &&params) {
     // 对于不同类型的参数，可以根据其类型进行不同的处理
@@ -29,8 +29,8 @@ int main(int argc, char **argv) {
       std::cout << "StreamBase: " << params.uri << "\n";
     } else if constexpr (std::is_same_v<T, DetClsMonitor>) {
       std::cout << "DetClsMonitor: " << params.interval.count() << "\n";
-    } else if constexpr (std::is_same_v<T, WithoutHelmet>) {
-      std::cout << "WithoutHelmetMonitor: " << params.outputDir << "\n";
+    } else if constexpr (std::is_same_v<T, CharsRecoConfig>) {
+      std::cout << "CharsRecoConfig: " << params.chars << "\n";
     } else {
       std::cout << "Unknown params\n";
     }

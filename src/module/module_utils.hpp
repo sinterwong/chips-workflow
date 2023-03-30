@@ -97,6 +97,12 @@ bool readFile(std::string const &filename, std::string &ret);
 
 bool writeJson(std::string const &config, std::string const &outPath);
 
+bool retBoxes2json(std::vector<RetBox> const &retBoxes, std::string &result);
+
+bool retPolys2json(std::vector<RetPoly> const &retPolys, std::string &result);
+
+bool retChars2json(std::vector<RetPoly> const &retPolys, std::string &result);
+
 } // namespace module::utils
 
 #endif

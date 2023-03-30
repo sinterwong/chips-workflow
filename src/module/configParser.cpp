@@ -21,11 +21,14 @@
 #include <utility>
 #include <vector>
 
+using common::AlarmBase;
 using common::algo_pipelines;
 using common::AlgoBase;
 using common::AlgoConfig;
 using common::AlgoParams;
 using common::AttentionArea;
+using common::CategoryAlarmConfig;
+using common::CharsRecoConfig;
 using common::ClassAlgo;
 using common::DetAlgo;
 using common::DetClsMonitor;
@@ -35,7 +38,6 @@ using common::OutputBase;
 using common::Point2i;
 using common::Points2i;
 using common::StreamBase;
-using common::WithoutHelmet;
 
 using json = nlohmann::json;
 
@@ -86,7 +88,7 @@ bool ConfigParser::parseConfig(std::string const &path,
       algo_config.setParams(std::move(det_config));
       break;
     }
-    case common::AlgoSerial::CRNN: 
+    case common::AlgoSerial::CRNN:
     case common::AlgoSerial::Softmax: {
       ClassAlgo cls_config{std::move(algo_base)};
       algo_config.setParams(std::move(cls_config));
@@ -142,29 +144,23 @@ bool ConfigParser::parseConfig(std::string const &path,
       }
       case ModuleType::Logic: {
         // 公共参数部分
-        LogicBase base_config;
-        base_config.outputDir = p["alarm_output_dir"].get<std::string>();
-        base_config.eventId = p["event_id"].get<int>();
-        base_config.page = p["page"].get<std::string>();
-        base_config.videDuration = p["video_duration"].get<int>();
-        base_config.isDraw = true;
-
+        LogicBase lBase;
         json apipes = p["algo_pipe"];
         for (auto const &ap : apipes) {
           AlgoParams params; // 特定参数
           params.attentions = ap["attention"].get<std::vector<int>>();
           params.basedNames = ap["basedNames"].get<std::vector<std::string>>();
           params.cropScaling = ap["cropScaling"].get<float>();
-          base_config.algoPipelines.emplace_back(
+          lBase.algoPipelines.emplace_back(
               std::pair{ap["name"].get<std::string>(), std::move(params)});
         }
 
         SupportedFunction func = moduleMapping[info.className];
         switch (func) {
-        case SupportedFunction::HelmetModule: {
-          // TODO 特定模块示例，未来可以新增很多特定化的参数
-          // 通用模块
+        case SupportedFunction::CharsRecognitionModule: {
+          // 前端划定区域
           AttentionArea aarea;
+          auto chars = p["chars"].get<std::string>();
           auto regions = p["regions"];
           for (auto const &region : regions) {
             Points2i ret;
@@ -174,13 +170,24 @@ bool ConfigParser::parseConfig(std::string const &path,
             aarea.regions.emplace_back(ret);
           }
           InferInterval interval;
-          WithoutHelmet config_{std::move(aarea), std::move(base_config),
-                                std::move(interval)};
+          CharsRecoConfig config_{std::move(aarea), std::move(lBase),
+                                  std::move(interval), std::move(chars)};
           config.setParams(std::move(config_));
           break;
         }
         case SupportedFunction::DetClsModule: {
-          // 通用模块
+          // 报警配置获取
+          auto outputDir = p["alarm_output_dir"].get<std::string>();
+          auto videoDuration = p["video_duration"].get<int>();
+          auto thre = p["threshold"].get<float>();
+          auto eventId = p["event_id"].get<int>();
+          auto page = p["page"].get<std::string>();
+          auto isDraw = true;
+          AlarmBase aBase{std::move(outputDir), videoDuration, isDraw, eventId,
+                          page};
+          CategoryAlarmConfig cac{std::move(lBase), std::move(aBase), thre};
+
+          // 前端划定区域
           AttentionArea aarea;
           auto regions = p["regions"];
           for (auto const &region : regions) {
@@ -192,7 +199,7 @@ bool ConfigParser::parseConfig(std::string const &path,
           }
 
           InferInterval interval;
-          DetClsMonitor config_{std::move(aarea), std::move(base_config),
+          DetClsMonitor config_{std::move(aarea), std::move(cac),
                                 std::move(interval)};
           config.setParams(std::move(config_));
           break;

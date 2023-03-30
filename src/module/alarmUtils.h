@@ -27,7 +27,7 @@
 
 #include "videoRecord.hpp"
 
-using common::LogicBase;
+using common::AlarmBase;
 
 namespace module {
 namespace filesystem = std::experimental::filesystem;
@@ -84,11 +84,11 @@ public:
 
   inline void generateAlarmInfo(std::string const &name, AlarmInfo &alarmInfo,
                                 std::string const &detail, RetBox const &bbox,
-                                LogicBase const *const config) {
+                                AlarmBase const *const config) {
     // 生成本次报警的唯一ID
     alarmInfo.alarmId = utils::generate_hex(16);
     alarmInfo.alarmFile = config->outputDir + "/" + alarmInfo.alarmId;
-    alarmInfo.prepareDelayInSec = config->videDuration;
+    alarmInfo.prepareDelayInSec = config->videoDuration;
     alarmInfo.alarmDetails = detail;
     alarmInfo.alarmType = name;
     alarmInfo.page = config->page;

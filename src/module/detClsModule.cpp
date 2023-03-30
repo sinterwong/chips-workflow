@@ -12,9 +12,9 @@
 #include "detClsModule.h"
 #include "logger/logger.hpp"
 
-#include <vector>
+#include <nlohmann/json.hpp>
 
-#include <opencv2/core/mat.hpp>
+using json = nlohmann::json;
 
 namespace module {
 
@@ -140,6 +140,7 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
       for (auto const &box : algoRegions.at(lastPipeName)) {
         alarmBox = box;
         if (alarmBox.second[4] > config->threshold) {
+          // 存在符合条件的报警
           FLOWENGINE_LOGGER_CRITICAL("{}: {}, {}, {}!", name, alarmBox.first,
                                      alarmBox.second[4], alarmBox.second[5]);
           // 生成报警信息
@@ -154,11 +155,26 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
           alarmUtils.initRecorder(buf.alarmInfo.alarmFile + "/" +
                                       buf.alarmInfo.alarmId + ".mp4",
                                   buf.alarmInfo.width, buf.alarmInfo.height, 25,
-                                  config->videDuration);
+                                  config->videoDuration);
+
+          // 本轮算法结果生成
+          json algoRet;
+          for (auto &info : algoRegions) {
+            std::string bboxesJson, aname;
+            utils::retBoxes2json(info.second, bboxesJson);
+
+            // // 模块名称提取
+            // std::string_view str_view = info.first;
+            // auto pos1 = str_view.find('_');
+            // auto pos2 = str_view.find('_', pos1 + 1);
+            // aname = str_view.substr(pos1 + 1, pos2 - pos1 - 1);
+            algoRet[info.first] = std::move(bboxesJson);
+          }
+          buf.alarmInfo.algorithmResult = algoRet.dump();
+          autoSend(buf);
+          break;
         }
       }
-      autoSend(buf);
-      break;
     }
   }
 }

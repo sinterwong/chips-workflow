@@ -51,8 +51,8 @@ int main(int argc, char **argv) {
         std::cout << "height: " << config->height << std::endl;
         std::cout << "width: " << config->width << std::endl;
         std::cout << std::endl;
-      } else if (module.first.className == "HelmetModule") {
-        auto config = module.second.getParams<common::WithoutHelmet>();
+      } else if (module.first.className == "DetClsModule") {
+        auto config = module.second.getParams<common::DetClsMonitor>();
         if (!config) {
           std::cout << "error" << std::endl;
           return -1;
