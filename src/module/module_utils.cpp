@@ -157,7 +157,7 @@ bool retPolys2json(std::vector<RetPoly> const &retPolygons,
   json polys;
   for (auto const &poly : retPolygons) {
     json polygon;
-    json coord(poly.second); // array type
+    json coord = poly.second; // array type
     polygon["coord"] = coord;
     polygon["class_name"] = poly.first;
     polys.push_back(polygon);
@@ -180,6 +180,44 @@ bool retBoxes2json(std::vector<RetBox> const &retBoxes, std::string &result) {
     bboxes.push_back(b);
   }
   result = bboxes.dump();
+  return true;
+}
+
+bool retOCR2json(std::vector<OCRRet> const &retOCRs, std::string &result) {
+  if (retOCRs.empty()) {
+    result = "{}";
+    return false;
+  }
+  json ocrs;
+  for (auto const &ocr : retOCRs) {
+    json kb;
+    auto &b = ocr.kbbox.bbox.bbox;
+    std::array<float, 6> bbox = {b[0],
+                                 b[1],
+                                 b[2],
+                                 b[3],
+                                 ocr.kbbox.bbox.class_confidence,
+                                 ocr.kbbox.bbox.class_id};
+
+    auto &ps = ocr.kbbox.points;
+    json jbbox = bbox;
+    kb["bbox"] = jbbox;
+
+    std::vector<float> points;
+    for (auto &p : ps) {
+      points.push_back(p.at(0));
+      points.push_back(p.at(1));
+    }
+    json jpoints = points;
+    kb["points"] = jpoints;
+
+    json jids = ocr.charIds;
+    kb["ids"] = jids;
+
+    kb["chars"] = ocr.chars;
+    ocrs.push_back(kb);
+  }
+  result = ocrs.dump();
   return true;
 }
 

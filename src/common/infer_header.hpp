@@ -119,13 +119,20 @@ struct KeypointsBox {
   Points2f points; // 框中的关键点
 };
 
+// 关键点框集
+using KeypointsBoxes = std::vector<KeypointsBox>;
+
+// OCR识别结果
+struct OCRRet {
+  KeypointsBox kbbox; // 一个四点框一个两点框
+  CharsRet charIds;   // 字符识别结果
+  std::string chars;  // 映射后结果
+};
+
 // 特征
 struct Eigenvector {
   std::vector<float> value;
 };
-
-// 关键点框集
-using KeypointsBoxes = std::vector<KeypointsBox>;
 
 // 算法结果
 using AlgoRet = std::variant<std::monostate, BBoxes, ClsRet, CharsRet, Points2f,

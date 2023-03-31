@@ -1,0 +1,125 @@
+{
+  "Algorithms": [
+    {
+      "name": "algorithm_lprDet_1673517182659",
+      "algo_serial": "LPRDet",
+      "alpha": 0,
+      "batchSize": 1,
+      "beta": 0,
+      "cond_thr": 0.4,
+      "inputNames": [
+        "input"
+      ],
+      "inputShape": [
+        640,
+        640,
+        3
+      ],
+      "isScale": false,
+      "modelPath": "/opt/deploy/flowengine/models/plate_detect_640x640_nv12.bin",
+      "nms_thr": 0.45,
+      "outputNames": [
+        "output"
+      ]
+    },
+    {
+      "name": "algorithm_lprNet_1673517182647",
+      "algo_serial": "CRNN",
+      "alpha": 0,
+      "batchSize": 1,
+      "beta": 0,
+      "cond_thr": 0.3,
+      "inputNames": [
+        "images"
+      ],
+      "inputShape": [
+        48,
+        176,
+        3
+      ],
+      "isScale": false,
+      "modelPath": "/opt/deploy/flowengine/models/lprnet_48x176_nv12.bin",
+      "nms_thr": 0,
+      "outputNames": [
+        "softmax"
+      ]
+    }
+  ],
+  "Pipelines": [
+    {
+      "Pipeline": [
+        {
+          "Id": 95,
+          "cameraIp": "rtsp://admin:zkfd123.com@114.242.23.39:9303/Streaming/Channels/101",
+          "flowType": "rtsp",
+          "height": 1080,
+          "name": "stream_8677cd23-9813-4152-aa58-43fa0d1858aa",
+          "recvName": "",
+          "sendName": "logic_calling_95_1673517182740",
+          "sub_type": "StreamModule",
+          "type": "stream",
+          "videoCode": "h264",
+          "width": 1920
+        },
+        {
+          "Id": 95,
+          "cameraIp": "rtsp://admin:zkfd123.com@114.242.23.39:9303/Streaming/Channels/101",
+          "flowType": "rtsp",
+          "height": 1080,
+          "name": "stream_8677cd23-9813-4152-aa58-43fa0d1858aa",
+          "recvName": "",
+          "sendName": "output_stream_status_1673517182662",
+          "sub_type": "StreamModule",
+          "type": "stream",
+          "videoCode": "h264",
+          "width": 1920
+        },
+        {
+          "alarm_output_dir": "/public/alarm/data",
+          "event_id": 8,
+          "height": "1920",
+          "name": "logic_calling_95_1673517182740",
+          "page": "1_0_0",
+          "recvName": "stream_8677cd23-9813-4152-aa58-43fa0d1858aa",
+          "regions": [],
+          "sendName": "output_alarm_01_1673517182674",
+          "sub_type": "LicensePlateModule",
+          "threshold": 0.3,
+          "type": "logic",
+          "video_duration": 10,
+          "width": "1080",
+          "algo_pipe": [
+            {
+              "name": "algorithm_lprDet_1673517182659",
+              "attention": [],
+              "basedNames": [],
+              "cropScaling": 0
+            },
+            {
+              "name": "algorithm_lprNet_1673517182647",
+              "attention": [],
+              "basedNames": [],
+              "cropScaling": 0
+            }
+          ]
+        },
+        {
+          "name": "output_alarm_01_1673517182674",
+          "recvName": "logic_calling_95_1673517182740",
+          "sendName": "",
+          "sub_type": "AlarmOutputModule",
+          "type": "output",
+          "url": "http://localhost:9876/v1/flow/alarm"
+        },
+        {
+          "name": "output_stream_status_1673517182662",
+          "recvName": "stream_8677cd23-9813-4152-aa58-43fa0d1858aa",
+          "sendName": "",
+          "sub_type": "StatusOutputModule",
+          "type": "output",
+          "url": "http://localhost:9876/v1/flow/heartbeat"
+        }
+      ]
+    }
+  ]
+}
