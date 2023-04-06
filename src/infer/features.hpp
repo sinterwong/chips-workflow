@@ -12,8 +12,7 @@
 #define __INFERENCE_VISION_FEATURES_H_
 #include "core/factory.hpp"
 #include "vision.hpp"
-#include <unordered_map>
-#include <vector>
+#include <memory>
 
 namespace infer {
 namespace vision {
@@ -24,7 +23,9 @@ class Features : public Vision {
   //!
 public:
   Features(const AlgoConfig &_param, ModelInfo const &_info)
-      : Vision(_param, _info) {}
+      : Vision(_param, _info) {
+    config = std::make_unique<FeatureAlgo>(*mParams.getParams<FeatureAlgo>());
+  }
 
   //!
   //! \brief ProcessInput that the input is correct for infer
@@ -43,8 +44,8 @@ public:
   virtual bool verifyOutput(InferResult const &) const override;
 
 protected:
-  ClassAlgo *config;
-  virtual Eigenvector generateFeature(void **output) const = 0;
+  std::unique_ptr<FeatureAlgo> config;
+  virtual void generateFeature(void **output, Eigenvector &feature) const = 0;
 };
 } // namespace vision
 } // namespace infer

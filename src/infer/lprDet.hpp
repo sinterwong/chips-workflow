@@ -11,28 +11,25 @@
 
 #ifndef __INFERENCE_VISION_LPR_DETECTION_H_
 #define __INFERENCE_VISION_LPR_DETECTION_H_
-#include "detection.hpp"
+#include "keypoints.hpp"
 #include <vector>
 
 namespace infer {
 namespace vision {
 
-class LPRDet : public Detection {
+class LPRDet : public Keypoints {
   //!
   //! \brief construction
   //!
 public:
   LPRDet(const AlgoConfig &_param, ModelInfo const &info)
-      : Detection(_param, info) {}
+      : Keypoints(_param, info) {}
 
 private:
   virtual bool processOutput(void **, InferResult &) const override;
 
-  virtual void generateBoxes(std::unordered_map<int, BBoxes> &,
-                             void **) const override;
-
-  void generateKeypointsBoxes(std::unordered_map<int, KeypointsBoxes> &,
-                              void **) const;
+  virtual void generateKeypointsBoxes(std::unordered_map<int, KeypointsBoxes> &,
+                                      void **) const override;
 };
 } // namespace vision
 } // namespace infer

@@ -31,6 +31,7 @@ using common::CategoryAlarmConfig;
 using common::CharsRecoConfig;
 using common::ClassAlgo;
 using common::DetAlgo;
+using common::FeatureAlgo;
 using common::DetClsMonitor;
 using common::InferInterval;
 using common::LogicBase;
@@ -92,6 +93,12 @@ bool ConfigParser::parseConfig(std::string const &path,
     case common::AlgoSerial::Softmax: {
       ClassAlgo cls_config{std::move(algo_base)};
       algo_config.setParams(std::move(cls_config));
+      break;
+    }
+    case common::AlgoSerial::FaceNet: {
+      int dim = algo["dim"].get<int>();
+      FeatureAlgo feature_config{std::move(algo_base), dim};
+      algo_config.setParams(std::move(feature_config));
       break;
     }
     }

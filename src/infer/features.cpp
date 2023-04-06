@@ -1,18 +1,14 @@
 /**
- * @file pose.cpp
+ * @file features.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief
+ * @brief 
  * @version 0.1
- * @date 2022-12-22
- *
- * @copyright Copyright (c) 2022
- *
+ * @date 2023-04-06
+ * 
+ * @copyright Copyright (c) 2023
+ * 
  */
 #include "features.hpp"
-#include <algorithm>
-#include <array>
-#include <unordered_map>
-#include <vector>
 
 namespace infer {
 namespace vision {
@@ -25,6 +21,10 @@ bool Features::processInput(cv::Mat const &input, void **output,
 }
 
 bool Features::processOutput(void **output, InferResult &result) const {
+
+  Eigenvector feature;
+  generateFeature(output, feature);
+  result.aRet = std::move(feature);
   return true;
 }
 

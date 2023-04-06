@@ -1,29 +1,34 @@
 /**
- * @file pose.hpp
+ * @file keypoints.hpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
- * @date 2022-12-22
+ * @date 2023-04-04
  *
- * @copyright Copyright (c) 2022
+ * @copyright Copyright (c) 2023
  *
  */
-#ifndef __INFERENCE_VISION_POSE_H_
-#define __INFERENCE_VISION_POSE_H_
+
+#ifndef __INFERENCE_VISION_DETECTION_H_
+#define __INFERENCE_VISION_DETECTION_H_
 #include "core/factory.hpp"
 #include "vision.hpp"
+#include <memory>
+#include <unordered_map>
 #include <vector>
 
 namespace infer {
 namespace vision {
-
-class Pose : public Vision {
+class Keypoints : public Vision {
   //!
   //! \brief construction
   //!
 public:
-  Pose(const AlgoConfig &_param, ModelInfo const &_info)
-      : Vision(_param, _info) {}
+  Keypoints(const AlgoConfig &_param, ModelInfo const &_info)
+      : Vision(_param, _info) {
+    config =
+        std::make_unique<PointsDetAlgo>(*mParams.getParams<PointsDetAlgo>());
+  }
 
   //!
   //! \brief ProcessInput that the input is correct for infer
@@ -42,7 +47,9 @@ public:
   virtual bool verifyOutput(InferResult const &) const override;
 
 protected:
-  virtual void generatePoints(Points2f &, void **) const = 0;
+  std::unique_ptr<PointsDetAlgo> config;
+  virtual void generateKeypointsBoxes(std::unordered_map<int, KeypointsBoxes> &,
+                                      void **) const = 0;
 };
 } // namespace vision
 } // namespace infer

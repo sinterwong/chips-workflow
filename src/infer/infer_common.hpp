@@ -35,6 +35,8 @@ using common::AlgoConfig;
 using common::AlgoBase;
 using common::ClassAlgo;
 using common::DetAlgo;
+using common::PointsDetAlgo;
+using common::FeatureAlgo;
 
 } // namespace infer
 

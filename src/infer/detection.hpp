@@ -13,6 +13,7 @@
 #define __INFERENCE_VISION_DETECTION_H_
 #include "core/factory.hpp"
 #include "vision.hpp"
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -25,7 +26,7 @@ class Detection : public Vision {
 public:
   Detection(const AlgoConfig &_param, ModelInfo const &_info)
       : Vision(_param, _info) {
-    config = mParams.getParams<DetAlgo>();
+    config = std::make_unique<DetAlgo>(*mParams.getParams<DetAlgo>());
   }
 
   //!
@@ -45,7 +46,7 @@ public:
   virtual bool verifyOutput(InferResult const &) const override;
 
 protected:
-  DetAlgo *config;
+  std::unique_ptr<DetAlgo> config;
   virtual void generateBoxes(std::unordered_map<int, BBoxes> &,
                              void **) const = 0;
 };

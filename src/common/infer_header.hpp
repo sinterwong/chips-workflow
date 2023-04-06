@@ -130,13 +130,11 @@ struct OCRRet {
 };
 
 // 特征
-struct Eigenvector {
-  std::vector<float> value;
-};
+using Eigenvector = std::vector<float>;
 
 // 算法结果
 using AlgoRet = std::variant<std::monostate, BBoxes, ClsRet, CharsRet, Points2f,
-                             KeypointsBoxes>;
+                             KeypointsBoxes, Eigenvector>;
 
 /**
  * @brief 算法推理时返回结果
@@ -171,8 +169,6 @@ struct AlgoBase {
   float alpha;           // 预处理时除数
   float beta;            // 预处理时减数
   float cond_thr;        // 置信度阈值
-
-  AlgoBase() = default;
 };
 
 /**
@@ -180,11 +176,11 @@ struct AlgoBase {
  *
  */
 struct DetAlgo : public AlgoBase {
-  float nms_thr; // NMS 阈值
+  float nmsThr; // NMS 阈值
 
   DetAlgo() = default;
-  DetAlgo(AlgoBase &&algoBase, float nms_thr_)
-      : AlgoBase(algoBase), nms_thr(nms_thr_) {}
+  DetAlgo(AlgoBase &&algoBase, float nmsThr_)
+      : AlgoBase(algoBase), nmsThr(nmsThr_) {}
 };
 
 /**
@@ -196,10 +192,34 @@ struct ClassAlgo : public AlgoBase {
   ClassAlgo(AlgoBase &&algoBase) : AlgoBase(algoBase) {}
 };
 
+/**
+ * @brief 带有关键点的检测算法
+ *
+ */
+struct PointsDetAlgo : public AlgoBase {
+  int numPoints; // 特征维度
+  float nmsThr; // NMS 阈值
+
+  PointsDetAlgo() = default;
+  PointsDetAlgo(AlgoBase &&algoBase, int numPoints_, float nmsThr_)
+      : AlgoBase(algoBase), numPoints(numPoints_), nmsThr(nmsThr_) {}
+};
+
+/**
+ * @brief 特征提取算法，如人脸识别，行人ReID
+ *
+ */
+struct FeatureAlgo : public AlgoBase {
+  int dim; // 特征维度
+
+  FeatureAlgo() = default;
+  FeatureAlgo(AlgoBase &&algoBase, int dim_) : AlgoBase(algoBase), dim(dim_) {}
+};
+
 class AlgoConfig {
 public:
   // 将所有参数类型存储在一个 std::variant 中
-  using Params = std::variant<DetAlgo, ClassAlgo>;
+  using Params = std::variant<DetAlgo, ClassAlgo, FeatureAlgo>;
 
   // 设置参数
   template <typename T> void setParams(T params) {
@@ -229,6 +249,7 @@ enum class AlgoSerial : uint16_t {
   LPRDet,
   CRNN,
   Softmax,
+  FaceNet,
 };
 
 // 算法系列映射
@@ -238,6 +259,7 @@ static std::unordered_map<std::string, AlgoSerial> algoSerialMapping{
     std::make_pair("LPRDet", AlgoSerial::LPRDet),
     std::make_pair("CRNN", AlgoSerial::CRNN),
     std::make_pair("Softmax", AlgoSerial::Softmax),
+    std::make_pair("FaceNet", AlgoSerial::FaceNet),
 };
 
 // 算法系列映射算法类型
@@ -247,6 +269,7 @@ static std::unordered_map<AlgoSerial, AlgoRetType> serial2TypeMapping{
     std::make_pair(AlgoSerial::LPRDet, AlgoRetType::Detection),
     std::make_pair(AlgoSerial::CRNN, AlgoRetType::OCR),
     std::make_pair(AlgoSerial::Softmax, AlgoRetType::Classifier),
+    std::make_pair(AlgoSerial::FaceNet, AlgoRetType::Feature),
 };
 
 /**
