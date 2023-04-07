@@ -58,7 +58,7 @@ public:
    * @return true
    * @return false
    */
-  virtual bool destory() = 0;
+  virtual bool destory() noexcept = 0;
 
 protected:
   AlgoConfig config;

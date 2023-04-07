@@ -23,7 +23,7 @@ class Detection : public Vision {
   //! \brief construction
   //!
 public:
-  Detection(const AlgoConfig &_param, ModelInfo const &_info)
+  explicit Detection(const AlgoConfig &_param, ModelInfo const &_info)
       : Vision(_param, _info) {
     config = mParams.getCopyParams<DetAlgo>();
   }

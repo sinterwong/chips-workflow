@@ -21,7 +21,7 @@ class YoloPDet : public Keypoints {
   //! \brief construction
   //!
 public:
-  YoloPDet(const AlgoConfig &_param, ModelInfo const &info)
+  explicit YoloPDet(const AlgoConfig &_param, ModelInfo const &info)
       : Keypoints(_param, info) {}
 
 private:

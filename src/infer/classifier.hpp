@@ -21,7 +21,7 @@ class Classifier : public Vision {
   //! \brief construction
   //!
 public:
-  Classifier(const AlgoConfig &_param, ModelInfo const &_info)
+  explicit Classifier(const AlgoConfig &_param, ModelInfo const &_info)
       : Vision(_param, _info) {
     config = mParams.getCopyParams<ClassAlgo>();
   }

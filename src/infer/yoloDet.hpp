@@ -21,7 +21,7 @@ class Yolo : public Detection {
   //! \brief construction
   //!
 public:
-  Yolo(const AlgoConfig &_param, ModelInfo const &info)
+  explicit Yolo(const AlgoConfig &_param, ModelInfo const &info)
       : Detection(_param, info) {}
 
 private:

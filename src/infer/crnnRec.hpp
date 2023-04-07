@@ -20,7 +20,7 @@ class CRNN : public CharsRec {
   //! \brief construction
   //!
 public:
-  CRNN(const AlgoConfig &_param, ModelInfo const &info)
+  explicit CRNN(const AlgoConfig &_param, ModelInfo const &info)
       : CharsRec(_param, info) {}
 
 private:

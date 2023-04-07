@@ -30,7 +30,7 @@ using common::AlgoRet;
 
 class Vision {
 public:
-  Vision(const AlgoConfig &_param, ModelInfo const &_info)
+  explicit Vision(const AlgoConfig &_param, ModelInfo const &_info)
       : mParams(_param), modelInfo(_info) {}
 
   virtual ~Vision(){};

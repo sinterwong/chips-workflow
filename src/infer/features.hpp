@@ -21,7 +21,7 @@ class Features : public Vision {
   //! \brief construction
   //!
 public:
-  Features(const AlgoConfig &_param, ModelInfo const &_info)
+  explicit Features(const AlgoConfig &_param, ModelInfo const &_info)
       : Vision(_param, _info) {
     config = mParams.getCopyParams<FeatureAlgo>();
   }

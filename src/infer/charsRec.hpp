@@ -20,7 +20,7 @@ class CharsRec : public Vision {
   //! \brief construction
   //!
 public:
-  CharsRec(const AlgoConfig &_param, ModelInfo const &_info)
+  explicit CharsRec(const AlgoConfig &_param, ModelInfo const &_info)
       : Vision(_param, _info) {
     config = mParams.getCopyParams<ClassAlgo>(); // 未来可能需要新的配置类型
   }

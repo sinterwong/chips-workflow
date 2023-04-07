@@ -23,7 +23,7 @@ class Keypoints : public Vision {
   //! \brief construction
   //!
 public:
-  Keypoints(const AlgoConfig &_param, ModelInfo const &_info)
+  explicit Keypoints(const AlgoConfig &_param, ModelInfo const &_info)
       : Vision(_param, _info) {
     config = mParams.getCopyParams<PointsDetAlgo>();
   }

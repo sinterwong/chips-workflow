@@ -19,7 +19,7 @@ class FaceNet : public Features {
   //! \brief construction
   //!
 public:
-  FaceNet(const AlgoConfig &_param, ModelInfo const &info)
+  explicit FaceNet(const AlgoConfig &_param, ModelInfo const &info)
       : Features(_param, info) {}
 
 private:
