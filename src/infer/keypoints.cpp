@@ -1,12 +1,12 @@
 /**
  * @file keypoints.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2023-04-04
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 
 #include "keypoints.hpp"
@@ -17,8 +17,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 
 bool Keypoints::processInput(cv::Mat const &input, void **output,
                              common::ColorType) const {
@@ -34,5 +33,4 @@ bool Keypoints::processOutput(void **output, InferResult &result) const {
 }
 
 bool Keypoints::verifyOutput(InferResult const &) const { return true; }
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision

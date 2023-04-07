@@ -11,8 +11,7 @@
 #include "classifier.hpp"
 #include "logger/logger.hpp"
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 
 bool Classifier::processInput(cv::Mat const &input, void **output,
                               common::ColorType) const {
@@ -28,5 +27,4 @@ bool Classifier::processOutput(void **output, InferResult &result) const {
 }
 
 bool Classifier::verifyOutput(InferResult const &) const { return true; }
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision

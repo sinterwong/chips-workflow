@@ -1,11 +1,11 @@
 /**
- * @file pose.hpp
+ * @file features.hpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
- * @date 2022-12-22
+ * @date 2022-11-23
  *
- * @copyright Copyright (c) 2022
+ * @copyright Copyright (c) 2023
  *
  */
 #ifndef __INFERENCE_VISION_FEATURES_H_
@@ -14,8 +14,7 @@
 #include "vision.hpp"
 #include <memory>
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 
 class Features : public Vision {
   //!
@@ -24,7 +23,7 @@ class Features : public Vision {
 public:
   Features(const AlgoConfig &_param, ModelInfo const &_info)
       : Vision(_param, _info) {
-    config = std::make_unique<FeatureAlgo>(*mParams.getParams<FeatureAlgo>());
+    config = mParams.getCopyParams<FeatureAlgo>();
   }
 
   //!
@@ -44,10 +43,9 @@ public:
   virtual bool verifyOutput(InferResult const &) const override;
 
 protected:
-  std::unique_ptr<FeatureAlgo> config;
+  FeatureAlgo config;
   virtual void generateFeature(void **output, Eigenvector &feature) const = 0;
 };
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision
 
 #endif

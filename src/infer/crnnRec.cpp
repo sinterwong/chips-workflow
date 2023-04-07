@@ -15,8 +15,7 @@
 
 #include <algorithm>
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 
 CharsRet CRNN::decodeChars(CharsRet const &preds) const {
   CharsRet ret;
@@ -46,5 +45,4 @@ CharsRet CRNN::generateChars(void **outputs) const {
 }
 
 FlowEngineModuleRegister(CRNN, AlgoConfig const &, ModelInfo const &);
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision

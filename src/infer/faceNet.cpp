@@ -17,7 +17,7 @@ void FaceNet::generateFeature(void **outputs, Eigenvector &feature) const {
   float *output = out[0];
 
   // 特征
-  for (int i = 0; i < config->dim; ++i) {
+  for (int i = 0; i < config.dim; ++i) {
     feature.push_back(output[i]);
   }
 }

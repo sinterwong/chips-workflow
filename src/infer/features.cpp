@@ -1,17 +1,16 @@
 /**
  * @file features.cpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
- * @date 2023-04-06
- * 
+ * @date 2022-11-23
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 #include "features.hpp"
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 
 bool Features::processInput(cv::Mat const &input, void **output,
                             common::ColorType) const {
@@ -29,5 +28,4 @@ bool Features::processOutput(void **output, InferResult &result) const {
 }
 
 bool Features::verifyOutput(InferResult const &) const { return true; }
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision

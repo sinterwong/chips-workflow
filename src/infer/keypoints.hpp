@@ -17,8 +17,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 class Keypoints : public Vision {
   //!
   //! \brief construction
@@ -26,8 +25,7 @@ class Keypoints : public Vision {
 public:
   Keypoints(const AlgoConfig &_param, ModelInfo const &_info)
       : Vision(_param, _info) {
-    config =
-        std::make_unique<PointsDetAlgo>(*mParams.getParams<PointsDetAlgo>());
+    config = mParams.getCopyParams<PointsDetAlgo>();
   }
 
   //!
@@ -47,11 +45,10 @@ public:
   virtual bool verifyOutput(InferResult const &) const override;
 
 protected:
-  std::unique_ptr<PointsDetAlgo> config;
+  PointsDetAlgo config;
   virtual void generateKeypointsBoxes(std::unordered_map<int, KeypointsBoxes> &,
                                       void **) const = 0;
 };
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision
 
 #endif

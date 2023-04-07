@@ -14,8 +14,7 @@
 #include "infer_common.hpp"
 #include "opencv2/imgproc.hpp"
 
-namespace infer {
-namespace utils {
+namespace infer::utils {
 
 float iou(std::array<float, 4> const &, std::array<float, 4> const &);
 
@@ -35,6 +34,5 @@ void restoryBoxes(BBoxes &results, Shape const &shape, Shape const &inputShape,
 
 void restoryKeypointsBoxes(KeypointsBoxes &results, Shape const &shape,
                            Shape const &inputShape, bool isScale);
-} // namespace utils
-} // namespace infer
+} // namespace infer::utils
 #endif

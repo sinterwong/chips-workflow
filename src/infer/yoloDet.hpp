@@ -14,8 +14,7 @@
 #include "detection.hpp"
 #include <vector>
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 
 class Yolo : public Detection {
   //!
@@ -29,7 +28,6 @@ private:
   virtual void generateBoxes(std::unordered_map<int, BBoxes> &,
                              void **) const override;
 };
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision
 
 #endif

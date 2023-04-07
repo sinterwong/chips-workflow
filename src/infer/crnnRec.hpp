@@ -13,8 +13,7 @@
 #define __INFERENCE_VISION_CRNN_CTC_REC_H_
 #include "charsRec.hpp"
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 
 class CRNN : public CharsRec {
   //!
@@ -29,7 +28,6 @@ private:
 
   CharsRet decodeChars(CharsRet const &) const;
 };
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision
 
 #endif

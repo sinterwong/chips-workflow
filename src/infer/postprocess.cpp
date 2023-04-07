@@ -13,8 +13,7 @@
 #include "logger/logger.hpp"
 #include <algorithm>
 
-namespace infer {
-namespace utils {
+namespace infer::utils {
 
 float iou(std::array<float, 4> const &lbox, std::array<float, 4> const &rbox) {
   float interBox[] = {
@@ -139,5 +138,4 @@ void restoryKeypointsBoxes(KeypointsBoxes &results, Shape const &shape,
   }
 }
 
-} // namespace utils
-} // namespace infer
+} // namespace infer::utils

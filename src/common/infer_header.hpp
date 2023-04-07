@@ -197,7 +197,7 @@ struct ClassAlgo : public AlgoBase {
  *
  */
 struct PointsDetAlgo : public AlgoBase {
-  int numPoints; // 特征维度
+  int numPoints; // 点数
   float nmsThr; // NMS 阈值
 
   PointsDetAlgo() = default;
@@ -218,8 +218,8 @@ struct FeatureAlgo : public AlgoBase {
 
 class AlgoConfig {
 public:
-  // 将所有参数类型存储在一个 std::variant 中
-  using Params = std::variant<DetAlgo, ClassAlgo, FeatureAlgo>;
+  // 参数中心
+  using Params = std::variant<DetAlgo, ClassAlgo, FeatureAlgo, PointsDetAlgo>;
 
   // 设置参数
   template <typename T> void setParams(T params) {
@@ -235,6 +235,9 @@ public:
   // 获取参数
   template <typename T> T *getParams() { return std::get_if<T>(&params_); }
 
+  // 获取copy参数
+  template <typename T> T getCopyParams() { return std::get<T>(params_); }
+
 private:
   Params params_;
 };
@@ -246,7 +249,7 @@ private:
 enum class AlgoSerial : uint16_t {
   Yolo = 0,
   Assd,
-  LPRDet,
+  YoloPDet,
   CRNN,
   Softmax,
   FaceNet,
@@ -256,7 +259,7 @@ enum class AlgoSerial : uint16_t {
 static std::unordered_map<std::string, AlgoSerial> algoSerialMapping{
     std::make_pair("Yolo", AlgoSerial::Yolo),
     std::make_pair("Assd", AlgoSerial::Assd),
-    std::make_pair("LPRDet", AlgoSerial::LPRDet),
+    std::make_pair("YoloPDet", AlgoSerial::YoloPDet),
     std::make_pair("CRNN", AlgoSerial::CRNN),
     std::make_pair("Softmax", AlgoSerial::Softmax),
     std::make_pair("FaceNet", AlgoSerial::FaceNet),
@@ -266,38 +269,10 @@ static std::unordered_map<std::string, AlgoSerial> algoSerialMapping{
 static std::unordered_map<AlgoSerial, AlgoRetType> serial2TypeMapping{
     std::make_pair(AlgoSerial::Yolo, AlgoRetType::Detection),
     std::make_pair(AlgoSerial::Assd, AlgoRetType::Detection),
-    std::make_pair(AlgoSerial::LPRDet, AlgoRetType::Detection),
+    std::make_pair(AlgoSerial::YoloPDet, AlgoRetType::Detection),
     std::make_pair(AlgoSerial::CRNN, AlgoRetType::OCR),
     std::make_pair(AlgoSerial::Softmax, AlgoRetType::Classifier),
     std::make_pair(AlgoSerial::FaceNet, AlgoRetType::Feature),
 };
-
-/**
- * @brief 目前已经支持的算法种类
- *
- */
-enum class SupportedAlgo : uint16_t {
-  CocoDet = 0,
-  HandDet,
-  HeadDet,
-  FireDet,
-  SmogDet,
-  SmokeCallCls,
-  HelmetCls,
-  ExtinguisherCls,
-  OiltubeCls,
-  EarthlineCls,
-};
-
-// TODO 支持的算法功能映射
-static std::unordered_map<std::string, SupportedAlgo> algoMapping{
-    std::make_pair("handDet", SupportedAlgo::HandDet),
-    std::make_pair("headDet", SupportedAlgo::HeadDet),
-    std::make_pair("phoneCls", SupportedAlgo::SmokeCallCls),
-    std::make_pair("helmetCls", SupportedAlgo::HelmetCls),
-    std::make_pair("smokeCls", SupportedAlgo::SmokeCallCls),
-    std::make_pair("extinguisherCls", SupportedAlgo::ExtinguisherCls),
-};
-
 } // namespace common
 #endif

@@ -14,8 +14,7 @@
 #include "vision.hpp"
 #include <memory>
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 
 class Classifier : public Vision {
   //!
@@ -24,7 +23,7 @@ class Classifier : public Vision {
 public:
   Classifier(const AlgoConfig &_param, ModelInfo const &_info)
       : Vision(_param, _info) {
-    config = std::make_unique<ClassAlgo>(*mParams.getParams<ClassAlgo>());
+    config = mParams.getCopyParams<ClassAlgo>();
   }
 
   //!
@@ -44,10 +43,9 @@ public:
   virtual bool verifyOutput(InferResult const &) const override;
 
 protected:
-  std::unique_ptr<ClassAlgo> config;
+  ClassAlgo config;
   virtual ClsRet generateClass(void **output) const = 0;
 };
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision
 
 #endif

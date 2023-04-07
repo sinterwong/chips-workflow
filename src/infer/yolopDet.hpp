@@ -1,5 +1,5 @@
 /**
- * @file lprDet.hpp
+ * @file YoloPDet.hpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
@@ -14,15 +14,14 @@
 #include "keypoints.hpp"
 #include <vector>
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 
-class LPRDet : public Keypoints {
+class YoloPDet : public Keypoints {
   //!
   //! \brief construction
   //!
 public:
-  LPRDet(const AlgoConfig &_param, ModelInfo const &info)
+  YoloPDet(const AlgoConfig &_param, ModelInfo const &info)
       : Keypoints(_param, info) {}
 
 private:
@@ -31,7 +30,6 @@ private:
   virtual void generateKeypointsBoxes(std::unordered_map<int, KeypointsBoxes> &,
                                       void **) const override;
 };
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision
 
 #endif

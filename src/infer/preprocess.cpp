@@ -15,8 +15,7 @@
 
 using common::ColorType;
 
-namespace infer {
-namespace utils {
+namespace infer::utils {
 
 bool resizeInput(cv::Mat &image, bool isScale, std::array<int, 2> &dstShape) {
   if (isScale) {
@@ -149,7 +148,7 @@ void YUV444toNV12(cv::Mat const &input, cv::Mat &output) {
 // template<typename ColorType Src=ColorType::RGB888>
 void RGB2NV12(cv::Mat const &input, cv::Mat &output) {
   // 这里图片的宽高必须是偶数，否则直接卡死这里
-  cv::Rect rect {0, 0, input.cols, input.rows};
+  cv::Rect rect{0, 0, input.cols, input.rows};
   if (rect.width % 2 != 0)
     rect.width -= 1;
   if (rect.height % 2 != 0) {
@@ -242,5 +241,4 @@ bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
   return true;
 }
 
-} // namespace utils
-} // namespace infer
+} // namespace infer::utils

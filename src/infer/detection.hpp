@@ -17,8 +17,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 class Detection : public Vision {
   //!
   //! \brief construction
@@ -26,7 +25,7 @@ class Detection : public Vision {
 public:
   Detection(const AlgoConfig &_param, ModelInfo const &_info)
       : Vision(_param, _info) {
-    config = std::make_unique<DetAlgo>(*mParams.getParams<DetAlgo>());
+    config = mParams.getCopyParams<DetAlgo>();
   }
 
   //!
@@ -46,11 +45,10 @@ public:
   virtual bool verifyOutput(InferResult const &) const override;
 
 protected:
-  std::unique_ptr<DetAlgo> config;
+  DetAlgo config;
   virtual void generateBoxes(std::unordered_map<int, BBoxes> &,
                              void **) const = 0;
 };
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision
 
 #endif

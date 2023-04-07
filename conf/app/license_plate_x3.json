@@ -1,8 +1,8 @@
 {
   "Algorithms": [
     {
-      "name": "algorithm_lprDet_1673517182659",
-      "algo_serial": "LPRDet",
+      "name": "algorithm_YoloPDet_1673517182659",
+      "algo_serial": "YoloPDet",
       "alpha": 0,
       "batchSize": 1,
       "beta": 0,
@@ -90,7 +90,7 @@
           "width": "1080",
           "algo_pipe": [
             {
-              "name": "algorithm_lprDet_1673517182659",
+              "name": "algorithm_YoloPDet_1673517182659",
               "attention": [],
               "basedNames": [],
               "cropScaling": 0
