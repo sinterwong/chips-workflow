@@ -19,7 +19,7 @@ using namespace common;
 
 std::vector<float> getFeature(std::string &imPath,
                               std::shared_ptr<AlgoInfer> vision) {
-  cv::Mat image_bgr = cv::imread(FLAGS_img1);
+  cv::Mat image_bgr = cv::imread(imPath);
   cv::Mat image_rgb, image_nv12;
   cv::cvtColor(image_bgr, image_rgb, cv::COLOR_BGR2RGB);
   infer::utils::RGB2NV12(image_rgb, image_nv12);
@@ -82,30 +82,28 @@ int main(int argc, char **argv) {
   }
 
   auto feature1 = getFeature(FLAGS_img1, vision);
-  // auto feature2 = getFeature(FLAGS_img2, vision);
+  auto feature2 = getFeature(FLAGS_img2, vision);
 
-  for (auto f : feature1) {
-    std::cout << f << ", ";
-  }
-  std::cout << std::endl;
+  Eigen::MatrixXf v1 = Eigen::Map<Eigen::Matrix<float, 1, 128>>(feature1.data());
+  Eigen::MatrixXf v2 = Eigen::Map<Eigen::Matrix<float, 1, 128>>(feature2.data());
 
-  Eigen::MatrixXd v1(1, 16);
-  Eigen::MatrixXd v2(10, 16);
+  // Eigen::MatrixXf v1(1, 16);
+  // Eigen::MatrixXf v2(10, 16);
 
-  v1.setRandom();
-  v2.setRandom();
+  // v1.setRandom();
+  // v2.setRandom();
 
   // 计算v1和v2之间的cosine相似度
-  Eigen::MatrixXd norm_v1 = v1.rowwise().norm();
-  Eigen::MatrixXd norm_v2 = v2.rowwise().norm();
+  Eigen::MatrixXf norm_v1 = v1.rowwise().norm();
+  Eigen::MatrixXf norm_v2 = v2.rowwise().norm();
 
   // 将分母中为0的元素置为一个很小的非零值
   norm_v1 = (norm_v1.array() == 0).select(1e-8, norm_v1);
   norm_v2 = (norm_v2.array() == 0).select(1e-8, norm_v2);
 
-  Eigen::MatrixXd dot_product = v1 * v2.transpose(); // 1x10
+  Eigen::MatrixXf dot_product = v1 * v2.transpose(); // 1x10
 
-  Eigen::MatrixXd cosine_sim =
+  Eigen::MatrixXf cosine_sim =
       dot_product.array() / (norm_v1 * norm_v2.transpose()).array();
 
   // 输出结果
