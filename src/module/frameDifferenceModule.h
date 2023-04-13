@@ -12,12 +12,6 @@
 #ifndef __METAENGINE_FRAME_DIFFERENCE_MODULE_H
 #define __METAENGINE_FRAME_DIFFERENCE_MODULE_H
 
-#include <array>
-#include <opencv2/opencv.hpp>
-#include <string>
-#include <utility>
-
-#include "backend.h"
 #include "frame_difference.h"
 #include "module.hpp"
 
@@ -25,7 +19,7 @@ namespace module {
 class FrameDifferenceModule : public Module {
 private:
   int count = 0;
-  solution::FrameDifference fd;
+  infer::solution::FrameDifference fd;
 
 public:
   FrameDifferenceModule(backend_ptr ptr, std::string const &name,

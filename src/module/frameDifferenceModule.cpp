@@ -10,12 +10,7 @@
  */
 
 #include "frameDifferenceModule.h"
-#include "backend.h"
 #include "frame_difference.h"
-#include "inference.h"
-#include "logger/logger.hpp"
-#include "module.hpp"
-#include <cassert>
 #include <opencv2/imgcodecs.hpp>
 
 namespace module {
@@ -27,26 +22,28 @@ FrameDifferenceModule::FrameDifferenceModule(backend_ptr ptr,
 FrameDifferenceModule::~FrameDifferenceModule() {}
 
 void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
-  // for (auto &[send, type, buf] : message) {
-  //   if (type == MessageType::Close) {
-  //     // FLOWENGINE_LOGGER_INFO("FreameDifference module was done!");
-  //     std::cout << "FreameDifference module was done!" << std::endl;
-  //     stopFlag.store(true);
-  //     return;
-  //   } else if (type == MessageType::Stream) {
-  //     auto frameBufMessage = ptr->pool->read(buf.key);
-  //     auto frame =
-  //         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
-  //     if (fd.statue()) {
-  //       fd.init(frame);
-  //     } else {
-  //       fd.update(frame, buf.algorithmResult.bboxes);
-  //     }
-  //     if (!buf.algorithmResult.bboxes.empty()) {
-  //       autoSend(buf);
-  //     }
-  // }
-  // }
+  for (auto &[send, type, buf] : message) {
+    if (type == MessageType::Close) {
+      FLOWENGINE_LOGGER_INFO("FreameDifference module was done!");
+      stopFlag.store(true);
+      return;
+    }
+    auto frameBufMessage = ptr->pool->read(buf.key);
+    auto frame =
+        std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
+    std::vector<common::RetBox> bboxes;
+    if (fd.statue()) {
+      fd.init(frame);
+    } else {
+      fd.update(frame, bboxes);
+    }
+
+    if (bboxes.empty()) {
+      return;
+    }
+    // 意味着检测到了动态目标，可以进行后续的逻辑
+    // autoSend(buf);
+  }
 }
 FlowEngineModuleRegister(FrameDifferenceModule, backend_ptr,
                          std::string const &, MessageType &);

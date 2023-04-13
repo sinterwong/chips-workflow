@@ -18,7 +18,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 
-namespace solution {
+namespace infer::solution {
   
 using RetBox = std::pair<std::string, std::array<float, 6>>;
 
