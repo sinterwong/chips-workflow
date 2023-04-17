@@ -9,6 +9,7 @@
  *
  */
 #include "licensePlateModule.h"
+#include "infer/postprocess.hpp"
 #include "infer/preprocess.hpp"
 #include "logger/logger.hpp"
 #include "module_utils.hpp"
@@ -47,8 +48,8 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
     for (auto const &area : config->regions) {
       regions.emplace_back(common::RetBox{
           name,
-          {static_cast<float>(area[0][0]), static_cast<float>(area[0][1]),
-           static_cast<float>(area[1][0]), static_cast<float>(area[1][1]), 0.0,
+          {static_cast<float>(area[0].x), static_cast<float>(area[0].y),
+           static_cast<float>(area[1].x), static_cast<float>(area[1].y), 0.0,
            0.0}});
     }
     if (regions.empty()) {
@@ -91,9 +92,16 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
         infer::utils::cropImage(*image, licensePlateImage, rect, buf.frameType);
         if (kbbox.bbox.class_id == 1) {
           // 如果是双层车牌
-          // TODO 矫正
+          infer::utils::sortFourPoints(kbbox.points); // 排序关键点
+          cv::Mat lpr_rgb;
+          cv::cvtColor(licensePlateImage, lpr_rgb, cv::COLOR_YUV2RGB_NV12);
+          cv::Mat lpr_ted;
+          // 相对于车牌图片的点
+          infer::utils::fourPointTransform(lpr_rgb, lpr_ted, kbbox.points);
+
           // 上下分割，垂直合并车牌
-          splitMerge(licensePlateImage, licensePlateImage);
+          splitMerge(lpr_ted, licensePlateImage);
+          infer::utils::RGB2NV12(licensePlateImage, licensePlateImage);
         }
         InferParams recParams{name,
                               buf.frameType,
@@ -111,7 +119,8 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
           FLOWENGINE_LOGGER_ERROR("OCRModule: Wrong algorithm type!");
           return;
         }
-        results.emplace_back(OCRRet{kbbox, *charIds, getChars(*charIds)});
+        results.emplace_back(
+            OCRRet{kbbox, *charIds, getChars(*charIds, charsetsMapping)});
       }
     }
 

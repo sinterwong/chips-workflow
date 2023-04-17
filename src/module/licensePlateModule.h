@@ -12,6 +12,8 @@
 #define __METAENGINE_LICENSE_PLATE_MODULE_H_
 
 #include "module.hpp"
+#include <codecvt>
+#include <locale>
 #include <opencv2/imgproc.hpp>
 
 using common::CharsRecoConfig;
@@ -37,13 +39,14 @@ public:
   virtual void forward(std::vector<forwardMessage> &message) override;
 
 private:
-  std::string charsMapping;
+  std::wstring_view charsetsMapping;
 
   inline void splitMerge(cv::Mat const &image, cv::Mat &output) {
     int h = image.rows;
     int w = image.cols;
-    cv::Rect upperRect{0, 0, w, (5 / 12 * h)};
-    cv::Rect lowerRect{0, 0, w, (1 / 3 * h)};
+    cv::Rect upperRect{0, 0, w, static_cast<int>(5. / 12. * h)};
+    cv::Rect lowerRect{0, static_cast<int>(1. / 3. * h), w,
+                       h - static_cast<int>(1. / 3. * h)};
     cv::Mat imageUpper;
     cv::Mat imageLower = image(lowerRect);
     cv::resize(image(upperRect), imageUpper,
@@ -51,12 +54,18 @@ private:
     cv::hconcat(imageUpper, imageLower, output);
   };
 
-  inline std::string getChars(CharsRet const &charsRet) {
-    std::string chars = "";
-    for (auto &idx : charsRet) {
-      chars += charsMapping.at(idx);
+  inline std::string getChars(CharsRet const &charsRet,
+                              std::wstring_view const &charsets) const {
+    std::wstring chars = L"";
+    for (auto it = charsRet.begin(); it != charsRet.end(); ++it) {
+      auto c = charsets.at(*it);
+      chars += c;
     }
-    return chars;
+    // 定义一个UTF-8编码的转换器
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    // 将宽字符字符串转换为UTF-8编码的多字节字符串
+    std::string str = converter.to_bytes(chars);
+    return str;
   }
 };
 } // namespace module

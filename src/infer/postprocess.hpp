@@ -34,5 +34,12 @@ void restoryBoxes(BBoxes &results, Shape const &shape, Shape const &inputShape,
 
 void restoryKeypointsBoxes(KeypointsBoxes &results, Shape const &shape,
                            Shape const &inputShape, bool isScale);
+
+// 四个点的仿射变换
+void fourPointTransform(cv::Mat &input, cv::Mat &output,
+                        infer::Points2f const &points);
+
+// 按照左上、右上、右下、左下的顺序排序
+void sortFourPoints(Points2f &points);
 } // namespace infer::utils
 #endif

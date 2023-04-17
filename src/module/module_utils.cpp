@@ -205,8 +205,8 @@ bool retOCR2json(std::vector<OCRRet> const &retOCRs, std::string &result) {
 
     std::vector<float> points;
     for (auto &p : ps) {
-      points.push_back(p.at(0));
-      points.push_back(p.at(1));
+      points.push_back(p.x);
+      points.push_back(p.y);
     }
     json jpoints = points;
     kb["points"] = jpoints;

@@ -205,7 +205,7 @@ int main(int argc, char **argv) {
                   cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(255, 14, 50), 2);
     }
     std::cout << "person number: " << counter.size() << std::endl;
-    cv::imwrite("vm_out.jpg", show_image);
+    cv::imwrite("object_counter_out.jpg", show_image);
   }
 
   gflags::ShutDownCommandLineFlags();

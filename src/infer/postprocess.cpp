@@ -97,8 +97,8 @@ void restoryBox(BBox &ret, float rw, float rh, Shape const &shape) {
 
 void restoryPoints(Points2f &results, float rw, float rh) {
   for (auto &point : results) {
-    point[0] /= rw;
-    point[1] /= rh;
+    point.x /= rw;
+    point.y /= rh;
   }
 }
 
@@ -136,6 +136,79 @@ void restoryKeypointsBoxes(KeypointsBoxes &results, Shape const &shape,
     restoryBox(ret.bbox, rw, rh, shape); // 恢复bbox
     restoryPoints(ret.points, rw, rh);   // 恢复points
   }
+}
+
+void fourPointTransform(cv::Mat &input, cv::Mat &output,
+                        infer::Points2f const &points) {
+  assert(points.size() == 4);
+  infer::Point2f tl = points[0];
+  infer::Point2f tr = points[1];
+  infer::Point2f br = points[2];
+  infer::Point2f bl = points[3];
+  // 计算相对位置
+  auto min_x_p = std::min_element(
+      points.begin(), points.end(),
+      [](auto const &p1, auto const &p2) { return p1.x < p2.x; });
+  auto min_y_p = std::min_element(
+      points.begin(), points.end(),
+      [](auto const &p1, auto const &p2) { return p1.y < p2.y; });
+  int min_x = min_x_p->x;
+  int min_y = min_y_p->y;
+  tl.x -= min_x;
+  tl.y -= min_y;
+  bl.x -= min_x;
+  bl.y -= min_y;
+  tr.x -= min_x;
+  tr.y -= min_y;
+  br.x -= min_x;
+  br.y -= min_y;
+  int widthA = std::sqrt(std::pow(br.x - bl.x, 2) + std::pow(br.y - bl.y, 2));
+  int widthB = std::sqrt(std::pow(tr.x - tl.x, 2) + std::pow(tr.y - tl.y, 2));
+  int maxWidth = std::max(widthA, widthB);
+
+  int heightA = std::sqrt(std::pow(tr.x - br.x, 2) + std::pow(tr.y - br.y, 2));
+  int heightB = std::sqrt(std::pow(tl.x - bl.x, 2) + std::pow(tl.y - bl.y, 2));
+  int maxHeight = std::max(heightA, heightB);
+
+  // 定义原始图像坐标和变换后的目标图像坐标
+  cv::Point2f src[4] = {cv::Point2f(tl.x, tl.y), cv::Point2f(tr.x, tr.y),
+                        cv::Point2f(br.x, br.y), cv::Point2f(bl.x, bl.y)};
+  cv::Point2f dst[4] = {cv::Point2f(0, 0), cv::Point2f(maxWidth - 1, 0),
+                        cv::Point2f(maxWidth - 1, maxHeight - 1),
+                        cv::Point2f(0, maxHeight - 1)};
+
+  // 计算透视变换矩阵
+  cv::Mat M = getPerspectiveTransform(src, dst);
+
+  // 对原始图像进行透视变换
+  cv::warpPerspective(input, output, M, cv::Size(maxWidth, maxHeight));
+}
+
+void sortFourPoints(Points2f &points) {
+  assert(points.size() == 4);
+  Point2f x1y1, x2y2, x3y3, x4y4;
+  // 先对x排序，取出前两个根据y的大小决定左上和左下，后两个点根据y的大小决定右上和右下
+  std::sort(points.begin(), points.end(),
+            [](Point2f const &p1, Point2f const &p2) { return p1.x < p2.x; });
+  if (points[0].y <= points[1].y) {
+    x1y1 = points[0];
+    x4y4 = points[1];
+  } else {
+    x1y1 = points[1];
+    x4y4 = points[0];
+  }
+  if (points[2].y <= points[3].y) {
+    x2y2 = points[2];
+    x3y3 = points[3];
+  } else {
+    x2y2 = points[3];
+    x3y3 = points[2];
+  }
+  points = {x1y1, x2y2, x3y3, x4y4};
+  // for (auto &p : points) {
+  //   std::cout << "x: " << p.x << ", "
+  //             << "y: " << p.y << std::endl;
+  // }
 }
 
 } // namespace infer::utils

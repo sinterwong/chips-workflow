@@ -44,8 +44,8 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
     for (auto const &area : config->regions) {
       regions.emplace_back(common::RetBox{
           name,
-          {static_cast<float>(area[0][0]), static_cast<float>(area[0][1]),
-           static_cast<float>(area[1][0]), static_cast<float>(area[1][1]), 0.0,
+          {static_cast<float>(area[0].x), static_cast<float>(area[0].y),
+           static_cast<float>(area[1].x), static_cast<float>(area[1].y), 0.0,
            0.0}});
     }
     if (regions.empty()) {

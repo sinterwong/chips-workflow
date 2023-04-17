@@ -36,7 +36,7 @@ using common::DetClsMonitor;
 using common::InferInterval;
 using common::LogicBase;
 using common::OutputBase;
-using common::Point2i;
+using Point2i = common::Point<int>;
 using common::Points2i;
 using common::StreamBase;
 

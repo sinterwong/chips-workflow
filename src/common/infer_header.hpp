@@ -97,8 +97,10 @@ struct alignas(float) BBox {
 };
 
 // point 数据
-using Point2i = std::array<int, 2>;
-using Point2f = std::array<float, 2>;
+template <typename T> struct Point {
+  T x;
+  T y;
+};
 
 // 单次分类结果
 using ClsRet = std::pair<int, float>;
@@ -110,8 +112,8 @@ using BBoxes = std::vector<BBox>;
 using CharsRet = std::vector<int>;
 
 // 点集
-using Points2i = std::vector<Point2i>;
-using Points2f = std::vector<Point2f>;
+using Points2i = std::vector<Point<int>>;
+using Points2f = std::vector<Point<float>>;
 
 // 关键点框
 struct KeypointsBox {
@@ -198,7 +200,7 @@ struct ClassAlgo : public AlgoBase {
  */
 struct PointsDetAlgo : public AlgoBase {
   int numPoints; // 点数
-  float nmsThr; // NMS 阈值
+  float nmsThr;  // NMS 阈值
 
   PointsDetAlgo() = default;
   PointsDetAlgo(AlgoBase &&algoBase, int numPoints_, float nmsThr_)
