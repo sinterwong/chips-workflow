@@ -37,9 +37,6 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
     auto image =
         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
 
-    // 各个算法结果的区域
-    std::unordered_map<std::string, std::vector<common::RetBox>> algoRegions;
-
     // 初始待计算区域，每次算法结果出来之后需要更新regions
     std::vector<common::RetBox> regions;
     for (auto const &area : config->regions) {
@@ -53,12 +50,12 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
       // 前端没有画框
       regions.emplace_back(common::RetBox{name, {0, 0, 0, 0, 0, 0}});
     }
-    algoRegions["regions"] = std::move(regions);
 
     assert(regions.size() == 1);
 
     // 根据提供的配置执行算法，
     auto &detNet = config->algoPipelines.at(0);
+    auto &attentions = detNet.second.attentions; // 检测关注的类别
     auto &reidNet = config->algoPipelines.at(1);
     InferParams detParams{name,
                           buf.frameType,
@@ -81,7 +78,14 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
 
     infer::solution::DETECTIONS detections;
     for (auto &bbox : *bboxes) {
-
+      // 需要过滤掉不关注的类别
+      if (!attentions.empty()) {
+        auto iter = std::find(attentions.begin(), attentions.end(),
+                              static_cast<int>(bbox.class_id));
+        if (iter == attentions.end()) { // 该类别没有出现在关注类别中
+          continue;
+        }
+      }
       infer::solution::DETECTION_ROW tmpRow;
       tmpRow.tlwh = infer::solution::DETECTBOX{bbox.bbox[0], bbox.bbox[1],
                                                bbox.bbox[2] - bbox.bbox[0],
@@ -109,6 +113,7 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
       }
       detections.emplace_back(tmpRow);
     }
+
     deepsort->predict();
     deepsort->update(detections); // TODO 这里没有考虑抽帧的情况
 
@@ -122,6 +127,8 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
       counter.insert(results[j].first);
     }
 
+    std::cout << "person number: " << counter.size() << std::endl;
+
     // 每到一定的数量就会触发报警
     if (counter.size() != 0 &&
         counter.size() % static_cast<size_t>(config->amount) == 0) {
@@ -133,6 +140,7 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
                                     buf.alarmInfo.alarmId + ".jpg",
                                 *image, buf.frameType, config->isDraw);
       autoSend(buf);
+      counter.insert(config->amount * 200);
     }
   }
 }
