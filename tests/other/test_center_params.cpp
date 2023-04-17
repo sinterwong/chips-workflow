@@ -29,8 +29,8 @@ int main(int argc, char **argv) {
       std::cout << "StreamBase: " << params.uri << "\n";
     } else if constexpr (std::is_same_v<T, DetClsMonitor>) {
       std::cout << "DetClsMonitor: " << params.interval.count() << "\n";
-    } else if constexpr (std::is_same_v<T, CharsRecoConfig>) {
-      std::cout << "CharsRecoConfig: " << params.chars << "\n";
+    } else if constexpr (std::is_same_v<T, OCRConfig>) {
+      std::cout << "OCRConfig: " << params.chars << "\n";
     } else {
       std::cout << "Unknown params\n";
     }

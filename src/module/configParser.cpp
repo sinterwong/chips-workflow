@@ -28,12 +28,13 @@ using common::AlgoBase;
 using common::AlgoConfig;
 using common::AlgoParams;
 using common::AttentionArea;
-using common::CharsRecoConfig;
 using common::ClassAlgo;
 using common::DetAlgo;
 using common::DetClsMonitor;
 using common::FeatureAlgo;
 using common::ObjectCounterConfig;
+using common::OCRConfig;
+using common::PointsDetAlgo;
 // using common::InferInterval;
 using common::LogicBase;
 using common::OutputBase;
@@ -83,7 +84,6 @@ bool ConfigParser::parseConfig(std::string const &path,
     auto algo_serial = common::algoSerialMapping.at(algo_base.serial);
     switch (algo_serial) {
     case common::AlgoSerial::Yolo:
-    case common::AlgoSerial::YoloPDet:
     case common::AlgoSerial::Assd: {
       float nms_thr = algo["nms_thr"].get<float>();
       DetAlgo det_config{std::move(algo_base), nms_thr};
@@ -100,6 +100,13 @@ bool ConfigParser::parseConfig(std::string const &path,
       int dim = algo["dim"].get<int>();
       FeatureAlgo feature_config{std::move(algo_base), dim};
       algo_config.setParams(std::move(feature_config));
+      break;
+    }
+    case common::AlgoSerial::YoloPDet: {
+      int numPoints = algo["num_points"].get<int>();
+      float nms_thr = algo["nms_thr"].get<float>();
+      PointsDetAlgo pdet_config{std::move(algo_base), numPoints, nms_thr};
+      algo_config.setParams(std::move(pdet_config));
       break;
     }
     }
@@ -180,21 +187,22 @@ bool ConfigParser::parseConfig(std::string const &path,
         auto eventId = p["event_id"].get<int>();
         auto page = p["page"].get<std::string>();
 
-        SupportedFunction func = moduleMapping[info.className];
+        SupportedFunc func = moduleMapping[info.className];
         switch (func) {
-        case SupportedFunction::CharsRecognitionModule: {
+        case SupportedFunc::OCRModule:
+        case SupportedFunc::LicensePlateModule: {
           // 前端划定区域
           auto chars = p["chars"].get<std::string>();
           auto isDraw = true;
           AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
                           isDraw};
 
-          CharsRecoConfig config_{std::move(aarea), std::move(lBase),
-                                  std::move(aBase), std::move(chars)};
+          OCRConfig config_{std::move(aarea), std::move(lBase),
+                            std::move(aBase), std::move(chars)};
           config.setParams(std::move(config_));
           break;
         }
-        case SupportedFunction::DetClsModule: {
+        case SupportedFunc::DetClsModule: {
           // 报警配置获取
           auto thre = p["threshold"].get<float>();
           auto isDraw = true;
@@ -206,7 +214,7 @@ bool ConfigParser::parseConfig(std::string const &path,
           config.setParams(std::move(config_));
           break;
         }
-        case SupportedFunction::ObjectCounterModule: {
+        case SupportedFunc::ObjectCounterModule: {
           auto amount = p["amount"].get<int>();
           auto isDraw = false;
           AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,

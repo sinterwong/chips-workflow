@@ -122,11 +122,9 @@ struct InferInterval {
  * @brief OCR类型的算法逻辑
  *
  */
-struct CharsRecoConfig : public AttentionArea,
-                         public LogicBase,
-                         public AlarmBase {
-  CharsRecoConfig(AttentionArea &&aaera, LogicBase &&alarm,
-                  AlarmBase &&alarmBase_, std::string &&chars_)
+struct OCRConfig : public AttentionArea, public LogicBase, public AlarmBase {
+  OCRConfig(AttentionArea &&aaera, LogicBase &&alarm, AlarmBase &&alarmBase_,
+            std::string &&chars_)
       : AttentionArea(aaera), LogicBase(alarm), AlarmBase(alarmBase_),
         chars(chars_) {}
 
@@ -170,8 +168,8 @@ struct DetClsMonitor : public AttentionArea,
 class ModuleConfig {
 public:
   // 将所有参数类型存储在一个 std::variant 中
-  using Params = std::variant<StreamBase, OutputBase, CharsRecoConfig,
-                              DetClsMonitor, ObjectCounterConfig>;
+  using Params = std::variant<StreamBase, OutputBase, OCRConfig, DetClsMonitor,
+                              ObjectCounterConfig>;
 
   // 设置参数
   template <typename T> void setParams(T params) {

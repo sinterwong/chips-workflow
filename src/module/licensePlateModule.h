@@ -11,27 +11,27 @@
 #ifndef __METAENGINE_LICENSE_PLATE_MODULE_H_
 #define __METAENGINE_LICENSE_PLATE_MODULE_H_
 
+#include "alarmUtils.h"
 #include "module.hpp"
 #include <codecvt>
 #include <locale>
 #include <opencv2/imgproc.hpp>
 
-using common::CharsRecoConfig;
 using common::ModuleConfig;
+using common::OCRConfig;
 
 using common::CharsRet;
 
 namespace module {
 class LicensePlateModule : Module {
 
-  std::unique_ptr<CharsRecoConfig> config;
+  std::unique_ptr<OCRConfig> config;
 
 public:
   LicensePlateModule(backend_ptr ptr, std::string const &name,
                      MessageType const &type, ModuleConfig &config_)
       : Module(ptr, name, type) {
-    config = std::make_unique<CharsRecoConfig>(
-        *config_.getParams<CharsRecoConfig>());
+    config = std::make_unique<OCRConfig>(*config_.getParams<OCRConfig>());
   }
 
   ~LicensePlateModule() {}
@@ -39,7 +39,10 @@ public:
   virtual void forward(std::vector<forwardMessage> &message) override;
 
 private:
-  std::wstring_view charsetsMapping;
+  AlarmUtils alarmUtils;
+  std::wstring_view charsetsMapping =
+      L"#京沪津渝冀晋蒙辽吉黑苏浙皖闽赣鲁豫鄂湘粤桂琼川贵云藏陕甘青宁新学警港澳"
+      L"挂使领民航深0123456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 
   inline void splitMerge(cv::Mat const &image, cv::Mat &output) {
     int h = image.rows;

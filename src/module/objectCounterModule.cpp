@@ -127,7 +127,7 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
       counter.insert(results[j].first);
     }
 
-    std::cout << "person number: " << counter.size() << std::endl;
+    FLOWENGINE_LOGGER_CRITICAL("person number: {}", counter.size());
 
     // 每到一定的数量就会触发报警
     if (counter.size() != 0 &&
@@ -140,7 +140,7 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
                                     buf.alarmInfo.alarmId + ".jpg",
                                 *image, buf.frameType, config->isDraw);
       autoSend(buf);
-      counter.insert(config->amount * 200);
+      counter.insert(counter.size() * 200);
     }
   }
 }

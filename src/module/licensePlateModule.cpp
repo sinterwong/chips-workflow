@@ -57,76 +57,88 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
       regions.emplace_back(common::RetBox{name, {0, 0, 0, 0, 0, 0}});
     }
 
+    assert(regions.size() == 1);
+
     auto &lpDet = config->algoPipelines.at(0);
     auto &lpRec = config->algoPipelines.at(1);
 
-    std::vector<OCRRet> results;
-
     // 至此，所有的算法模块执行完成，整合算法结果判断是否报警
-    for (auto &region : regions) {
-      InferParams detParams{name,
-                            buf.frameType,
-                            lpDet.second.cropScaling,
-                            region,
-                            {image->cols, image->rows, image->channels()}};
-      InferResult textDetRet;
-      if (!ptr->algo->infer(lpDet.first, image->data, detParams, textDetRet)) {
-        return;
-      };
+    InferParams detParams{name,
+                          buf.frameType,
+                          lpDet.second.cropScaling,
+                          regions.at(0),
+                          {image->cols, image->rows, image->channels()}};
+    InferResult textDetRet;
+    if (!ptr->algo->infer(lpDet.first, image->data, detParams, textDetRet)) {
+      return;
+    };
 
-      // 获取到文本检测的信息
-      auto kbboxes = std::get_if<KeypointsBoxes>(&textDetRet.aRet);
-      if (!kbboxes) {
-        FLOWENGINE_LOGGER_ERROR("OCRModule: Wrong algorithm type!");
-        return;
-      }
-
-      // 识别每一个车牌
-      for (auto &kbbox : *kbboxes) {
-        cv::Mat licensePlateImage;
-        cv::Rect2i rect{
-            static_cast<int>(kbbox.bbox.bbox[0]),
-            static_cast<int>(kbbox.bbox.bbox[1]),
-            static_cast<int>(kbbox.bbox.bbox[2] - kbbox.bbox.bbox[0]),
-            static_cast<int>(kbbox.bbox.bbox[3] - kbbox.bbox.bbox[1])};
-        infer::utils::cropImage(*image, licensePlateImage, rect, buf.frameType);
-        if (kbbox.bbox.class_id == 1) {
-          // 如果是双层车牌
-          infer::utils::sortFourPoints(kbbox.points); // 排序关键点
-          cv::Mat lpr_rgb;
-          cv::cvtColor(licensePlateImage, lpr_rgb, cv::COLOR_YUV2RGB_NV12);
-          cv::Mat lpr_ted;
-          // 相对于车牌图片的点
-          infer::utils::fourPointTransform(lpr_rgb, lpr_ted, kbbox.points);
-
-          // 上下分割，垂直合并车牌
-          splitMerge(lpr_ted, licensePlateImage);
-          infer::utils::RGB2NV12(licensePlateImage, licensePlateImage);
-        }
-        InferParams recParams{name,
-                              buf.frameType,
-                              0.0,
-                              common::RetBox{name, {0, 0, 0, 0, 0, 0}},
-                              {licensePlateImage.cols, licensePlateImage.rows,
-                               licensePlateImage.channels()}};
-        InferResult textRecRet;
-        if (!ptr->algo->infer(lpRec.first, licensePlateImage.data, recParams,
-                              textRecRet)) {
-          return;
-        };
-        auto charIds = std::get_if<CharsRet>(&textRecRet.aRet);
-        if (!charIds) {
-          FLOWENGINE_LOGGER_ERROR("OCRModule: Wrong algorithm type!");
-          return;
-        }
-        results.emplace_back(
-            OCRRet{kbbox, *charIds, getChars(*charIds, charsetsMapping)});
-      }
+    // 获取到文本检测的信息
+    auto kbboxes = std::get_if<KeypointsBoxes>(&textDetRet.aRet);
+    if (!kbboxes) {
+      FLOWENGINE_LOGGER_ERROR("OCRModule: Wrong algorithm type!");
+      return;
     }
 
-    // 本轮算法结果生成
-    utils::retOCR2json(results, buf.alarmInfo.algorithmResult);
-    autoSend(buf);
+    // 识别每一个车牌
+    std::vector<OCRRet> results;
+    for (auto &kbbox : *kbboxes) {
+      for (auto &p : kbbox.points) {
+        std::cout << "x: " << p.x << ", "
+                  << "y: " << p.y << std::endl;
+      }
+      cv::Mat licensePlateImage;
+      cv::Rect2i rect{
+          static_cast<int>(kbbox.bbox.bbox[0]),
+          static_cast<int>(kbbox.bbox.bbox[1]),
+          static_cast<int>(kbbox.bbox.bbox[2] - kbbox.bbox.bbox[0]),
+          static_cast<int>(kbbox.bbox.bbox[3] - kbbox.bbox.bbox[1])};
+      infer::utils::cropImage(*image, licensePlateImage, rect, buf.frameType);
+      if (kbbox.bbox.class_id == 1) {
+        // 如果是双层车牌，则需要上下分割，垂直合并车牌
+        infer::utils::sortFourPoints(kbbox.points); // 排序关键点
+        cv::Mat lpr_rgb;
+        cv::cvtColor(licensePlateImage, lpr_rgb, cv::COLOR_YUV2RGB_NV12);
+        cv::Mat lpr_td;
+        // 仿射变换
+        infer::utils::fourPointTransform(lpr_rgb, lpr_td, kbbox.points);
+        splitMerge(lpr_td, licensePlateImage);
+        infer::utils::RGB2NV12(licensePlateImage, licensePlateImage);
+      }
+      InferParams recParams{name,
+                            buf.frameType,
+                            0.0,
+                            common::RetBox{name, {0, 0, 0, 0, 0, 0}},
+                            {licensePlateImage.cols, licensePlateImage.rows,
+                             licensePlateImage.channels()}};
+      InferResult textRecRet;
+      if (!ptr->algo->infer(lpRec.first, licensePlateImage.data, recParams,
+                            textRecRet)) {
+        return;
+      };
+      auto charIds = std::get_if<CharsRet>(&textRecRet.aRet);
+      if (!charIds) {
+        FLOWENGINE_LOGGER_ERROR("LicensePlateModule: Wrong algorithm type!");
+        return;
+      }
+
+      for (auto &c : *charIds) {
+        std::cout << c << ", ";
+      }
+      std::cout << std::endl;
+
+      auto lpr = getChars(*charIds, charsetsMapping);
+      FLOWENGINE_LOGGER_CRITICAL("License plate number is: {}", lpr);
+      results.emplace_back(OCRRet{kbbox, *charIds, std::move(lpr)});
+    }
+
+    if (!results.empty()) {
+      // 本轮算法结果生成
+      utils::retOCR2json(results, buf.alarmInfo.algorithmResult);
+      alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在车牌",
+                                   config.get());
+      autoSend(buf);
+    }
   }
 }
 
