@@ -49,12 +49,12 @@ struct FrameInfo {
 };
 
 /**
- * @brief bbox result type
+ * @brief bbox result type, x1, y1, x2, y2, conf, class_id
  *
  */
 using RetBox = std::pair<std::string, std::array<float, 6>>;
 /**
- * @brief poly result type
+ * @brief poly result type x1, y1, x2, y2, x3, y3, x4, y4, class_id
  *
  */
 using RetPoly = std::pair<std::string, std::array<float, 9>>;

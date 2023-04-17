@@ -145,11 +145,11 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
                                      alarmBox.second[4], alarmBox.second[5]);
           // 生成报警信息
           alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在报警行为",
-                                       alarmBox, config.get());
+                                       config.get());
           // 生成报警图片
-          alarmUtils.saveAlarmImage(buf.alarmInfo.alarmFile + "/" +
-                                        buf.alarmInfo.alarmId + ".jpg",
-                                    *image, buf.frameType, alarmBox);
+          alarmUtils.saveAlarmImage(
+              buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".jpg",
+              *image, buf.frameType, config->isDraw, alarmBox);
 
           // 初始化报警视频
           alarmUtils.initRecorder(buf.alarmInfo.alarmFile + "/" +

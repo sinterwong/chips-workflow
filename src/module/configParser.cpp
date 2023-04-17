@@ -14,6 +14,7 @@
 
 #include "module_utils.hpp"
 #include "nlohmann/json.hpp"
+#include "objectCounterModule.h"
 
 #include <array>
 #include <cstddef>
@@ -27,13 +28,13 @@ using common::AlgoBase;
 using common::AlgoConfig;
 using common::AlgoParams;
 using common::AttentionArea;
-using common::CategoryAlarmConfig;
 using common::CharsRecoConfig;
 using common::ClassAlgo;
 using common::DetAlgo;
-using common::FeatureAlgo;
 using common::DetClsMonitor;
-using common::InferInterval;
+using common::FeatureAlgo;
+using common::ObjectCounterConfig;
+// using common::InferInterval;
 using common::LogicBase;
 using common::OutputBase;
 using Point2i = common::Point<int>;
@@ -150,7 +151,7 @@ bool ConfigParser::parseConfig(std::string const &path,
         break;
       }
       case ModuleType::Logic: {
-        // 公共参数部分
+        // 公共参数部分 DL的执行逻辑，属于必要字段
         LogicBase lBase;
         json apipes = p["algo_pipe"];
         for (auto const &ap : apipes) {
@@ -162,52 +163,57 @@ bool ConfigParser::parseConfig(std::string const &path,
               std::pair{ap["name"].get<std::string>(), std::move(params)});
         }
 
+        // 前端划定区域 目前来说一定会有这个字段
+        AttentionArea aarea;
+        auto regions = p["regions"];
+        for (auto const &region : regions) {
+          Points2i ret;
+          for (size_t i = 0; i < region.size(); i += 2) {
+            ret.push_back(Point2i{region.at(i), region.at(i + 1)});
+          }
+          aarea.regions.emplace_back(ret);
+        }
+
+        // 报警配置获取 目前来说一定会有这些字段
+        auto outputDir = p["alarm_output_dir"].get<std::string>();
+        auto videoDuration = p["video_duration"].get<int>();
+        auto eventId = p["event_id"].get<int>();
+        auto page = p["page"].get<std::string>();
+
         SupportedFunction func = moduleMapping[info.className];
         switch (func) {
         case SupportedFunction::CharsRecognitionModule: {
           // 前端划定区域
-          AttentionArea aarea;
           auto chars = p["chars"].get<std::string>();
-          auto regions = p["regions"];
-          for (auto const &region : regions) {
-            Points2i ret;
-            for (size_t i = 0; i < region.size(); i += 2) {
-              ret.push_back(Point2i{region.at(i), region.at(i + 1)});
-            }
-            aarea.regions.emplace_back(ret);
-          }
-          InferInterval interval;
+          auto isDraw = true;
+          AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
+                          isDraw};
+
           CharsRecoConfig config_{std::move(aarea), std::move(lBase),
-                                  std::move(interval), std::move(chars)};
+                                  std::move(aBase), std::move(chars)};
           config.setParams(std::move(config_));
           break;
         }
         case SupportedFunction::DetClsModule: {
           // 报警配置获取
-          auto outputDir = p["alarm_output_dir"].get<std::string>();
-          auto videoDuration = p["video_duration"].get<int>();
           auto thre = p["threshold"].get<float>();
-          auto eventId = p["event_id"].get<int>();
-          auto page = p["page"].get<std::string>();
           auto isDraw = true;
-          AlarmBase aBase{std::move(outputDir), videoDuration, isDraw, eventId,
-                          page};
-          CategoryAlarmConfig cac{std::move(lBase), std::move(aBase), thre};
+          AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
+                          isDraw};
 
-          // 前端划定区域
-          AttentionArea aarea;
-          auto regions = p["regions"];
-          for (auto const &region : regions) {
-            Points2i ret;
-            for (size_t i = 0; i < region.size(); i += 2) {
-              ret.push_back(Point2i{region.at(i), region.at(i + 1)});
-            }
-            aarea.regions.emplace_back(ret);
-          }
+          DetClsMonitor config_{std::move(aarea), std::move(lBase),
+                                std::move(aBase), thre};
+          config.setParams(std::move(config_));
+          break;
+        }
+        case SupportedFunction::ObjectCounterModule: {
+          auto amount = p["amount"].get<int>();
+          auto isDraw = false;
+          AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
+                          isDraw};
 
-          InferInterval interval;
-          DetClsMonitor config_{std::move(aarea), std::move(cac),
-                                std::move(interval)};
+          ObjectCounterConfig config_{std::move(aarea), std::move(lBase),
+                                      std::move(aBase), amount};
           config.setParams(std::move(config_));
           break;
         }

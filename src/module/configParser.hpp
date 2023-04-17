@@ -30,7 +30,11 @@ using AlgorithmParams = std::pair<std::string, AlgoConfig>;
  */
 enum class ModuleType { Algorithm, Stream, Output, Logic };
 
-enum class SupportedFunction { DetClsModule = 0, CharsRecognitionModule };
+enum class SupportedFunction {
+  DetClsModule = 0,
+  CharsRecognitionModule,
+  ObjectCounterModule
+};
 
 class ConfigParser {
 private:
@@ -39,6 +43,7 @@ private:
       std::make_pair("CharsRecognitionModule",
                      SupportedFunction::CharsRecognitionModule),
       std::make_pair("DetClsModule", SupportedFunction::DetClsModule),
+      std::make_pair("ObjectCounterModule", SupportedFunction::ObjectCounterModule),
   };
 
   // 配置参数类型

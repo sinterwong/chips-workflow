@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
   FLOWENGINE_LOGGER_INFO("Video manager is running!");
 
   // trakcker
-  DeepSortTracker deepsrot(0.2, 100);
+  DeepSortTracker deepsort(0.2, 100);
 
   std::vector<RESULT_DATA> last_results;
   DETECTIONS last_detections;
@@ -180,10 +180,10 @@ int main(int argc, char **argv) {
         detections.emplace_back(tmpRow);
       }
 
-      deepsrot.predict();
-      deepsrot.update(detections);
+      deepsort.predict();
+      deepsort.update(detections);
 
-      for (Track &track : deepsrot.tracks) {
+      for (Track &track : deepsort.tracks) {
         if (!track.is_confirmed() || track.time_since_update > 1)
           continue;
         results.push_back(std::make_pair(track.track_id, track.to_tlwh()));
