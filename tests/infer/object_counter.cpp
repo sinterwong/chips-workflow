@@ -26,6 +26,7 @@ DEFINE_string(det_model_path, "", "Specify the lprDet model path.");
 DEFINE_string(reid_model_path, "", "Specify the lprNet model path.");
 
 using namespace infer;
+using namespace infer::solution;
 using namespace common;
 
 using algo_ptr = std::shared_ptr<AlgoInfer>;
@@ -126,7 +127,7 @@ int main(int argc, char **argv) {
   FLOWENGINE_LOGGER_INFO("Video manager is running!");
 
   // trakcker
-  tracker deepsrot(0.2, 100);
+  DeepSortTracker deepsrot(0.2, 100);
 
   std::vector<RESULT_DATA> last_results;
   DETECTIONS last_detections;

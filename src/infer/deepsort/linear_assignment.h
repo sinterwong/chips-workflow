@@ -2,9 +2,8 @@
 #define __INFER_DEEPSORT_LINEAR_ASSIGNMENT_H_
 #include "dataType.hpp"
 #include "tracker.h"
-
 #define INFTY_COST 1e5
-class tracker;
+namespace infer::solution {
 // for matching;
 class linear_assignment {
   linear_assignment();
@@ -15,12 +14,12 @@ class linear_assignment {
 public:
   static linear_assignment *getInstance();
   TRACHER_MATCHD matching_cascade(
-      tracker *distance_metric, tracker::GATED_METRIC_FUNC distance_metric_func,
+      DeepSortTracker *distance_metric, DeepSortTracker::GATED_METRIC_FUNC distance_metric_func,
       float max_distance, int cascade_depth, std::vector<Track> &tracks,
       const DETECTIONS &detections, std::vector<int> &track_indices,
       std::vector<int> detection_indices = std::vector<int>());
   TRACHER_MATCHD min_cost_matching(
-      tracker *distance_metric, tracker::GATED_METRIC_FUNC distance_metric_func,
+      DeepSortTracker *distance_metric, DeepSortTracker::GATED_METRIC_FUNC distance_metric_func,
       float max_distance, std::vector<Track> &tracks,
       const DETECTIONS &detections, std::vector<int> &track_indices,
       std::vector<int> &detection_indices);
@@ -32,5 +31,5 @@ public:
                             float gated_cost = INFTY_COST,
                             bool only_position = false);
 };
-
+}
 #endif // LINEAR_ASSIGNMENT_H

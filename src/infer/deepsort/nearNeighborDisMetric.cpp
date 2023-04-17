@@ -2,6 +2,7 @@
 
 using namespace Eigen;
 
+namespace infer::solution {
 NearNeighborDisMetric::NearNeighborDisMetric(
     NearNeighborDisMetric::METRIC_TYPE metric, float matching_threshold,
     int budget) {
@@ -137,3 +138,4 @@ NearNeighborDisMetric::_cosine_distance(const FEATURESS &a, const FEATURESS &b,
   MatrixXf res = 1. - (a * b.transpose()).array();
   return res;
 }
+} // namespace infer::solution

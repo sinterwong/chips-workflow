@@ -8,8 +8,8 @@ using namespace std;
 #include <iostream>
 #include <string>
 #endif
-
-tracker::tracker(/*NearNeighborDisMetric *metric,*/
+namespace infer::solution {
+DeepSortTracker::DeepSortTracker(/*NearNeighborDisMetric *metric,*/
                  float max_cosine_distance, int nn_budget,
                  float max_iou_distance, int max_age, int n_init) {
   this->metric =
@@ -24,13 +24,13 @@ tracker::tracker(/*NearNeighborDisMetric *metric,*/
   this->_next_idx = 1;
 }
 
-void tracker::predict() {
+void DeepSortTracker::predict() {
   for (Track &track : tracks) {
     track.predit(kf);
   }
 }
 
-void tracker::update(const DETECTIONS &detections) {
+void DeepSortTracker::update(const DETECTIONS &detections) {
   TRACHER_MATCHD res;
   _match(detections, res);
 
@@ -86,7 +86,7 @@ void tracker::update(const DETECTIONS &detections) {
   this->metric->partial_fit(tid_features, active_targets);
 }
 
-void tracker::_match(const DETECTIONS &detections, TRACHER_MATCHD &res) {
+void DeepSortTracker::_match(const DETECTIONS &detections, TRACHER_MATCHD &res) {
   vector<int> confirmed_tracks;
   vector<int> unconfirmed_tracks;
   int idx = 0;
@@ -99,7 +99,7 @@ void tracker::_match(const DETECTIONS &detections, TRACHER_MATCHD &res) {
   }
 
   TRACHER_MATCHD matcha = linear_assignment::getInstance()->matching_cascade(
-      this, &tracker::gated_matric, this->metric->mating_threshold,
+      this, &DeepSortTracker::gated_matric, this->metric->mating_threshold,
       this->max_age, this->tracks, detections, confirmed_tracks);
   vector<int> iou_track_candidates;
   iou_track_candidates.assign(unconfirmed_tracks.begin(),
@@ -116,7 +116,7 @@ void tracker::_match(const DETECTIONS &detections, TRACHER_MATCHD &res) {
     ++it;
   }
   TRACHER_MATCHD matchb = linear_assignment::getInstance()->min_cost_matching(
-      this, &tracker::iou_cost, this->max_iou_distance, this->tracks,
+      this, &DeepSortTracker::iou_cost, this->max_iou_distance, this->tracks,
       detections, iou_track_candidates, matcha.unmatched_detections);
   // get result:
   res.matches.assign(matcha.matches.begin(), matcha.matches.end());
@@ -132,7 +132,7 @@ void tracker::_match(const DETECTIONS &detections, TRACHER_MATCHD &res) {
                                   matchb.unmatched_detections.end());
 }
 
-void tracker::_initiate_track(const DETECTION_ROW &detection) {
+void DeepSortTracker::_initiate_track(const DETECTION_ROW &detection) {
   KAL_DATA data = kf->initiate(detection.to_xyah());
   KAL_MEAN mean = data.first;
   KAL_COVA covariance = data.second;
@@ -142,7 +142,7 @@ void tracker::_initiate_track(const DETECTION_ROW &detection) {
   _next_idx += 1;
 }
 
-DYNAMICM tracker::gated_matric(std::vector<Track> &tracks,
+DYNAMICM DeepSortTracker::gated_matric(std::vector<Track> &tracks,
                                const DETECTIONS &dets,
                                const std::vector<int> &track_indices,
                                const std::vector<int> &detection_indices) {
@@ -162,7 +162,7 @@ DYNAMICM tracker::gated_matric(std::vector<Track> &tracks,
 }
 
 DYNAMICM
-tracker::iou_cost(std::vector<Track> &tracks, const DETECTIONS &dets,
+DeepSortTracker::iou_cost(std::vector<Track> &tracks, const DETECTIONS &dets,
                   const std::vector<int> &track_indices,
                   const std::vector<int> &detection_indices) {
   //!!!python diff: track_indices && detection_indices will never be None.
@@ -197,7 +197,7 @@ tracker::iou_cost(std::vector<Track> &tracks, const DETECTIONS &dets,
   return cost_matrix;
 }
 
-Eigen::VectorXf tracker::iou(DETECTBOX &bbox, DETECTBOXSS &candidates) {
+Eigen::VectorXf DeepSortTracker::iou(DETECTBOX &bbox, DETECTBOXSS &candidates) {
   float bbox_tl_1 = bbox[0];
   float bbox_tl_2 = bbox[1];
   float bbox_br_1 = bbox[0] + bbox[2];
@@ -233,3 +233,4 @@ Eigen::VectorXf tracker::iou(DETECTBOX &bbox, DETECTBOXSS &candidates) {
   // #endif
   return res;
 }
+} // namespace infer::solution

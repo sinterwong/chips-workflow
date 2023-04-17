@@ -3,11 +3,11 @@
 #include <vector>
 
 #include "kalmanfilter.h"
+#include "nearNeighborDisMetric.h"
 #include "track.h"
 
-class NearNeighborDisMetric;
-
-class tracker {
+namespace infer::solution {
+class DeepSortTracker {
 public:
   NearNeighborDisMetric *metric;
   float max_iou_distance;
@@ -20,12 +20,12 @@ public:
 
 public:
   std::vector<Track> tracks;
-  tracker(/*NearNeighborDisMetric* metric,*/
+  DeepSortTracker(/*NearNeighborDisMetric* metric,*/
           float max_cosine_distance, int nn_budget,
           float max_iou_distance = 0.7, int max_age = 30, int n_init = 3);
   void predict();
   void update(const DETECTIONS &detections);
-  typedef DYNAMICM (tracker::*GATED_METRIC_FUNC)(
+  typedef DYNAMICM (DeepSortTracker::*GATED_METRIC_FUNC)(
       std::vector<Track> &tracks, const DETECTIONS &dets,
       const std::vector<int> &track_indices,
       const std::vector<int> &detection_indices);
@@ -43,5 +43,5 @@ public:
                     const std::vector<int> &detection_indices);
   Eigen::VectorXf iou(DETECTBOX &bbox, DETECTBOXSS &candidates);
 };
-
+}
 #endif // TRACKER_H

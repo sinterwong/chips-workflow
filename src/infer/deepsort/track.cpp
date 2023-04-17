@@ -1,5 +1,5 @@
 #include "track.h"
-
+namespace infer::solution {
 Track::Track(KAL_MEAN &mean, KAL_COVA &covariance, int track_id, int n_init,
              int max_age, const FEATURE &feature) {
   this->mean = mean;
@@ -72,3 +72,4 @@ void Track::featuresAppendOne(const FEATURE &f) {
   newfeatures.row(size) = f;
   features = newfeatures;
 }
+} // namespace infer::solution

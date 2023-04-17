@@ -4,7 +4,7 @@
 #include "dataType.hpp"
 
 #include <map>
-
+namespace infer::solution {
 // A tool to calculate distance;
 class NearNeighborDisMetric {
 public:
@@ -33,5 +33,5 @@ private:
   int budget;
   std::map<int, FEATURESS> samples;
 };
-
+} // namespace infer::solution
 #endif // NN_MATCHING_H

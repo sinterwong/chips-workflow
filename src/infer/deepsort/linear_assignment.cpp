@@ -2,6 +2,7 @@
 #include "hungarianoper.h"
 #include <map>
 
+namespace infer::solution {
 linear_assignment *linear_assignment::instance = NULL;
 linear_assignment::linear_assignment() {}
 
@@ -13,7 +14,7 @@ linear_assignment *linear_assignment::getInstance() {
 
 TRACHER_MATCHD
 linear_assignment::matching_cascade(
-    tracker *distance_metric, tracker::GATED_METRIC_FUNC distance_metric_func,
+    DeepSortTracker *distance_metric, DeepSortTracker::GATED_METRIC_FUNC distance_metric_func,
     float max_distance, int cascade_depth, std::vector<Track> &tracks,
     const DETECTIONS &detections, std::vector<int> &track_indices,
     std::vector<int> detection_indices) {
@@ -72,7 +73,7 @@ linear_assignment::matching_cascade(
 
 TRACHER_MATCHD
 linear_assignment::min_cost_matching(
-    tracker *distance_metric, tracker::GATED_METRIC_FUNC distance_metric_func,
+    DeepSortTracker *distance_metric, DeepSortTracker::GATED_METRIC_FUNC distance_metric_func,
     float max_distance, std::vector<Track> &tracks,
     const DETECTIONS &detections, std::vector<int> &track_indices,
     std::vector<int> &detection_indices) {
@@ -169,3 +170,4 @@ linear_assignment::gate_cost_matrix(KalmanFilter *kf, DYNAMICM &cost_matrix,
   }
   return cost_matrix;
 }
+} // namespace infer::solution

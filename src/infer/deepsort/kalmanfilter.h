@@ -2,7 +2,7 @@
 #define __INFER_DEEPSORT_KALMANFILTER_H
 
 #include "dataType.hpp"
-
+namespace infer::solution {
 class KalmanFilter {
 public:
   static const double chi2inv95[10];
@@ -24,5 +24,5 @@ private:
   float _std_weight_position;
   float _std_weight_velocity;
 };
-
+} // namespace infer::solution
 #endif // KALMANFILTER_H

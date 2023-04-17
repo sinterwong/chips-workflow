@@ -3,6 +3,8 @@
 
 #include <Eigen/Dense>
 
+namespace infer::solution {
+
 constexpr int FDIMS = 512; // feature dim
 
 using DETECTBOX = Eigen::Matrix<float, 1, 4, Eigen::RowMajor>;
@@ -56,5 +58,5 @@ public:
   }
 };
 using DETECTIONS = std::vector<DETECTION_ROW>;
-
+} // namespace infer::solution
 #endif

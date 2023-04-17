@@ -1,4 +1,6 @@
 #include "hungarianoper.h"
+
+namespace infer::solution {
 // sisyphus
 Eigen::Matrix<float, -1, 2, Eigen::RowMajor>
 HungarianOper::Solve(const DYNAMICM &cost_matrix) {
@@ -32,3 +34,4 @@ HungarianOper::Solve(const DYNAMICM &cost_matrix) {
   }
   return re;
 } // end Solve;
+} // namespace infer::solution

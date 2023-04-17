@@ -28,6 +28,7 @@
 #include <list>
 #include <utility>
 
+namespace infer::solution {
 template <typename Data> class Munkres {
   static constexpr int NORMAL = 0;
   static constexpr int STAR = 1;
@@ -452,5 +453,5 @@ private:
 template class Munkres<double>;
 template class Munkres<float>;
 template class Munkres<int>;
-
+} // namespace infer::solution
 #endif

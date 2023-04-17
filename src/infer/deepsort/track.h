@@ -3,7 +3,7 @@
 
 #include "dataType.hpp"
 #include "kalmanfilter.h"
-
+namespace infer::solution {
 class Track {
   /*"""
   A single target track with state space `(x, y, a, h)` and associated
@@ -74,5 +74,5 @@ public:
 private:
   void featuresAppendOne(const FEATURE &f);
 };
-
+} // namespace infer::solution
 #endif
