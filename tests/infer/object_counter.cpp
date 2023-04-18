@@ -27,7 +27,6 @@ DEFINE_string(reid_model_path, "", "Specify the lprNet model path.");
 
 using namespace infer;
 using namespace infer::solution;
-using namespace common;
 
 using algo_ptr = std::shared_ptr<AlgoInfer>;
 
@@ -47,10 +46,10 @@ algo_ptr getVision(AlgoConfig &&config) {
 void inference(cv::Mat &image, InferResult &ret,
                std::shared_ptr<AlgoInfer> vision) {
 
-  RetBox region{"hello", {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
+  common::RetBox region{"hello", {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
 
   InferParams params{std::string("hello"),
-                     ColorType::NV12,
+                     common::ColorType::NV12,
                      0.0,
                      region,
                      {image.cols, image.rows, image.channels()}};
@@ -58,7 +57,7 @@ void inference(cv::Mat &image, InferResult &ret,
   vision->infer(image.data, params, ret);
 }
 
-cv::Rect2i getRect(BBox const &bbox) {
+cv::Rect2i getRect(common::BBox const &bbox) {
   return cv::Rect2i{static_cast<int>(bbox.bbox[0]),
                     static_cast<int>(bbox.bbox[1]),
                     static_cast<int>(bbox.bbox[2] - bbox.bbox[0]),
@@ -164,7 +163,7 @@ int main(int argc, char **argv) {
 
         cv::Mat cropedImage;
         auto rect = getRect(bbox);
-        utils::cropImage(*image, cropedImage, rect, ColorType::NV12);
+        utils::cropImage(*image, cropedImage, rect, common::ColorType::NV12);
 
         InferResult reidRet;
         inference(cropedImage, reidRet, reidNet);

@@ -16,6 +16,7 @@ IF(TARGET_HARDWARE STREQUAL jetson)
     TARGET_INCLUDE_DIRECTORIES(infer PRIVATE 
         ${PROJECT_INCLUDE_DIR}
         ${PROJECT_INCLUDE_DIR}/infer
+        ${3RDPARTY_ROOT}/eigen
         ${OpenCV_INCLUDE_DIRS}
         ${CUDA_INCLUDE_DIRS}
     )
