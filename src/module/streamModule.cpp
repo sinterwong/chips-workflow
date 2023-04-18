@@ -61,7 +61,8 @@ StreamModule::StreamModule(backend_ptr ptr, std::string const &_name,
   config = std::make_unique<StreamBase>(*_config.getParams<StreamBase>());
 
   try {
-    vm = std::make_unique<VideoManager>(config->uri);
+    vm = std::make_unique<VideoManager>(config->uri, config->width,
+                                        config->height);
   } catch (const std::runtime_error &e) {
     FLOWENGINE_LOGGER_ERROR("initRecorder exception: ", e.what());
     std::runtime_error("StreamModule ctor has failed!");
@@ -85,7 +86,6 @@ void StreamModule::beforeForward() {
 };
 
 void StreamModule::step() {
-  beforeGetMessage();
   beforeForward();
   if (!vm->isRunning()) {
     return;
@@ -102,19 +102,10 @@ void StreamModule::step() {
     stopFlag.store(true);
     return;
   }
-  std::vector<forwardMessage> messages;
-  forward(messages);
-  afterForward();
+  startup();
 }
 
-void StreamModule::forward(std::vector<forwardMessage> &message) {
-  for (auto &[send, type, buf] : message) {
-    if (type == MessageType::Close) {
-      FLOWENGINE_LOGGER_INFO("{} StreamModule module was done!", name);
-      stopFlag.store(true);
-      return;
-    }
-  }
+void StreamModule::startup() {
 
   queueMessage sendMessage;
   auto frame = vm->getcvImage();

@@ -159,7 +159,7 @@ calibration_parameters:
   # types of model quantization algorithms, usually default will meet the need
   # available options:kl, max, default and load
   # if converted model is quanti model exported from QAT , then choose `load`
-  calibration_type: 'kl'
+  calibration_type: 'default'
 
 # 编译器相关参数
 # ----------------------------

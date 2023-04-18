@@ -30,14 +30,21 @@ using AlgorithmParams = std::pair<std::string, AlgoConfig>;
  */
 enum class ModuleType { Algorithm, Stream, Output, Logic };
 
-enum class SupportedFunction { HelmetModule = 0, DetClsModule };
+enum class SupportedFunc {
+  DetClsModule = 0,
+  OCRModule,
+  LicensePlateModule,
+  ObjectCounterModule
+};
 
 class ConfigParser {
 private:
   // 模块映射
-  std::unordered_map<std::string, SupportedFunction> moduleMapping{
-      std::make_pair("HelmetModule", SupportedFunction::HelmetModule),
-      std::make_pair("DetClsModule", SupportedFunction::DetClsModule),
+  std::unordered_map<std::string, SupportedFunc> moduleMapping{
+      std::make_pair("OCRModule", SupportedFunc::OCRModule),
+      std::make_pair("DetClsModule", SupportedFunc::DetClsModule),
+      std::make_pair("LicensePlateModule", SupportedFunc::LicensePlateModule),
+      std::make_pair("ObjectCounterModule", SupportedFunc::ObjectCounterModule),
   };
 
   // 配置参数类型

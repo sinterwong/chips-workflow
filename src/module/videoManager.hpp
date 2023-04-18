@@ -31,6 +31,7 @@ namespace module::utils {
 class VideoManager : private common::NonCopyable {
 private:
   std::string uri; // 流地址
+  int w, h;        // 流分辨率
   std::unique_ptr<videoSource> stream;
   std::unique_ptr<joining_thread> consumer; // 消费者
   std::mutex m;
@@ -82,7 +83,8 @@ public:
 #endif
   }
 
-  explicit VideoManager(std::string const &uri_) : uri(uri_) {
+  explicit VideoManager(std::string const &uri_, int w_ = 1920, int h_ = 1080)
+      : uri(uri_), w(w_), h(h_) {
 #if (TARGET_PLATFORM == 0)
     channel = ChannelsManager::getInstance().getChannel();
     if (channel < 0) {

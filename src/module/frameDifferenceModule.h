@@ -12,28 +12,32 @@
 #ifndef __METAENGINE_FRAME_DIFFERENCE_MODULE_H
 #define __METAENGINE_FRAME_DIFFERENCE_MODULE_H
 
-#include <array>
-#include <opencv2/opencv.hpp>
-#include <string>
-#include <utility>
-
-#include "backend.h"
+#include "alarmUtils.h"
 #include "frame_difference.h"
 #include "module.hpp"
 
 namespace module {
+using common::ModuleConfig;
+using common::ObjectCounterConfig;
 class FrameDifferenceModule : public Module {
-private:
-  int count = 0;
-  solution::FrameDifference fd;
 
 public:
   FrameDifferenceModule(backend_ptr ptr, std::string const &name,
-                        MessageType const &type);
+                        MessageType const &type, ModuleConfig &config_)
+      : Module(ptr, name, type) {
+    config = std::make_unique<ObjectCounterConfig>(
+        *config_.getParams<ObjectCounterConfig>());
+  }
 
-  ~FrameDifferenceModule();
+  ~FrameDifferenceModule() {}
 
   virtual void forward(std::vector<forwardMessage> &message) override;
+
+private:
+  int count = 0;
+  infer::solution::FrameDifference fd;
+  AlarmUtils alarmUtils;
+  std::unique_ptr<ObjectCounterConfig> config;
 };
 } // namespace module
 #endif // __METAENGINE_FRAME_DIFFERENCE_MODULE_H

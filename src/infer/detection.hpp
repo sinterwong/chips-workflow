@@ -13,19 +13,19 @@
 #define __INFERENCE_VISION_DETECTION_H_
 #include "core/factory.hpp"
 #include "vision.hpp"
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 class Detection : public Vision {
   //!
   //! \brief construction
   //!
 public:
-  Detection(const AlgoConfig &_param, ModelInfo const &_info)
+  explicit Detection(const AlgoConfig &_param, ModelInfo const &_info)
       : Vision(_param, _info) {
-    config = mParams.getParams<DetAlgo>();
+    config = mParams.getCopyParams<DetAlgo>();
   }
 
   //!
@@ -45,11 +45,10 @@ public:
   virtual bool verifyOutput(InferResult const &) const override;
 
 protected:
-  DetAlgo *config;
+  DetAlgo config;
   virtual void generateBoxes(std::unordered_map<int, BBoxes> &,
                              void **) const = 0;
 };
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision
 
 #endif

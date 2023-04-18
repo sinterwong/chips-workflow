@@ -12,12 +12,11 @@
 #include "core/factory.hpp"
 #include "logger/logger.hpp"
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 
 ClsRet Softmax::generateClass(void **outputs) const {
   float **out = reinterpret_cast<float **>(*outputs);
-  float* output = out[0];
+  float *output = out[0];
 
   int outputSize = modelInfo.outputShapes[0].at(1);
 
@@ -45,5 +44,4 @@ ClsRet Softmax::generateClass(void **outputs) const {
 }
 
 FlowEngineModuleRegister(Softmax, AlgoConfig const &, ModelInfo const &);
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision

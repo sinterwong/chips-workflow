@@ -14,6 +14,7 @@
 
 #include "module_utils.hpp"
 #include "nlohmann/json.hpp"
+#include "objectCounterModule.h"
 
 #include <array>
 #include <cstddef>
@@ -21,6 +22,7 @@
 #include <utility>
 #include <vector>
 
+using common::AlarmBase;
 using common::algo_pipelines;
 using common::AlgoBase;
 using common::AlgoConfig;
@@ -29,13 +31,16 @@ using common::AttentionArea;
 using common::ClassAlgo;
 using common::DetAlgo;
 using common::DetClsMonitor;
-using common::InferInterval;
+using common::FeatureAlgo;
+using common::ObjectCounterConfig;
+using common::OCRConfig;
+using common::PointsDetAlgo;
+// using common::InferInterval;
 using common::LogicBase;
 using common::OutputBase;
-using common::Point;
-using common::Points;
+using Point2i = common::Point<int>;
+using common::Points2i;
 using common::StreamBase;
-using common::WithoutHelmet;
 
 using json = nlohmann::json;
 
@@ -85,9 +90,23 @@ bool ConfigParser::parseConfig(std::string const &path,
       algo_config.setParams(std::move(det_config));
       break;
     }
+    case common::AlgoSerial::CRNN:
     case common::AlgoSerial::Softmax: {
       ClassAlgo cls_config{std::move(algo_base)};
       algo_config.setParams(std::move(cls_config));
+      break;
+    }
+    case common::AlgoSerial::FaceNet: {
+      int dim = algo["dim"].get<int>();
+      FeatureAlgo feature_config{std::move(algo_base), dim};
+      algo_config.setParams(std::move(feature_config));
+      break;
+    }
+    case common::AlgoSerial::YoloPDet: {
+      int numPoints = algo["num_points"].get<int>();
+      float nms_thr = algo["nms_thr"].get<float>();
+      PointsDetAlgo pdet_config{std::move(algo_base), numPoints, nms_thr};
+      algo_config.setParams(std::move(pdet_config));
       break;
     }
     }
@@ -139,60 +158,70 @@ bool ConfigParser::parseConfig(std::string const &path,
         break;
       }
       case ModuleType::Logic: {
-        // 公共参数部分
-        LogicBase base_config;
-        base_config.outputDir = p["alarm_output_dir"].get<std::string>();
-        base_config.eventId = p["event_id"].get<int>();
-        base_config.page = p["page"].get<std::string>();
-        base_config.threshold = p["threshold"].get<float>();
-        base_config.videDuration = p["video_duration"].get<int>();
-        base_config.isDraw = true;
-
+        // 公共参数部分 DL的执行逻辑，属于必要字段
+        LogicBase lBase;
         json apipes = p["algo_pipe"];
         for (auto const &ap : apipes) {
           AlgoParams params; // 特定参数
           params.attentions = ap["attention"].get<std::vector<int>>();
           params.basedNames = ap["basedNames"].get<std::vector<std::string>>();
           params.cropScaling = ap["cropScaling"].get<float>();
-          base_config.algoPipelines.emplace_back(
+          lBase.algoPipelines.emplace_back(
               std::pair{ap["name"].get<std::string>(), std::move(params)});
         }
 
-        SupportedFunction func = moduleMapping[info.className];
-        switch (func) {
-        case SupportedFunction::HelmetModule: {
-          // TODO 特定模块示例，未来可以新增很多特定化的参数
-          // 通用模块
-          AttentionArea aarea;
-          auto regions = p["regions"];
-          for (auto const &region : regions) {
-            Points ret;
-            for (size_t i = 0; i < region.size(); i += 2) {
-              ret.push_back(Point{region.at(i), region.at(i + 1)});
-            }
-            aarea.regions.emplace_back(ret);
+        // 前端划定区域 目前来说一定会有这个字段
+        AttentionArea aarea;
+        auto regions = p["regions"];
+        for (auto const &region : regions) {
+          Points2i ret;
+          for (size_t i = 0; i < region.size(); i += 2) {
+            ret.push_back(Point2i{region.at(i), region.at(i + 1)});
           }
-          InferInterval interval;
-          WithoutHelmet config_{std::move(aarea), std::move(base_config),
-                                std::move(interval)};
+          aarea.regions.emplace_back(ret);
+        }
+
+        // 报警配置获取 目前来说一定会有这些字段
+        auto outputDir = p["alarm_output_dir"].get<std::string>();
+        auto videoDuration = p["video_duration"].get<int>();
+        auto eventId = p["event_id"].get<int>();
+        auto page = p["page"].get<std::string>();
+
+        SupportedFunc func = moduleMapping[info.className];
+        switch (func) {
+        case SupportedFunc::OCRModule:
+        case SupportedFunc::LicensePlateModule: {
+          // 前端划定区域
+          auto chars = p["chars"].get<std::string>();
+          auto isDraw = true;
+          AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
+                          isDraw};
+
+          OCRConfig config_{std::move(aarea), std::move(lBase),
+                            std::move(aBase), std::move(chars)};
           config.setParams(std::move(config_));
           break;
         }
-        case SupportedFunction::DetClsModule: {
-          // 通用模块
-          AttentionArea aarea;
-          auto regions = p["regions"];
-          for (auto const &region : regions) {
-            Points ret;
-            for (size_t i = 0; i < region.size(); i += 2) {
-              ret.push_back(Point{region.at(i), region.at(i + 1)});
-            }
-            aarea.regions.emplace_back(ret);
-          }
+        case SupportedFunc::DetClsModule: {
+          // 报警配置获取
+          auto thre = p["threshold"].get<float>();
+          auto isDraw = true;
+          AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
+                          isDraw};
 
-          InferInterval interval;
-          DetClsMonitor config_{std::move(aarea), std::move(base_config),
-                                std::move(interval)};
+          DetClsMonitor config_{std::move(aarea), std::move(lBase),
+                                std::move(aBase), thre};
+          config.setParams(std::move(config_));
+          break;
+        }
+        case SupportedFunc::ObjectCounterModule: {
+          auto amount = p["amount"].get<int>();
+          auto isDraw = false;
+          AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
+                          isDraw};
+
+          ObjectCounterConfig config_{std::move(aarea), std::move(lBase),
+                                      std::move(aBase), amount};
           config.setParams(std::move(config_));
           break;
         }

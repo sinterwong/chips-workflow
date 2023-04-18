@@ -27,7 +27,7 @@ using common::InferResult;
 
 class VisionInfer : public AlgoInfer {
 public:
-  VisionInfer(AlgoConfig const &config_) : AlgoInfer(config_) {}
+  explicit VisionInfer(AlgoConfig const &config_) : AlgoInfer(config_) {}
   /**
    * @brief 初始化算法
    *
@@ -39,7 +39,7 @@ public:
   virtual bool infer(void *data, InferParams const &,
                      InferResult &ret) override;
 
-  virtual bool destory() override;
+  virtual bool destory() noexcept override;
 
   virtual AlgoRetType getType() const noexcept override { return retType; };
 

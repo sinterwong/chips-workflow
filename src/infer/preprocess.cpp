@@ -15,8 +15,7 @@
 
 using common::ColorType;
 
-namespace infer {
-namespace utils {
+namespace infer::utils {
 
 bool resizeInput(cv::Mat &image, bool isScale, std::array<int, 2> &dstShape) {
   if (isScale) {
@@ -149,8 +148,15 @@ void YUV444toNV12(cv::Mat const &input, cv::Mat &output) {
 // template<typename ColorType Src=ColorType::RGB888>
 void RGB2NV12(cv::Mat const &input, cv::Mat &output) {
   // 这里图片的宽高必须是偶数，否则直接卡死这里
+  cv::Rect rect{0, 0, input.cols, input.rows};
+  if (rect.width % 2 != 0)
+    rect.width -= 1;
+  if (rect.height % 2 != 0) {
+    rect.height -= 1;
+  }
+  cv::Mat in_temp = input(rect);
   cv::Mat temp;
-  cv::cvtColor(input, temp, cv::COLOR_RGB2YUV_I420);
+  cv::cvtColor(in_temp, temp, cv::COLOR_RGB2YUV_I420);
   YU122NV12(temp, output);
 
   // cv::cvtColor(input, temp, cv::COLOR_RGB2YUV);
@@ -194,7 +200,28 @@ bool _crop<ColorType::NV12>(cv::Mat const &input, cv::Mat &output,
 }
 
 bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
-          ColorType const type) {
+          ColorType const type, float sr) {
+  // 图片像素
+  int maxWidth = input.cols;
+  int maxHeight = type != ColorType::NV12 ? input.rows : input.rows / 3.0 * 2;
+  if (sr > 0) {
+    int sw = rect.width * sr;
+    int sh = rect.height * sr;
+    rect.x = std::max(0, rect.x - sw / 2);
+    rect.y = std::max(0, rect.y - sh / 2);
+    rect.width = std::min(maxWidth - rect.x, rect.width + sw);
+    rect.height = std::min(maxHeight - rect.y, rect.height + sh);
+  }
+  // width 和 height 如果为奇数的话至少是1，因此可以直接操作
+  if (rect.width % 2 != 0)
+    rect.width -= 1;
+  if (rect.height % 2 != 0) {
+    rect.height -= 1;
+  }
+  if (rect.width + rect.x > maxWidth || rect.height + rect.y > maxHeight) {
+    FLOWENGINE_LOGGER_ERROR("cropImage is failed: error region!");
+    return false;
+  }
   switch (type) {
   case ColorType::RGB888:
   case ColorType::BGR888: {
@@ -213,27 +240,7 @@ bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
 
 bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
                ColorType type, float sr) {
-  if (sr > 0) {
-    int sw = rect.width * sr;
-    int sh = rect.height * sr;
-    rect.x = std::max(0, rect.x - sw / 2);
-    rect.y = std::max(0, rect.y - sh / 2);
-    rect.width = std::min(input.cols - rect.x, rect.width + sw);
-    rect.height = std::min(input.rows - rect.y, rect.height + sh);
-  }
-  // width 和 height 如果为奇数的话至少是1，因此可以直接操作
-  if (rect.width % 2 != 0)
-    rect.width -= 1;
-  if (rect.height % 2 != 0) {
-    rect.height -= 1;
-  }
-  if (rect.width + rect.x > input.cols || rect.height + rect.y > input.rows) {
-    FLOWENGINE_LOGGER_ERROR("cropImage is failed: error region!");
-    return false;
-  }
-  crop(input, output, rect, type);
-  return true;
+  return crop(input, output, rect, type, sr);
 }
 
-} // namespace utils
-} // namespace infer
+} // namespace infer::utils

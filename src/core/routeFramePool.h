@@ -29,10 +29,14 @@ enum frameDataType {
 
 class FrameBuf;
 
-using getFrameBufFunc =
-    std::function<std::any(std::vector<std::any> &, FrameBuf *)>;
+using getFrameBufFunc = std::function<std::any(std::vector<std::any> &,
+                                               FrameBuf *)>; // 获取帧的函数
 
-using delFrameBufFunc = std::function<void(std::vector<std::any> &)>;
+using delFrameBufFunc = std::function<void(std::vector<std::any> &)>; // 析构帧
+
+using FrameInfo = std::tuple<int, int, int, frameDataType>; // 数据帧的信息
+
+using GFMap = std::map<std::string, getFrameBufFunc>; // 获取帧数据的
 
 class FrameBuf {
 protected:
@@ -46,10 +50,9 @@ public:
   frameDataType type;
   bool isDel = true;
 
-  std::any read(std::string str = "void*");
+  std::any read(std::string const &);
 
-  void write(std::vector<std::any>, std::map<std::string, getFrameBufFunc>,
-             delFrameBufFunc, std::tuple<int, int, int, frameDataType>);
+  void write(std::vector<std::any>, GFMap, delFrameBufFunc, FrameInfo);
 
   void del();
 };
@@ -69,11 +72,8 @@ protected:
   std::shared_mutex routeMutex;
   int size, key;
 
-  int defaultHeight, defaultWidth, defaultChannel;
-
 public:
-  RouteFramePool(int maxSize = 2, int width = 1920, int height = 1080,
-                 int channel = 3);
+  RouteFramePool(int maxSize = 2);
 
   ~RouteFramePool();
 

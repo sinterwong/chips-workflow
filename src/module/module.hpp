@@ -34,8 +34,6 @@ protected:
 
   MessageType type; // 模块类型 {stream, output, logic}
 
-  bool loop;
-
   std::mutex _m;
 
   std::vector<std::string> recvModule, sendModule;
@@ -67,7 +65,7 @@ public:
 
   virtual void step() {
     std::unordered_map<std::string, forwardMessage> mselector;
-    loop = false;
+    bool loop = false;
 
     beforeGetMessage();
     if (!recvModule.empty()) {

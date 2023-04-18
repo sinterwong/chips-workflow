@@ -16,6 +16,7 @@ IF(TARGET_HARDWARE STREQUAL jetson)
                                 ${PROJECT_INCLUDE_DIR}/core
                                 ${PROJECT_INCLUDE_DIR}/infer
                                 ${PROJECT_INCLUDE_DIR}/jetson-utils
+                                ${3RDPARTY_ROOT}/eigen
                                 ${CURL_INCLUDE_DIR}
                                 ${OpenCV_INCLUDE_DIRS}
                                 ${CUDA_INCLUDE_DIRS}
@@ -32,6 +33,7 @@ ELSEIF(TARGET_HARDWARE STREQUAL x3)
                                 ${PROJECT_INCLUDE_DIR}/module
                                 ${PROJECT_INCLUDE_DIR}/core
                                 ${PROJECT_INCLUDE_DIR}/infer
+                                ${3RDPARTY_ROOT}/eigen
                                 ${CURL_INCLUDE_DIR}
                                 ${OpenCV_INCLUDE_DIRS}
     )

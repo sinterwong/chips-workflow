@@ -47,7 +47,12 @@ public:
   /**
    * Destructor
    */
-  ~XCamera() { Close(); };
+  ~XCamera() {
+    if (mStreaming.load()) {
+      Close();
+    }
+    sp_release_vio_module(camera);
+  };
 
   virtual bool Capture(void **image,
                        size_t timeout = DEFAULT_TIMEOUT) override {
@@ -92,11 +97,10 @@ public:
    */
   virtual inline void Close() noexcept override {
     sp_vio_close(camera);
-    sp_release_vio_module(camera);
     free(yuv_data);
     mStreaming.store(false);
   }
-
+  
   /**
    * Return the interface type
    */

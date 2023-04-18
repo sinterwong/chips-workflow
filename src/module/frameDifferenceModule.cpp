@@ -10,44 +10,59 @@
  */
 
 #include "frameDifferenceModule.h"
-#include "backend.h"
 #include "frame_difference.h"
-#include "inference.h"
-#include "logger/logger.hpp"
-#include "module.hpp"
 #include <cassert>
 #include <opencv2/imgcodecs.hpp>
 
 namespace module {
-FrameDifferenceModule::FrameDifferenceModule(backend_ptr ptr,
-                                             std::string const &name,
-                                             MessageType const &type)
-    : Module(ptr, name, type), fd(name) {}
-
-FrameDifferenceModule::~FrameDifferenceModule() {}
-
 void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
-  // for (auto &[send, type, buf] : message) {
-  //   if (type == MessageType::Close) {
-  //     // FLOWENGINE_LOGGER_INFO("FreameDifference module was done!");
-  //     std::cout << "FreameDifference module was done!" << std::endl;
-  //     stopFlag.store(true);
-  //     return;
-  //   } else if (type == MessageType::Stream) {
-  //     auto frameBufMessage = ptr->pool->read(buf.key);
-  //     auto frame =
-  //         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
-  //     if (fd.statue()) {
-  //       fd.init(frame);
-  //     } else {
-  //       fd.update(frame, buf.algorithmResult.bboxes);
-  //     }
-  //     if (!buf.algorithmResult.bboxes.empty()) {
-  //       autoSend(buf);
-  //     }
-  // }
-  // }
+  for (auto &[send, type, buf] : message) {
+    if (type == MessageType::Close) {
+      FLOWENGINE_LOGGER_INFO("FreameDifference module was done!");
+      stopFlag.store(true);
+      return;
+    }
+    auto frameBufMessage = ptr->pool->read(buf.key);
+    auto frame =
+        std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
+
+    // 只能有一个区域被监控
+    assert(config->regions.size() == 1);
+    auto &region = config->regions.at(0);
+    int x = region[0].x;
+    int y = region[0].y;
+    int w = region[1].x - x;
+    int h = region[1].y - y;
+    cv::Rect rect{x, y, w, h};
+    // 截取待计算区域
+    cv::Mat croppedImage;
+    infer::utils::cropImage(*frame, croppedImage, rect, buf.frameType);
+
+    // 转成RGB类型去处理
+    switch (buf.frameType) {
+    case common::ColorType::NV12: {
+      cv::cvtColor(croppedImage, croppedImage, cv::COLOR_YUV2RGB_NV12);
+    }
+    default: {
+      break;
+    }
+    }
+    std::vector<common::RetBox> bboxes;
+    fd.update(croppedImage, bboxes); // 动态物检测
+    if (bboxes.empty()) {
+      return;
+    }
+    // 意味着检测到了动态目标，可以进行后续的逻辑（5进3或其他过滤方法）
+    for (auto &bbox : bboxes) {
+      // offset bbox
+      bbox.second.at(0) += rect.x;
+      bbox.second.at(1) += rect.y;
+      bbox.second.at(2) += rect.x;
+      bbox.second.at(3) += rect.y;
+    }
+    autoSend(buf);
+  }
 }
 FlowEngineModuleRegister(FrameDifferenceModule, backend_ptr,
-                         std::string const &, MessageType &);
+                         std::string const &, MessageType &, ModuleConfig &);
 } // namespace module

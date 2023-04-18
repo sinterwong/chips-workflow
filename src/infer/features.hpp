@@ -1,30 +1,30 @@
 /**
- * @file pose.hpp
+ * @file features.hpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
- * @date 2022-12-22
+ * @date 2022-11-23
  *
- * @copyright Copyright (c) 2022
+ * @copyright Copyright (c) 2023
  *
  */
 #ifndef __INFERENCE_VISION_FEATURES_H_
 #define __INFERENCE_VISION_FEATURES_H_
 #include "core/factory.hpp"
 #include "vision.hpp"
-#include <unordered_map>
-#include <vector>
+#include <memory>
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 
 class Features : public Vision {
   //!
   //! \brief construction
   //!
 public:
-  Features(const AlgoConfig &_param, ModelInfo const &_info)
-      : Vision(_param, _info) {}
+  explicit Features(const AlgoConfig &_param, ModelInfo const &_info)
+      : Vision(_param, _info) {
+    config = mParams.getCopyParams<FeatureAlgo>();
+  }
 
   //!
   //! \brief ProcessInput that the input is correct for infer
@@ -41,8 +41,11 @@ public:
   //! \brief verifyOutput that the result is correct for infer
   //!
   virtual bool verifyOutput(InferResult const &) const override;
+
+protected:
+  FeatureAlgo config;
+  virtual void generateFeature(void **output, Eigenvector &feature) const = 0;
 };
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision
 
 #endif

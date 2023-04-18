@@ -12,6 +12,10 @@
 #include "statusOutputModule.h"
 #include <fstream>
 
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
 namespace module {
 
 bool StatusOutputModule::postResult(std::string const &url,
@@ -28,26 +32,11 @@ bool StatusOutputModule::postResult(std::string const &url,
   curl_easy_setopt(curl, CURLOPT_POST, 1); // 设置为非0表示本次操作为POST
   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
-  rapidjson::Document doc;
-  doc.SetObject(); // key-value 相当与map
+  json info;
+  info["name"] = statusInfo.moduleName;
+  info["state"] = statusInfo.status;
 
-  rapidjson::Document::AllocatorType &allocator =
-      doc.GetAllocator(); // 获取分配器
-
-  // /*
-  // Add member
-  rapidjson::Value moduleName(statusInfo.moduleName.c_str(), allocator);
-  doc.AddMember("name", moduleName, allocator);
-  // --------------------
-  doc.AddMember("state", statusInfo.status, allocator);
-  // */
-
-  rapidjson::StringBuffer buffer;
-  // PrettyWriter是格式化的json，如果是Writer则是换行空格压缩后的json
-  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-  doc.Accept(writer);
-
-  std::string out = std::string(buffer.GetString());
+  std::string out = info.dump();
 
   curl_easy_setopt(curl, CURLOPT_POSTFIELDS, out.c_str());
   curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, out.length());
