@@ -115,14 +115,17 @@ struct AttentionArea {
  *
  */
 struct InferInterval {
-  std::chrono::seconds interval{3}; // 间隔时间
+  std::chrono::seconds interval{10}; // 间隔时间
 };
 
 /**
  * @brief OCR类型的算法逻辑
  *
  */
-struct OCRConfig : public AttentionArea, public LogicBase, public AlarmBase {
+struct OCRConfig : public AttentionArea,
+                   public LogicBase,
+                   public AlarmBase,
+                   public InferInterval {
   OCRConfig(AttentionArea &&aaera, LogicBase &&alarm, AlarmBase &&alarmBase_,
             std::string &&chars_)
       : AttentionArea(aaera), LogicBase(alarm), AlarmBase(alarmBase_),

@@ -141,6 +141,7 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
                                 *image, buf.frameType, config->isDraw);
       autoSend(buf);
       counter.insert(counter.size() * 200);
+      break;
     }
   }
 }

@@ -18,6 +18,7 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
 #include <opencv2/imgcodecs.hpp>
+#include <thread>
 #include <variant>
 
 using json = nlohmann::json;
@@ -134,6 +135,8 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
       alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在车牌",
                                    config.get());
       autoSend(buf);
+      std::this_thread::sleep_for(config->interval); // 默认睡10s
+      break;
     }
   }
 }
