@@ -120,6 +120,9 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
         FLOWENGINE_LOGGER_ERROR("LicensePlateModule: Wrong algorithm type!");
         return;
       }
+      if (charIds->size() != 7 && charIds->size() != 8) {
+        continue; // 过滤无效的车牌
+      }
       auto lpr = getChars(*charIds, charsetsMapping);
       FLOWENGINE_LOGGER_CRITICAL("License plate number is: {}", lpr);
       results.emplace_back(OCRRet{kbbox, *charIds, std::move(lpr)});
