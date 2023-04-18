@@ -17,6 +17,7 @@
 #include <nlohmann/json.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
+#include <opencv2/imgcodecs.hpp>
 #include <variant>
 
 using json = nlohmann::json;
@@ -95,16 +96,22 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
           static_cast<int>(kbbox.bbox.bbox[3] - kbbox.bbox.bbox[1])};
       infer::utils::cropImage(*image, licensePlateImage, rect, buf.frameType);
       if (kbbox.bbox.class_id == 1) {
-        // 如果是双层车牌，则需要上下分割，垂直合并车牌
+        // 车牌矫正
         infer::utils::sortFourPoints(kbbox.points); // 排序关键点
         cv::Mat lpr_rgb;
         cv::cvtColor(licensePlateImage, lpr_rgb, cv::COLOR_YUV2RGB_NV12);
-        cv::Mat lpr_td;
-        // 仿射变换
-        infer::utils::fourPointTransform(lpr_rgb, lpr_td, kbbox.points);
-        splitMerge(lpr_td, licensePlateImage);
+        cv::Mat lpr_ted;
+        // 相对于车牌图片的点
+        infer::utils::fourPointTransform(lpr_rgb, lpr_ted, kbbox.points);
+
+        // 上下分割，垂直合并车牌
+        splitMerge(lpr_ted, licensePlateImage);
         infer::utils::RGB2NV12(licensePlateImage, licensePlateImage);
+        cv::imwrite("test_lpr_plate_src.jpg", lpr_rgb);
+        cv::imwrite("test_lpr_plate_dst.jpg", lpr_ted);
+        cv::imwrite("test_lpr_plate_input.jpg", licensePlateImage);
       }
+      cv::imwrite("license_plate.jpg", licensePlateImage);
       InferParams recParams{name,
                             buf.frameType,
                             0.0,
