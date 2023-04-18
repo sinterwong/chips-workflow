@@ -84,10 +84,6 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
     // 识别每一个车牌
     std::vector<OCRRet> results;
     for (auto &kbbox : *kbboxes) {
-      for (auto &p : kbbox.points) {
-        std::cout << "x: " << p.x << ", "
-                  << "y: " << p.y << std::endl;
-      }
       cv::Mat licensePlateImage;
       cv::Rect2i rect{
           static_cast<int>(kbbox.bbox.bbox[0]),
@@ -107,11 +103,7 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
         // 上下分割，垂直合并车牌
         splitMerge(lpr_ted, licensePlateImage);
         infer::utils::RGB2NV12(licensePlateImage, licensePlateImage);
-        cv::imwrite("test_lpr_plate_src.jpg", lpr_rgb);
-        cv::imwrite("test_lpr_plate_dst.jpg", lpr_ted);
-        cv::imwrite("test_lpr_plate_input.jpg", licensePlateImage);
       }
-      cv::imwrite("license_plate.jpg", licensePlateImage);
       InferParams recParams{name,
                             buf.frameType,
                             0.0,
@@ -128,12 +120,6 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
         FLOWENGINE_LOGGER_ERROR("LicensePlateModule: Wrong algorithm type!");
         return;
       }
-
-      for (auto &c : *charIds) {
-        std::cout << c << ", ";
-      }
-      std::cout << std::endl;
-
       auto lpr = getChars(*charIds, charsetsMapping);
       FLOWENGINE_LOGGER_CRITICAL("License plate number is: {}", lpr);
       results.emplace_back(OCRRet{kbbox, *charIds, std::move(lpr)});
