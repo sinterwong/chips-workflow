@@ -17,17 +17,16 @@
 
 namespace infer::solution {
 
-bool FrameDifference::update(std::shared_ptr<cv::Mat> &frame,
-                             std::vector<RetBox> &bboxes) {
+bool FrameDifference::update(cv::Mat &frame, std::vector<RetBox> &bboxes) {
   if (!lastFrame) {
-    return false;
+    lastFrame = std::make_shared<cv::Mat>(frame);
+  } else {
+    // 处理帧
+    if (!moveDetect(*lastFrame, frame, bboxes)) {
+      return false;
+    }
+    lastFrame = std::make_shared<cv::Mat>(frame);
   }
-  // 处理帧
-  if (!moveDetect(*lastFrame, *frame, bboxes)) {
-    return false;
-  };
-
-  lastFrame = frame;
   return true;
 }
 
@@ -47,10 +46,10 @@ bool FrameDifference::moveDetect(const cv::Mat &temp, const cv::Mat &frame,
   // 2.1将background和frame转为灰度图
   cv::Mat gray1, gray2;
   auto g1f = std::async([&dst_temp, &gray1]() {
-    cv::cvtColor(dst_temp, gray1, cv::COLOR_BGR2GRAY);
+    cv::cvtColor(dst_temp, gray1, cv::COLOR_RGB2GRAY);
   });
   auto g2f = std::async([&dst_frame, &gray2]() {
-    cv::cvtColor(dst_frame, gray2, cv::COLOR_BGR2GRAY);
+    cv::cvtColor(dst_frame, gray2, cv::COLOR_RGB2GRAY);
   });
   // 2.2.将background和frame做差
   cv::Mat diff;
@@ -90,14 +89,15 @@ bool FrameDifference::moveDetect(const cv::Mat &temp, const cv::Mat &frame,
   std::vector<std::vector<cv::Point>> contours;
   cv::findContours(diff_thresh, contours, cv::RETR_EXTERNAL,
                    cv::CHAIN_APPROX_NONE); // 找轮廓函数
-  cv::drawContours(result, contours, -1, cv::Scalar(0, 0, 255),
-                   2); // 在result上绘制轮廓
+  // 绘制轮廓
+  // cv::Mat showImage;
+  // cv::drawContours(showImage, contours, -1, cv::Scalar(255, 78, 86), 2);
   // 7.查找正外接矩形
   std::vector<cv::Rect> boundRect(contours.size());
   for (size_t i = 0; i < contours.size(); i++) {
     boundRect[i] = cv::boundingRect(contours[i]);
     RetBox bbox = {
-        name,
+        "FrameDifference",
         {static_cast<float>(boundRect[i].x), static_cast<float>(boundRect[i].y),
          static_cast<float>(boundRect[i].x + boundRect[i].width),
          static_cast<float>(boundRect[i].y + boundRect[i].height), 0.0, 0.0}};
