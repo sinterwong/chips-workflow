@@ -14,6 +14,7 @@
 #include "logger/logger.hpp"
 #include "module_utils.hpp"
 
+#include <chrono>
 #include <nlohmann/json.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
@@ -135,10 +136,9 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
       alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在车牌",
                                    config.get());
       autoSend(buf);
-      std::this_thread::sleep_for(config->interval); // 默认睡10s
-      break;
     }
   }
+  std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
 }
 
 FlowEngineModuleRegister(LicensePlateModule, backend_ptr, std::string const &,

@@ -85,10 +85,10 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
       }
     }
 
-    FLOWENGINE_LOGGER_CRITICAL("object number: {}", objectNumber);
-
     // 每到一定的数量就会触发报警
     if (objectNumber >= config->amount) {
+      FLOWENGINE_LOGGER_CRITICAL("object number: {}", objectNumber);
+
       // 生成报警信息
       alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "数量达标",
                                    config.get());
@@ -99,6 +99,7 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
       autoSend(buf);
     }
   }
+  std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
 }
 
 FlowEngineModuleRegister(ObjectNumberModule, backend_ptr, std::string const &,

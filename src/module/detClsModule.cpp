@@ -177,6 +177,7 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
       }
     }
   }
+  std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
 }
 
 FlowEngineModuleRegister(DetClsModule, backend_ptr, std::string const &,

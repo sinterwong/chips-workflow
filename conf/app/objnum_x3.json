@@ -1,0 +1,97 @@
+{
+  "Algorithms": [
+    {
+      "name": "algorithm_personDet_x3_1673517182659",
+      "algo_serial": "Yolo",
+      "alpha": 255,
+      "batchSize": 1,
+      "beta": 0,
+      "cond_thr": 0.4,
+      "inputNames": [
+        "images"
+      ],
+      "inputShape": [
+        640,
+        640,
+        3
+      ],
+      "isScale": false,
+      "modelPath": "/root/workspace/softwares/flowengine/models/person_det.bin",
+      "nms_thr": 0.45,
+      "outputNames": [
+        "output"
+      ]
+    }
+  ],
+  "Pipelines": [
+    {
+      "Pipeline": [
+        {
+          "Id": 95,
+          "cameraIp": "rtsp://114.242.23.39:6001/MainStream",
+          "flowType": "rtsp",
+          "height": 720,
+          "name": "stream_8677cd23-9813-4152-aa58-43fa0d1858aa",
+          "recvName": "",
+          "sendName": "logic_objectNumber_1673517182740",
+          "sub_type": "StreamModule",
+          "type": "stream",
+          "videoCode": "h264",
+          "width": 1280
+        },
+        {
+          "Id": 95,
+          "cameraIp": "rtsp://114.242.23.39:6001/MainStream",
+          "flowType": "rtsp",
+          "height": 720,
+          "name": "stream_8677cd23-9813-4152-aa58-43fa0d1858aa",
+          "recvName": "",
+          "sendName": "output_stream_status_1673517182662",
+          "sub_type": "StreamModule",
+          "type": "stream",
+          "videoCode": "h264",
+          "width": 1280
+        },
+        {
+          "alarm_output_dir": "/public/alarm/data",
+          "event_id": 8,
+          "name": "logic_objectNumber_1673517182740",
+          "page": "1_0_0",
+          "recvName": "stream_8677cd23-9813-4152-aa58-43fa0d1858aa",
+          "regions": [],
+          "sendName": "output_alarm_01_1673517182674",
+          "sub_type": "ObjectNumberModule",
+          "amount": 2,
+          "type": "logic",
+          "video_duration": 10,
+          "algo_pipe": [
+            {
+              "name": "algorithm_personDet_x3_1673517182659",
+              "attention": [
+                0
+              ],
+              "basedNames": [],
+              "cropScaling": 0
+            }
+          ]
+        },
+        {
+          "name": "output_alarm_01_1673517182674",
+          "recvName": "logic_objectNumber_1673517182740",
+          "sendName": "",
+          "sub_type": "AlarmOutputModule",
+          "type": "output",
+          "url": "http://localhost:9876/v1/flow/alarm"
+        },
+        {
+          "name": "output_stream_status_1673517182662",
+          "recvName": "stream_8677cd23-9813-4152-aa58-43fa0d1858aa",
+          "sendName": "",
+          "sub_type": "StatusOutputModule",
+          "type": "output",
+          "url": "http://localhost:9876/v1/flow/heartbeat"
+        }
+      ]
+    }
+  ]
+}
