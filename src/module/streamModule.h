@@ -41,7 +41,7 @@ private:
 
 public:
   StreamModule(backend_ptr ptr, std::string const &, MessageType const &,
-               ModuleConfig &);
+               ModuleConfig &) noexcept(false);
 
   ~StreamModule() {}
 

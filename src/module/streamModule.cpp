@@ -60,27 +60,21 @@ StreamModule::StreamModule(backend_ptr ptr, std::string const &_name,
 
   config = std::make_unique<StreamBase>(*_config.getParams<StreamBase>());
 
-  try {
-    vm = std::make_unique<VideoManager>(config->uri, config->width,
-                                        config->height);
-  } catch (const std::runtime_error &e) {
-    FLOWENGINE_LOGGER_ERROR("initRecorder exception: ", e.what());
-    std::runtime_error("StreamModule ctor has failed!");
-  }
+  vm = std::make_unique<VideoManager>(config->uri, config->width,
+                                      config->height);
+  if (!vm->init()) {
+    FLOWENGINE_LOGGER_INFO("VideoManager init failed!");
+    throw std::runtime_error("StreamModule ctor has failed!");
+  };
 }
 
 void StreamModule::beforeForward() {
+  // 视频流检查
   if (!vm->isRunning()) {
-    if (vm->init()) {
-      FLOWENGINE_LOGGER_INFO("StreamModule video is initialized!");
-      if (vm->run()) {
-        FLOWENGINE_LOGGER_INFO("StreamModule video is opened!");
-      } else {
-        FLOWENGINE_LOGGER_ERROR("StreamModule is failed to open!");
-      }
+    if (vm->run()) {
+      FLOWENGINE_LOGGER_INFO("StreamModule video is opened!");
     } else {
-      FLOWENGINE_LOGGER_ERROR(
-          "StreamModule forward is failed, please check stream status!");
+      FLOWENGINE_LOGGER_ERROR("StreamModule is failed to open!");
     }
   }
 };
