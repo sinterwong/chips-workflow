@@ -55,7 +55,7 @@ void VideoManager::consumeFrame() {
   while (isRunning()) {
     // 每隔100ms消耗一帧，防止长时间静止
     std::this_thread::sleep_for(std::chrono::microseconds(100));
-    std::lock_guard lk(m);
+    std::lock_guard lk(frame_m);
     bool ret = stream->Capture(&frame, 1000);
     if (!ret) {
       FLOWENGINE_LOGGER_WARN("Getframe is failed!");
@@ -73,7 +73,7 @@ bool VideoManager::run() {
 }
 
 std::shared_ptr<cv::Mat> VideoManager::getcvImage() {
-  std::lock_guard lk(m);
+  std::lock_guard lk(frame_m);
   bool ret = stream->Capture(&frame, 1000);
   if (!ret) {
     FLOWENGINE_LOGGER_WARN("Getframe is failed!");

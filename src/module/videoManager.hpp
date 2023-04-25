@@ -34,7 +34,7 @@ private:
   int w, h;        // 流分辨率
   std::unique_ptr<videoSource> stream;
   std::unique_ptr<joining_thread> consumer; // 消费者
-  std::mutex m;
+  std::mutex frame_m;
 
 #if (TARGET_PLATFORM == 0)
   void *frame = nullptr;

@@ -48,6 +48,7 @@ class FFStream {
 private:
   // ffmpeg context
   AVFormatContext *avContext = nullptr;
+  std::shared_mutex ctx_m;
 
   // ffmepg data packet
   AVPacket avpacket = {0};
@@ -60,8 +61,6 @@ private:
 
   static const std::unordered_map<AVCodecID, std::string> codecMapping;
 
-  std::shared_mutex m;
-
   uint8_t *seqHeader = nullptr;
 
 public:
@@ -69,14 +68,11 @@ public:
 
   int getRawFrame(void **data);
 
-  inline bool isRunning() {
-    std::shared_lock<std::shared_mutex> lk(m);
-    return isOpen.load();
-  };
+  inline bool isRunning() { return isOpen.load(); };
 
   inline int getWidth() {
+    std::shared_lock<std::shared_mutex> lk(ctx_m);
     if (isRunning()) {
-      std::shared_lock<std::shared_mutex> lk(m);
       return static_cast<int>(
           avContext->streams[av_param.videoIndex]->codecpar->width);
     } else {
@@ -84,9 +80,10 @@ public:
       return 0;
     }
   }
+  
   inline int getHeight() {
+    std::shared_lock<std::shared_mutex> lk(ctx_m);
     if (isRunning()) {
-      std::shared_lock<std::shared_mutex> lk(m);
       return static_cast<int>(
           avContext->streams[av_param.videoIndex]->codecpar->height);
     } else {
@@ -96,8 +93,8 @@ public:
   }
 
   inline int getRate() {
+    std::shared_lock<std::shared_mutex> lk(ctx_m);
     if (isRunning()) {
-      std::shared_lock<std::shared_mutex> lk(m);
       return static_cast<int>(
           av_q2d(avContext->streams[av_param.videoIndex]->r_frame_rate));
     } else {
@@ -107,9 +104,8 @@ public:
   }
 
   inline std::string getCodecType() {
-
+    std::shared_lock<std::shared_mutex> lk(ctx_m);
     if (isRunning()) {
-      std::shared_lock<std::shared_mutex> lk(m);
       auto pCodec = avcodec_find_decoder(
           avContext->streams[av_param.videoIndex]->codecpar->codec_id);
       return codecMapping.at(pCodec->id);
@@ -119,19 +115,10 @@ public:
     }
   }
 
-  inline AvParam &getParam() {
-    std::shared_lock<std::shared_mutex> lk(m);
-    return av_param;
-  }
+  inline AvParam &getParam() { return av_param; }
 
   inline void closeStream() {
-    std::lock_guard lk(m);
-    if (seqHeader) {
-      free(seqHeader);
-      seqHeader = nullptr;
-    }
-    // auto lv = &avpacket;
-    // av_packet_free(&lv);
+    std::lock_guard lk(ctx_m);
     if (avContext) {
       avformat_close_input(&avContext);
     }
@@ -140,7 +127,15 @@ public:
 
   explicit FFStream(std::string const &uri_) noexcept : uri(uri_) {}
 
-  ~FFStream() noexcept { closeStream(); }
+  ~FFStream() noexcept {
+    if (isRunning()) {
+      closeStream();
+    }
+    if (seqHeader) {
+      free(seqHeader);
+      seqHeader = nullptr;
+    }
+  }
 };
 } // namespace module::utils
 

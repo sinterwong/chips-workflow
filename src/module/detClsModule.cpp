@@ -125,7 +125,7 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
             break;
           }
           default: {
-            FLOWENGINE_LOGGER_ERROR("Nonsupportd algo type");
+            FLOWENGINE_LOGGER_ERROR("{}: Nonsupportd algo type", ap.first);
             break;
           }
           }
