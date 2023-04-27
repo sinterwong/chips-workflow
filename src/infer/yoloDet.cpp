@@ -15,8 +15,7 @@
 #include <cstring>
 #include <vector>
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 
 void Yolo::generateBoxes(std::unordered_map<int, BBoxes> &m,
                          void **outputs) const {
@@ -25,7 +24,7 @@ void Yolo::generateBoxes(std::unordered_map<int, BBoxes> &m,
     int numAnchors = modelInfo.outputShapes[i].at(1);
     int num = modelInfo.outputShapes[i].at(2);
     for (int j = 0; j < numAnchors * num; j += num) {
-      if (output[i][j + 4] <= config->cond_thr)
+      if (output[i][j + 4] <= config.cond_thr)
         continue;
       // std::cout << output[i][j + 0] << ", " << output[i][j + 1] << ", "
       //           << output[i][j + 2] << ", " << output[i][j + 3] << ", "
@@ -46,5 +45,4 @@ void Yolo::generateBoxes(std::unordered_map<int, BBoxes> &m,
 
 FlowEngineModuleRegister(Yolo, AlgoConfig const &, ModelInfo const &);
 
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision

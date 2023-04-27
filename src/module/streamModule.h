@@ -41,13 +41,15 @@ private:
 
 public:
   StreamModule(backend_ptr ptr, std::string const &, MessageType const &,
-               ModuleConfig &);
+               ModuleConfig &) noexcept(false);
 
   ~StreamModule() {}
 
   virtual void beforeForward() override;
 
-  virtual void forward(std::vector<forwardMessage> &message) override;
+  virtual void forward(std::vector<forwardMessage> &message) override {};
+
+  void startup();
 
   void step() override;
 

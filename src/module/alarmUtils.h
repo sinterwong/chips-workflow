@@ -27,7 +27,7 @@
 
 #include "videoRecord.hpp"
 
-using common::LogicBase;
+using common::AlarmBase;
 
 namespace module {
 namespace filesystem = std::experimental::filesystem;
@@ -83,12 +83,12 @@ public:
   inline bool isRecording() { return isRecord; }
 
   inline void generateAlarmInfo(std::string const &name, AlarmInfo &alarmInfo,
-                                std::string const &detail, RetBox const &bbox,
-                                LogicBase const *const config) {
+                                std::string const &detail,
+                                AlarmBase const *const config) {
     // 生成本次报警的唯一ID
     alarmInfo.alarmId = utils::generate_hex(16);
     alarmInfo.alarmFile = config->outputDir + "/" + alarmInfo.alarmId;
-    alarmInfo.prepareDelayInSec = config->videDuration;
+    alarmInfo.prepareDelayInSec = config->videoDuration;
     alarmInfo.alarmDetails = detail;
     alarmInfo.alarmType = name;
     alarmInfo.page = config->page;
@@ -99,29 +99,30 @@ public:
   }
 
   inline void saveAlarmImage(std::string const &path, cv::Mat const &frame,
-                             ColorType const ctype, RetBox const &bbox,
-                             bool isDraw = true) {
+                             ColorType const ctype, bool isDraw = false,
+                             RetBox bbox = RetBox{"", {0, 0, 0, 0, 0, 0}}) {
     cv::Mat showImage;
-    if (isDraw) {
-      // 临时画个图（后续根据前端参数来决定返回的图片是否带有画图标记）
+    // 临时画个图（后续根据前端参数来决定返回的图片是否带有画图标记）
+    switch (ctype) {
+    case ColorType::RGB888: {
       showImage = frame.clone();
-      switch (ctype) {
-      case ColorType::RGB888: {
-        cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
-        break;
-      }
-      case ColorType::NV12: {
-        cv::cvtColor(showImage, showImage, cv::COLOR_YUV2BGR_NV12);
-        break;
-      }
-      case ColorType::BGR888:
-      case ColorType::None:
-        break;
-      }
-      // 画报警框
-      utils::drawRetBox(showImage, bbox);
-    } else {
+      cv::cvtColor(showImage, showImage, cv::COLOR_RGB2BGR);
+      break;
+    }
+    case ColorType::NV12: {
+      showImage = frame.clone();
+      cv::cvtColor(showImage, showImage, cv::COLOR_YUV2BGR_NV12);
+      break;
+    }
+    case ColorType::BGR888:
+    case ColorType::None: {
       showImage = frame;
+      break;
+    }
+    }
+    // 画报警框
+    if (isDraw) {
+      utils::drawRetBox(showImage, bbox);
     }
 
     // // 报警框名称操作

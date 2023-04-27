@@ -12,12 +12,8 @@
 #include <shared_mutex>
 #include <utility>
 
-RouteFramePool::RouteFramePool(int maxSize, int width, int height,
-                               int channel) {
+RouteFramePool::RouteFramePool(int maxSize) {
   size = maxSize;
-  defaultHeight = height;
-  defaultWidth = width;
-  defaultChannel = channel;
   for (int i = 0; i < size; i++) {
     FrameBuf temp;
     routeArray.emplace_back(temp);
@@ -27,20 +23,15 @@ RouteFramePool::RouteFramePool(int maxSize, int width, int height,
 
 FrameBuf RouteFramePool::read(int clock) {
   std::shared_lock<std::shared_mutex> lk(routeMutex);
-  // routeMutex.lock_shared();
-  FrameBuf temp = routeArray[clock];
-  // routeMutex.unlock_shared();
-  return temp;
+  return routeArray[clock];
 }
 
 int RouteFramePool::write(FrameBuf buf) {
   std::lock_guard<std::shared_mutex> lk(routeMutex);
-  // routeMutex.lock_upgrade();
   routeArray[key].del();
   routeArray[key] = buf;
   int returnkey = key;
   key = key + 1 >= size ? 0 : key + 1;
-  // routeMutex.unlock_upgrade();
   return returnkey;
 }
 
@@ -63,16 +54,14 @@ void FrameBuf::del() {
   isDel = true;
 }
 
-std::any FrameBuf::read(std::string str) {
-  auto iter = mapFunction.find(str);
+std::any FrameBuf::read(std::string const& fname) {
+  auto iter = mapFunction.find(fname);
   assert(iter != mapFunction.end());
   return iter->second(dataList, this);
 }
 
-void FrameBuf::write(std::vector<std::any> data,
-                     std::map<std::string, getFrameBufFunc> mFunc,
-                     delFrameBufFunc dFunc,
-                     std::tuple<int, int, int, frameDataType> infor) {
+void FrameBuf::write(std::vector<std::any> data, GFMap mFunc,
+                     delFrameBufFunc dFunc, FrameInfo infor) {
   dataList = std::move(data);
   mapFunction = std::move(mFunc);
   delFunction = std::move(dFunc);

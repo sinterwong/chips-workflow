@@ -14,6 +14,7 @@
 
 #include "module_utils.hpp"
 #include "nlohmann/json.hpp"
+#include "objectCounterModule.h"
 
 #include <array>
 #include <cstddef>
@@ -21,6 +22,7 @@
 #include <utility>
 #include <vector>
 
+using common::AlarmBase;
 using common::algo_pipelines;
 using common::AlgoBase;
 using common::AlgoConfig;
@@ -29,13 +31,15 @@ using common::AttentionArea;
 using common::ClassAlgo;
 using common::DetAlgo;
 using common::DetClsMonitor;
-using common::InferInterval;
+using common::FeatureAlgo;
 using common::LogicBase;
+using common::ObjectCounterConfig;
+using common::OCRConfig;
 using common::OutputBase;
-using common::Point2i;
+using common::PointsDetAlgo;
+using Point2i = common::Point<int>;
 using common::Points2i;
 using common::StreamBase;
-using common::WithoutHelmet;
 
 using json = nlohmann::json;
 
@@ -58,112 +62,120 @@ bool ConfigParser::parseConfig(std::string const &path,
     return false;
   }
 
-  // 获取算法配置
-  json algos = config["Algorithms"];
-  for (auto const &algo : algos) {
-    AlgoBase algo_base;
-    algo_base.modelPath = algo["modelPath"].get<std::string>();
-    algo_base.serial = algo["algo_serial"].get<std::string>();
-    algo_base.batchSize = algo["batchSize"].get<int>();
-    algo_base.isScale = algo["isScale"].get<bool>();
-    algo_base.alpha = algo["alpha"].get<float>();
-    algo_base.beta = algo["beta"].get<float>();
-    algo_base.inputShape = algo["inputShape"].get<std::array<int, 3>>();
-    algo_base.inputNames = algo["inputNames"].get<std::vector<std::string>>();
-    algo_base.outputNames = algo["outputNames"].get<std::vector<std::string>>();
-    algo_base.cond_thr = algo["cond_thr"].get<float>();
+  try {
+    // 获取算法配置
+    json algos = config["Algorithms"];
+    for (auto const &algo : algos) {
+      AlgoBase algo_base;
+      algo_base.modelPath = algo["modelPath"].get<std::string>();
+      algo_base.serial = algo["algo_serial"].get<std::string>();
+      algo_base.batchSize = algo["batchSize"].get<int>();
+      algo_base.isScale = algo["isScale"].get<bool>();
+      algo_base.alpha = algo["alpha"].get<float>();
+      algo_base.beta = algo["beta"].get<float>();
+      algo_base.inputShape = algo["inputShape"].get<std::array<int, 3>>();
+      algo_base.inputNames = algo["inputNames"].get<std::vector<std::string>>();
+      algo_base.outputNames =
+          algo["outputNames"].get<std::vector<std::string>>();
+      algo_base.cond_thr = algo["cond_thr"].get<float>();
 
-    std::string name = algo["name"].get<std::string>();
+      std::string name = algo["name"].get<std::string>();
 
-    AlgoConfig algo_config; // 算法参数中心
-    auto algo_serial = common::algoSerialMapping.at(algo_base.serial);
-    switch (algo_serial) {
-    case common::AlgoSerial::Yolo:
-    case common::AlgoSerial::LPRDet:
-    case common::AlgoSerial::Assd: {
-      float nms_thr = algo["nms_thr"].get<float>();
-      DetAlgo det_config{std::move(algo_base), nms_thr};
-      algo_config.setParams(std::move(det_config));
-      break;
-    }
-    case common::AlgoSerial::CRNN: 
-    case common::AlgoSerial::Softmax: {
-      ClassAlgo cls_config{std::move(algo_base)};
-      algo_config.setParams(std::move(cls_config));
-      break;
-    }
-    }
-    algorithms.emplace_back(std::pair{std::move(name), std::move(algo_config)});
-  }
-
-  // 获取Pipelines数组
-  json pipes = config["Pipelines"];
-
-  // 遍历 JSON 数据，生成 PipelineParams 对象
-  for (auto const &pipe : pipes) {
-    // 一个pipeline的所有参数
-    PipelineParams params;
-
-    // 解析 pipeline 中的参数
-    for (const auto &p : pipe["Pipeline"]) {
-      // 反序列化ModuleInfo
-      ModuleInfo info;
-      info.moduleName = p["name"].get<std::string>();
-      info.moduleType = p["type"].get<std::string>();
-      info.className = p["sub_type"].get<std::string>();
-      info.sendName = p["sendName"].get<std::string>();
-      info.recvName = p["recvName"].get<std::string>();
-
-      // 分别解析各种类型功能的参数，给到功能参数中心
-      ModuleConfig config;
-      ModuleType type = typeMapping[info.moduleType];
-      switch (type) {
-      case ModuleType::Stream: {
-        StreamBase stream_config;
-        stream_config.cameraName = info.moduleName;
-        stream_config.uri = p["cameraIp"].get<std::string>();
-        stream_config.videoCode = p["videoCode"].get<std::string>();
-        stream_config.flowType = p["flowType"].get<std::string>();
-        stream_config.cameraId = p["Id"].get<int>();
-        stream_config.height = p["height"].get<int>();
-        stream_config.width = p["width"].get<int>();
-        config.setParams(std::move(stream_config));
+      AlgoConfig algo_config; // 算法参数中心
+      auto algo_serial = common::algoSerialMapping.at(algo_base.serial);
+      switch (algo_serial) {
+      case common::AlgoSerial::Yolo:
+      case common::AlgoSerial::Assd: {
+        float nms_thr = algo["nms_thr"].get<float>();
+        DetAlgo det_config{std::move(algo_base), nms_thr};
+        algo_config.setParams(std::move(det_config));
         break;
       }
-      case ModuleType::Output: {
-        OutputBase output_config;
-        output_config.url = p["url"].get<std::string>();
-        config.setParams(output_config);
+      case common::AlgoSerial::CRNN:
+      case common::AlgoSerial::Softmax: {
+        ClassAlgo cls_config{std::move(algo_base)};
+        algo_config.setParams(std::move(cls_config));
         break;
       }
-      case ModuleType::Algorithm: {
-        // TODO 未来单独的算法组件
+      case common::AlgoSerial::FaceNet: {
+        int dim = algo["dim"].get<int>();
+        FeatureAlgo feature_config{std::move(algo_base), dim};
+        algo_config.setParams(std::move(feature_config));
         break;
       }
-      case ModuleType::Logic: {
-        // 公共参数部分
-        LogicBase base_config;
-        base_config.outputDir = p["alarm_output_dir"].get<std::string>();
-        base_config.eventId = p["event_id"].get<int>();
-        base_config.page = p["page"].get<std::string>();
-        base_config.videDuration = p["video_duration"].get<int>();
-        base_config.isDraw = true;
+      case common::AlgoSerial::YoloPDet: {
+        int numPoints = algo["num_points"].get<int>();
+        float nms_thr = algo["nms_thr"].get<float>();
+        PointsDetAlgo pdet_config{std::move(algo_base), numPoints, nms_thr};
+        algo_config.setParams(std::move(pdet_config));
+        break;
+      }
+      }
+      algorithms.emplace_back(
+          std::pair{std::move(name), std::move(algo_config)});
+    }
 
-        json apipes = p["algo_pipe"];
-        for (auto const &ap : apipes) {
-          AlgoParams params; // 特定参数
-          params.attentions = ap["attention"].get<std::vector<int>>();
-          params.basedNames = ap["basedNames"].get<std::vector<std::string>>();
-          params.cropScaling = ap["cropScaling"].get<float>();
-          base_config.algoPipelines.emplace_back(
-              std::pair{ap["name"].get<std::string>(), std::move(params)});
+    // 获取Pipelines数组
+    json pipes = config["Pipelines"];
+
+    // 遍历 JSON 数据，生成 PipelineParams 对象
+    for (auto const &pipe : pipes) {
+      // 一个pipeline的所有参数
+      PipelineParams params;
+
+      // 解析 pipeline 中的参数
+      for (const auto &p : pipe["Pipeline"]) {
+        // 反序列化ModuleInfo
+        ModuleInfo info;
+        info.moduleName = p["name"].get<std::string>();
+        info.moduleType = p["type"].get<std::string>();
+        info.className = p["sub_type"].get<std::string>();
+        info.sendName = p["sendName"].get<std::string>();
+        info.recvName = p["recvName"].get<std::string>();
+
+        // 分别解析各种类型功能的参数，给到功能参数中心
+        ModuleConfig config;
+        ModuleType type = typeMapping[info.moduleType];
+        switch (type) {
+        case ModuleType::Stream: {
+          StreamBase stream_config;
+          stream_config.cameraName = info.moduleName;
+          stream_config.uri = p["cameraIp"].get<std::string>();
+          stream_config.videoCode = p["videoCode"].get<std::string>();
+          stream_config.flowType = p["flowType"].get<std::string>();
+          stream_config.cameraId = p["Id"].get<int>();
+          stream_config.height = p["height"].get<int>();
+          stream_config.width = p["width"].get<int>();
+          config.setParams(std::move(stream_config));
+          break;
         }
+        case ModuleType::Output: {
+          OutputBase output_config;
+          output_config.url = p["url"].get<std::string>();
+          config.setParams(output_config);
+          break;
+        }
+        case ModuleType::Algorithm: {
+          // TODO 未来单独的算法组件
+          break;
+        }
+        case ModuleType::Logic: {
+          // 公共参数部分 DL的执行逻辑，属于必要字段
+          LogicBase lBase;
+          // lBase.interval = p["interval"].get<int>();  // TODO 后续参数化
 
-        SupportedFunction func = moduleMapping[info.className];
-        switch (func) {
-        case SupportedFunction::HelmetModule: {
-          // TODO 特定模块示例，未来可以新增很多特定化的参数
-          // 通用模块
+          json apipes = p["algo_pipe"];
+          for (auto const &ap : apipes) {
+            AlgoParams params; // 特定参数
+            params.attentions = ap["attention"].get<std::vector<int>>();
+            params.basedNames =
+                ap["basedNames"].get<std::vector<std::string>>();
+            params.cropScaling = ap["cropScaling"].get<float>();
+            lBase.algoPipelines.emplace_back(
+                std::pair{ap["name"].get<std::string>(), std::move(params)});
+          }
+
+          // 前端划定区域 目前来说一定会有这个字段
           AttentionArea aarea;
           auto regions = p["regions"];
           for (auto const &region : regions) {
@@ -173,39 +185,67 @@ bool ConfigParser::parseConfig(std::string const &path,
             }
             aarea.regions.emplace_back(ret);
           }
-          InferInterval interval;
-          WithoutHelmet config_{std::move(aarea), std::move(base_config),
-                                std::move(interval)};
-          config.setParams(std::move(config_));
-          break;
-        }
-        case SupportedFunction::DetClsModule: {
-          // 通用模块
-          AttentionArea aarea;
-          auto regions = p["regions"];
-          for (auto const &region : regions) {
-            Points2i ret;
-            for (size_t i = 0; i < region.size(); i += 2) {
-              ret.push_back(Point2i{region.at(i), region.at(i + 1)});
-            }
-            aarea.regions.emplace_back(ret);
+
+          // 报警配置获取 目前来说一定会有这些字段
+          auto outputDir = p["alarm_output_dir"].get<std::string>();
+          auto videoDuration = p["video_duration"].get<int>();
+          auto eventId = p["event_id"].get<int>();
+          auto page = p["page"].get<std::string>();
+
+          SupportedFunc func = moduleMapping[info.className];
+          switch (func) {
+          case SupportedFunc::OCRModule:
+          case SupportedFunc::LicensePlateModule: {
+            // 前端划定区域
+            auto chars = p["chars"].get<std::string>();
+            auto isDraw = true;
+            AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
+                            isDraw};
+
+            lBase.interval = 10000; // TODO 参数加了之后就可以删除
+            OCRConfig config_{std::move(aarea), std::move(lBase),
+                              std::move(aBase), std::move(chars)};
+            config.setParams(std::move(config_));
+            break;
           }
+          case SupportedFunc::DetClsModule: {
+            // 报警配置获取
+            auto thre = p["threshold"].get<float>();
+            auto isDraw = true;
+            AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
+                            isDraw};
 
-          InferInterval interval;
-          DetClsMonitor config_{std::move(aarea), std::move(base_config),
-                                std::move(interval)};
-          config.setParams(std::move(config_));
+            lBase.interval = 1000; // TODO 参数加了之后就可以删除
+            DetClsMonitor config_{std::move(aarea), std::move(lBase),
+                                  std::move(aBase), thre};
+            config.setParams(std::move(config_));
+            break;
+          }
+          case SupportedFunc::ObjectCounterModule:
+          case SupportedFunc::ObjectNumberModule: {
+            auto amount = p["amount"].get<int>();
+            auto isDraw = false;
+            AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
+                            isDraw};
+
+            lBase.interval = 100; // TODO 参数加了之后就可以删除
+            ObjectCounterConfig config_{std::move(aarea), std::move(lBase),
+                                        std::move(aBase), amount};
+            config.setParams(std::move(config_));
+            break;
+          }
+          }
           break;
         }
         }
-        break;
+        params.emplace_back(ModuleParams{std::make_pair(info, config)});
       }
-      }
-      params.emplace_back(ModuleParams{std::make_pair(info, config)});
+      pipelines.push_back(params);
     }
-    pipelines.push_back(params);
+  } catch (std::exception const &e) {
+    FLOWENGINE_LOGGER_ERROR("Deserialization failed. {}", e.what());
+    return false;
   }
-
   return true;
 }
 

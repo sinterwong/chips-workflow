@@ -1,29 +1,28 @@
 /**
  * @file charsRec.hpp
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2023-03-22
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 
 #ifndef __INFERENCE_VISION_OCR_H_
 #define __INFERENCE_VISION_OCR_H_
 #include "vision.hpp"
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 
 class CharsRec : public Vision {
   //!
   //! \brief construction
   //!
 public:
-  CharsRec(const AlgoConfig &_param, ModelInfo const &_info)
+  explicit CharsRec(const AlgoConfig &_param, ModelInfo const &_info)
       : Vision(_param, _info) {
-    config = mParams.getParams<ClassAlgo>();  // 未来可能需要新的配置类型
+    config = mParams.getCopyParams<ClassAlgo>(); // 未来可能需要新的配置类型
   }
 
   //!
@@ -43,10 +42,9 @@ public:
   virtual bool verifyOutput(InferResult const &) const override;
 
 protected:
-  ClassAlgo *config;
+  ClassAlgo config;
   virtual CharsRet generateChars(void **output) const = 0;
 };
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision
 
 #endif

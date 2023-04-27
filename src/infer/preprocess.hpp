@@ -14,8 +14,7 @@
 #include "infer_common.hpp"
 #include "opencv2/imgproc.hpp"
 
-namespace infer {
-namespace utils {
+namespace infer::utils {
 template <typename T>
 inline void chw_to_hwc(T *chw_data, T *hwc_data, int channel, int height,
                        int width) {
@@ -61,6 +60,5 @@ void RGB2NV12(cv::Mat const &input, cv::Mat &output);
 
 bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
                common::ColorType type, float sr = 0.0);
-} // namespace utils
-} // namespace infer
+} // namespace infer::utils
 #endif

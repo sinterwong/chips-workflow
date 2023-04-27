@@ -17,12 +17,15 @@
 #include "logger/logger.hpp"
 #include "videoSource.hpp"
 
+#include <atomic>
+#include <condition_variable>
 #include <mutex>
 #include <shared_mutex>
 #include <sp_codec.h>
 #include <sp_vio.h>
 
 #include <chrono>
+#include <thread>
 #include <utility>
 using namespace std::chrono_literals;
 
@@ -59,22 +62,18 @@ public:
     sp_release_decoder_module(decoder);
   };
 
-public:
   virtual bool Open() override {
-    {
-      std::lock_guard lk(m);
-      // 启动流
-      stream = std::make_unique<FFStream>(mOptions.resource);
-      if (!stream->openStream()) {
-        FLOWENGINE_LOGGER_ERROR("can't open the stream {}!",
-                                std::string(mOptions.resource));
-        return false;
-      }
-      mOptions.width = stream->getWidth();
-      mOptions.height = stream->getHeight();
-      mOptions.frameRate = stream->getRate();
-      FLOWENGINE_LOGGER_INFO("{} video is opened!", mOptions.resource.string);
+    // 启动流
+    stream = std::make_unique<FFStream>(mOptions.resource);
+    if (!stream->openStream()) {
+      FLOWENGINE_LOGGER_ERROR("can't open the stream {}!",
+                              std::string(mOptions.resource));
+      return false;
     }
+    mOptions.width = stream->getWidth();
+    mOptions.height = stream->getHeight();
+    mOptions.frameRate = stream->getRate();
+    FLOWENGINE_LOGGER_INFO("{} video is opened!", mOptions.resource.string);
 
     int ret = sp_start_decode(decoder, "", mOptions.videoIdx,
                               entypeMapping.at(stream->getCodecType()),
@@ -88,7 +87,26 @@ public:
     yuv_data = reinterpret_cast<char *>(malloc(yuv_size * sizeof(char)));
     // raw_data = malloc(mOptions.width * mOptions.height * 3 * sizeof(char));
     mStreaming.store(true);
-    producter = std::make_unique<joining_thread>(&XDecoder::producting, this);
+    producter = std::make_unique<joining_thread>([this]() {
+      // 优化成一个条件变量
+      while (true) {
+        std::this_thread::sleep_for(10ms);
+        int bufSize = stream->getRawFrame(&raw_data);
+        if (bufSize < 0)
+          break;
+        int ret =
+            sp_decoder_set_image(decoder, reinterpret_cast<char *>(raw_data),
+                                 mOptions.videoIdx, bufSize, 0);
+        if (ret != 0) {
+          FLOWENGINE_LOGGER_WARN("sp_decoder_set_image is failed: {}", ret);
+          std::this_thread::sleep_for(2s);
+          continue;
+        }
+      }
+      FLOWENGINE_LOGGER_WARN("streaming is over: {}",
+                             std::string(mOptions.resource));
+      Close();
+    });
     return true;
   };
 
@@ -97,7 +115,6 @@ public:
    * @see videoSource::Close()
    */
   virtual inline void Close() noexcept override {
-    std::lock_guard lk(m);
     if (stream->isRunning()) {
       stream->closeStream();
     }
@@ -120,9 +137,6 @@ public:
 
   virtual bool Capture(void **image,
                        size_t timeout = DEFAULT_TIMEOUT) override {
-    if (!stream->isRunning())
-      if (!Open())
-        return false;
     int ret = sp_decoder_get_image(decoder, yuv_data);
     if (ret != 0) {
       FLOWENGINE_LOGGER_WARN("sp_decoder_get_image get next frame is failed!");
@@ -155,37 +169,11 @@ private:
   char *yuv_data;
   void *raw_data;
 
-private:
   virtual bool Init() override {
     decoder = sp_init_decoder_module();
     return true;
   }
-
-  std::unique_ptr<joining_thread> producter; // 生产者
-  std::shared_mutex m;
-  void producting() {
-    int ret;
-    while (stream->isRunning()) {
-      std::shared_lock lk(m);
-      std::this_thread::sleep_for(20ms);
-      int bufSize = stream->getRawFrame(&raw_data);
-      if (bufSize < 0) {
-        sp_decoder_set_image(decoder, reinterpret_cast<char *>(raw_data),
-                             mOptions.videoIdx, 0, 0);
-        break;
-      } else {
-        ret = sp_decoder_set_image(decoder, reinterpret_cast<char *>(raw_data),
-                                   mOptions.videoIdx, bufSize, 0);
-      }
-      if (ret != 0) {
-        FLOWENGINE_LOGGER_WARN("sp_decoder_set_image is failed: {}", ret);
-        std::this_thread::sleep_for(2s);
-      }
-    }
-    FLOWENGINE_LOGGER_WARN("streaming is over: {}",
-                           std::string(mOptions.resource));
-    Close();
-  }
+  std::unique_ptr<joining_thread> producter;
 };
 } // namespace module::utils
 #endif

@@ -17,23 +17,26 @@
 
 namespace infer {
 using common::BBox;
-using common::Point2f;
+using Point2f = common::Point<float>;
 using common::KeypointsBox;
 using common::KeypointsBoxes;
 using common::Shape;
 
 using common::InferResult;
 
-using common::ClsRet;
-using common::CharsRet;
 using common::BBoxes;
-using common::Points2f;
+using common::CharsRet;
+using common::ClsRet;
+using common::Eigenvector;
 using common::ModelInfo;
+using common::Points2f;
 
-using common::AlgoConfig;
 using common::AlgoBase;
+using common::AlgoConfig;
 using common::ClassAlgo;
 using common::DetAlgo;
+using common::FeatureAlgo;
+using common::PointsDetAlgo;
 
 } // namespace infer
 

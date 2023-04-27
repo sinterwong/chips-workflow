@@ -17,8 +17,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace infer {
-namespace vision {
+namespace infer::vision {
 
 bool Detection::processInput(cv::Mat const &input, void **output,
                              common::ColorType) const {
@@ -31,10 +30,9 @@ bool Detection::processOutput(void **output, InferResult &result) const {
   std::unordered_map<int, BBoxes> cls2bbox;
   generateBoxes(cls2bbox, output);
   auto detRet = BBoxes();
-  utils::nms(detRet, cls2bbox, config->nms_thr);
+  utils::nms(detRet, cls2bbox, config.nmsThr);
   // rect 还原成原始大小
-  utils::restoryBoxes(detRet, result.shape, config->inputShape,
-                      config->isScale);
+  utils::restoryBoxes(detRet, result.shape, config.inputShape, config.isScale);
   BBoxes::iterator it = detRet.begin();
   // 清除掉不符合要求的框
   for (; it != detRet.end();) {
@@ -50,5 +48,4 @@ bool Detection::processOutput(void **output, InferResult &result) const {
 }
 
 bool Detection::verifyOutput(InferResult const &) const { return true; }
-} // namespace vision
-} // namespace infer
+} // namespace infer::vision

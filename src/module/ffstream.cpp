@@ -138,13 +138,13 @@ static int build_dec_seq_header(uint8_t *pbHeader, std::string const &p_enType,
 }
 
 bool FFStream::openStream() {
-  int ret = 0;
+  std::lock_guard<std::shared_mutex> lk(ctx_m);
 
+  int ret = 0;
   AVDictionary *option = nullptr;
   av_dict_set(&option, "stimeout", "3000000", 0);
   av_dict_set(&option, "bufsize", "1024000", 0);
   av_dict_set(&option, "rtsp_transport", "tcp", 0);
-  std::lock_guard lk(m);
   ret = avformat_open_input(&avContext, uri.c_str(), 0, &option);
   if (ret < 0) {
     FLOWENGINE_LOGGER_INFO("avformat_open_input failed");
@@ -176,10 +176,12 @@ bool FFStream::openStream() {
 }
 
 int FFStream::getRawFrame(void **data) {
+  std::lock_guard<std::shared_mutex> lk(ctx_m);
+  if (!isRunning())
+    return -1; // 流已关闭
+
   int seqHeaderSize = 0;
   int error = 0;
-
-  std::lock_guard lk(m);
 
   if (!avpacket.size) {
     av_packet_unref(&avpacket); // 不加就会内存泄露

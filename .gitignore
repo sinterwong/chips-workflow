@@ -10,6 +10,8 @@
 *.tar.gz
 *.tgz
 
+__pycache__
+
 build/
 build*/
 conf/nginx

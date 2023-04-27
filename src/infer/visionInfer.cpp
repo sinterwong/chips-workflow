@@ -30,7 +30,7 @@ using utils::cropImage;
 bool VisionInfer::init() {
 
   std::string aserial;
-  config.visitParams([this, &aserial](auto &params) {
+  config.visitParams([this, &aserial](auto const &params) {
     aserial = params.serial;
     instance = std::make_shared<AlgoInference>(params);
     if (!instance->initialize()) {
@@ -38,7 +38,9 @@ bool VisionInfer::init() {
       return;
     }
     instance->getModelInfo(modelInfo);
-    vision = ObjectFactory::createObject<vision::Vision>(params.serial, params,
+    AlgoConfig p;
+    p.setParams(params);
+    vision = ObjectFactory::createObject<vision::Vision>(params.serial, p,
                                                          modelInfo);
   });
 
@@ -106,9 +108,6 @@ bool VisionInfer::infer(void *data, const InferParams &params,
   return true;
 }
 
-bool VisionInfer::destory() {
-  // TODO 如何在这里销毁算法，并让自己结束运行
-  return true;
-}
+bool VisionInfer::destory() noexcept { return true; }
 
 } // namespace infer

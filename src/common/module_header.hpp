@@ -87,13 +87,20 @@ using algo_pipelines = std::vector<std::pair<std::string, AlgoParams>>;
  *
  */
 struct LogicBase {
+  algo_pipelines algoPipelines; // 算法执行的pipeline
+  int64_t interval = 100;       // 间隔时间(ms)
+};
+
+/**
+ * @brief 报警逻辑的参数
+ *
+ */
+struct AlarmBase {
+  int eventId;           // unknow，需要原路返回给后端
+  std::string page;      // unknow，需要原路返回给后端
   std::string outputDir; // 报警内容存储路径
-  int videDuration;      // 报警视频录制时长
+  int videoDuration;     // 报警视频录制时长
   bool isDraw;           // 报警图像是否需要标记报警信息
-  float threshold; // 报警阈值（计算规则自行在不同的功能中定义）
-  algo_pipelines algoPipelines;
-  int eventId;      // unknow，需要原路返回给后端
-  std::string page; // unknow，需要原路返回给后端
 };
 
 /**
@@ -105,35 +112,46 @@ struct AttentionArea {
 };
 
 /**
- * @brief 每次执行模块的间隔时间
+ * @brief OCR类型的算法逻辑
  *
  */
-struct InferInterval {
-  std::chrono::seconds interval{3}; // 间隔时间
+struct OCRConfig : public AttentionArea, public LogicBase, public AlarmBase {
+  OCRConfig(AttentionArea &&aaera, LogicBase &&alarm, AlarmBase &&alarmBase_,
+            std::string &&chars_)
+      : AttentionArea(aaera), LogicBase(alarm), AlarmBase(alarmBase_),
+        chars(chars_) {}
+
+  std::string chars; // 需要匹配的字符集
 };
 
 /**
- * @brief 未佩戴安全帽识别
+ * @brief 计数监控
  *
  */
-struct WithoutHelmet : public AttentionArea,
-                       public LogicBase,
-                       public InferInterval {
-  WithoutHelmet(AttentionArea &&aaera, LogicBase &&alarm,
-                InferInterval &&interval)
-      : AttentionArea(aaera), LogicBase(alarm), InferInterval(interval) {}
+struct ObjectCounterConfig : public AttentionArea,
+                             public LogicBase,
+                             public AlarmBase {
+  ObjectCounterConfig(AttentionArea &&aaera, LogicBase &&alarm,
+                      AlarmBase &&abase_, int amount_)
+      : AttentionArea(aaera), LogicBase(alarm), AlarmBase(abase_),
+        amount(amount_) {}
+
+  int amount; // 达到一定数量之后报警
 };
 
 /**
- * @brief 通用模块
+ * @brief 依靠检测与分类类型的报警模块
  *
  */
 struct DetClsMonitor : public AttentionArea,
                        public LogicBase,
-                       public InferInterval {
-  DetClsMonitor(AttentionArea &&aaera, LogicBase &&alarm,
-                InferInterval &&interval)
-      : AttentionArea(aaera), LogicBase(alarm), InferInterval(interval) {}
+                       public AlarmBase {
+  DetClsMonitor(AttentionArea &&aaera, LogicBase &&logic_, AlarmBase &&alarm_,
+                float threshold_)
+      : AttentionArea(aaera), LogicBase(logic_), AlarmBase(alarm_),
+        threshold(threshold_) {}
+
+  float threshold; // 报警阈值
 };
 
 /**
@@ -143,8 +161,8 @@ struct DetClsMonitor : public AttentionArea,
 class ModuleConfig {
 public:
   // 将所有参数类型存储在一个 std::variant 中
-  using Params = std::variant<StreamBase, OutputBase, LogicBase, WithoutHelmet,
-                              DetClsMonitor>;
+  using Params = std::variant<StreamBase, OutputBase, OCRConfig, DetClsMonitor,
+                              ObjectCounterConfig>;
 
   // 设置参数
   template <typename T> void setParams(T params) {

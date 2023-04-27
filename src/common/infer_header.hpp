@@ -49,12 +49,12 @@ struct FrameInfo {
 };
 
 /**
- * @brief bbox result type
+ * @brief bbox result type, x1, y1, x2, y2, conf, class_id
  *
  */
 using RetBox = std::pair<std::string, std::array<float, 6>>;
 /**
- * @brief poly result type
+ * @brief poly result type x1, y1, x2, y2, x3, y3, x4, y4, class_id
  *
  */
 using RetPoly = std::pair<std::string, std::array<float, 9>>;
@@ -97,8 +97,10 @@ struct alignas(float) BBox {
 };
 
 // point 数据
-using Point2i = std::array<int, 2>;
-using Point2f = std::array<float, 2>;
+template <typename T> struct Point {
+  T x;
+  T y;
+};
 
 // 单次分类结果
 using ClsRet = std::pair<int, float>;
@@ -110,8 +112,8 @@ using BBoxes = std::vector<BBox>;
 using CharsRet = std::vector<int>;
 
 // 点集
-using Points2i = std::vector<Point2i>;
-using Points2f = std::vector<Point2f>;
+using Points2i = std::vector<Point<int>>;
+using Points2f = std::vector<Point<float>>;
 
 // 关键点框
 struct KeypointsBox {
@@ -122,9 +124,19 @@ struct KeypointsBox {
 // 关键点框集
 using KeypointsBoxes = std::vector<KeypointsBox>;
 
+// OCR识别结果
+struct OCRRet {
+  KeypointsBox kbbox; // 一个四点框一个两点框
+  CharsRet charIds;   // 字符识别结果
+  std::string chars;  // 映射后结果
+};
+
+// 特征
+using Eigenvector = std::vector<float>;
+
 // 算法结果
 using AlgoRet = std::variant<std::monostate, BBoxes, ClsRet, CharsRet, Points2f,
-                             KeypointsBoxes>;
+                             KeypointsBoxes, Eigenvector>;
 
 /**
  * @brief 算法推理时返回结果
@@ -159,8 +171,6 @@ struct AlgoBase {
   float alpha;           // 预处理时除数
   float beta;            // 预处理时减数
   float cond_thr;        // 置信度阈值
-
-  AlgoBase() = default;
 };
 
 /**
@@ -168,11 +178,11 @@ struct AlgoBase {
  *
  */
 struct DetAlgo : public AlgoBase {
-  float nms_thr; // NMS 阈值
+  float nmsThr; // NMS 阈值
 
   DetAlgo() = default;
-  DetAlgo(AlgoBase &&algoBase, float nms_thr_)
-      : AlgoBase(algoBase), nms_thr(nms_thr_) {}
+  DetAlgo(AlgoBase &&algoBase, float nmsThr_)
+      : AlgoBase(algoBase), nmsThr(nmsThr_) {}
 };
 
 /**
@@ -184,10 +194,34 @@ struct ClassAlgo : public AlgoBase {
   ClassAlgo(AlgoBase &&algoBase) : AlgoBase(algoBase) {}
 };
 
+/**
+ * @brief 带有关键点的检测算法
+ *
+ */
+struct PointsDetAlgo : public AlgoBase {
+  int numPoints; // 点数
+  float nmsThr;  // NMS 阈值
+
+  PointsDetAlgo() = default;
+  PointsDetAlgo(AlgoBase &&algoBase, int numPoints_, float nmsThr_)
+      : AlgoBase(algoBase), numPoints(numPoints_), nmsThr(nmsThr_) {}
+};
+
+/**
+ * @brief 特征提取算法，如人脸识别，行人ReID
+ *
+ */
+struct FeatureAlgo : public AlgoBase {
+  int dim; // 特征维度
+
+  FeatureAlgo() = default;
+  FeatureAlgo(AlgoBase &&algoBase, int dim_) : AlgoBase(algoBase), dim(dim_) {}
+};
+
 class AlgoConfig {
 public:
-  // 将所有参数类型存储在一个 std::variant 中
-  using Params = std::variant<DetAlgo, ClassAlgo>;
+  // 参数中心
+  using Params = std::variant<DetAlgo, ClassAlgo, FeatureAlgo, PointsDetAlgo>;
 
   // 设置参数
   template <typename T> void setParams(T params) {
@@ -203,6 +237,9 @@ public:
   // 获取参数
   template <typename T> T *getParams() { return std::get_if<T>(&params_); }
 
+  // 获取copy参数
+  template <typename T> T getCopyParams() { return std::get<T>(params_); }
+
 private:
   Params params_;
 };
@@ -214,55 +251,30 @@ private:
 enum class AlgoSerial : uint16_t {
   Yolo = 0,
   Assd,
-  LPRDet,
+  YoloPDet,
   CRNN,
   Softmax,
+  FaceNet,
 };
 
 // 算法系列映射
 static std::unordered_map<std::string, AlgoSerial> algoSerialMapping{
     std::make_pair("Yolo", AlgoSerial::Yolo),
     std::make_pair("Assd", AlgoSerial::Assd),
-    std::make_pair("LPRDet", AlgoSerial::LPRDet),
+    std::make_pair("YoloPDet", AlgoSerial::YoloPDet),
     std::make_pair("CRNN", AlgoSerial::CRNN),
     std::make_pair("Softmax", AlgoSerial::Softmax),
+    std::make_pair("FaceNet", AlgoSerial::FaceNet),
 };
 
 // 算法系列映射算法类型
 static std::unordered_map<AlgoSerial, AlgoRetType> serial2TypeMapping{
     std::make_pair(AlgoSerial::Yolo, AlgoRetType::Detection),
     std::make_pair(AlgoSerial::Assd, AlgoRetType::Detection),
-    std::make_pair(AlgoSerial::LPRDet, AlgoRetType::Detection),
+    std::make_pair(AlgoSerial::YoloPDet, AlgoRetType::Detection),
     std::make_pair(AlgoSerial::CRNN, AlgoRetType::OCR),
     std::make_pair(AlgoSerial::Softmax, AlgoRetType::Classifier),
+    std::make_pair(AlgoSerial::FaceNet, AlgoRetType::Feature),
 };
-
-/**
- * @brief 目前已经支持的算法种类
- *
- */
-enum class SupportedAlgo : uint16_t {
-  CocoDet = 0,
-  HandDet,
-  HeadDet,
-  FireDet,
-  SmogDet,
-  SmokeCallCls,
-  HelmetCls,
-  ExtinguisherCls,
-  OiltubeCls,
-  EarthlineCls,
-};
-
-// TODO 支持的算法功能映射
-static std::unordered_map<std::string, SupportedAlgo> algoMapping{
-    std::make_pair("handDet", SupportedAlgo::HandDet),
-    std::make_pair("headDet", SupportedAlgo::HeadDet),
-    std::make_pair("phoneCls", SupportedAlgo::SmokeCallCls),
-    std::make_pair("helmetCls", SupportedAlgo::HelmetCls),
-    std::make_pair("smokeCls", SupportedAlgo::SmokeCallCls),
-    std::make_pair("extinguisherCls", SupportedAlgo::ExtinguisherCls),
-};
-
 } // namespace common
 #endif
