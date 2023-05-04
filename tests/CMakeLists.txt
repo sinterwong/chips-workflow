@@ -39,16 +39,16 @@ LINK_LIBRARIES(
     spdlog
     stdc++fs
 )
-SET(LINK "-Wl,--no-as-needed")
-FILE(GLOB APP_SOURCES app/*.cpp infer/*.cpp)
-# FILE(GLOB APP_HARDWARE_SOURCES ${TARGET_HARDWARE}/*.cpp)
+# SET(LINK "-Wl,--no-as-needed")
+# FILE(GLOB APP_SOURCES app/*.cpp infer/*.cpp)
+FILE(GLOB APP_HARDWARE_SOURCES ${TARGET_HARDWARE}/test_vio2encoder.cpp)
 LIST(APPEND APP_SOURCES ${APP_HARDWARE_SOURCES})
 MESSAGE(STATUS "APP SOURCES: ${APP_SOURCES}")
 FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
     STRING(REPLACE ".cpp" "" testname ${sourcefilewithoutpath})
     ADD_EXECUTABLE( ${testname} ${sourcefile})
-    TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} core module module_logger stdc++fs)
+    # TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} core module module_logger stdc++fs)
     SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin/tests)
 
     INSTALL(TARGETS ${testname}
