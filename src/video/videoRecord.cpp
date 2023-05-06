@@ -10,16 +10,15 @@
  */
 #include "videoRecord.hpp"
 #include "logger/logger.hpp"
-#include "module_utils.hpp"
 #include <algorithm>
 #include <cassert>
 #include <experimental/filesystem>
 #include <memory>
+#include "video_utils.hpp"
 
 using namespace std::experimental;
 
-namespace module {
-namespace utils {
+namespace video {
 
 bool VideoRecord::init() {
 #if (TARGET_PLATFORM == 0)
@@ -75,5 +74,4 @@ bool VideoRecord::record(void *frame) {
   return true;
 #endif
 }
-} // namespace utils
-} // namespace module
+} // namespace video

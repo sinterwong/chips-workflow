@@ -28,8 +28,7 @@
 #include <thread>
 #include <utility>
 using namespace std::chrono_literals;
-
-namespace module::utils {
+namespace video {
 
 class XDecoder : public videoSource {
 
@@ -175,5 +174,5 @@ private:
   }
   std::unique_ptr<joining_thread> producter;
 };
-} // namespace module::utils
+} // namespace video
 #endif

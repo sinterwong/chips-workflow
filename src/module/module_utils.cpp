@@ -247,44 +247,6 @@ bool drawRetPoly(cv::Mat &image, RetPoly const &poly,
   return true;
 }
 
-void wrapH2642mp4(std::string const &h264File, std::string const &mp4File) {
-  if (!std::experimental::filesystem::exists(h264File)) {
-    return;
-  };
-  FLOWENGINE_LOGGER_INFO("Wrap to mp4...");
-  // cv::VideoCapture input_video(h264File);
-  // cv::Size video_size =
-  //     cv::Size((int)input_video.get(cv::CAP_PROP_FRAME_WIDTH),
-  //              (int)input_video.get(cv::CAP_PROP_FRAME_HEIGHT));
-  // double fps = input_video.get(cv::CAP_PROP_FPS);
-
-  // cv::VideoWriter output_video(mp4File,
-  //                              cv::VideoWriter::fourcc('H', '2', '6', '4'),
-  //                              fps, video_size, true);
-
-  // cv::Mat frame;
-  // while (input_video.read(frame)) {
-  //   output_video.write(frame);
-  // }
-
-  // input_video.release();
-  // output_video.release();
-  std::string cmd = "ffmpeg -i " + h264File + " -c:v copy " + mp4File;
-  int ret = std::system(cmd.c_str());
-  if (ret == -1) {
-    perror("system");
-    std::exit(EXIT_FAILURE);
-  } else {
-    if (WIFEXITED(ret)) {
-      int status = WEXITSTATUS(ret);
-      FLOWENGINE_LOGGER_INFO("Command exited with status {}", status);
-    } else if (WIFSIGNALED(ret)) {
-      int sig = WTERMSIG(ret);
-      FLOWENGINE_LOGGER_INFO("Command was terminated by signal {}", sig);
-    }
-  }
-}
-
 bool readFile(std::string const &filename, std::string &ret) {
   std::ifstream input_file(filename);
   if (!input_file.is_open()) {

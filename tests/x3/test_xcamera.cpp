@@ -1,11 +1,11 @@
-#include "x3/videoSource.hpp"
-#include "x3/xCamera.hpp"
+#include "videoSource.hpp"
+#include "xCamera.hpp"
 #include <memory>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <string>
 
-using namespace module::utils;
+using namespace video;
 
 int main(int argc, char **argv) {
   videoOptions opt{std::string("csi://0"), 1920, 1080, 25, 0};

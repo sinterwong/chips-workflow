@@ -25,9 +25,9 @@
 
 #include "videoManager.hpp"
 
-using namespace module::utils;
 using common::ModuleConfig;
 using common::StreamBase;
+using namespace video;
 
 namespace module {
 

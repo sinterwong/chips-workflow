@@ -3,9 +3,9 @@
 #include <chrono>
 #include <opencv2/imgcodecs.hpp>
 
-#include "videoManager.hpp"
+#include "video/videoManager.hpp"
 
-using namespace module;
+using namespace video;
 using namespace std::chrono_literals;
 
 DEFINE_string(uri, "", "Specify the url of video.");
@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   // "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101"
-  module::utils::VideoManager vm{FLAGS_uri};
+  VideoManager vm{FLAGS_uri};
 
   vm.init();
   FLOWENGINE_LOGGER_INFO("Video manager has initialized!");

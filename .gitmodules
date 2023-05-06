@@ -4,8 +4,8 @@
 [submodule "3rdparty/gflags"]
 	path = 3rdparty/gflags
 	url = https://github.com/gflags/gflags.git
-[submodule "3rdparty/jetson-utils"]
-	path = 3rdparty/jetson-utils
+[submodule "src/video/jetson-utils"]
+	path = src/video/jetson-utils
 	url = git@github.com:dusty-nv/jetson-utils.git
 [submodule "3rdparty/eigen"]
 	path = 3rdparty/eigen

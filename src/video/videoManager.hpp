@@ -18,15 +18,15 @@
 #include <thread>
 
 #if (TARGET_PLATFORM == 0)
-#include "x3/videoSource.hpp"
-#include "x3/video_common.hpp"
+#include "videoSource.hpp"
+#include "video_common.hpp"
 #elif (TARGET_PLATFORM == 1)
 #include "videoOptions.h"
 #include "videoSource.h"
 #elif (TARGET_PLATFORM == 2)
 #endif
 
-namespace module::utils {
+namespace video {
 
 class VideoManager : private common::NonCopyable {
 private:
@@ -99,6 +99,6 @@ public:
 #endif
   }
 };
-} // namespace module::utils
+} // namespace video
 
 #endif

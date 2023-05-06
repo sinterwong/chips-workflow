@@ -18,12 +18,12 @@
 #include <string>
 #include <thread>
 
-#include "module_utils.hpp"
+#include "video_utils.hpp"
 #include "opencv2/videoio.hpp"
 
 using namespace std::chrono_literals;
 
-namespace module::utils {
+namespace video {
 
 bool VideoManager::init() {
 

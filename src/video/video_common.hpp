@@ -18,7 +18,8 @@
 #include <cstddef>
 #include <mutex>
 
-namespace module::utils {
+using namespace video::utils;
+namespace video {
 /**
  * @brief 提供全局的channel管理
  *

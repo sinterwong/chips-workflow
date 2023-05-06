@@ -17,17 +17,15 @@
 #include <string>
 
 #if (TARGET_PLATFORM == 0)
-#include "x3/video_common.hpp"
-#include "x3/xEncoder.hpp"
-using namespace module::utils;
+#include "video_common.hpp"
+#include "xEncoder.hpp"
 #elif (TARGET_PLATFORM == 1)
 #include "videoOptions.h"
 #include "videoOutput.h"
 #elif (TARGET_PLATFORM == 2)
 #endif
 
-namespace module {
-namespace utils {
+namespace video {
 
 class VideoRecord : private common::NonCopyable {
 public:
@@ -88,5 +86,4 @@ private:
   videoOptions params;
   int channel;
 };
-} // namespace utils
-} // namespace module
+} // namespace video

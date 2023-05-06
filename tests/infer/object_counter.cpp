@@ -17,7 +17,7 @@
 #include "visionInfer.hpp"
 
 #include "infer/preprocess.hpp"
-#include "module/videoManager.hpp"
+#include "videoManager.hpp"
 
 #include "infer/tracker.h"
 
@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
   FLOWENGINE_LOGGER_INFO("Video manager has initialized!");
 
   // 视频流
-  module::utils::VideoManager vm{FLAGS_url};
+  video::VideoManager vm{FLAGS_url};
 
   vm.init();
   FLOWENGINE_LOGGER_INFO("Video manager has initialized!");

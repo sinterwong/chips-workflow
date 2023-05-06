@@ -29,6 +29,8 @@
 
 using common::AlarmBase;
 
+using namespace video;
+
 namespace module {
 namespace filesystem = std::experimental::filesystem;
 class AlarmUtils {
@@ -36,7 +38,7 @@ protected:
   bool isRecord = false; // 是否是保存视频状态
   int frameCount = 0;    // 保存帧数
   int drawTimes = 0;     // 视频上画的次数
-  std::unique_ptr<utils::VideoRecord> vr;
+  std::unique_ptr<VideoRecord> vr;
 
 public:
   AlarmUtils() {}
@@ -59,7 +61,7 @@ public:
     params.height = height;
     params.frameRate = rate;
     try {
-      vr = std::make_unique<utils::VideoRecord>(std::move(params));
+      vr = std::make_unique<VideoRecord>(std::move(params));
     } catch (const std::runtime_error &e) {
       FLOWENGINE_LOGGER_ERROR("initRecorder exception: ", e.what());
       return false;

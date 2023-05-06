@@ -1,5 +1,5 @@
 #include "logger/logger.hpp"
-#include "videoManager.hpp"
+#include "video/videoManager.hpp"
 #include "gflags/gflags.h"
 
 #include <cassert>
@@ -12,7 +12,7 @@
 #include <tuple>
 #include <vector>
 
-using namespace module::utils;
+using namespace video;
 
 DEFINE_string(uri, "", "Specify the url of video.");
 DEFINE_int32(start, 0, "stream start index.");
