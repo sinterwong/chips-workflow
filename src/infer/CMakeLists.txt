@@ -16,6 +16,7 @@ IF(TARGET_HARDWARE STREQUAL jetson)
     TARGET_INCLUDE_DIRECTORIES(infer PRIVATE 
         ${PROJECT_INCLUDE_DIR}
         ${PROJECT_INCLUDE_DIR}/infer
+        ${PROJECT_INCLUDE_DIR}/infer/jetson
         ${3RDPARTY_ROOT}/eigen
         ${OpenCV_INCLUDE_DIRS}
         ${CUDA_INCLUDE_DIRS}
@@ -25,9 +26,9 @@ IF(TARGET_HARDWARE STREQUAL jetson)
         ${OpenCV_INCLUDE_DIRS}
         ${CUDA_INCLUDE_DIRS}
     )
-
     TARGET_LINK_LIBRARIES(infer jetson_infer_cu nvinfer nvparsers nvonnxparser nvinfer_plugin module_logger)
     LIST(APPEND INFER_LIBS jetson_infer_cu)
+
 ELSEIF(TARGET_HARDWARE STREQUAL x3)
     LINK_DIRECTORIES(
         ${DNN_LIB_PATH}
@@ -41,6 +42,7 @@ ELSEIF(TARGET_HARDWARE STREQUAL x3)
     TARGET_INCLUDE_DIRECTORIES(infer PRIVATE 
         ${PROJECT_INCLUDE_DIR}
         ${PROJECT_INCLUDE_DIR}/infer
+        ${PROJECT_INCLUDE_DIR}/infer/x3
         ${3RDPARTY_ROOT}/eigen
         ${OpenCV_INCLUDE_DIRS}
         ${DNN_PATH}/include
@@ -48,6 +50,21 @@ ELSEIF(TARGET_HARDWARE STREQUAL x3)
         ${APPSDK_PATH}/include/libmm
     )
     TARGET_LINK_LIBRARIES(infer ${OpenCV_LIBS} ${BPU_libs} rt dl module_logger)
+
+ELSEIF(TARGET_HARDWARE STREQUAL rockchip)
+    FILE(GLOB_RECURSE NN_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/rockchip/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/rockchip/*.h)
+    FILE(GLOB_RECURSE NN_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/rockchip/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/rockchip/*.c)
+    LIST(APPEND INFER_LIB_SRC ${NN_LIB_SRC})
+    ADD_LIBRARY(infer SHARED ${INFER_LIB_HEAD} ${NN_LIB_HEAD} ${INFER_LIB_SRC})
+    TARGET_INCLUDE_DIRECTORIES(infer PRIVATE 
+        ${PROJECT_INCLUDE_DIR}
+        ${PROJECT_INCLUDE_DIR}/infer
+        ${PROJECT_INCLUDE_DIR}/infer/rockchip
+        ${3RDPARTY_ROOT}/eigen
+        ${OpenCV_INCLUDE_DIRS}
+        ${RKNN_INCLUDE_DIR}
+    )
+    TARGET_LINK_LIBRARIES(infer ${OpenCV_LIBS} ${RKNN_API_LIB} module_logger)
 ELSE()
     MESSAGE(WARNING "No platform specified!")
 ENDIF()

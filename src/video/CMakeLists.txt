@@ -7,7 +7,6 @@ ADD_LIBRARY(video SHARED ${VIDEO_LIB_HEAD} ${VIDEO_LIB_SRC})
 
 IF(TARGET_HARDWARE STREQUAL jetson)
   ADD_SUBDIRECTORY(jetson-utils)
-  MESSAGE("++++++++++++++++++++++++++" ${PROJECT_INCLUDE_DIR}/jetson-utils)
   TARGET_INCLUDE_DIRECTORIES(video PRIVATE 
                             ${PROJECT_INCLUDE_DIR}
                             ${PROJECT_INCLUDE_DIR}/jetson-utils
@@ -32,6 +31,15 @@ ELSEIF(TARGET_HARDWARE STREQUAL x3)
   )
   TARGET_LINK_LIBRARIES(video ${OpenCV_LIBS} ${HB_MEDIA_libs} module_logger)
 ELSEIF(TARGET_HARDWARE STREQUAL rockchip)
+  TARGET_INCLUDE_DIRECTORIES(video PRIVATE 
+        ${PROJECT_INCLUDE_DIR}
+        ${PROJECT_INCLUDE_DIR}/core
+        ${PROJECT_INCLUDE_DIR}/video
+        ${MPP_INCLUDE_DIR}
+        ${RGA_INCLUDE_DIR}
+        ${OpenCV_INCLUDE_DIRS}
+    )
+  TARGET_LINK_LIBRARIES(video ${OpenCV_LIBS} ${MPP_LIB} ${RGA_LIB} module_logger)
 ELSE()
     MESSAGE(WARNING "No platform specified!")
 ENDIF()
