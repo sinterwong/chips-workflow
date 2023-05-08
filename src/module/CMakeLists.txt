@@ -8,6 +8,8 @@ FILE(GLOB SWMODULE_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SO
 ADD_LIBRARY(module SHARED ${SWMODULE_LIB_HEAD} ${SWMODULE_LIB_SRC})
 TARGET_INCLUDE_DIRECTORIES(module PRIVATE 
                             ${PROJECT_INCLUDE_DIR}
+                            ${PROJECT_INCLUDE_DIR}/jetson-utils
+                            ${CUDA_INCLUDE_DIRS}
                             ${PROJECT_INCLUDE_DIR}/module
                             ${PROJECT_INCLUDE_DIR}/core
                             ${PROJECT_INCLUDE_DIR}/infer

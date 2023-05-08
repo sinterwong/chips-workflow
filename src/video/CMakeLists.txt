@@ -7,11 +7,12 @@ ADD_LIBRARY(video SHARED ${VIDEO_LIB_HEAD} ${VIDEO_LIB_SRC})
 
 IF(TARGET_HARDWARE STREQUAL jetson)
   ADD_SUBDIRECTORY(jetson-utils)
+  MESSAGE("++++++++++++++++++++++++++" ${PROJECT_INCLUDE_DIR}/jetson-utils)
   TARGET_INCLUDE_DIRECTORIES(video PRIVATE 
                             ${PROJECT_INCLUDE_DIR}
+                            ${PROJECT_INCLUDE_DIR}/jetson-utils
                             ${PROJECT_INCLUDE_DIR}/core
                             ${PROJECT_INCLUDE_DIR}/video
-                            ${PROJECT_INCLUDE_DIR}/jetson-utils
                             ${OpenCV_INCLUDE_DIRS}
                             ${CUDA_INCLUDE_DIRS}
                             ${FFMPEG_INCLUDE_DIR}
