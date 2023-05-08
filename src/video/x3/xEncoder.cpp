@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2023
  *
  */
-#include "x3/xEncoder.hpp"
+#include "xEncoder.hpp"
 #include "logger/logger.hpp"
 #include <fstream>
 #include <memory>
@@ -17,7 +17,7 @@
 
 #define STREAM_FRAME_SIZE 2097152 // 2^21
 
-namespace module::utils {
+namespace video {
 std::unique_ptr<XEncoder> XEncoder::Create(videoOptions const &options) {
   return std::unique_ptr<XEncoder>(new XEncoder(options));
 }
@@ -77,4 +77,4 @@ bool XEncoder::Render(void **image) {
   return true;
 }
 
-} // namespace module::utils
+} // namespace video

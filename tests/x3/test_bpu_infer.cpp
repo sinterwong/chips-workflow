@@ -64,6 +64,7 @@ int main(int argc, char **argv) {
   std::cout << std::endl;
   sp_deinit_bpu_tensor(&output_tensor, 1);
   sp_release_bpu_module(engine);
-
+  
+  gflags::ShutDownCommandLineFlags();
   return 0;
 }

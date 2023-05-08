@@ -18,15 +18,15 @@
 #include <thread>
 
 #if (TARGET_PLATFORM == 0)
-#include "x3/videoSource.hpp"
-#include "x3/video_common.hpp"
+#include "videoSource.hpp"
+#include "video_common.hpp"
 #elif (TARGET_PLATFORM == 1)
 #include "videoOptions.h"
 #include "videoSource.h"
 #elif (TARGET_PLATFORM == 2)
 #endif
 
-namespace module::utils {
+namespace video {
 
 class VideoManager : private common::NonCopyable {
 private:
@@ -34,7 +34,7 @@ private:
   int w, h;        // 流分辨率
   std::unique_ptr<videoSource> stream;
   std::unique_ptr<joining_thread> consumer; // 消费者
-  std::mutex m;
+  std::mutex frame_m;
 
 #if (TARGET_PLATFORM == 0)
   void *frame = nullptr;
@@ -99,6 +99,6 @@ public:
 #endif
   }
 };
-} // namespace module::utils
+} // namespace video
 
 #endif

@@ -34,7 +34,8 @@ enum class SupportedFunc {
   DetClsModule = 0,
   OCRModule,
   LicensePlateModule,
-  ObjectCounterModule
+  ObjectCounterModule,
+  ObjectNumberModule
 };
 
 class ConfigParser {
@@ -45,6 +46,7 @@ private:
       std::make_pair("DetClsModule", SupportedFunc::DetClsModule),
       std::make_pair("LicensePlateModule", SupportedFunc::LicensePlateModule),
       std::make_pair("ObjectCounterModule", SupportedFunc::ObjectCounterModule),
+      std::make_pair("ObjectNumberModule", SupportedFunc::ObjectNumberModule),
   };
 
   // 配置参数类型

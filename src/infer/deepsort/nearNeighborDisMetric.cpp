@@ -1,4 +1,5 @@
 #include "nearNeighborDisMetric.h"
+#include <cassert>
 
 using namespace Eigen;
 

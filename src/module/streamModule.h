@@ -25,9 +25,9 @@
 
 #include "videoManager.hpp"
 
-using namespace module::utils;
 using common::ModuleConfig;
 using common::StreamBase;
+using namespace video;
 
 namespace module {
 
@@ -41,7 +41,7 @@ private:
 
 public:
   StreamModule(backend_ptr ptr, std::string const &, MessageType const &,
-               ModuleConfig &);
+               ModuleConfig &) noexcept(false);
 
   ~StreamModule() {}
 

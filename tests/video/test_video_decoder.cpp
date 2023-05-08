@@ -3,10 +3,12 @@
 #include <chrono>
 #include <opencv2/imgcodecs.hpp>
 
-#include "videoManager.hpp"
+#include "video/videoManager.hpp"
 
-using namespace module;
+using namespace video;
 using namespace std::chrono_literals;
+
+DEFINE_string(uri, "", "Specify the url of video.");
 
 int main(int argc, char **argv) {
   // assert(initLogger);
@@ -16,21 +18,26 @@ int main(int argc, char **argv) {
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   // "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101"
-  module::utils::VideoManager vm{
-      "rtsp://admin:zkfd123.com@114.242.23.39:9303/Streaming/Channels/101"};
+  VideoManager vm{FLAGS_uri};
 
   vm.init();
   FLOWENGINE_LOGGER_INFO("Video manager has initialized!");
   vm.run();
   FLOWENGINE_LOGGER_INFO("Video manager is running!");
-  std::this_thread::sleep_for(10s);
-  auto image = vm.getcvImage();
-  FLOWENGINE_LOGGER_CRITICAL("Saving image..");
-  cv::imwrite("vm_out.jpg", *image);
-  FLOWENGINE_LOGGER_CRITICAL("I'm Here");
-  // auto logger_ptr = spdlog::get(FLOWENGINE_LOGGER_NAME);
-  // if (!logger_ptr) {
-  //   FlowEngineLoggerDrop();
-  // }
+
+  int count = 500;
+  while (count--) {
+    std::cout << count << ": " << vm.getHeight() << ", " << vm.getWidth()
+              << std::endl;
+    auto nv12_image = vm.getcvImage();
+    if (count % 10 != 0) {
+      continue;
+    }
+    if (!nv12_image->empty()) {
+      cv::imwrite("test_xvideo.jpg", *nv12_image);
+    }
+  }
+
+  gflags::ShutDownCommandLineFlags();
   return 0;
 }

@@ -88,6 +88,7 @@ using algo_pipelines = std::vector<std::pair<std::string, AlgoParams>>;
  */
 struct LogicBase {
   algo_pipelines algoPipelines; // 算法执行的pipeline
+  int64_t interval = 100;       // 间隔时间(ms)
 };
 
 /**
@@ -111,21 +112,10 @@ struct AttentionArea {
 };
 
 /**
- * @brief 每次执行模块的间隔时间
- *
- */
-struct InferInterval {
-  std::chrono::seconds interval{10}; // 间隔时间
-};
-
-/**
  * @brief OCR类型的算法逻辑
  *
  */
-struct OCRConfig : public AttentionArea,
-                   public LogicBase,
-                   public AlarmBase,
-                   public InferInterval {
+struct OCRConfig : public AttentionArea, public LogicBase, public AlarmBase {
   OCRConfig(AttentionArea &&aaera, LogicBase &&alarm, AlarmBase &&alarmBase_,
             std::string &&chars_)
       : AttentionArea(aaera), LogicBase(alarm), AlarmBase(alarmBase_),
