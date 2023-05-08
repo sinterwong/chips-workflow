@@ -1,6 +1,9 @@
+#include "gflags/gflags.h"
 #include <iostream>
 #include <opencv2/videoio.hpp>
 #include <string>
+
+DEFINE_string(uri, "", "Specify the url of video.");
 
 std::string getCodec(int fourcc) {
   char a[5];
@@ -10,11 +13,14 @@ std::string getCodec(int fourcc) {
   return std::string{a};
 }
 
-int main() {
+int main(int argc, char **argv) {
+
+  gflags::SetUsageMessage("some usage message");
+  gflags::SetVersionString("1.0.0");
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
   auto cap = cv::VideoCapture();
 
-  cap.open(
-      "rtsp://admin:zkfd123.com@114.242.23.39:9303/Streaming/Channels/101");
+  cap.open(FLAGS_uri);
   int height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
   int width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
   int frameRate = cap.get(cv::CAP_PROP_FPS);
@@ -23,4 +29,6 @@ int main() {
   std::cout << height << ", " << width << ", " << frameRate << std::endl;
   std::cout << fourcc << ", " << getCodec(fourcc) << std::endl;
   cap.release();
+
+  gflags::ShutDownCommandLineFlags();
 }

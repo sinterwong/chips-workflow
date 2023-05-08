@@ -9,12 +9,12 @@
  *
  */
 
-#include "x3/videoSource.hpp"
-#include "x3/xCamera.hpp"
-#include "x3/xDecoder.hpp"
+#include "videoSource.hpp"
+#include "xCamera.hpp"
+#include "xDecoder.hpp"
 #include <cstddef>
 
-namespace module::utils {
+namespace video {
 std::unique_ptr<videoSource> videoSource::Create(videoOptions const &options) {
   std::unique_ptr<videoSource> src;
   URI const &uri = options.resource;
@@ -39,4 +39,4 @@ std::string const videoSource::typeTostr(size_t type) {
   return "(unknown)";
 }
 
-} // namespace module::utils
+} // namespace video

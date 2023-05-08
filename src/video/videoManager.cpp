@@ -18,12 +18,12 @@
 #include <string>
 #include <thread>
 
-#include "module_utils.hpp"
+#include "video_utils.hpp"
 #include "opencv2/videoio.hpp"
 
 using namespace std::chrono_literals;
 
-namespace module::utils {
+namespace video {
 
 bool VideoManager::init() {
 
@@ -43,7 +43,7 @@ bool VideoManager::init() {
   opt.width = video.get(cv::CAP_PROP_FRAME_WIDTH);
   opt.frameRate = video.get(cv::CAP_PROP_FPS);
   int fourcc = static_cast<int>(video.get(cv::CAP_PROP_FOURCC));
-  opt.codec = videoOptions::CodecFromStr(getCodec(fourcc).c_str());
+  opt.codec = videoOptions::CodecFromStr(utils::getCodec(fourcc).c_str());
   opt.resource = uri;
   stream = std::unique_ptr<videoSource>(videoSource::Create(opt));
   video.release();

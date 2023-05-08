@@ -21,7 +21,7 @@ using namespace std::chrono_literals;
   memcpy(_p, _buf, _len);                                                      \
   (_p) += (_len);
 
-namespace module::utils {
+namespace video::utils {
 
 std::unordered_map<AVCodecID, std::string> const FFStream::codecMapping = {
     std::make_pair(AV_CODEC_ID_NONE, "none"),

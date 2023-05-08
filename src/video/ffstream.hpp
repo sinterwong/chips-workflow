@@ -26,7 +26,7 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
-namespace module::utils {
+namespace video::utils {
 
 class FFStream {
 

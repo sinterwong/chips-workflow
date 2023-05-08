@@ -12,8 +12,8 @@
 #define __X3_VIDEO_SOURCE_H_
 
 #include "common/common.hpp"
-#include "x3/video_common.hpp"
 #include "logger/logger.hpp"
+#include "video_common.hpp"
 #include <algorithm>
 #include <atomic>
 #include <cstddef>
@@ -21,7 +21,7 @@
 
 using common::ColorType;
 
-namespace module::utils {
+namespace video {
 
 class videoSource {
 public:
@@ -43,7 +43,9 @@ public:
 
   virtual inline size_t GetHeight() const noexcept { return mOptions.height; }
 
-  virtual inline size_t GetFrameRate() const noexcept { return mOptions.frameRate; }
+  virtual inline size_t GetFrameRate() const noexcept {
+    return mOptions.frameRate;
+  }
 
   uint64_t GetLastTimestamp() const noexcept { return mLastTimestamp; }
 
@@ -77,5 +79,5 @@ protected:
     mRawFormat = ColorType::NV12;
   }
 };
-} // namespace module::utils
+} // namespace video
 #endif

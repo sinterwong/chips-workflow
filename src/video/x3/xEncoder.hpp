@@ -12,14 +12,14 @@
 #define __X3_VIDEO_OUTPUT_H_
 
 #include "common/common.hpp"
-#include "x3/video_common.hpp"
+#include "video_common.hpp"
 #include <atomic>
 #include <fstream>
 #include <memory>
 #include <sp_codec.h>
 #include <sp_vio.h>
 
-namespace module::utils {
+namespace video {
 
 class XEncoder {
 public:
@@ -45,9 +45,9 @@ public:
 
   /**
    * @brief 关闭编码
-   * 
-   * @return true 
-   * @return false 
+   *
+   * @return true
+   * @return false
    */
   bool Close() noexcept;
 
@@ -78,7 +78,7 @@ private:
   videoOptions mOptions;
   void *encoder = nullptr;
   int frame_size = 0;
-  char* stream_buffer = nullptr;
+  char *stream_buffer = nullptr;
   std::ofstream outStream;
 
   XEncoder(videoOptions const &options) : mOptions(options) {
@@ -86,5 +86,5 @@ private:
     frame_size = FRAME_BUFFER_SIZE(mOptions.height, mOptions.width);
   }
 };
-} // namespace module::utils
+} // namespace video
 #endif

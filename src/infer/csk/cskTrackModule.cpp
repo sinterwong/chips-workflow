@@ -17,41 +17,25 @@ void cskTrackModule::forward(std::vector<forwardMessage> &message) {
 
         cv::Mat image = std::any_cast<cv::Mat>(frameBufMessage.read("Mat"));
 
-        //                if (moduleFlag == tracking)
-        //                {
-        //                    std::tie(answer, value) =
-        tracker.update(image);
-        //                } else
-        //                {
-        //                    tracker.init(image, floatArrayToCvRect(roi));
-        //                    answer = roi;
-        //                    moduleFlag = tracking;
-        //                }
+        if (moduleFlag == tracking) {
+          std::tie(answer, value) = tracker.update(image);
+        } else {
+          tracker.init(image, floatArrayToCvRect(roi));
+          answer = roi;
+          moduleFlag = tracking;
+        }
 
-        cv::rectangle(image, floatArrayToCvRect(roi), cv::Scalar(0, 0, 255),
-        2);
-        //                std::cout << roi[0] << " "
-        //                          << roi[0] + roi[2] << " "
-        //                          << roi[1] << " "
-        //                          << roi[1] + roi[3] << std::endl;
-        //                for (int i = roi[1]; i < roi[1] + roi[3]; i++)
-        //                {
-        //                    for (int j = roi[0]; j < roi[0] + roi[2]; j++)
-        //                    {
-        //                        frameBufMessage.data[i *
-        frameBufMessage.width
-        //                        * 3 +
-        //                                             j * 3 + 0] = 0;
-        //                        frameBufMessage.data[i *
-        frameBufMessage.width
-        //                        * 3 +
-        //                                             j * 3 + 1] = 0;
-        //                        frameBufMessage.data[i *
-        frameBufMessage.width
-        //                        * 3 +
-        //                                             j * 3 + 2] = 255;
-        //                    }
-        //                }
+        cv::rectangle(image, floatArrayToCvRect(roi), cv::Scalar(0, 0, 255), 2);
+        std::cout << roi[0] << " " << roi[0] + roi[2] << " " << roi[1] << " "
+                  << roi[1] + roi[3] << std::endl;
+        for (int i = roi[1]; i < roi[1] + roi[3]; i++) {
+          for (int j = roi[0]; j < roi[0] + roi[2]; j++) {
+            frameBufMessage.data[i * frameBufMessage.width * 3 + j * 3 + 0] = 0;
+            frameBufMessage.data[i * frameBufMessage.width * 3 + j * 3 + 1] = 0;
+            frameBufMessage.data[i * frameBufMessage.width * 3 + j * 3 + 2] =
+                255;
+          }
+        }
       }
       autoSend(buf);
     }

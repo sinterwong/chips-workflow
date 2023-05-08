@@ -22,7 +22,7 @@
 
 using namespace std::chrono_literals;
 
-namespace module::utils {
+namespace video {
 
 class XCamera : public videoSource {
 public:
@@ -100,7 +100,7 @@ public:
     free(yuv_data);
     mStreaming.store(false);
   }
-  
+
   /**
    * Return the interface type
    */
@@ -122,5 +122,5 @@ private:
   }
 };
 
-} // namespace module::utils
+} // namespace video
 #endif

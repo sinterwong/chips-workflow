@@ -10,7 +10,7 @@
 
 using namespace std::experimental;
 
-namespace module::utils {
+namespace video::utils {
 
 // toLower
 static std::string toLower(const std::string &str) {

@@ -2,7 +2,7 @@
 #define __URI_RESOURCE_H_
 
 #include <string>
-namespace module::utils {
+namespace video::utils {
 
 struct URI {
 public:

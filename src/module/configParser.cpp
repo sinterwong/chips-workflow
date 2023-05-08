@@ -14,7 +14,6 @@
 
 #include "module_utils.hpp"
 #include "nlohmann/json.hpp"
-#include "objectCounterModule.h"
 
 #include <array>
 #include <cstddef>
