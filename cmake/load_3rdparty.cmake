@@ -286,7 +286,7 @@ MACRO(LOAD_ROCKCHIP)
     SET(RGA_LIB ${RGA_PATH}/lib/librga.so)
 
     # mpp
-    SET(MPP_PATH ${3RDPARTY_DIR}/librknn_api)
+    SET(MPP_PATH ${3RDPARTY_DIR}/libmpp)
     SET(MPP_INCLUDE_DIR ${MPP_PATH}/include)
     SET(MPP_LIB ${MPP_PATH}/lib/librockchip_mpp.so)
 
