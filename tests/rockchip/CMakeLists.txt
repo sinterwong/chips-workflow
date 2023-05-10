@@ -22,6 +22,7 @@ LINK_LIBRARIES(
     ${RKNN_API_LIB}
     ${RGA_LIB}
     ${MPP_LIB}
+    infer
     gflags::gflags
     pthread
     module_logger

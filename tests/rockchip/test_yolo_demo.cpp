@@ -1,5 +1,4 @@
-#include "RgaUtils.h"
-#include "im2d.h"
+#include "infer/postprocess.hpp"
 #include "logger/logger.hpp"
 #include "rga.h"
 #include "rknn_api.h"
@@ -10,11 +9,15 @@
 #include <cstring>
 #include <fstream>
 
+#include <RgaUtils.h>
 #include <gflags/gflags.h>
+#include <im2d.h>
 #include <iostream>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
+#include <unordered_map>
+#include <vector>
 
 DEFINE_string(model_path, "", "Specify the path of dnn model.");
 DEFINE_string(image_path, "", "Specify the path of image.");
@@ -59,6 +62,71 @@ std::vector<unsigned char> load_model(const std::string &filename,
   return data;
 }
 
+static float sigmoid(float x) { return 1.0 / (1.0 + expf(-x)); }
+
+static float unsigmoid(float y) { return -1.0 * logf((1.0 / y) - 1.0); }
+
+inline static int32_t __clip(float val, float min, float max) {
+  float f = val <= min ? min : (val >= max ? max : val);
+  return f;
+}
+
+static int8_t qnt_f32_to_affine(float f32, int32_t zp, float scale) {
+  float dst_val = (f32 / scale) + zp;
+  int8_t res = (int8_t)__clip(dst_val, -128, 127);
+  return res;
+}
+
+static float deqnt_affine_to_f32(int8_t qnt, int32_t zp, float scale) {
+  return ((float)qnt - (float)zp) * scale;
+}
+
+// static unsigned char *load_data(FILE *fp, size_t ofst, size_t sz) {
+//   unsigned char *data;
+//   int ret;
+
+//   data = NULL;
+
+//   if (NULL == fp) {
+//     return NULL;
+//   }
+
+//   ret = fseek(fp, ofst, SEEK_SET);
+//   if (ret != 0) {
+//     printf("blob seek failure.\n");
+//     return NULL;
+//   }
+
+//   data = (unsigned char *)malloc(sz);
+//   if (data == NULL) {
+//     printf("buffer malloc failure.\n");
+//     return NULL;
+//   }
+//   ret = fread(data, 1, sz, fp);
+//   return data;
+// }
+
+// static unsigned char *load_model(const char *filename, int *model_size) {
+//   FILE *fp;
+//   unsigned char *data;
+
+//   fp = fopen(filename, "rb");
+//   if (NULL == fp) {
+//     printf("Open file %s failed.\n", filename);
+//     return NULL;
+//   }
+
+//   fseek(fp, 0, SEEK_END);
+//   int size = ftell(fp);
+
+//   data = load_data(fp, 0, size);
+
+//   fclose(fp);
+
+//   *model_size = size;
+//   return data;
+// }
+
 static void dump_tensor_attr(rknn_tensor_attr *attr) {
   printf("  index=%d, name=%s, n_dims=%d, dims=[%d, %d, %d, %d], n_elems=%d, "
          "size=%d, fmt=%s, type=%s, qnt_type=%s, "
@@ -67,6 +135,25 @@ static void dump_tensor_attr(rknn_tensor_attr *attr) {
          attr->dims[2], attr->dims[3], attr->n_elems, attr->size,
          get_format_string(attr->fmt), get_type_string(attr->type),
          get_qnt_type_string(attr->qnt_type), attr->zp, attr->scale);
+}
+
+void generateBoxes(std::unordered_map<int, common::BBoxes> &m, void **outputs,
+                   int numAnchors, int n) {
+  float **output = reinterpret_cast<float **>(*outputs);
+  for (int j = 0; j < numAnchors * n; j += n) {
+    if (output[0][j + 4] <= 0.3)
+      continue;
+    common::BBox det;
+    det.class_id =
+        std::distance(output[0] + j + 5,
+                      std::max_element(output[0] + j + 5, output[0] + j + n));
+    int real_idx = j + 5 + det.class_id;
+    det.det_confidence = output[0][real_idx];
+    memcpy(&det, &output[0][j], 5 * sizeof(float));
+    if (m.count(det.class_id) == 0)
+      m.emplace(det.class_id, common::BBoxes());
+    m[det.class_id].push_back(det);
+  }
 }
 
 int main(int argc, char **argv) {
@@ -102,9 +189,12 @@ int main(int argc, char **argv) {
 
   // loading model
   int model_data_size = 0;
+  // unsigned char *model_data = load_model(FLAGS_model_path.c_str(),
+  // &model_data_size); ret = rknn_init(&ctx, model_data, model_data_size, 0,
+  // nullptr);
+
   std::vector<unsigned char> model_data =
       load_model(FLAGS_model_path, model_data_size);
-
   ret = rknn_init(&ctx, model_data.data(), model_data_size, 0, nullptr);
 
   if (ret < 0) {
@@ -213,15 +303,61 @@ int main(int argc, char **argv) {
   ret = rknn_run(ctx, NULL);
   ret = rknn_outputs_get(ctx, io_num.n_output, outputs, NULL);
 
-  // post process
-  // float scale_w = (float)width / img_width;
-  // float scale_h = (float)height / img_height;
-
   std::vector<float> out_scales;
   std::vector<int32_t> out_zps;
   for (unsigned int i = 0; i < io_num.n_output; ++i) {
     out_scales.push_back(output_attrs[i].scale);
     out_zps.push_back(output_attrs[i].zp);
+  }
+
+  std::unordered_map<int, common::BBoxes> m;
+  int numAnchors = output_attrs[0].dims[1], n = output_attrs[0].dims[2];
+
+  float thres = 0.25;
+  thres = unsigmoid(thres);
+  int8_t thres_i8 = qnt_f32_to_affine(thres, out_zps[0], out_scales[0]);
+
+  // for debug
+  int8_t *out_buf = reinterpret_cast<int8_t *>(outputs[0].buf);
+  std::vector<float> out;
+  for (int i = 0; i < numAnchors * n; i++) {
+    if ((i + 1) % 6 == 0 && out_buf[i - 1] > thres_i8) {
+      std::cout << out_buf[i - 1] << ", ";
+    };
+    out.push_back(deqnt_affine_to_f32(out_buf[i], out_zps[0], out_scales[0]));
+  }
+  std::cout << std::endl;
+  void *outs[1];
+  outs[0] = reinterpret_cast<void *>(out.data());
+  void *output = outs;
+  generateBoxes(m, &output, numAnchors, n);
+
+  common::BBoxes bboxes;
+  infer::utils::nms(bboxes, m, 0.45);
+  infer::utils::restoryBoxes(bboxes, {img_width, img_height, 3},
+                             {width, height, 3}, false);
+
+  FLOWENGINE_LOGGER_INFO("number of result: {}", bboxes.size());
+  for (auto &bbox : bboxes) {
+    // cv::Rect rect(bbox.bbox[0], bbox.bbox[1], bbox.bbox[2] - bbox.bbox[0],
+    //               bbox.bbox[3] - bbox.bbox[1]);
+    // cv::rectangle(image_bgr, rect, cv::Scalar(0, 0, 255), 2);
+
+    cv::Rect rect(bbox.bbox[0], bbox.bbox[1], bbox.bbox[2] - bbox.bbox[0],
+                  bbox.bbox[3] - bbox.bbox[1]);
+    cv::rectangle(img, rect, cv::Scalar(0, 0, 255), 2);
+  }
+  cv::imwrite("test_rockchip_yolo_demo_out.jpg", img);
+
+  // release
+  ret = rknn_outputs_release(ctx, io_num.n_output, outputs);
+  ret = rknn_destroy(ctx);
+
+  // if (model_data) {
+  //   free(model_data);
+  // }
+  if (resize_buf) {
+    free(resize_buf);
   }
 
   gflags::ShutDownCommandLineFlags();
