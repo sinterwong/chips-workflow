@@ -9,7 +9,7 @@
  *
  */
 
-#include "jetson/trt_inference.hpp"
+#include "dnn_inference.hpp"
 #include "jetson/logger.h"
 #include "jetson/preprocess.h"
 #include "jetson/standard.h"
@@ -30,7 +30,7 @@
 #include "infer/preprocess.hpp"
 
 namespace infer {
-namespace trt {
+namespace dnn {
 
 bool AlgoInference::initialize() {
 
