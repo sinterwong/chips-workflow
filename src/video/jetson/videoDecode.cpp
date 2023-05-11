@@ -1,15 +1,15 @@
 /**
- * @file videoManager.cpp
+ * @file videoDecode.cpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
- * @date 2022-12-02
+ * @date 2023-05-11
  *
- * @copyright Copyright (c) 2022
+ * @copyright Copyright (c) 2023
  *
  */
 
-#include "videoManager.hpp"
+#include "videoDecode.hpp"
 #include "joining_thread.h"
 #include "logger/logger.hpp"
 #include <cstdint>
@@ -18,23 +18,15 @@
 #include <string>
 #include <thread>
 
-#include "video_utils.hpp"
 #include "opencv2/videoio.hpp"
+#include "video_utils.hpp"
 
 using namespace std::chrono_literals;
 
 namespace video {
 
-bool VideoManager::init() {
+bool VideoDecode::init() {
 
-#if (TARGET_PLATFORM == 0)
-  videoOptions opt;
-  opt.videoIdx = channel;
-  opt.resource = uri;
-  opt.height = h;
-  opt.width = w;
-  stream = videoSource::Create(opt);
-#elif (TARGET_PLATFORM == 1)
   // 利用opencv打开视频，获取配置
   videoOptions opt;
   auto video = cv::VideoCapture();
@@ -47,11 +39,10 @@ bool VideoManager::init() {
   opt.resource = uri;
   stream = std::unique_ptr<videoSource>(videoSource::Create(opt));
   video.release();
-#endif
   return true;
 }
 
-void VideoManager::consumeFrame() {
+void VideoDecode::consumeFrame() {
   while (isRunning()) {
     // 每隔100ms消耗一帧，防止长时间静止
     std::this_thread::sleep_for(std::chrono::microseconds(100));
@@ -63,30 +54,25 @@ void VideoManager::consumeFrame() {
   }
 }
 
-bool VideoManager::run() {
+bool VideoDecode::run() {
   if (!stream->Open()) {
     return false;
   }
   consumer =
-      std::make_unique<joining_thread>(&VideoManager::consumeFrame, this);
+      std::make_unique<joining_thread>(&VideoDecode::consumeFrame, this);
   return true;
 }
 
-std::shared_ptr<cv::Mat> VideoManager::getcvImage() {
+std::shared_ptr<cv::Mat> VideoDecode::getcvImage() {
   std::lock_guard lk(frame_m);
   bool ret = stream->Capture(&frame, 1000);
   if (!ret) {
     FLOWENGINE_LOGGER_WARN("Getframe is failed!");
     return nullptr;
   }
-#if (TARGET_PLATFORM == 0)
-  return std::make_shared<cv::Mat>(
-      cv::Mat(getHeight() * 3 / 2, getWidth(), CV_8UC1, frame));
-#elif (TARGET_PLATFORM == 1)
   return std::make_shared<cv::Mat>(cv::Mat(stream->GetHeight(),
                                            stream->GetWidth(), CV_8UC3,
                                            reinterpret_cast<void *>(frame)));
-#endif
 }
 
-} // namespace module::utils
+} // namespace video
