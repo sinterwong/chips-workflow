@@ -20,12 +20,15 @@ LINK_LIBRARIES(
     gflags::gflags
     pthread
     spdlog
+    infer
+    video
     ${X3_LIBS}
 )
 
 SET(LINK "-Wl,--no-as-needed")
-FILE(GLOB APP_HARDWARE_SOURCES *.cpp)
+FILE(MAKE_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/x3)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/x3)
+FILE(GLOB APP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 MESSAGE(STATUS "APP SOURCES: ${APP_SOURCES}")
 FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})

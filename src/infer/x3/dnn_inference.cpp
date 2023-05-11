@@ -1,5 +1,5 @@
 /**
- * @file trt_inference.cpp
+ * @file dnn_inference.cpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
@@ -9,7 +9,7 @@
  *
  */
 
-#include "x3_inference.hpp"
+#include "dnn_inference.hpp"
 #include "logger/logger.hpp"
 #include "preprocess.hpp"
 
@@ -17,7 +17,7 @@
 #include <opencv2/imgproc.hpp>
 
 namespace infer {
-namespace x3 {
+namespace dnn {
 using namespace infer::utils;
 
 bool AlgoInference::initialize() {

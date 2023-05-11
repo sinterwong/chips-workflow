@@ -17,15 +17,17 @@ LINK_DIRECTORIES(
 
 LINK_LIBRARIES(
     ${OpenCV_LIBS}
-    jetson_infer_cu 
+    infer
+    video
     gflags::gflags
     pthread
     spdlog
 )
 
 SET(LINK "-Wl,--no-as-needed")
-FILE(GLOB APP_HARDWARE_SOURCES *.cpp)
+FILE(MAKE_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/jetson)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/jetson)
+FILE(GLOB APP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 MESSAGE(STATUS "APP SOURCES: ${APP_SOURCES}")
 FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
