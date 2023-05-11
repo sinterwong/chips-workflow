@@ -13,12 +13,13 @@
 #include "common/common.hpp"
 #include "joining_thread.h"
 #include "logger/logger.hpp"
+#include "videoOptions.h"
+#include "videoSource.h"
 #include <memory>
 #include <opencv2/core/mat.hpp>
 #include <thread>
-#include "videoDecode.hpp"
-#include "videoOptions.h"
-#include "videoSource.h"
+
+#include "vdecoder.hpp"
 
 namespace video {
 
