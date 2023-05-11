@@ -269,3 +269,25 @@ MACRO(LOAD_X3)
         ${X3_LIBS}
     )
 ENDMACRO()
+
+MACRO(LOAD_ROCKCHIP)
+    LOAD_OPENCV()
+    LOAD_OPENSSL()
+    LOAD_CURL()
+
+    # rknn
+    SET(RKNN_API_PATH ${3RDPARTY_DIR}/librknn_api)
+    SET(RKNN_INCLUDE_DIR ${RKNN_API_PATH}/include)
+    SET(RKNN_API_LIB ${RKNN_API_PATH}/lib/librknn_api.so)
+
+    #rga
+    SET(RGA_PATH ${3RDPARTY_DIR}/rga)
+    SET(RGA_INCLUDE_DIR ${RGA_PATH}/include)
+    SET(RGA_LIB ${RGA_PATH}/lib/librga.so)
+
+    # mpp
+    SET(MPP_PATH ${3RDPARTY_DIR}/libmpp)
+    SET(MPP_INCLUDE_DIR ${MPP_PATH}/include)
+    SET(MPP_LIB ${MPP_PATH}/lib/librockchip_mpp.so)
+
+ENDMACRO()

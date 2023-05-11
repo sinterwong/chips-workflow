@@ -60,9 +60,8 @@ StreamModule::StreamModule(backend_ptr ptr, std::string const &_name,
 
   config = std::make_unique<StreamBase>(*_config.getParams<StreamBase>());
 
-  vm = std::make_unique<VideoManager>(config->uri, config->width,
-                                      config->height);
-  if (!vm->init()) {
+  decoder = std::make_unique<VideoDecode>(config->uri, config->width, config->height);
+  if (!decoder->init()) {
     FLOWENGINE_LOGGER_INFO("VideoManager init failed!");
     throw std::runtime_error("StreamModule ctor has failed!");
   };
@@ -70,8 +69,8 @@ StreamModule::StreamModule(backend_ptr ptr, std::string const &_name,
 
 void StreamModule::beforeForward() {
   // 视频流检查
-  if (!vm->isRunning()) {
-    if (vm->run()) {
+  if (!decoder->isRunning()) {
+    if (decoder->run()) {
       FLOWENGINE_LOGGER_INFO("StreamModule video is opened!");
     } else {
       FLOWENGINE_LOGGER_ERROR("StreamModule is failed to open!");
@@ -81,7 +80,7 @@ void StreamModule::beforeForward() {
 
 void StreamModule::step() {
   beforeForward();
-  if (!vm->isRunning()) {
+  if (!decoder->isRunning()) {
     return;
   }
 
@@ -102,23 +101,23 @@ void StreamModule::step() {
 void StreamModule::startup() {
 
   queueMessage sendMessage;
-  auto frame = vm->getcvImage();
+  auto frame = decoder->getcvImage();
 
   if (!frame || frame->empty()) {
     FLOWENGINE_LOGGER_WARN("StreamModule get frame is failed!");
     return;
   }
 
-  FrameBuf fbm = makeFrameBuf(frame, vm->getHeight(), vm->getWidth());
+  FrameBuf fbm = makeFrameBuf(frame, decoder->getHeight(), decoder->getWidth());
   int returnKey = ptr->pool->write(fbm);
 
   // 报警时所需的视频流的信息
   AlarmInfo alarmInfo;
   alarmInfo.cameraId = config->cameraId;
   alarmInfo.cameraIp = config->uri;
-  alarmInfo.height = vm->getHeight();
-  alarmInfo.width = vm->getWidth();
-  sendMessage.frameType = vm->getType();
+  alarmInfo.height = decoder->getHeight();
+  alarmInfo.width = decoder->getWidth();
+  sendMessage.frameType = decoder->getType();
   sendMessage.key = returnKey;
   // sendMessage.cameraResult = cameraResult;
   sendMessage.alarmInfo = std::move(alarmInfo);

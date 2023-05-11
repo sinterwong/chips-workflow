@@ -7,15 +7,15 @@ ADD_LIBRARY(video SHARED ${VIDEO_LIB_HEAD} ${VIDEO_LIB_SRC})
 
 IF(TARGET_HARDWARE STREQUAL jetson)
   ADD_SUBDIRECTORY(jetson-utils)
-  MESSAGE("++++++++++++++++++++++++++" ${PROJECT_INCLUDE_DIR}/jetson-utils)
   TARGET_INCLUDE_DIRECTORIES(video PRIVATE 
-                            ${PROJECT_INCLUDE_DIR}
-                            ${PROJECT_INCLUDE_DIR}/jetson-utils
-                            ${PROJECT_INCLUDE_DIR}/core
-                            ${PROJECT_INCLUDE_DIR}/video
-                            ${OpenCV_INCLUDE_DIRS}
-                            ${CUDA_INCLUDE_DIRS}
-                            ${FFMPEG_INCLUDE_DIR}
+      ${PROJECT_INCLUDE_DIR}
+      ${PROJECT_INCLUDE_DIR}/jetson-utils
+      ${PROJECT_INCLUDE_DIR}/core
+      ${PROJECT_INCLUDE_DIR}/video
+      ${PROJECT_INCLUDE_DIR}/video/jetson
+      ${OpenCV_INCLUDE_DIRS}
+      ${CUDA_INCLUDE_DIRS}
+      ${FFMPEG_INCLUDE_DIR}
   )
   TARGET_LINK_LIBRARIES(video jetson-utils ${OpenCV_LIBS} module_logger)
 ELSEIF(TARGET_HARDWARE STREQUAL x3)
@@ -26,12 +26,23 @@ ELSEIF(TARGET_HARDWARE STREQUAL x3)
       ${PROJECT_INCLUDE_DIR}
       ${PROJECT_INCLUDE_DIR}/core
       ${PROJECT_INCLUDE_DIR}/video
+      ${PROJECT_INCLUDE_DIR}/video/x3
       ${OpenCV_INCLUDE_DIRS}
       ${APPSDK_PATH}/include
       ${APPSDK_PATH}/include/vio
   )
   TARGET_LINK_LIBRARIES(video ${OpenCV_LIBS} ${HB_MEDIA_libs} module_logger)
 ELSEIF(TARGET_HARDWARE STREQUAL rockchip)
+  TARGET_INCLUDE_DIRECTORIES(video PRIVATE 
+      ${PROJECT_INCLUDE_DIR}
+      ${PROJECT_INCLUDE_DIR}/core
+      ${PROJECT_INCLUDE_DIR}/video
+      ${PROJECT_INCLUDE_DIR}/video/rockchip
+      ${MPP_INCLUDE_DIR}
+      ${RGA_INCLUDE_DIR}
+      ${OpenCV_INCLUDE_DIRS}
+    )
+  TARGET_LINK_LIBRARIES(video ${OpenCV_LIBS} ${MPP_LIB} ${RGA_LIB} module_logger)
 ELSE()
     MESSAGE(WARNING "No platform specified!")
 ENDIF()

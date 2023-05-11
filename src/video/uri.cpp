@@ -4,7 +4,6 @@
 #include <stdio.h>
 
 #include "logger/logger.hpp"
-#include "logging.h"
 // #include <filesystem>
 #include <experimental/filesystem>
 

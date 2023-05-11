@@ -1,5 +1,5 @@
 /**
- * @file x3_inference.hpp
+ * @file dnn_inference.hpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
@@ -35,7 +35,7 @@
 #define BUFFER_NUM 2
 
 namespace infer {
-namespace x3 {
+namespace dnn {
 class AlgoInference : public Inference {
 public:
   //!

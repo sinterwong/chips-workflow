@@ -16,33 +16,25 @@
 #include <stdexcept>
 #include <string>
 
-#if (TARGET_PLATFORM == 0)
 #include "video_common.hpp"
 #include "xEncoder.hpp"
-#elif (TARGET_PLATFORM == 1)
-#include "videoOptions.h"
-#include "videoOutput.h"
-#elif (TARGET_PLATFORM == 2)
-#endif
+
+#include "vrecorder.hpp"
 
 namespace video {
 
-class VideoRecord : private common::NonCopyable {
+class VideoRecord : private VRecord {
 public:
   explicit VideoRecord(videoOptions &&params_) : params(params_) {
-#if (TARGET_PLATFORM == 0)
     channel = ChannelsManager::getInstance().getChannel();
     if (channel < 0) {
       throw std::runtime_error("Channel usage overflow!");
     }
-#endif
   }
 
   ~VideoRecord() {
     destory();
-#if (TARGET_PLATFORM == 0)
     ChannelsManager::getInstance().setChannel(channel);
-#endif
   }
 
   /**
@@ -51,7 +43,7 @@ public:
    * @return true
    * @return false
    */
-  bool init();
+  bool init() override;
 
   /**
    * @brief Destory the stream.
@@ -59,7 +51,7 @@ public:
    * @return true
    * @return false
    */
-  void destory() noexcept;
+  void destory() noexcept override;
 
   /**
    * @brief Whether the stream is working.
@@ -67,7 +59,7 @@ public:
    * @return true
    * @return false
    */
-  bool check() const noexcept;
+  bool check() const noexcept override;
 
   /**
    * @brief Record the frame
@@ -75,14 +67,10 @@ public:
    * @return true
    * @return false
    */
-  bool record(void *frame);
+  bool record(void *frame) override;
 
 private:
-#if (TARGET_PLATFORM == 0)
   std::unique_ptr<XEncoder> stream = nullptr;
-#elif (TARGET_PLATFORM == 1)
-  std::unique_ptr<videoOutput> stream = nullptr;
-#endif
   videoOptions params;
   int channel;
 };

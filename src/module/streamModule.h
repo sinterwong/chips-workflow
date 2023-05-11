@@ -18,12 +18,10 @@
 #include <vector>
 
 #include "common/common.hpp"
-
 #include "logger/logger.hpp"
 #include "messageBus.h"
 #include "module.hpp"
-
-#include "videoManager.hpp"
+#include "videoDecode.hpp"
 
 using common::ModuleConfig;
 using common::StreamBase;
@@ -37,7 +35,7 @@ private:
   // CameraResult cameraResult;
   std::unique_ptr<StreamBase> config;
 
-  std::unique_ptr<VideoManager> vm;
+  std::unique_ptr<VideoDecode> decoder;
 
 public:
   StreamModule(backend_ptr ptr, std::string const &, MessageType const &,

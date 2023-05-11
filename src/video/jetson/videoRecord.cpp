@@ -10,25 +10,15 @@
  */
 #include "videoRecord.hpp"
 #include "logger/logger.hpp"
+#include "video_utils.hpp"
 #include <algorithm>
 #include <cassert>
-#include <experimental/filesystem>
 #include <memory>
-#include "video_utils.hpp"
-
-using namespace std::experimental;
 
 namespace video {
 
 bool VideoRecord::init() {
-#if (TARGET_PLATFORM == 0)
-  params.videoIdx = channel;
-  FLOWENGINE_LOGGER_CRITICAL("Recording video in channel {}", channel);
-  stream = XEncoder::Create(params);
-  stream->Init();
-#elif (TARGET_PLATFORM == 1)
   stream = std::unique_ptr<videoOutput>(videoOutput::Create(std::move(params)));
-#endif
   if (!stream) {
     return false;
   }
@@ -44,27 +34,9 @@ void VideoRecord::destory() noexcept {
     stream->Close();
   }
   stream = nullptr;
-#if (TARGET_PLATFORM == 0)
-  // 将视频转成mp4格式
-  std::string &location = params.resource.location;
-  std::string renamed = location.substr(0, location.find(".")) + ".h264";
-  filesystem::path oldPath(location);
-  filesystem::path newPath(renamed);
-  try {
-    filesystem::rename(oldPath, newPath);
-    FLOWENGINE_LOGGER_INFO("文件重命名成功");
-  } catch (const filesystem::filesystem_error &e) {
-    FLOWENGINE_LOGGER_ERROR("文件重命名失败：{}", e.what());
-    return;
-  }
-  wrapH2642mp4(renamed, location);
-#endif
 }
 
 bool VideoRecord::record(void *frame) {
-#if (TARGET_PLATFORM == 0)
-  return stream->Render(&frame);
-#elif (TARGET_PLATFORM == 1)
   stream->Render(reinterpret_cast<uchar3 *>(frame), params.width,
                  params.height);
   char str[256];
@@ -72,6 +44,5 @@ bool VideoRecord::record(void *frame) {
   // update status bar
   stream->SetStatus(str);
   return true;
-#endif
 }
 } // namespace video
