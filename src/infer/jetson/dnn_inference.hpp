@@ -17,16 +17,16 @@
 #include "jetson/buffers.h"
 #include "jetson/common.h"
 #include <NvInferRuntimeCommon.h>
-#include <opencv2/opencv.hpp>
 #include <array>
 #include <cmath>
 #include <memory>
+#include <opencv2/opencv.hpp>
 
+using namespace infer::trt;
 
 #define IMAGE_MAX_SIZE 1200 * 1200 * 3
-
 namespace infer {
-namespace trt {
+namespace dnn {
 class AlgoInference : public Inference {
 public:
   //!
@@ -83,6 +83,7 @@ private:
   std::shared_ptr<nvinfer1::ICudaEngine> mEngine{nullptr};
   //!< The TensorRT execution context
   UniquePtr<nvinfer1::IExecutionContext> context{nullptr};
+
 protected:
   //!< The parameters for the sample.
   AlgoBase mParams;
@@ -93,6 +94,6 @@ protected:
 
   std::shared_ptr<BufferManager> buffers;
 };
-} // namespace trt
+} // namespace dnn
 } // namespace infer
 #endif
