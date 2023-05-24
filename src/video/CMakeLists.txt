@@ -6,55 +6,56 @@ FILE(GLOB VIDEO_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURC
 ADD_LIBRARY(video SHARED ${VIDEO_LIB_HEAD} ${VIDEO_LIB_SRC})
 
 IF(TARGET_HARDWARE STREQUAL jetson)
-  ADD_SUBDIRECTORY(jetson-utils)
-  TARGET_INCLUDE_DIRECTORIES(video PRIVATE 
-      ${PROJECT_INCLUDE_DIR}
-      ${PROJECT_INCLUDE_DIR}/jetson-utils
-      ${PROJECT_INCLUDE_DIR}/core
-      ${PROJECT_INCLUDE_DIR}/video
-      ${PROJECT_INCLUDE_DIR}/video/jetson
-      ${OpenCV_INCLUDE_DIRS}
-      ${CUDA_INCLUDE_DIRS}
-      ${FFMPEG_INCLUDE_DIR}
+  ADD_SUBDIRECTORY(jetson/jetson-utils)
+  TARGET_INCLUDE_DIRECTORIES(video PRIVATE
+    ${PROJECT_INCLUDE_DIR}
+    ${PROJECT_INCLUDE_DIR}/jetson-utils
+    ${PROJECT_INCLUDE_DIR}/core
+    ${PROJECT_INCLUDE_DIR}/video
+    ${PROJECT_INCLUDE_DIR}/video/jetson
+    ${OpenCV_INCLUDE_DIRS}
+    ${CUDA_INCLUDE_DIRS}
+    ${FFMPEG_INCLUDE_DIR}
   )
   TARGET_LINK_LIBRARIES(video jetson-utils ${OpenCV_LIBS} module_logger)
 ELSEIF(TARGET_HARDWARE STREQUAL x3)
   LINK_DIRECTORIES(
     ${APPSDK_PATH}/lib/hbmedia
   )
-  TARGET_INCLUDE_DIRECTORIES(video PRIVATE 
-      ${PROJECT_INCLUDE_DIR}
-      ${PROJECT_INCLUDE_DIR}/core
-      ${PROJECT_INCLUDE_DIR}/video
-      ${PROJECT_INCLUDE_DIR}/video/x3
-      ${OpenCV_INCLUDE_DIRS}
-      ${APPSDK_PATH}/include
-      ${APPSDK_PATH}/include/vio
+  TARGET_INCLUDE_DIRECTORIES(video PRIVATE
+    ${PROJECT_INCLUDE_DIR}
+    ${PROJECT_INCLUDE_DIR}/core
+    ${PROJECT_INCLUDE_DIR}/video
+    ${PROJECT_INCLUDE_DIR}/video/x3
+    ${OpenCV_INCLUDE_DIRS}
+    ${APPSDK_PATH}/include
+    ${APPSDK_PATH}/include/vio
   )
   TARGET_LINK_LIBRARIES(video ${OpenCV_LIBS} ${HB_MEDIA_libs} module_logger)
 ELSEIF(TARGET_HARDWARE STREQUAL rockchip)
-  TARGET_INCLUDE_DIRECTORIES(video PRIVATE 
-      ${PROJECT_INCLUDE_DIR}
-      ${PROJECT_INCLUDE_DIR}/core
-      ${PROJECT_INCLUDE_DIR}/video
-      ${PROJECT_INCLUDE_DIR}/video/rockchip
-      ${MPP_INCLUDE_DIR}
-      ${RGA_INCLUDE_DIR}
-      ${OpenCV_INCLUDE_DIRS}
-    )
+  TARGET_INCLUDE_DIRECTORIES(video PRIVATE
+    ${PROJECT_INCLUDE_DIR}
+    ${PROJECT_INCLUDE_DIR}/core
+    ${PROJECT_INCLUDE_DIR}/video
+    ${PROJECT_INCLUDE_DIR}/video/rockchip
+    ${MPP_INCLUDE_DIR}
+    ${RGA_INCLUDE_DIR}
+    ${OpenCV_INCLUDE_DIRS}
+  )
   TARGET_LINK_LIBRARIES(video ${OpenCV_LIBS} ${MPP_LIB} ${RGA_LIB} module_logger)
 ELSE()
-    MESSAGE(WARNING "No platform specified!")
+  MESSAGE(WARNING "No platform specified!")
 ENDIF()
 
-# transfer all headers to the include directory 
+# transfer all headers to the include directory
 FILE(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR}/video)
+
 FOREACH(include ${VIDEO_LIB_HEAD})
-	MESSAGE("-- Copying ${include}")
-	CONFIGURE_FILE(${include} ${PROJECT_INCLUDE_DIR}/video COPYONLY)
+  MESSAGE("-- Copying ${include}")
+  CONFIGURE_FILE(${include} ${PROJECT_INCLUDE_DIR}/video COPYONLY)
 ENDFOREACH()
 
 INSTALL(TARGETS video
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin)
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin)

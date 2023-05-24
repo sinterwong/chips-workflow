@@ -6,35 +6,35 @@ FILE(GLOB SWMODULE_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOU
 FILE(GLOB SWMODULE_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 
 ADD_LIBRARY(module SHARED ${SWMODULE_LIB_HEAD} ${SWMODULE_LIB_SRC})
-TARGET_INCLUDE_DIRECTORIES(module PRIVATE 
-                            ${PROJECT_INCLUDE_DIR}
-                            ${PROJECT_INCLUDE_DIR}/jetson-utils
-                            ${CUDA_INCLUDE_DIRS}
-                            ${PROJECT_INCLUDE_DIR}/module
-                            ${PROJECT_INCLUDE_DIR}/core
-                            ${PROJECT_INCLUDE_DIR}/infer
-                            ${PROJECT_INCLUDE_DIR}/video
-                            ${3RDPARTY_ROOT}/eigen
-                            ${CURL_INCLUDE_DIR}
-                            ${OpenCV_INCLUDE_DIRS}
+TARGET_INCLUDE_DIRECTORIES(module PRIVATE
+    ${PROJECT_INCLUDE_DIR}
+    ${PROJECT_INCLUDE_DIR}/jetson-utils
+    ${CUDA_INCLUDE_DIRS}
+    ${PROJECT_INCLUDE_DIR}/module
+    ${PROJECT_INCLUDE_DIR}/core
+    ${PROJECT_INCLUDE_DIR}/infer
+    ${PROJECT_INCLUDE_DIR}/video
+    ${3RDPARTY_ROOT}/eigen
+    ${CURL_INCLUDE_DIR}
+    ${OpenCV_INCLUDE_DIRS}
 )
 TARGET_LINK_LIBRARIES(module infer video module_logger ${CURL_LIBRARIES})
 
-# transfer all headers to the include directory 
+# transfer all headers to the include directory
 FILE(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR}/module)
+
 FOREACH(include ${SWMODULE_LIB_HEAD})
-	MESSAGE("-- Copying ${include}")
-	CONFIGURE_FILE(${include} ${PROJECT_INCLUDE_DIR}/module COPYONLY)
+    MESSAGE("-- Copying ${include}")
+    CONFIGURE_FILE(${include} ${PROJECT_INCLUDE_DIR}/module COPYONLY)
 ENDFOREACH()
 
 # INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-#     DESTINATION ${CMAKE_INSTALL_PREFIX}/include/module
-#     FILES_MATCHING
-#     PATTERN "*.h"
-#     PATTERN "*.hpp" EXCLUDE
-#     PATTERN "CMakeLists.txt" EXCLUDE
+# DESTINATION ${CMAKE_INSTALL_PREFIX}/include/module
+# FILES_MATCHING
+# PATTERN "*.h"
+# PATTERN "*.hpp" EXCLUDE
+# PATTERN "CMakeLists.txt" EXCLUDE
 # )
-
 INSTALL(TARGETS module
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
