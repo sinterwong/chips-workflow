@@ -18,9 +18,6 @@
 #include "videoSource.hpp"
 
 #include <atomic>
-#include <condition_variable>
-#include <mutex>
-#include <shared_mutex>
 #include <sp_codec.h>
 #include <sp_vio.h>
 
