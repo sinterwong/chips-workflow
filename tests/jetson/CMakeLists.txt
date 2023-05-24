@@ -29,12 +29,13 @@ FILE(MAKE_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/jetson)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/jetson)
 FILE(GLOB APP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 MESSAGE(STATUS "APP SOURCES: ${APP_SOURCES}")
+
 FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
     STRING(REPLACE ".cpp" "" testname ${sourcefilewithoutpath})
-    ADD_EXECUTABLE( ${testname} ${sourcefile})
-    # TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} core module module_logger stdc++fs)
+    ADD_EXECUTABLE(${testname} ${sourcefile})
 
+    # TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} core module module_logger stdc++fs)
     INSTALL(TARGETS ${testname}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
