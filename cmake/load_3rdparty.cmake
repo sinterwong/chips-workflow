@@ -42,7 +42,7 @@ MACRO(LOAD_OPENCV)
     SET(OPENCV_HOME ${3RDPARTY_DIR}/opencv)
     SET(OpenCV_LIBRARY_DIR ${OPENCV_HOME}/lib)
     LIST(APPEND CMAKE_PREFIX_PATH ${OpenCV_LIBRARY_DIR}/cmake)
-    FIND_PACKAGE(OpenCV CONFIG REQUIRED opencv_core opencv_highgui opencv_video opencv_imgcodecs opencv_imgproc)
+    FIND_PACKAGE(OpenCV CONFIG REQUIRED COMPONENTS core imgproc highgui videoio imgcodecs)
 
     IF(OpenCV_INCLUDE_DIRS)
         MESSAGE(STATUS "Opencv library status:")

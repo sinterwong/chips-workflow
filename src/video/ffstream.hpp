@@ -66,7 +66,7 @@ private:
 public:
   bool openStream(); // 开启视频流
 
-  int getRawFrame(void **data);
+  int getRawFrame(void **data, bool isCopy = false);
 
   inline bool isRunning() { return isOpen.load(); };
 
@@ -80,7 +80,7 @@ public:
       return 0;
     }
   }
-  
+
   inline int getHeight() {
     std::shared_lock<std::shared_mutex> lk(ctx_m);
     if (isRunning()) {
@@ -137,6 +137,6 @@ public:
     }
   }
 };
-} // namespace module::utils
+} // namespace video::utils
 
 #endif

@@ -22,7 +22,10 @@ LINK_LIBRARIES(
     ${RKNN_API_LIB}
     ${RGA_LIB}
     ${MPP_LIB}
+    avcodec
+    avformat
     infer
+    video
     gflags::gflags
     pthread
     module_logger
