@@ -11,6 +11,7 @@ INCLUDE_DIRECTORIES(
     ${RGA_INCLUDE_DIR}
     ${RKNN_INCLUDE_DIR}
     ${MPP_INCLUDE_DIR}
+    ${3RDPARTY_DIR}/gflags/include
 )
 
 LINK_DIRECTORIES(
@@ -22,11 +23,11 @@ LINK_LIBRARIES(
     ${RKNN_API_LIB}
     ${RGA_LIB}
     ${MPP_LIB}
+    gflags
     avcodec
     avformat
     infer
     video
-    gflags::gflags
     pthread
     module_logger
 )
