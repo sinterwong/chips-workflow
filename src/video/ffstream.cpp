@@ -175,7 +175,7 @@ bool FFStream::openStream() {
   return true;
 }
 
-int FFStream::getRawFrame(void **data) {
+int FFStream::getRawFrame(void **data, bool isCopy) {
   std::lock_guard<std::shared_mutex> lk(ctx_m);
   if (!isRunning())
     return -1; // 流已关闭
@@ -216,12 +216,18 @@ int FFStream::getRawFrame(void **data) {
       }
       av_param.firstPacket = 0;
       av_param.bufSize = seqHeaderSize;
-      // memcpy(data, (void *)seqHeader, seqHeaderSize);
-      *data = (void *)seqHeader;
+      if (isCopy) {
+        memcpy(*data, (void *)seqHeader, seqHeaderSize);
+      } else {
+        *data = (void *)seqHeader;
+      }
     } else {
       av_param.bufSize = avpacket.size;
-      // memcpy((void *)data, (void *)avpacket.data, avpacket.size);
-      *data = (void *)avpacket.data;
+      if (isCopy) {
+        memcpy(*data, (void *)avpacket.data, avpacket.size);
+      } else {
+        *data = (void *)avpacket.data;
+      }
       avpacket.size = 0;
     }
     ++av_param.count;
@@ -233,4 +239,4 @@ int FFStream::getRawFrame(void **data) {
   return error;
 }
 
-} // namespace module::utils
+} // namespace video::utils

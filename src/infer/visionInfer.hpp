@@ -11,16 +11,9 @@
 #include "core/algoInfer.hpp"
 #include "vision.hpp"
 #include <mutex>
-#if (TARGET_PLATFORM == 0)
-#include "x3/x3_inference.hpp"
-using namespace infer::x3;
-#elif (TARGET_PLATFORM == 1)
-#include "jetson/trt_inference.hpp"
-using namespace infer::trt;
-#elif (TARGET_PLATFORM == 2)
-#include "jetson/trt_inference.hpp"
-using namespace infer::trt;
-#endif
+#include "dnn_inference.hpp"
+
+using namespace infer::dnn;
 
 namespace infer {
 using common::InferResult;

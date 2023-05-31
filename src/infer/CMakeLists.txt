@@ -13,21 +13,22 @@ IF(TARGET_HARDWARE STREQUAL jetson)
     LIST(APPEND INFER_LIB_SRC ${NN_LIB_SRC})
     ADD_LIBRARY(infer SHARED ${INFER_LIB_HEAD} ${NN_LIB_HEAD} ${INFER_LIB_SRC})
     CUDA_ADD_LIBRARY(jetson_infer_cu SHARED ${NN_LIB_CU_SRC})
-    TARGET_INCLUDE_DIRECTORIES(infer PRIVATE 
+    TARGET_INCLUDE_DIRECTORIES(infer PRIVATE
         ${PROJECT_INCLUDE_DIR}
         ${PROJECT_INCLUDE_DIR}/infer
+        ${PROJECT_INCLUDE_DIR}/infer/jetson
         ${3RDPARTY_ROOT}/eigen
         ${OpenCV_INCLUDE_DIRS}
         ${CUDA_INCLUDE_DIRS}
     )
-    TARGET_INCLUDE_DIRECTORIES(jetson_infer_cu PRIVATE 
+    TARGET_INCLUDE_DIRECTORIES(jetson_infer_cu PRIVATE
         ${PROJECT_INCLUDE_DIR}/infer
         ${OpenCV_INCLUDE_DIRS}
         ${CUDA_INCLUDE_DIRS}
     )
-
     TARGET_LINK_LIBRARIES(infer jetson_infer_cu nvinfer nvparsers nvonnxparser nvinfer_plugin module_logger)
     LIST(APPEND INFER_LIBS jetson_infer_cu)
+
 ELSEIF(TARGET_HARDWARE STREQUAL x3)
     LINK_DIRECTORIES(
         ${DNN_LIB_PATH}
@@ -38,9 +39,10 @@ ELSEIF(TARGET_HARDWARE STREQUAL x3)
     FILE(GLOB_RECURSE NN_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/x3/*.c)
     LIST(APPEND INFER_LIB_SRC ${NN_LIB_SRC})
     ADD_LIBRARY(infer SHARED ${INFER_LIB_HEAD} ${NN_LIB_HEAD} ${INFER_LIB_SRC})
-    TARGET_INCLUDE_DIRECTORIES(infer PRIVATE 
+    TARGET_INCLUDE_DIRECTORIES(infer PRIVATE
         ${PROJECT_INCLUDE_DIR}
         ${PROJECT_INCLUDE_DIR}/infer
+        ${PROJECT_INCLUDE_DIR}/infer/x3
         ${3RDPARTY_ROOT}/eigen
         ${OpenCV_INCLUDE_DIRS}
         ${DNN_PATH}/include
@@ -48,32 +50,48 @@ ELSEIF(TARGET_HARDWARE STREQUAL x3)
         ${APPSDK_PATH}/include/libmm
     )
     TARGET_LINK_LIBRARIES(infer ${OpenCV_LIBS} ${BPU_libs} rt dl module_logger)
+
+ELSEIF(TARGET_HARDWARE STREQUAL rockchip)
+    FILE(GLOB_RECURSE NN_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/rockchip/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/rockchip/*.h)
+    FILE(GLOB_RECURSE NN_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/rockchip/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/rockchip/*.c)
+    LIST(APPEND INFER_LIB_SRC ${NN_LIB_SRC})
+    ADD_LIBRARY(infer SHARED ${INFER_LIB_HEAD} ${NN_LIB_HEAD} ${INFER_LIB_SRC})
+    TARGET_INCLUDE_DIRECTORIES(infer PRIVATE
+        ${PROJECT_INCLUDE_DIR}
+        ${PROJECT_INCLUDE_DIR}/infer
+        ${PROJECT_INCLUDE_DIR}/infer/rockchip
+        ${3RDPARTY_ROOT}/eigen
+        ${OpenCV_INCLUDE_DIRS}
+        ${RKNN_INCLUDE_DIR}
+    )
+    TARGET_LINK_LIBRARIES(infer ${OpenCV_LIBS} ${RKNN_API_LIB} module_logger)
 ELSE()
     MESSAGE(WARNING "No platform specified!")
 ENDIF()
 
-# transfer all headers to the include directory 
+# transfer all headers to the include directory
 FILE(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR}/infer)
-FOREACH(include ${INFER_LIB_HEAD}) 
-	MESSAGE("-- Copying ${include}")
-	CONFIGURE_FILE(${include} ${PROJECT_INCLUDE_DIR}/infer COPYONLY)
+
+FOREACH(include ${INFER_LIB_HEAD})
+    MESSAGE("-- Copying ${include}")
+    CONFIGURE_FILE(${include} ${PROJECT_INCLUDE_DIR}/infer COPYONLY)
 ENDFOREACH()
 
-# transfer all headers to the include directory 
+# transfer all headers to the include directory
 FILE(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR}/infer/${TARGET_HARDWARE})
+
 FOREACH(include ${NN_LIB_HEAD})
-	MESSAGE("-- Copying ${include}")
-	CONFIGURE_FILE(${include} ${PROJECT_INCLUDE_DIR}/infer/${TARGET_HARDWARE} COPYONLY)
+    MESSAGE("-- Copying ${include}")
+    CONFIGURE_FILE(${include} ${PROJECT_INCLUDE_DIR}/infer/${TARGET_HARDWARE} COPYONLY)
 ENDFOREACH()
 
 # INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-#     DESTINATION ${CMAKE_INSTALL_PREFIX}/include/infer
-#     FILES_MATCHING
-#     PATTERN "*.h"
-#     PATTERN "*.hpp" EXCLUDE
-#     PATTERN "CMakeLists.txt" EXCLUDE
+# DESTINATION ${CMAKE_INSTALL_PREFIX}/include/infer
+# FILES_MATCHING
+# PATTERN "*.h"
+# PATTERN "*.hpp" EXCLUDE
+# PATTERN "CMakeLists.txt" EXCLUDE
 # )
-
 INSTALL(TARGETS ${INFER_LIBS}
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib

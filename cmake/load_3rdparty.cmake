@@ -1,5 +1,5 @@
 # Once done, this will define
-#  ......
+# ......
 
 SET(3RDPARTY_ROOT ${PROJECT_SOURCE_DIR}/3rdparty)
 SET(3RDPARTY_DIR ${PROJECT_SOURCE_DIR}/3rdparty/target/${TARGET_OS}_${TARGET_ARCH})
@@ -12,6 +12,7 @@ MACRO(LOAD_GLOG)
     SET(GLOG_LIBS
         glog
     )
+
     IF(GLOG_INCLUDE_DIR)
         MESSAGE(STATUS "GLOG_INCLUDE_DIR : ${GLOG_INCLUDE_DIR}")
         MESSAGE(STATUS "GLOG_LIBRARY_DIR : ${GLOG_LIBRARY_DIR}")
@@ -25,22 +26,38 @@ MACRO(LOAD_BOOST)
     SET(BOOST_HOME ${3RDPARTY_DIR}/boost)
     LIST(APPEND CMAKE_PREFIX_PATH ${BOOST_HOME}/lib/cmake)
     FIND_PACKAGE(Boost REQUIRED COMPONENTS wserialization wave unit_test_framework type_erasure timer thread system serialization regex random program_options prg_exec_monitor nowide math_tr1l math_tr1f math_tr1 math_c99l log_setup log locale json graph filesystem date_time contract context container chrono atomic)
+
     IF(Boost_INCLUDE_DIRS)
         MESSAGE(STATUS "Boost library status:")
         MESSAGE(STATUS "    include path: ${Boost_INCLUDE_DIRS}")
         MESSAGE(STATUS "    libraries path: ${Boost_LIBRARY_DIRS}")
         MESSAGE(STATUS "    libraries: ${Boost_LIBRARIES}")
-        MESSAGE( STATUS "Boost_LIB_VERSION = ${Boost_LIB_VERSION}.")
+        MESSAGE(STATUS "Boost_LIB_VERSION = ${Boost_LIB_VERSION}.")
     ELSE()
         MESSAGE(FATAL_ERROR "Boost not found!")
-        ENDIF()
+    ENDIF()
+ENDMACRO()
+
+MACRO(LOAD_SPDLOG)
+    SET(SPDLOG_HOME ${3RDPARTY_DIR}/spdlog)
+    SET(SPDLOG_LIBRARY_DIR ${SPDLOG_HOME}/lib)
+    LIST(APPEND CMAKE_PREFIX_PATH ${SPDLOG_LIBRARY_DIR}/cmake)
+    FIND_PACKAGE(spdlog CONFIG REQUIRED)
+ENDMACRO()
+
+MACRO(LOAD_GFLAGS)
+    SET(GFLAGS_HOME ${3RDPARTY_DIR}/gflags)
+    SET(GFLAGS_LIBRARY_DIR ${GFLAGS_HOME}/lib)
+    LIST(APPEND CMAKE_PREFIX_PATH ${GFLAGS_LIBRARY_DIR}/cmake)
+    FIND_PACKAGE(gflags CONFIG REQUIRED)
 ENDMACRO()
 
 MACRO(LOAD_OPENCV)
     SET(OPENCV_HOME ${3RDPARTY_DIR}/opencv)
     SET(OpenCV_LIBRARY_DIR ${OPENCV_HOME}/lib)
     LIST(APPEND CMAKE_PREFIX_PATH ${OpenCV_LIBRARY_DIR}/cmake)
-    FIND_PACKAGE(OpenCV CONFIG REQUIRED opencv_core opencv_highgui opencv_video opencv_imgcodecs opencv_imgproc)
+    FIND_PACKAGE(OpenCV CONFIG REQUIRED COMPONENTS core imgproc highgui videoio imgcodecs)
+
     IF(OpenCV_INCLUDE_DIRS)
         MESSAGE(STATUS "Opencv library status:")
         MESSAGE(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
@@ -74,18 +91,18 @@ MACRO(LOAD_CUDA)
             MESSAGE("-- CUDA ${CUDA_VERSION} detected (${CMAKE_SYSTEM_PROCESSOR}), enabling SM_87")
             SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}; -gencode arch=compute_87,code=sm_87)
         ENDIF()
-	    LINK_DIRECTORIES(/usr/lib/aarch64-linux-gnu/tegra)
+
+        LINK_DIRECTORIES(/usr/lib/aarch64-linux-gnu/tegra)
     ENDIF()
 ENDMACRO()
-
-
 
 MACRO(LOAD_FMT)
     FIND_FILE(FMT_INCLUDE_DIR include ${3RDPARTY_DIR}/fmt NO_DEFAULT_PATH)
     FIND_FILE(FMT_LIBRARY_DIR lib ${3RDPARTY_DIR}/fmt NO_DEFAULT_PATH)
-    SET(FMT_LIBS 
+    SET(FMT_LIBS
         fmt
     )
+
     IF(FMT_INCLUDE_DIR)
         MESSAGE(STATUS "fmt libraries path: ${FMT_INCLUDE_DIR}")
         MESSAGE(STATUS "fmt libraries path: ${FMT_LIBRARY_DIR}")
@@ -98,7 +115,7 @@ ENDMACRO()
 MACRO(LOAD_FFMPEG)
     FIND_FILE(FFMPEG_INCLUDE_DIR include ${3RDPARTY_DIR}/ffmpeg NO_DEFAULT_PATH)
     FIND_FILE(FFMPEG_LIBRARY_DIR lib ${3RDPARTY_DIR}/ffmpeg NO_DEFAULT_PATH)
-    SET(FFMPEG_LIBS 
+    SET(FFMPEG_LIBS
         avcodec
         avdevice
         avfilter
@@ -107,6 +124,7 @@ MACRO(LOAD_FFMPEG)
         swresample
         swscale
     )
+
     IF(FFMPEG_INCLUDE_DIR)
         MESSAGE(STATUS "ffmpeg include path: ${FFMPEG_INCLUDE_DIR}")
         MESSAGE(STATUS "ffmpeg libraries path: ${FFMPEG_LIBRARY_DIR}")
@@ -125,6 +143,7 @@ MACRO(LOAD_PROTOBUF)
     )
     LIST(APPEND CMAKE_PREFIX_PATH ${Protobuf_PREFIX_PATH})
     FIND_PACKAGE(Protobuf REQUIRED)
+
     IF(PROTOBUF_INCLUDE_DIR)
         MESSAGE(STATUS "Protobuf_INCLUDE_DIR : ${Protobuf_INCLUDE_DIR}")
         MESSAGE(STATUS "Protobuf_LIBRARY : ${Protobuf_LIBRARY}")
@@ -139,6 +158,7 @@ MACRO(LOAD_FREETYPE)
     SET(FREETYPE_LIBS
         freetype
     )
+
     IF(FREETYPE_INCLUDE_DIR)
         MESSAGE(STATUS "FREETYPE_INCLUDE_DIR : ${FREETYPE_INCLUDE_DIR}")
         MESSAGE(STATUS "FREETYPE_LIBRARY_DIR : ${FREETYPE_LIBRARY_DIR}")
@@ -155,6 +175,7 @@ MACRO(LOAD_OPENSSL)
         ssl
         crypto
     )
+
     IF(OPENSSL_INCLUDE_DIR)
         MESSAGE(STATUS "OPENSSL_INCLUDE_DIR : ${OPENSSL_INCLUDE_DIR}")
         MESSAGE(STATUS "OPENSSL_LIBRARY_DIR : ${OPENSSL_LIBRARY_DIR}")
@@ -168,14 +189,14 @@ MACRO(LOAD_CURL)
     # FIND_FILE(CURL_INCLUDE_DIR include ${3RDPARTY_DIR}/curl NO_DEFAULT_PATH)
     # FIND_FILE(CURL_LIBRARY_DIR lib ${3RDPARTY_DIR}/curl NO_DEFAULT_PATH)
     # SET(CURL_LIBS
-    #     curl
+    # curl
     # )
     # IF(CURL_INCLUDE_DIR)
-    #     MESSAGE(STATUS "CURL_INCLUDE_DIR : ${CURL_INCLUDE_DIR}")
-    #     MESSAGE(STATUS "CURL_LIBRARY_DIR : ${CURL_LIBRARY_DIR}")
-    #     MESSAGE(STATUS "CURL_LIBS : ${CURL_LIBS}")
+    # MESSAGE(STATUS "CURL_INCLUDE_DIR : ${CURL_INCLUDE_DIR}")
+    # MESSAGE(STATUS "CURL_LIBRARY_DIR : ${CURL_LIBRARY_DIR}")
+    # MESSAGE(STATUS "CURL_LIBS : ${CURL_LIBS}")
     # ELSE()
-    #     MESSAGE(FATAL_ERROR "CURL_LIBS not found!")
+    # MESSAGE(FATAL_ERROR "CURL_LIBS not found!")
     # ENDIF()
     SET(CURL_LIB_ROOT ${3RDPARTY_DIR}/curl)
     SET(CURL_PREFIX_PATH
@@ -185,8 +206,9 @@ MACRO(LOAD_CURL)
     )
     LIST(APPEND CMAKE_PREFIX_PATH ${CURL_PREFIX_PATH})
     FIND_PACKAGE(CURL REQUIRED)
+
     IF(CURL_FOUND)
-        SET(requiredlibs ${requiredlibs} ${CURL_LIBRARIES} )
+        SET(requiredlibs ${requiredlibs} ${CURL_LIBRARIES})
         MESSAGE(STATUS "CURL_INCLUDE_DIRS : ${CURL_INCLUDE_DIRS}")
         MESSAGE(STATUS "CURL_LIBRARIES : ${CURL_LIBRARIES}")
     ELSE(CURL_FOUND)
@@ -200,6 +222,7 @@ MACRO(LOAD_MNN)
     SET(MNN_LIBS
         MNN
     )
+
     IF(MNN_INCLUDE_DIR)
         MESSAGE(STATUS "MNN_INCLUDE_DIR : ${MNN_INCLUDE_DIR}")
         MESSAGE(STATUS "MNN_LIBRARY_DIR : ${MNN_LIBRARY_DIR}")
@@ -215,6 +238,7 @@ MACRO(LOAD_TENGINE)
     SET(TENGINE_LIBS
         tengine
     )
+
     IF(TENGINE_INCLUDE_DIR)
         MESSAGE(STATUS "TENGINE_INCLUDE_DIR : ${TENGINE_INCLUDE_DIR}")
         MESSAGE(STATUS "TENGINE_LIBRARY_DIR : ${TENGINE_LIBRARY_DIR}")
@@ -225,6 +249,8 @@ MACRO(LOAD_TENGINE)
 ENDMACRO()
 
 MACRO(LOAD_Jetson)
+    LOAD_SPDLOG()
+    LOAD_GFLAGS()
     LOAD_OPENCV()
     LOAD_OPENSSL()
     LOAD_CURL()
@@ -234,25 +260,28 @@ ENDMACRO()
 
 MACRO(LOAD_X3)
     # define dnn lib path
+    LOAD_SPDLOG()
+    LOAD_GFLAGS()
     LOAD_OPENCV()
     LOAD_OPENSSL()
     LOAD_CURL()
+
     # SET(APPSDK_PATH "/root/.horizon/ddk/xj3_aarch64/appsdk/appuser/")
     # # SET(APPSDK_PATH "/usr")
     SET(BPU_libs dnn hb_dnn)
     SET(HB_MEDIA_libs vio hbmedia avcodec avformat avutil)
-    SET(X3_INCLUDE 
+    SET(X3_INCLUDE
         ${APPSDK_PATH}/include
         ${APPSDK_PATH}/include/dnn
         ${APPSDK_PATH}/include/vio
         ${APPSDK_PATH}/include/libmm
     )
-    SET(X3_DIRECTORIES 
+    SET(X3_DIRECTORIES
         ${APPSDK_PATH}/lib
         ${APPSDK_PATH}/lib/hbbpu
         ${APPSDK_PATH}/lib/hbmedia
     )
-    SET(X3_LIBS 
+    SET(X3_LIBS
         ${BPU_libs}
         ${HB_MEDIA_libs}
         spcdev
@@ -268,4 +297,27 @@ MACRO(LOAD_X3)
     LINK_LIBRARIES(
         ${X3_LIBS}
     )
+ENDMACRO()
+
+MACRO(LOAD_ROCKCHIP)
+    LOAD_SPDLOG()
+    LOAD_GFLAGS()
+    LOAD_OPENCV()
+    LOAD_OPENSSL()
+    LOAD_CURL()
+
+    # rknn
+    SET(RKNN_API_PATH ${3RDPARTY_DIR}/librknn_api)
+    SET(RKNN_INCLUDE_DIR ${RKNN_API_PATH}/include)
+    SET(RKNN_API_LIB ${RKNN_API_PATH}/lib/librknn_api.so)
+
+    # rga
+    SET(RGA_PATH ${3RDPARTY_DIR}/rga)
+    SET(RGA_INCLUDE_DIR ${RGA_PATH}/include)
+    SET(RGA_LIB ${RGA_PATH}/lib/librga.so)
+
+    # mpp
+    SET(MPP_PATH ${3RDPARTY_DIR}/libmpp)
+    SET(MPP_INCLUDE_DIR ${MPP_PATH}/include)
+    SET(MPP_LIB ${MPP_PATH}/lib/librockchip_mpp.so)
 ENDMACRO()
