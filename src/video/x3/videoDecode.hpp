@@ -80,6 +80,7 @@ public:
   }
 
   ~VideoDecode() noexcept {
+    stream->Close();
     ChannelsManager::getInstance().setChannel(channel); // 返还channel
   }
 };

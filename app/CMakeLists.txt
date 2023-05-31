@@ -8,7 +8,12 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/video
     ${PROJECT_INCLUDE_DIR}/module
     ${PROJECT_INCLUDE_DIR}/license
+    ${PROJECT_INCLUDE_DIR}/infer/x3
+    ${PROJECT_INCLUDE_DIR}/infer/jetson
+    ${PROJECT_INCLUDE_DIR}/video/X3
+    ${PROJECT_INCLUDE_DIR}/video/jetson
     ${OpenCV_INCLUDE_DIRS}
+    ${3RDPARTY_ROOT}/eigen
     ${3RDPARTY_DIR}/gflags/include
 )
 

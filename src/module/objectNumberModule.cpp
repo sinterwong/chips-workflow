@@ -87,7 +87,7 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
 
     // 每到一定的数量就会触发报警
     if (objectNumber >= config->amount) {
-      FLOWENGINE_LOGGER_CRITICAL("object number: {}", objectNumber);
+      FLOWENGINE_LOGGER_DEBUG("object number: {}", objectNumber);
 
       // 生成报警信息
       alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "数量达标",

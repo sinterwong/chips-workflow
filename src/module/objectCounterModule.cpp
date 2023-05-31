@@ -127,7 +127,7 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
       counter.insert(results[j].first);
     }
 
-    FLOWENGINE_LOGGER_CRITICAL("person number: {}", counter.size());
+    FLOWENGINE_LOGGER_DEBUG("person number: {}", counter.size());
 
     // 每到一定的数量就会触发报警
     if (counter.size() != 0 &&
