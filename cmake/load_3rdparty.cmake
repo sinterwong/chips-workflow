@@ -249,6 +249,8 @@ MACRO(LOAD_TENGINE)
 ENDMACRO()
 
 MACRO(LOAD_Jetson)
+    LOAD_SPDLOG()
+    LOAD_GFLAGS()
     LOAD_OPENCV()
     LOAD_OPENSSL()
     LOAD_CURL()
@@ -258,6 +260,8 @@ ENDMACRO()
 
 MACRO(LOAD_X3)
     # define dnn lib path
+    LOAD_SPDLOG()
+    LOAD_GFLAGS()
     LOAD_OPENCV()
     LOAD_OPENSSL()
     LOAD_CURL()

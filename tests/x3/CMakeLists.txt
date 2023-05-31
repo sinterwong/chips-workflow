@@ -20,7 +20,6 @@ LINK_LIBRARIES(
     ${OpenCV_LIBS}
     gflags
     pthread
-    spdlog
     infer
     video
     ${X3_LIBS}

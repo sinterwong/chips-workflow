@@ -22,7 +22,6 @@ LINK_LIBRARIES(
     video
     gflags
     pthread
-    spdlog
 )
 
 SET(LINK "-Wl,--no-as-needed")
