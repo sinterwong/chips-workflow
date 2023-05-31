@@ -9,6 +9,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/jetson-utils
     ${OpenCV_INCLUDE_DIRS}
     ${CUDA_INCLUDE_DIRS}
+    ${3RDPARTY_DIR}/gflags/include
 )
 
 LINK_DIRECTORIES(
@@ -19,7 +20,7 @@ LINK_LIBRARIES(
     ${OpenCV_LIBS}
     infer
     video
-    gflags::gflags
+    gflags
     pthread
     spdlog
 )

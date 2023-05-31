@@ -9,6 +9,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/module
     ${PROJECT_INCLUDE_DIR}/license
     ${OpenCV_INCLUDE_DIRS}
+    ${3RDPARTY_DIR}/gflags/include
 )
 
 LINK_DIRECTORIES(
@@ -32,9 +33,8 @@ LINK_LIBRARIES(
     ${OPENSSL_LIBS}
     ${FE_LIBS}
     ${CURL_LIBRARIES}
-    gflags::gflags
+    gflags
     pthread
-    spdlog
     stdc++fs
 )
 SET(LINK "-Wl,--no-as-needed")

@@ -8,6 +8,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/video
     ${OpenCV_INCLUDE_DIRS}
     ${X3_INCLUDE}
+    ${3RDPARTY_DIR}/gflags/include
 )
 
 LINK_DIRECTORIES(
@@ -17,7 +18,7 @@ LINK_DIRECTORIES(
 
 LINK_LIBRARIES(
     ${OpenCV_LIBS}
-    gflags::gflags
+    gflags
     pthread
     spdlog
     infer
