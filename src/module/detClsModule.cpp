@@ -141,7 +141,7 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
         alarmBox = box;
         if (alarmBox.second[4] > config->threshold) {
           // 存在符合条件的报警
-          FLOWENGINE_LOGGER_CRITICAL("{}: {}, {}, {}!", name, alarmBox.first,
+          FLOWENGINE_LOGGER_DEBUG("{}: {}, {}, {}!", name, alarmBox.first,
                                      alarmBox.second[4], alarmBox.second[5]);
           // 生成报警信息
           alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在报警行为",

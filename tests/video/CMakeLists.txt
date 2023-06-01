@@ -1,13 +1,14 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
-PROJECT(X3-Tests)
+PROJECT(Application)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations -Wno-error=unused-function")
 INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}
     ${PROJECT_INCLUDE_DIR}/core
-    ${PROJECT_INCLUDE_DIR}/infer
+    ${PROJECT_INCLUDE_DIR}/utils
     ${PROJECT_INCLUDE_DIR}/video
+    ${PROJECT_INCLUDE_DIR}/video/x3
+    ${PROJECT_INCLUDE_DIR}/video/jetson
     ${OpenCV_INCLUDE_DIRS}
-    ${X3_INCLUDE}
     ${3RDPARTY_DIR}/gflags/include
 )
 
@@ -15,24 +16,32 @@ LINK_DIRECTORIES(
     ${OpenCV_LIBRARY_DIR}
     ${X3_DIRECTORIES}
 )
+IF(TARGET_HARDWARE STREQUAL "x3")
+    MESSAGE(STATUS "Loading X3 dependent libraries")
+    SET(CHIPS_DEPAND_LIBS ${X3_LIBS})
+ELSEIF(TARGET_HARDWARE STREQUAL "jetson")
+    MESSAGE(STATUS "Loading Jetson dependent libraries")
+    SET(CHIPS_DEPAND_LIBS jetson-utils)
+ELSE()
+    SET(CHIPS_DEPAND_LIBS)
+ENDIF()
 
 LINK_LIBRARIES(
     ${OpenCV_LIBS}
     gflags
     pthread
-    ${X3_LIBS}
 )
 
 SET(LINK "-Wl,--no-as-needed")
-FILE(MAKE_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/x3)
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/x3)
+FILE(MAKE_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/video)
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/video)
 FILE(GLOB APP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 MESSAGE(STATUS "APP SOURCES: ${APP_SOURCES}")
 FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
     STRING(REPLACE ".cpp" "" testname ${sourcefilewithoutpath})
     ADD_EXECUTABLE( ${testname} ${sourcefile})
-    TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} video infer core module_logger stdc++fs)
+    TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} video module_logger stdc++fs)
 
     INSTALL(TARGETS ${testname}
         ARCHIVE DESTINATION lib

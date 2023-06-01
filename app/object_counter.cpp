@@ -17,7 +17,7 @@
 #include "visionInfer.hpp"
 
 #include "infer/preprocess.hpp"
-#include "videoManager.hpp"
+#include "videoDecode.hpp"
 
 #include "infer/tracker.h"
 
@@ -118,11 +118,11 @@ int main(int argc, char **argv) {
   FLOWENGINE_LOGGER_INFO("Video manager has initialized!");
 
   // 视频流
-  video::VideoManager vm{FLAGS_url};
+  video::VideoDecode decoder{FLAGS_url};
 
-  vm.init();
+  decoder.init();
   FLOWENGINE_LOGGER_INFO("Video manager has initialized!");
-  vm.run();
+  decoder.run();
   FLOWENGINE_LOGGER_INFO("Video manager is running!");
 
   // trakcker
@@ -132,11 +132,10 @@ int main(int argc, char **argv) {
   DETECTIONS last_detections;
 
   int count = 0;
-
   std::set<int> counter;
-  while (vm.isRunning()) {
-    count++;
-    auto image = vm.getcvImage();
+  size_t cur_counter = 0;
+  while (decoder.isRunning() && ++count < 100) {
+    auto image = decoder.getcvImage();
     cv::Mat show_image;
     cv::cvtColor(*image, show_image, CV_YUV2BGR_NV12);
     std::vector<RESULT_DATA> results;
@@ -204,7 +203,10 @@ int main(int argc, char **argv) {
       cv::putText(show_image, label, cv::Point(rect.x, rect.y),
                   cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(255, 14, 50), 2);
     }
-    std::cout << "person number: " << counter.size() << std::endl;
+    if (counter.size() > cur_counter) {
+      std::cout << "person number: " << counter.size() << std::endl;
+      cur_counter = counter.size();
+    }
     cv::imwrite("object_counter_out.jpg", show_image);
   }
 

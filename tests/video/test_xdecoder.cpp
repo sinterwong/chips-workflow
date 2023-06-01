@@ -1,6 +1,6 @@
 #include "logger/logger.hpp"
-#include "video/videoManager.hpp"
 #include "gflags/gflags.h"
+#include "videoDecode.hpp"
 
 #include <cassert>
 #include <cstddef>
@@ -20,26 +20,31 @@ DEFINE_int32(end, 9, "stream end index.");
 
 void run_stream(std::string const &url, int idx) {
 
-  VideoManager vm{url};
-  vm.init();
-  vm.run();
+  // 视频流
+  video::VideoDecode decoder{FLAGS_uri};
+
+  decoder.init();
+  FLOWENGINE_LOGGER_INFO("Video manager has initialized!");
+  decoder.run();
+  FLOWENGINE_LOGGER_INFO("Video manager is running!");
+
   std::string savePath = std::to_string(idx) + "_test_xdecoder.jpg";
-  // int count = 0;
+  int count = 0;
   while (1) {
     std::this_thread::sleep_for(std::chrono::seconds(2));
-  //   ++count;
-  //   if (count % 100 != 0) {
-  //     continue;
-  //   }
-  //   std::cout << count << ": " << vm.getHeight() << ", " << vm.getWidth()
-  //             << std::endl;
-  //   FLOWENGINE_LOGGER_INFO("id: {}, height: {}, width: {}, count: {}", idx,
-  //                          vm.getHeight(), vm.getWidth(), count);
-  //   cv::Mat nv12_image = vm.getcvImage();
-  //   if (!nv12_image.empty()) {
-  //     std::cout << "saving the image" << std::endl;
-  //     cv::imwrite(savePath, nv12_image);
-  //   }
+    ++count;
+    if (count % 20 != 0) {
+      continue;
+    }
+    std::cout << count << ": " << decoder.getHeight() << ", " << decoder.getWidth()
+              << std::endl;
+    FLOWENGINE_LOGGER_INFO("id: {}, height: {}, width: {}, count: {}", idx,
+                           decoder.getHeight(), decoder.getWidth(), count);
+    auto nv12_image = decoder.getcvImage();
+    if (!nv12_image->empty()) {
+      std::cout << "saving the image" << std::endl;
+      cv::imwrite(savePath, *nv12_image);
+    }
   }
 }
 

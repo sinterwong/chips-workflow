@@ -90,8 +90,3 @@ void FlowEngineLoggerSetFlushEvery(const int interval) {
 
 // drop all loggers reference
 void FlowEngineLoggerDrop() { spdlog::drop_all(); }
-
-const static bool initLogger = []() {
-  FlowEngineLoggerInit(true, true, true, true);
-  return true;
-}();
