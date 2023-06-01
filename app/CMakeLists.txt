@@ -22,7 +22,6 @@ LINK_DIRECTORIES(
     ${OPENSSL_LIBRARY_DIR}
     ${X3_DIRECTORIES}
 )
-SET(FE_LIBS core license module module_logger infer)
 IF(TARGET_HARDWARE STREQUAL "x3")
     MESSAGE(STATUS "Loading X3 dependent libraries")
     SET(CHIPS_DEPAND_LIBS ${X3_LIBS})
@@ -36,8 +35,8 @@ ENDIF()
 LINK_LIBRARIES(
     ${OpenCV_LIBS}
     ${OPENSSL_LIBS}
-    ${FE_LIBS}
     ${CURL_LIBRARIES}
+    ${CHIPS_DEPAND_LIBS}
     gflags
     pthread
     stdc++fs
@@ -51,7 +50,7 @@ FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
     STRING(REPLACE ".cpp" "" testname ${sourcefilewithoutpath})
     ADD_EXECUTABLE( ${testname} ${sourcefile})
-    TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} core module module_logger stdc++fs)
+    TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} module video infer license core module_logger stdc++fs)
 
     INSTALL(TARGETS ${testname}
         ARCHIVE DESTINATION lib
