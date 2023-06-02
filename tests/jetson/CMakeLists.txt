@@ -19,7 +19,6 @@ LINK_DIRECTORIES(
 LINK_LIBRARIES(
     ${OpenCV_LIBS}
     infer
-    video
     gflags
     pthread
 )
@@ -34,8 +33,6 @@ FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
     STRING(REPLACE ".cpp" "" testname ${sourcefilewithoutpath})
     ADD_EXECUTABLE(${testname} ${sourcefile})
-
-    # TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} core module module_logger stdc++fs)
     INSTALL(TARGETS ${testname}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib

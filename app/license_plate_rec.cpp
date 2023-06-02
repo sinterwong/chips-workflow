@@ -21,9 +21,13 @@ DEFINE_string(img, "", "Specify face1 image path.");
 DEFINE_string(det_model_path, "", "Specify the lprDet model path.");
 DEFINE_string(rec_model_path, "", "Specify the lprNet model path.");
 
+const auto initLogger = []() -> decltype(auto) {
+  FlowEngineLoggerInit(true, true, true, true);
+  return true;
+}();
+
 using namespace infer;
 using namespace common;
-
 using algo_ptr = std::shared_ptr<AlgoInfer>;
 
 const std::wstring_view charsets =

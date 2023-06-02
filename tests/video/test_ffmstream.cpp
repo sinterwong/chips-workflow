@@ -6,7 +6,7 @@
 #include <iostream>
 DEFINE_string(uri, "", "Specify the url of video.");
 
-const static bool initLogger = []() {
+const bool initLogger = []() {
   FlowEngineLoggerInit(true, true, true, true);
   return true;
 }();

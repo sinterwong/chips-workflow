@@ -25,9 +25,13 @@ DEFINE_string(url, "", "Specify stream url.");
 DEFINE_string(det_model_path, "", "Specify the lprDet model path.");
 DEFINE_string(reid_model_path, "", "Specify the lprNet model path.");
 
+const auto initLogger = []() -> decltype(auto) {
+  FlowEngineLoggerInit(true, true, true, true);
+  return true;
+}();
+
 using namespace infer;
 using namespace infer::solution;
-
 using algo_ptr = std::shared_ptr<AlgoInfer>;
 
 using RESULT_DATA = std::pair<int, DETECTBOX>;
@@ -211,7 +215,6 @@ int main(int argc, char **argv) {
   }
 
   gflags::ShutDownCommandLineFlags();
-
   return 0;
 }
 

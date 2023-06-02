@@ -23,13 +23,18 @@
 
 #include "license/licenseVerifier.hpp"
 
-
 DEFINE_string(config_path, "", "Specify config path.");
 DEFINE_int32(num_workers, 16, "Specify number of thread pool .");
-DEFINE_string(flowengine_conf, "flowengine_conf", "Specify config file of flowengine .");
+DEFINE_string(flowengine_conf, "flowengine_conf",
+              "Specify config file of flowengine .");
 
 using namespace module;
 // using common::WORKER_TYPES;
+
+const auto initLogger = []() -> decltype(auto) {
+  FlowEngineLoggerInit(true, true, true, true);
+  return true;
+}();
 
 int main(int argc, char **argv) {
   gflags::SetUsageMessage("some usage message");
@@ -108,9 +113,11 @@ int main(int argc, char **argv) {
     return ret;
   }
 #endif
-  std::shared_ptr<PipelineModule> pipeline(std::make_shared<PipelineModule>(FLAGS_config_path, FLAGS_num_workers));
+  std::shared_ptr<PipelineModule> pipeline(
+      std::make_shared<PipelineModule>(FLAGS_config_path, FLAGS_num_workers));
   pipeline->run();
   gflags::ShutDownCommandLineFlags();
+  FlowEngineLoggerDrop();
   return 0;
 }
 
