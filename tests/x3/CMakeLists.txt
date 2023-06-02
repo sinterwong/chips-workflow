@@ -21,6 +21,11 @@ LINK_LIBRARIES(
     gflags
     pthread
     ${X3_LIBS}
+    video 
+    infer
+    core
+    module_logger
+    stdc++fs
 )
 
 SET(LINK "-Wl,--no-as-needed")
@@ -32,7 +37,6 @@ FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
     STRING(REPLACE ".cpp" "" testname ${sourcefilewithoutpath})
     ADD_EXECUTABLE( ${testname} ${sourcefile})
-    TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} video infer core module_logger stdc++fs)
 
     INSTALL(TARGETS ${testname}
         ARCHIVE DESTINATION lib

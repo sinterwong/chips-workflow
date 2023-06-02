@@ -18,9 +18,9 @@ using json = nlohmann::json;
 
 namespace module {
 
-bool StatusOutputModule::postResult(std::string const &url,
-                                    StatusInfo const &statusInfo,
-                                    std::string &result) {
+CURLcode StatusOutputModule::postResult(std::string const &url,
+                                        StatusInfo const &statusInfo,
+                                        std::string &result) {
 
   CURL *curl = curl_easy_init();
 
@@ -45,15 +45,9 @@ bool StatusOutputModule::postResult(std::string const &url,
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 
   CURLcode response = curl_easy_perform(curl);
-  if (response) {
-    FLOWENGINE_LOGGER_ERROR(
-        "[StatusOutputModule]: curl_easy_perform error code: {}", response);
-    return false;
-  }
-
   // end of for
   curl_easy_cleanup(curl);
-  return true;
+  return response;
 }
 
 void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
@@ -66,9 +60,11 @@ void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
     if (buf.status == 2 || count++ >= 500) {
       StatusInfo statusInfo{send, buf.status};
       std::string response;
-      if (!postResult(config->url, statusInfo, response)) {
+      auto code = postResult(config->url, statusInfo, response);
+      if (code) {
         FLOWENGINE_LOGGER_ERROR("StatusOutputModule.forward: post result was "
-                                "failed, please check!");
+                                "failed {}, please check!",
+                                code);
       }
       count = 0;
     }

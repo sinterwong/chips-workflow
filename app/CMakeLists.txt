@@ -27,7 +27,7 @@ IF(TARGET_HARDWARE STREQUAL "x3")
     SET(CHIPS_DEPAND_LIBS ${X3_LIBS})
 ELSEIF(TARGET_HARDWARE STREQUAL "jetson")
     MESSAGE(STATUS "Loading Jetson dependent libraries")
-    SET(CHIPS_DEPAND_LIBS jetson_infer_cu jetson-utils)
+    SET(CHIPS_DEPAND_LIBS jetson-utils)
 ELSE()
     SET(CHIPS_DEPAND_LIBS)
 ENDIF()
@@ -39,6 +39,12 @@ LINK_LIBRARIES(
     ${CHIPS_DEPAND_LIBS}
     gflags
     pthread
+    module 
+    video 
+    infer 
+    license 
+    core 
+    module_logger 
     stdc++fs
 )
 SET(LINK "-Wl,--no-as-needed")
@@ -50,7 +56,6 @@ FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
     STRING(REPLACE ".cpp" "" testname ${sourcefilewithoutpath})
     ADD_EXECUTABLE( ${testname} ${sourcefile})
-    TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} module video infer license core module_logger stdc++fs)
 
     INSTALL(TARGETS ${testname}
         ARCHIVE DESTINATION lib
