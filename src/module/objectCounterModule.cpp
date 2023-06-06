@@ -27,7 +27,7 @@ namespace module {
 void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == MessageType::Close) {
-      FLOWENGINE_LOGGER_INFO("{} HelmetModule module was done!", name);
+      FLOWENGINE_LOGGER_INFO("{} ObjectCounterModule was done!", name);
       stopFlag.store(true);
       return;
     }

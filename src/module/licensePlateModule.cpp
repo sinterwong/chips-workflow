@@ -36,7 +36,7 @@ namespace module {
 void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == MessageType::Close) {
-      FLOWENGINE_LOGGER_INFO("{} HelmetModule module was done!", name);
+      FLOWENGINE_LOGGER_INFO("{} LicensePlateModule was done!", name);
       stopFlag.store(true);
       return;
     }

@@ -53,7 +53,7 @@ CURLcode StatusOutputModule::postResult(std::string const &url,
 void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == MessageType::Close) {
-      FLOWENGINE_LOGGER_INFO("{} StatusOutputModule module was done!", name);
+      FLOWENGINE_LOGGER_INFO("{} StatusOutputModule was done!", name);
       stopFlag.store(true);
       return;
     }

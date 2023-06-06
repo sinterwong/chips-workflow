@@ -91,7 +91,7 @@ void StreamModule::step() {
   queueMessage message;
   ptr->message->recv(name, flag, sender, stype, message, false);
   if (stype == MessageType::Close) {
-    FLOWENGINE_LOGGER_INFO("{} StreamModule module was done!", name);
+    FLOWENGINE_LOGGER_INFO("{} StreamModule was done!", name);
     stopFlag.store(true);
     return;
   }

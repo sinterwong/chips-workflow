@@ -131,7 +131,18 @@ void PipelineModule::stopModule(std::string const &moduleName) {
  * @return false
  */
 bool PipelineModule::startPipeline() {
-
+  // 更新模块之前，首先删除已经停用的模块
+  std::unordered_map<std::string, module_ptr>::iterator it;
+  for (it = atm.begin(); it != atm.end();) {
+    if (!it->second->isRunning()) {
+      detachModule(it->first);
+      backendPtr->message->send(name, it->first, MessageType::Close,
+                                queueMessage());
+      it = atm.erase(it);
+    } else {
+      ++it;
+    }
+  }
   // 暂时不考虑sever的形式
   std::vector<PipelineParams> pipelines;
   std::vector<AlgorithmParams> algorithms;

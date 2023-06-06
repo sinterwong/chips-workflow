@@ -26,7 +26,7 @@ namespace module {
 void DetClsModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == MessageType::Close) {
-      FLOWENGINE_LOGGER_INFO("{} HelmetModule module was done!", name);
+      FLOWENGINE_LOGGER_INFO("{} DetClsModule was done!", name);
       stopFlag.store(true);
       return;
     }

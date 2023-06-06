@@ -18,7 +18,7 @@ namespace module {
 void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == MessageType::Close) {
-      FLOWENGINE_LOGGER_INFO("FreameDifference module was done!");
+      FLOWENGINE_LOGGER_INFO("{} FrameDifferenceModule was done!", name);
       stopFlag.store(true);
       return;
     }

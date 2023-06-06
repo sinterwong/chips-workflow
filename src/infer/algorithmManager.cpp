@@ -32,8 +32,6 @@ bool AlgorithmManager::registered(std::string const &name,
     FLOWENGINE_LOGGER_ERROR("algorithm manager: failed to register {}", name);
     return false;
   }
-  
-
   return true;
 }
 
