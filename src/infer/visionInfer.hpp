@@ -9,9 +9,9 @@
  *
  */
 #include "core/algoInfer.hpp"
+#include "dnn_inference.hpp"
 #include "vision.hpp"
 #include <mutex>
-#include "dnn_inference.hpp"
 
 using namespace infer::dnn;
 
@@ -29,8 +29,7 @@ public:
    */
   virtual bool init() override;
 
-  virtual bool infer(void *data, InferParams const &,
-                     InferResult &ret) override;
+  virtual bool infer(FrameInfo &, InferParams const &, InferResult &ret) override;
 
   virtual bool destory() noexcept override;
 

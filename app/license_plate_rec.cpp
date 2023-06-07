@@ -56,7 +56,12 @@ void inference(cv::Mat &image, InferResult &ret,
                      region,
                      {image.cols, image.rows, image.channels()}};
 
-  vision->infer(image.data, params, ret);
+  // 制作输入数据
+  FrameInfo frame;
+  frame.shape = {image.cols, image.rows * 2 / 3, 3};
+  frame.type = params.frameType;
+  frame.data = reinterpret_cast<void **>(&image.data);
+  vision->infer(frame, params, ret);
 }
 
 std::string getChars(CharsRet const &charsRet) {
