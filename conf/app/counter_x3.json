@@ -85,6 +85,7 @@
           "sendName": "output_alarm_01_1673517182674",
           "sub_type": "ObjectCounterModule",
           "amount": 5,
+          "interval": 5,
           "type": "logic",
           "video_duration": 10,
           "width": "720",

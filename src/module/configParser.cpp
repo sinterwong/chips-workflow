@@ -161,8 +161,8 @@ bool ConfigParser::parseConfig(std::string const &path,
         case ModuleType::Logic: {
           // 公共参数部分 DL的执行逻辑，属于必要字段
           LogicBase lBase;
-          // lBase.interval = p["interval"].get<int>();  // TODO 后续参数化
-
+          // 前端传来的interval以秒为单位，需要转换成毫秒
+          lBase.interval = p["interval"].get<int>() * 1000;
           json apipes = p["algo_pipe"];
           for (auto const &ap : apipes) {
             AlgoParams params; // 特定参数
@@ -201,7 +201,6 @@ bool ConfigParser::parseConfig(std::string const &path,
             AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
                             isDraw};
 
-            lBase.interval = 10000; // TODO 参数加了之后就可以删除
             OCRConfig config_{std::move(aarea), std::move(lBase),
                               std::move(aBase), std::move(chars)};
             config.setParams(std::move(config_));
@@ -214,7 +213,6 @@ bool ConfigParser::parseConfig(std::string const &path,
             AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
                             isDraw};
 
-            lBase.interval = 1000; // TODO 参数加了之后就可以删除
             DetClsMonitor config_{std::move(aarea), std::move(lBase),
                                   std::move(aBase), thre};
             config.setParams(std::move(config_));
@@ -227,7 +225,6 @@ bool ConfigParser::parseConfig(std::string const &path,
             AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
                             isDraw};
 
-            lBase.interval = 100; // TODO 参数加了之后就可以删除
             ObjectCounterConfig config_{std::move(aarea), std::move(lBase),
                                         std::move(aBase), amount};
             config.setParams(std::move(config_));

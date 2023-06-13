@@ -10,6 +10,7 @@
  */
 
 #include "algorithmManager.hpp"
+#include "infer/preprocess.hpp"
 #include "logger/logger.hpp"
 #include "visionInfer.hpp"
 #include <memory>
@@ -32,8 +33,6 @@ bool AlgorithmManager::registered(std::string const &name,
     FLOWENGINE_LOGGER_ERROR("algorithm manager: failed to register {}", name);
     return false;
   }
-  
-
   return true;
 }
 
@@ -57,13 +56,53 @@ bool AlgorithmManager::unregistered(std::string const &name) {
 
 bool AlgorithmManager::infer(std::string const &name, void *data,
                              InferParams const &params, InferResult &ret) {
-  // infer调用的线程安全问题交给algoInfer去处理，可以做的更精细（如提前数据处理等）
+
+  Shape const &shape = params.shape;
+  auto cv_type = shape.at(2) == 1 ? CV_8UC1 : CV_8UC3;
+  cv::Mat image = cv::Mat(shape.at(1), shape.at(0), cv_type, data);
+  auto &bbox = params.region;
+  cv::Mat inferImage;
+  cv::Rect2i rect{static_cast<int>(bbox.second[0]),
+                  static_cast<int>(bbox.second[1]),
+                  static_cast<int>(bbox.second[2] - bbox.second[0]),
+                  static_cast<int>(bbox.second[3] - bbox.second[1])};
+  if (rect.area() != 0) {
+    if (!utils::cropImage(image, inferImage, rect, params.frameType,
+                          params.cropScaling)) {
+      FLOWENGINE_LOGGER_ERROR(
+          "VisionInfer infer: cropImage is failed, rect is {},{},{},{}, "
+          "but the video resolution is {}x{}",
+          rect.x, rect.y, rect.width, rect.height, image.cols, image.rows);
+      return false;
+    }
+  } else {
+    inferImage = image.clone();
+  }
+
+  FrameInfo frame;
+  switch (params.frameType) {
+  case common::ColorType::None:
+  case common::ColorType::RGB888:
+  case common::ColorType::BGR888:
+    frame.shape = {inferImage.cols, inferImage.rows, 3};
+    break;
+  case common::ColorType::NV12:
+    frame.shape = {inferImage.cols, inferImage.rows * 2 / 3, 3};
+    break;
+  }
+  frame.type = params.frameType;
+  frame.data = reinterpret_cast<void **>(&inferImage.data);
+
+  /* TODO
+   * 共享锁饥饿问题（推理线程交替执行且耗时，导致注册和注销线程无法获取到锁）
+   */
   std::shared_lock lk(m);
   auto iter = name2algo.find(name);
   if (iter == name2algo.end()) {
     FLOWENGINE_LOGGER_WARN("{} was no registered!", name);
     return false;
   }
-  return iter->second->infer(data, params, ret);
+  // infer调用的线程安全问题交给algoInfer去处理，可以做的更精细（如前后数据处理等）
+  return iter->second->infer(frame, params, ret);
 }
 } // namespace infer

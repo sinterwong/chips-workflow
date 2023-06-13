@@ -22,7 +22,7 @@ namespace video {
 
 bool VideoRecord::init() {
   params.videoIdx = channel;
-  FLOWENGINE_LOGGER_CRITICAL("Recording video in channel {}", channel);
+  FLOWENGINE_LOGGER_DEBUG("Recording video in channel {}", channel);
   stream = XEncoder::Create(params);
   stream->Init();
   if (!stream) {

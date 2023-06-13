@@ -22,8 +22,8 @@
 #include "infer/tracker.h"
 
 DEFINE_string(url, "", "Specify stream url.");
-DEFINE_string(det_model_path, "", "Specify the lprDet model path.");
-DEFINE_string(reid_model_path, "", "Specify the lprNet model path.");
+DEFINE_string(det_model_path, "", "Specify the det model path.");
+DEFINE_string(reid_model_path, "", "Specify the reid model path.");
 
 const auto initLogger = []() -> decltype(auto) {
   FlowEngineLoggerInit(true, true, true, true);
@@ -58,7 +58,12 @@ void inference(cv::Mat &image, InferResult &ret,
                      region,
                      {image.cols, image.rows, image.channels()}};
 
-  vision->infer(image.data, params, ret);
+  // 制作输入数据
+  FrameInfo frame;
+  frame.shape = {image.cols, image.rows * 2 / 3, 3};
+  frame.type = params.frameType;
+  frame.data = reinterpret_cast<void **>(&image.data);
+  vision->infer(frame, params, ret);
 }
 
 cv::Rect2i getRect(common::BBox const &bbox) {

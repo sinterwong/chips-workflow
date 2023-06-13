@@ -19,6 +19,7 @@ using common::AlgoRetType;
 using common::AlgoSerial;
 using common::InferParams;
 using common::InferResult;
+using common::FrameInfo;
 
 class AlgoInfer {
 public:
@@ -38,7 +39,7 @@ public:
    * @return true
    * @return false
    */
-  virtual bool infer(void *data, InferParams const &, InferResult &ret) = 0;
+  virtual bool infer(FrameInfo &, InferParams const &, InferResult &ret) = 0;
 
   /**
    * @brief 获取算法类型

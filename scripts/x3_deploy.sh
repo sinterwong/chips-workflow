@@ -6,7 +6,7 @@ scp -P 22 -r build/aarch64/bin \
                root@192.168.0.188:/root/workspace/softwares/flowengine
 
 scp -P 9205 -r build/aarch64/bin \
-               build/aarch64/lib/*.so.* \
+               build/aarch64/lib/*.so* \
                conf/app \
                tests/data/models \
                root@114.242.23.39:/root/workspace/softwares/flowengine

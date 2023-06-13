@@ -75,7 +75,7 @@ CURLcode AlarmOutputModule::postResult(std::string const &url,
 void AlarmOutputModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == MessageType::Close) {
-      FLOWENGINE_LOGGER_INFO("{} AlarmOutputModule module was done!", name);
+      FLOWENGINE_LOGGER_INFO("{} AlarmOutputModule was done!", name);
       stopFlag.store(true);
       return;
     }
