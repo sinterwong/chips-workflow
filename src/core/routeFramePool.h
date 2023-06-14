@@ -34,7 +34,7 @@ using getFrameBufFunc = std::function<std::any(std::vector<std::any> &,
 
 using delFrameBufFunc = std::function<void(std::vector<std::any> &)>; // 析构帧
 
-using FrameInfo = std::tuple<int, int, int, frameDataType>; // 数据帧的信息
+using DataFrameInfo = std::tuple<int, int, int, frameDataType>; // 数据帧的信息
 
 using GFMap = std::map<std::string, getFrameBufFunc>; // 获取帧数据的
 
@@ -52,7 +52,7 @@ public:
 
   std::any read(std::string const &);
 
-  void write(std::vector<std::any>, GFMap, delFrameBufFunc, FrameInfo);
+  void write(std::vector<std::any>, GFMap, delFrameBufFunc, DataFrameInfo);
 
   void del();
 };

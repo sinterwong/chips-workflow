@@ -6,18 +6,22 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/core
     ${PROJECT_INCLUDE_DIR}/utils
     ${PROJECT_INCLUDE_DIR}/module
+    ${PROJECT_INCLUDE_DIR}/jetson-utils
     ${PROJECT_INCLUDE_DIR}/video
     ${PROJECT_INCLUDE_DIR}/video/x3
     ${PROJECT_INCLUDE_DIR}/video/jetson
     ${PROJECT_INCLUDE_DIR}/infer/x3
     ${PROJECT_INCLUDE_DIR}/infer/jetson
     ${OpenCV_INCLUDE_DIRS}
+    ${CUDA_INCLUDE_DIRS}
     ${3RDPARTY_DIR}/gflags/include
     ${CURL_INCLUDE_DIRS}
 )
 
 LINK_DIRECTORIES(
     ${OpenCV_LIBRARY_DIR}
+    ${OpenCV_LIBRARY_DIR}
+    ${FFMPEG_LIBRARY_DIR}
     ${X3_DIRECTORIES}
 )
 IF(TARGET_HARDWARE STREQUAL "x3")
@@ -32,6 +36,7 @@ ENDIF()
 
 LINK_LIBRARIES(
     ${OpenCV_LIBS}
+    ${FFMPEG_LIBS}
     ${CURL_LIBRARIES}
     gflags
     pthread
