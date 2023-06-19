@@ -38,7 +38,7 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
 
     if (alarmUtils.isRecording()) {
       alarmUtils.recordVideo(*image, alarmBox);
-      continue;
+      break;
     }
 
     // 各个算法结果的区域
@@ -177,7 +177,9 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
       }
     }
   }
-  std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
+  if (!alarmUtils.isRecording()) {
+    std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
+  }
 }
 
 FlowEngineModuleRegister(DetClsModule, backend_ptr, std::string const &,
