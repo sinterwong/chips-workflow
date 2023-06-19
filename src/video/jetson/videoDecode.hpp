@@ -31,6 +31,7 @@ private:
   std::unique_ptr<joining_thread> consumer; // 消费者
   std::mutex frame_m;
   uchar3 *frame = nullptr;
+  static const std::unordered_map<std::string, std::string> codecMapping;
 
   void consumeFrame();
 

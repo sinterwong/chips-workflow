@@ -25,6 +25,10 @@ using namespace std::chrono_literals;
 
 namespace video {
 
+std::unordered_map<std::string, std::string> const VideoDecode::codecMapping =
+    {std::make_pair("h264", "h264"), std::make_pair("h265", "h265"),
+     std::make_pair("avc", "h264"), std::make_pair("hevc", "h265")};
+
 bool VideoDecode::init() {
 
   // 利用opencv打开视频，获取配置
@@ -35,7 +39,8 @@ bool VideoDecode::init() {
   opt.width = video.get(cv::CAP_PROP_FRAME_WIDTH);
   opt.frameRate = video.get(cv::CAP_PROP_FPS);
   int fourcc = static_cast<int>(video.get(cv::CAP_PROP_FOURCC));
-  opt.codec = videoOptions::CodecFromStr(utils::getCodec(fourcc).c_str());
+  std::string scodec = codecMapping.at(utils::getCodec(fourcc));
+  opt.codec = videoOptions::CodecFromStr(scodec.c_str());
   opt.resource = uri;
   stream = std::unique_ptr<videoSource>(videoSource::Create(opt));
   video.release();
@@ -58,8 +63,7 @@ bool VideoDecode::run() {
   if (!stream->Open()) {
     return false;
   }
-  consumer =
-      std::make_unique<joining_thread>(&VideoDecode::consumeFrame, this);
+  consumer = std::make_unique<joining_thread>(&VideoDecode::consumeFrame, this);
   return true;
 }
 
