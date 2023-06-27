@@ -18,45 +18,31 @@
 namespace infer::solution {
 
 bool FrameDifference::update(cv::Mat &frame, std::vector<RetBox> &bboxes) {
-  if (!lastFrame) {
-    lastFrame = std::make_shared<cv::Mat>(frame);
-  } else {
-    // 处理帧
-    if (!moveDetect(*lastFrame, frame, bboxes)) {
-      return false;
-    }
-    lastFrame = std::make_shared<cv::Mat>(frame);
+  if (frame.empty()) {
+    return false;
   }
-  return true;
-}
-
-// 运动物体检测函数声明
-bool FrameDifference::moveDetect(const cv::Mat &temp, const cv::Mat &frame,
-                                 std::vector<RetBox> &bboxes) {
-
   // 平滑、帧差或背景差、二值化、膨胀、腐蚀。
   //  1.平滑处理
-  cv::Mat dst_temp;
-  cv::blur(temp, dst_temp, cv::Size(3, 3), cv::Point(-1, -1)); // filter2D
-
   cv::Mat dst_frame;
   cv::blur(frame, dst_frame, cv::Size(3, 3), cv::Point(-1, -1)); // filter2D
 
   // 2.帧差
   // 2.1将background和frame转为灰度图
-  cv::Mat gray1, gray2;
-  auto g1f = std::async([&dst_temp, &gray1]() {
-    cv::cvtColor(dst_temp, gray1, cv::COLOR_RGB2GRAY);
-  });
-  auto g2f = std::async([&dst_frame, &gray2]() {
-    cv::cvtColor(dst_frame, gray2, cv::COLOR_RGB2GRAY);
-  });
+  cv::Mat current_gray;
+  cv::cvtColor(dst_frame, current_gray, cv::COLOR_RGB2GRAY);
+
+  // 判断是否是第一帧
+  if (!lastFrameProcessed) {
+    lastFrameProcessed = std::make_shared<cv::Mat>(current_gray);
+    FLOWENGINE_LOGGER_INFO("FrameDifference first frame");
+    return true;
+  }
+
   // 2.2.将background和frame做差
   cv::Mat diff;
-  g1f.wait();
-  g2f.wait();
-  cv::absdiff(gray1, gray2, diff);
-  // cv::imshow("absdiff", diff);
+  cv::absdiff(*lastFrameProcessed, current_gray, diff);
+  // cv::imshow("absdif|f", diff);
+  lastFrameProcessed = std::make_shared<cv::Mat>(current_gray);
 
   // 3.对差值图diff_thresh进行阈值化处理  二值化
   cv::Mat diff_thresh;
@@ -77,13 +63,13 @@ bool FrameDifference::moveDetect(const cv::Mat &temp, const cv::Mat &frame,
 
   // 进行二值化处理，选择50，255为阈值
   cv::threshold(diff, diff_thresh, 50, 255, cv::THRESH_BINARY);
-  // cv::imshow("threshold", diff_thresh);
+  // cv::imwrite("threshold.jpg", diff_thresh);
   // 4.膨胀
   cv::dilate(diff_thresh, diff_thresh, kernel_dilate);
-  // cv::imshow("dilate", diff_thresh);
+  // cv::imwrite("dilate.jpg", diff_thresh);
   // 5.腐蚀
   cv::erode(diff_thresh, diff_thresh, kernel_erode);
-  // cv::imshow("erode", diff_thresh);
+  cv::imwrite("erode.jpg", diff_thresh);
 
   // 6.查找轮廓并绘制轮廓
   std::vector<std::vector<cv::Point>> contours;

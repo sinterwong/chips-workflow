@@ -37,6 +37,8 @@ public:
 
   virtual AlgoSerial getSerial() const noexcept override { return serial; };
 
+  virtual std::string getSerialName() const noexcept override { return serialName; };
+
 private:
   std::mutex m;
   std::shared_ptr<AlgoInference> instance;
@@ -48,5 +50,6 @@ private:
 
   // 算法的系列
   AlgoSerial serial;
+  std::string serialName;
 };
 } // namespace infer

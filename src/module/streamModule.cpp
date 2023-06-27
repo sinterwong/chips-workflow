@@ -16,6 +16,7 @@
 #include <memory>
 #include <opencv2/opencv.hpp>
 #include <stdexcept>
+#include <thread>
 #include <unordered_map>
 #include <utility>
 
@@ -124,6 +125,7 @@ void StreamModule::startup() {
   sendMessage.status = 0;
 
   autoSend(sendMessage);
+  std::this_thread::yield();
 }
 FlowEngineModuleRegister(StreamModule, backend_ptr, std::string const &,
                          MessageType const &, ModuleConfig &);

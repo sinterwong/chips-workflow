@@ -99,7 +99,9 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
       autoSend(buf);
     }
   }
-  std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
+  if (!alarmUtils.isRecording()) {
+    std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
+  }
 }
 
 FlowEngineModuleRegister(ObjectNumberModule, backend_ptr, std::string const &,

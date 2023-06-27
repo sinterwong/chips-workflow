@@ -10,6 +10,7 @@
  */
 
 #include "statusOutputModule.h"
+#include <chrono>
 #include <fstream>
 
 #include <nlohmann/json.hpp>
@@ -57,7 +58,7 @@ void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
       stopFlag.store(true);
       return;
     }
-    if (buf.status == 2 || count++ >= 500) {
+    if (buf.status == 2 || count++ >= 5) {
       StatusInfo statusInfo{send, buf.status};
       std::string response;
       auto code = postResult(config->url, statusInfo, response);
@@ -69,6 +70,7 @@ void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
       count = 0;
     }
   }
+  std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 FlowEngineModuleRegister(StatusOutputModule, backend_ptr, std::string const &,
                          MessageType const &, ModuleConfig &);

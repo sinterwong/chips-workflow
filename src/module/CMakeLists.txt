@@ -20,7 +20,7 @@ TARGET_INCLUDE_DIRECTORIES(module PRIVATE
     ${CURL_INCLUDE_DIR}
     ${OpenCV_INCLUDE_DIRS}
 )
-TARGET_LINK_LIBRARIES(module infer video module_logger ${CURL_LIBRARIES})
+TARGET_LINK_LIBRARIES(module infer video core module_logger ${CURL_LIBRARIES})
 
 # transfer all headers to the include directory
 FILE(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR}/module)

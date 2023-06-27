@@ -10,6 +10,7 @@
  */
 
 #include "common/common.hpp"
+#include <string>
 
 #ifndef __FLOWCORE_ALGO_INFER_H_
 #define __FLOWCORE_ALGO_INFER_H_
@@ -17,9 +18,9 @@
 using common::AlgoConfig;
 using common::AlgoRetType;
 using common::AlgoSerial;
+using common::FrameInfo;
 using common::InferParams;
 using common::InferResult;
-using common::FrameInfo;
 
 class AlgoInfer {
 public:
@@ -52,6 +53,13 @@ public:
    *
    */
   virtual AlgoSerial getSerial() const noexcept = 0;
+
+  /**
+   * @brief Get the Serial Name object
+   *
+   * @return std::string
+   */
+  virtual std::string getSerialName() const noexcept = 0;
 
   /**
    * @brief 关闭算法

@@ -23,10 +23,8 @@ namespace infer::solution {
 using RetBox = std::pair<std::string, std::array<float, 6>>;
 
 class FrameDifference {
-  std::shared_ptr<cv::Mat> lastFrame;
-
-  bool moveDetect(cv::Mat const &temp, cv::Mat const &frame,
-                  std::vector<RetBox> &bboxes);
+  // std::shared_ptr<cv::Mat> lastFrame;
+  std::shared_ptr<cv::Mat> lastFrameProcessed;
 
 public:
   FrameDifference(){};
