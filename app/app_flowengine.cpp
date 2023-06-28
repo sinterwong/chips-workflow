@@ -33,6 +33,7 @@ using namespace module;
 
 const auto initLogger = []() -> decltype(auto) {
   FlowEngineLoggerInit(true, true, true, true);
+  FlowEngineLoggerSetLevel(2);
   return true;
 }();
 
