@@ -13,6 +13,7 @@
 #include "logger/logger.hpp"
 #include "messageBus.h"
 #include "outputModule.h"
+#include <chrono>
 #include <fstream>
 #include <opencv2/imgcodecs.hpp>
 
@@ -22,9 +23,9 @@ using json = nlohmann::json;
 
 namespace module {
 
-bool AlarmOutputModule::postResult(std::string const &url,
-                                   AlarmInfo const &alarmInfo,
-                                   std::string &result) {
+CURLcode AlarmOutputModule::postResult(std::string const &url,
+                                       AlarmInfo const &alarmInfo,
+                                       std::string &result) {
 
   CURL *curl = curl_easy_init();
 
@@ -66,30 +67,28 @@ bool AlarmOutputModule::postResult(std::string const &url,
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 
   CURLcode response = curl_easy_perform(curl);
-  if (response) {
-    FLOWENGINE_LOGGER_ERROR(
-        "[AlarmOutputModule]: curl_easy_perform error code: {}", response);
-    return false;
-  }
 
   // end of for
   curl_easy_cleanup(curl);
-  return true;
+  return response;
 }
 
 void AlarmOutputModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == MessageType::Close) {
-      FLOWENGINE_LOGGER_INFO("{} AlarmOutputModule module was done!", name);
+      FLOWENGINE_LOGGER_INFO("{} AlarmOutputModule was done!", name);
       stopFlag.store(true);
       return;
     }
     std::string response;
-    if (!postResult(config->url, buf.alarmInfo, response)) {
-      FLOWENGINE_LOGGER_ERROR(
-          "AlarmOutputModule.forward: post result was failed, please check!");
+    auto code = postResult(config->url, buf.alarmInfo, response);
+    if (code) {
+      FLOWENGINE_LOGGER_ERROR("AlarmOutputModule : post result was "
+                              "failed {}, please check!",
+                              code);
     }
   }
+  std::this_thread::sleep_for(std::chrono::microseconds(300));
 }
 
 FlowEngineModuleRegister(AlarmOutputModule, backend_ptr, std::string const &,

@@ -32,7 +32,11 @@ std::vector<float> getFeature(std::string &imPath,
                      {image_nv12.cols, image_nv12.rows, image_nv12.channels()}};
   InferResult ret;
 
-  vision->infer(image_nv12.data, params, ret);
+  FrameInfo frame;
+  frame.shape = {image_nv12.cols, image_nv12.rows * 2 / 3, 3};
+  frame.type = params.frameType;
+  frame.data = reinterpret_cast<void **>(&image_nv12.data);
+  vision->infer(frame, params, ret);
 
   auto feature = std::get_if<Eigenvector>(&ret.aRet);
   if (!feature) {
@@ -84,8 +88,10 @@ int main(int argc, char **argv) {
   auto feature1 = getFeature(FLAGS_img1, vision);
   auto feature2 = getFeature(FLAGS_img2, vision);
 
-  Eigen::MatrixXf v1 = Eigen::Map<Eigen::Matrix<float, 1, 128>>(feature1.data());
-  Eigen::MatrixXf v2 = Eigen::Map<Eigen::Matrix<float, 1, 128>>(feature2.data());
+  Eigen::MatrixXf v1 =
+      Eigen::Map<Eigen::Matrix<float, 1, 128>>(feature1.data());
+  Eigen::MatrixXf v2 =
+      Eigen::Map<Eigen::Matrix<float, 1, 128>>(feature2.data());
 
   // Eigen::MatrixXf v1(1, 16);
   // Eigen::MatrixXf v2(10, 16);
@@ -119,5 +125,6 @@ int main(int argc, char **argv) {
 /*
 ./test_face --img1 /root/workspace/softwares/flowengine/data/face1.jpg \
             --img2 /root/workspace/softwares/flowengine/data/face2.jpg \
-            --model_path /root/workspace/softwares/flowengine/models/facenet_mobilenet_160x160.bin
+            --model_path
+/root/workspace/softwares/flowengine/models/facenet_mobilenet_160x160.bin
 */

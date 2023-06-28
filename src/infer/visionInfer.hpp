@@ -9,9 +9,9 @@
  *
  */
 #include "core/algoInfer.hpp"
+#include "dnn_inference.hpp"
 #include "vision.hpp"
 #include <mutex>
-#include "dnn_inference.hpp"
 
 using namespace infer::dnn;
 
@@ -29,14 +29,15 @@ public:
    */
   virtual bool init() override;
 
-  virtual bool infer(void *data, InferParams const &,
-                     InferResult &ret) override;
+  virtual bool infer(FrameInfo &, InferParams const &, InferResult &ret) override;
 
   virtual bool destory() noexcept override;
 
   virtual AlgoRetType getType() const noexcept override { return retType; };
 
   virtual AlgoSerial getSerial() const noexcept override { return serial; };
+
+  virtual std::string getSerialName() const noexcept override { return serialName; };
 
 private:
   std::mutex m;
@@ -49,5 +50,6 @@ private:
 
   // 算法的系列
   AlgoSerial serial;
+  std::string serialName;
 };
 } // namespace infer

@@ -27,7 +27,7 @@ namespace module {
 void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == MessageType::Close) {
-      FLOWENGINE_LOGGER_INFO("{} HelmetModule module was done!", name);
+      FLOWENGINE_LOGGER_INFO("{} ObjectCounterModule was done!", name);
       stopFlag.store(true);
       return;
     }
@@ -127,7 +127,7 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
       counter.insert(results[j].first);
     }
 
-    FLOWENGINE_LOGGER_CRITICAL("person number: {}", counter.size());
+    FLOWENGINE_LOGGER_DEBUG("person number: {}", counter.size());
 
     // 每到一定的数量就会触发报警
     if (counter.size() != 0 &&
@@ -144,7 +144,9 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
       break;
     }
   }
-  std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
+  if (!alarmUtils.isRecording()) {
+    std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
+  }
 }
 
 FlowEngineModuleRegister(ObjectCounterModule, backend_ptr, std::string const &,

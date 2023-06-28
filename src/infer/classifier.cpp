@@ -13,13 +13,6 @@
 
 namespace infer::vision {
 
-bool Classifier::processInput(cv::Mat const &input, void **output,
-                              common::ColorType) const {
-  // 后面可以根据需求，实现基于opencv的预处理，比如resize和图片类型转换（bgr->rgb,
-  // bgr->nv12, nv12->bgr..)
-  return true;
-}
-
 bool Classifier::processOutput(void **output, InferResult &result) const {
   auto clsRet = generateClass(output);
   result.aRet = std::move(clsRet);

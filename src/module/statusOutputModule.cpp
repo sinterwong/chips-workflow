@@ -10,6 +10,7 @@
  */
 
 #include "statusOutputModule.h"
+#include <chrono>
 #include <fstream>
 
 #include <nlohmann/json.hpp>
@@ -18,9 +19,9 @@ using json = nlohmann::json;
 
 namespace module {
 
-bool StatusOutputModule::postResult(std::string const &url,
-                                    StatusInfo const &statusInfo,
-                                    std::string &result) {
+CURLcode StatusOutputModule::postResult(std::string const &url,
+                                        StatusInfo const &statusInfo,
+                                        std::string &result) {
 
   CURL *curl = curl_easy_init();
 
@@ -45,34 +46,31 @@ bool StatusOutputModule::postResult(std::string const &url,
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 
   CURLcode response = curl_easy_perform(curl);
-  if (response) {
-    FLOWENGINE_LOGGER_ERROR(
-        "[StatusOutputModule]: curl_easy_perform error code: {}", response);
-    return false;
-  }
-
   // end of for
   curl_easy_cleanup(curl);
-  return true;
+  return response;
 }
 
 void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == MessageType::Close) {
-      FLOWENGINE_LOGGER_INFO("{} StatusOutputModule module was done!", name);
+      FLOWENGINE_LOGGER_INFO("{} StatusOutputModule was done!", name);
       stopFlag.store(true);
       return;
     }
-    if (buf.status == 2 || count++ >= 500) {
+    if (buf.status == 2 || count++ >= 5) {
       StatusInfo statusInfo{send, buf.status};
       std::string response;
-      if (!postResult(config->url, statusInfo, response)) {
+      auto code = postResult(config->url, statusInfo, response);
+      if (code) {
         FLOWENGINE_LOGGER_ERROR("StatusOutputModule.forward: post result was "
-                                "failed, please check!");
+                                "failed {}, please check!",
+                                code);
       }
       count = 0;
     }
   }
+  std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 FlowEngineModuleRegister(StatusOutputModule, backend_ptr, std::string const &,
                          MessageType const &, ModuleConfig &);

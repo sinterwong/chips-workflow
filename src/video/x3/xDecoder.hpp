@@ -18,9 +18,6 @@
 #include "videoSource.hpp"
 
 #include <atomic>
-#include <condition_variable>
-#include <mutex>
-#include <shared_mutex>
 #include <sp_codec.h>
 #include <sp_vio.h>
 
@@ -88,7 +85,7 @@ public:
     mStreaming.store(true);
     producter = std::make_unique<joining_thread>([this]() {
       // 优化成一个条件变量
-      while (true) {
+      while (stream && stream->isRunning()) {
         std::this_thread::sleep_for(10ms);
         int bufSize = stream->getRawFrame(&raw_data);
         if (bufSize < 0)
@@ -104,7 +101,9 @@ public:
       }
       FLOWENGINE_LOGGER_WARN("streaming is over: {}",
                              std::string(mOptions.resource));
-      Close();
+      if (mStreaming.load()) {
+        Close();
+      }
     });
     return true;
   };
@@ -117,9 +116,11 @@ public:
     if (stream->isRunning()) {
       stream->closeStream();
     }
-    mStreaming.store(false);
     sp_stop_decode(decoder);
-    free(yuv_data);
+    if (yuv_data) {
+      free(yuv_data);
+    }
+    mStreaming.store(false);
   }
 
   virtual inline size_t GetWidth() const noexcept override {

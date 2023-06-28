@@ -36,7 +36,7 @@ namespace module {
 void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == MessageType::Close) {
-      FLOWENGINE_LOGGER_INFO("{} HelmetModule module was done!", name);
+      FLOWENGINE_LOGGER_INFO("{} LicensePlateModule was done!", name);
       stopFlag.store(true);
       return;
     }
@@ -126,7 +126,7 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
         continue; // 过滤无效的车牌
       }
       auto lpr = getChars(*charIds, charsetsMapping);
-      FLOWENGINE_LOGGER_CRITICAL("License plate number is: {}", lpr);
+      FLOWENGINE_LOGGER_DEBUG("License plate number is: {}", lpr);
       results.emplace_back(OCRRet{kbbox, *charIds, std::move(lpr)});
     }
 
@@ -138,7 +138,9 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
       autoSend(buf);
     }
   }
-  std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
+  if (!alarmUtils.isRecording()) {
+    std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
+  }
 }
 
 FlowEngineModuleRegister(LicensePlateModule, backend_ptr, std::string const &,

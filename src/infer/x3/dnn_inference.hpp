@@ -75,6 +75,9 @@ private:
     // len代表单次推理的输出数量
     sp_deinit_bpu_tensor(output_tensor, output_count);
     sp_release_bpu_module(engine);
+    if (output_tensor) {
+      delete[] output_tensor;
+    }
     return 0;
   }
 

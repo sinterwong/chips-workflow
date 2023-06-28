@@ -21,9 +21,13 @@ DEFINE_string(img, "", "Specify face1 image path.");
 DEFINE_string(det_model_path, "", "Specify the lprDet model path.");
 DEFINE_string(rec_model_path, "", "Specify the lprNet model path.");
 
+const auto initLogger = []() -> decltype(auto) {
+  FlowEngineLoggerInit(true, true, true, true);
+  return true;
+}();
+
 using namespace infer;
 using namespace common;
-
 using algo_ptr = std::shared_ptr<AlgoInfer>;
 
 const std::wstring_view charsets =
@@ -52,7 +56,12 @@ void inference(cv::Mat &image, InferResult &ret,
                      region,
                      {image.cols, image.rows, image.channels()}};
 
-  vision->infer(image.data, params, ret);
+  // 制作输入数据
+  FrameInfo frame;
+  frame.shape = {image.cols, image.rows * 2 / 3, 3};
+  frame.type = params.frameType;
+  frame.data = reinterpret_cast<void **>(&image.data);
+  vision->infer(frame, params, ret);
 }
 
 std::string getChars(CharsRet const &charsRet) {

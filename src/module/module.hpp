@@ -46,7 +46,11 @@ public:
     stopFlag.store(false);
     ptr->message->registered(name);
   }
-  virtual ~Module() { stopFlag.store(false); }
+  virtual ~Module() {
+    ptr->message->unregistered(name);
+  }
+
+  virtual bool isRunning() { return !stopFlag.load(); };
 
   virtual void beforeGetMessage(){};
 
@@ -60,7 +64,6 @@ public:
     while (!stopFlag.load()) {
       step();
     }
-    ptr->message->unregistered(name);
   }
 
   virtual void step() {
@@ -82,7 +85,6 @@ public:
         mselector[sender] = std::make_tuple(std::move(sender), std::move(stype),
                                             std::move(message));
       }
-      // std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
     beforeForward();
 

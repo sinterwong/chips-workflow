@@ -79,6 +79,7 @@
           "event_id": 8,
           "height": "1280",
           "name": "logic_lpr_1673517182740",
+          "interval": 10,
           "page": "1_0_0",
           "recvName": "stream_8677cd23-9813-4152-aa58-43fa0d1858aa",
           "regions": [],

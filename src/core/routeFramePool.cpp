@@ -61,7 +61,7 @@ std::any FrameBuf::read(std::string const& fname) {
 }
 
 void FrameBuf::write(std::vector<std::any> data, GFMap mFunc,
-                     delFrameBufFunc dFunc, FrameInfo infor) {
+                     delFrameBufFunc dFunc, DataFrameInfo infor) {
   dataList = std::move(data);
   mapFunction = std::move(mFunc);
   delFunction = std::move(dFunc);

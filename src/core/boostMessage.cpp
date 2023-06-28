@@ -46,7 +46,12 @@ bool BoostMessage::unregistered(std::string const &name) {
 
 bool BoostMessage::send(std::string const &source, std::string const &target,
                         MessageType const &type, queueMessage message) {
-  std::shared_lock lk(m);
+  /**
+   * @brief 共享锁饥饿问题
+   * 
+   * @return std::shared_lock 
+   */
+  std::lock_guard lk(m);
   auto iter = name2Queue.find(target);
   if (iter == name2Queue.end())
     return false;
@@ -64,7 +69,12 @@ bool BoostMessage::send(std::string const &source, std::string const &target,
 bool BoostMessage::recv(std::string const &name, MessageBus::returnFlag &flag,
                         std::string &send, MessageType &type,
                         queueMessage &message, bool waitFlag) {
-  std::shared_lock lk(m);
+  /**
+   * @brief 共享锁饥饿问题
+   * 
+   * @return std::shared_lock 
+   */
+  std::lock_guard lk(m);
   auto iter = name2Queue.find(name);
 
   if (iter == name2Queue.end()) {

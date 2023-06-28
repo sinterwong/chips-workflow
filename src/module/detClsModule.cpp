@@ -26,7 +26,7 @@ namespace module {
 void DetClsModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == MessageType::Close) {
-      FLOWENGINE_LOGGER_INFO("{} HelmetModule module was done!", name);
+      FLOWENGINE_LOGGER_INFO("{} DetClsModule was done!", name);
       stopFlag.store(true);
       return;
     }
@@ -38,7 +38,7 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
 
     if (alarmUtils.isRecording()) {
       alarmUtils.recordVideo(*image, alarmBox);
-      continue;
+      break;
     }
 
     // 各个算法结果的区域
@@ -141,7 +141,7 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
         alarmBox = box;
         if (alarmBox.second[4] > config->threshold) {
           // 存在符合条件的报警
-          FLOWENGINE_LOGGER_CRITICAL("{}: {}, {}, {}!", name, alarmBox.first,
+          FLOWENGINE_LOGGER_DEBUG("{}: {}, {}, {}!", name, alarmBox.first,
                                      alarmBox.second[4], alarmBox.second[5]);
           // 生成报警信息
           alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在报警行为",
@@ -177,7 +177,9 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
       }
     }
   }
-  std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
+  if (!alarmUtils.isRecording()) {
+    std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
+  }
 }
 
 FlowEngineModuleRegister(DetClsModule, backend_ptr, std::string const &,

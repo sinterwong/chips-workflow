@@ -33,7 +33,9 @@ public:
   }
 
   ~VideoRecord() {
-    destory();
+    if (check()) {
+      destory();
+    }
     ChannelsManager::getInstance().setChannel(channel);
   }
 

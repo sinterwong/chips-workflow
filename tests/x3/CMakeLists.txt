@@ -8,6 +8,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/video
     ${OpenCV_INCLUDE_DIRS}
     ${X3_INCLUDE}
+    ${3RDPARTY_DIR}/gflags/include
 )
 
 LINK_DIRECTORIES(
@@ -17,12 +18,14 @@ LINK_DIRECTORIES(
 
 LINK_LIBRARIES(
     ${OpenCV_LIBS}
-    gflags::gflags
+    gflags
     pthread
-    spdlog
-    infer
-    video
     ${X3_LIBS}
+    video 
+    infer
+    core
+    module_logger
+    stdc++fs
 )
 
 SET(LINK "-Wl,--no-as-needed")
@@ -34,7 +37,6 @@ FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
     STRING(REPLACE ".cpp" "" testname ${sourcefilewithoutpath})
     ADD_EXECUTABLE( ${testname} ${sourcefile})
-    # TARGET_LINK_LIBRARIES(${testname} PRIVATE ${LINK} core module module_logger stdc++fs)
 
     INSTALL(TARGETS ${testname}
         ARCHIVE DESTINATION lib

@@ -79,7 +79,12 @@ int main(int argc, char **argv) {
                      {image_nv12.cols, image_nv12.rows, image_nv12.channels()}};
   InferResult ret;
 
-  vision->infer(image_nv12.data, params, ret);
+  // 制作输入数据
+  FrameInfo frame;
+  frame.shape = {image_nv12.cols, image_nv12.rows * 2 / 3, 3};
+  frame.type = params.frameType;
+  frame.data = reinterpret_cast<void **>(&image_nv12.data);
+  vision->infer(frame, params, ret);
 
   // auto bboxes = std::get_if<common::BBoxes>(&ret.aRet);
   // auto bboxes = std::get_if<common::KeypointsBoxes>(&ret.aRet);

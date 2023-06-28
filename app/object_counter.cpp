@@ -17,17 +17,21 @@
 #include "visionInfer.hpp"
 
 #include "infer/preprocess.hpp"
-#include "videoManager.hpp"
+#include "videoDecode.hpp"
 
 #include "infer/tracker.h"
 
 DEFINE_string(url, "", "Specify stream url.");
-DEFINE_string(det_model_path, "", "Specify the lprDet model path.");
-DEFINE_string(reid_model_path, "", "Specify the lprNet model path.");
+DEFINE_string(det_model_path, "", "Specify the det model path.");
+DEFINE_string(reid_model_path, "", "Specify the reid model path.");
+
+const auto initLogger = []() -> decltype(auto) {
+  FlowEngineLoggerInit(true, true, true, true);
+  return true;
+}();
 
 using namespace infer;
 using namespace infer::solution;
-
 using algo_ptr = std::shared_ptr<AlgoInfer>;
 
 using RESULT_DATA = std::pair<int, DETECTBOX>;
@@ -54,7 +58,12 @@ void inference(cv::Mat &image, InferResult &ret,
                      region,
                      {image.cols, image.rows, image.channels()}};
 
-  vision->infer(image.data, params, ret);
+  // 制作输入数据
+  FrameInfo frame;
+  frame.shape = {image.cols, image.rows * 2 / 3, 3};
+  frame.type = params.frameType;
+  frame.data = reinterpret_cast<void **>(&image.data);
+  vision->infer(frame, params, ret);
 }
 
 cv::Rect2i getRect(common::BBox const &bbox) {
@@ -118,11 +127,11 @@ int main(int argc, char **argv) {
   FLOWENGINE_LOGGER_INFO("Video manager has initialized!");
 
   // 视频流
-  video::VideoManager vm{FLAGS_url};
+  video::VideoDecode decoder{FLAGS_url};
 
-  vm.init();
+  decoder.init();
   FLOWENGINE_LOGGER_INFO("Video manager has initialized!");
-  vm.run();
+  decoder.run();
   FLOWENGINE_LOGGER_INFO("Video manager is running!");
 
   // trakcker
@@ -132,11 +141,10 @@ int main(int argc, char **argv) {
   DETECTIONS last_detections;
 
   int count = 0;
-
   std::set<int> counter;
-  while (vm.isRunning()) {
-    count++;
-    auto image = vm.getcvImage();
+  size_t cur_counter = 0;
+  while (decoder.isRunning() && ++count < 100) {
+    auto image = decoder.getcvImage();
     cv::Mat show_image;
     cv::cvtColor(*image, show_image, CV_YUV2BGR_NV12);
     std::vector<RESULT_DATA> results;
@@ -204,12 +212,14 @@ int main(int argc, char **argv) {
       cv::putText(show_image, label, cv::Point(rect.x, rect.y),
                   cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(255, 14, 50), 2);
     }
-    std::cout << "person number: " << counter.size() << std::endl;
+    if (counter.size() > cur_counter) {
+      std::cout << "person number: " << counter.size() << std::endl;
+      cur_counter = counter.size();
+    }
     cv::imwrite("object_counter_out.jpg", show_image);
   }
 
   gflags::ShutDownCommandLineFlags();
-
   return 0;
 }
 

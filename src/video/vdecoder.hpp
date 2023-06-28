@@ -1,5 +1,5 @@
 /**
- * @file videoManager.hpp
+ * @file vdecoder.hpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1

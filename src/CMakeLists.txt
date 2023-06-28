@@ -11,7 +11,7 @@ ADD_SUBDIRECTORY(video)
 ADD_SUBDIRECTORY(license)
 ADD_SUBDIRECTORY(module)
 
-# transfer all headers to the include directory 
+# transfer all headers to the include directory
 FILE(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR})
 
 MESSAGE(STATUS "This is BINARY dir " ${PROJECT_BINARY_DIR})

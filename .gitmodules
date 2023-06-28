@@ -1,11 +1,5 @@
-[submodule "3rdparty/spdlog"]
-	path = 3rdparty/spdlog
-	url = https://github.com/gabime/spdlog.git
-[submodule "3rdparty/gflags"]
-	path = 3rdparty/gflags
-	url = https://github.com/gflags/gflags.git
 [submodule "src/video/jetson-utils"]
-	path = src/video/jetson-utils
+	path = src/video/jetson/jetson-utils
 	url = git@github.com:dusty-nv/jetson-utils.git
 [submodule "3rdparty/eigen"]
 	path = 3rdparty/eigen

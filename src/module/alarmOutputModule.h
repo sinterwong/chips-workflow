@@ -36,8 +36,8 @@ public:
 
   virtual void forward(std::vector<forwardMessage> &message) override;
 
-  bool postResult(std::string const &url, AlarmInfo const &resultInfo,
-                  std::string &result);
+  CURLcode postResult(std::string const &url, AlarmInfo const &resultInfo,
+                      std::string &result);
 };
 } // namespace module
 #endif // __METAENGINE_SEND_ALARM_OUTPUT_H_
