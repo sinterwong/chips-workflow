@@ -24,11 +24,16 @@ using RetBox = std::pair<std::string, std::array<float, 6>>;
 
 class FrameDifference {
   // std::shared_ptr<cv::Mat> lastFrame;
-  std::shared_ptr<cv::Mat> lastFrameProcessed;
+  std::shared_ptr<cv::Mat> previousFrameProcessed;
 
 public:
   FrameDifference(){};
-  bool update(cv::Mat &frame, std::vector<RetBox> &bboxes);
+  ~FrameDifference(){};
+  void preprocessing(cv::Mat &input, cv::Mat &output);
+  void frameDiff(cv::Mat &previous, cv::Mat &current, cv::Mat &output);
+  bool init(cv::Mat &frame);
+  bool update(cv::Mat &frame, std::vector<RetBox> &bboxes,
+              float threshold = 0.1);
 };
 } // namespace infer::solution
 #endif
