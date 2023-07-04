@@ -84,14 +84,18 @@ bool BoostMessage::recv(std::string const &name, MessageBus::returnFlag &flag,
     auto iter = name2Queue.find(name);
 
     if (iter == name2Queue.end()) {
-      flag = MessageBus::returnFlag::null;
-      send = "";
-      type = MessageType::None;
-      message = queueMessage();
-      FLOWENGINE_LOGGER_ERROR("{} is not registered!", name);
-      return false;
+      receiver = nullptr;
+    } else {
+      receiver = iter->second;
     }
-    receiver = iter->second;
+  }
+  if (!receiver) {
+    flag = MessageBus::returnFlag::null;
+    send = "";
+    type = MessageType::None;
+    message = queueMessage();
+    FLOWENGINE_LOGGER_ERROR("{} is not registered!", name);
+    return false;
   }
   flag = BoostMessageCheakEmpty(receiver);
   // do {
