@@ -60,7 +60,7 @@ std::shared_ptr<cv::Mat> VideoDecode::getcvImage() {
   std::lock_guard lk(frame_m);
   bool ret = stream->Capture(&frame, 1000);
   if (!ret) {
-    FLOWENGINE_LOGGER_WARN("Getframe is failed!");
+    FLOWENGINE_LOGGER_WARN("{} Getframe is failed!", stream->GetResource().string);
     return nullptr;
   }
   return std::make_shared<cv::Mat>(
