@@ -37,7 +37,7 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
 
     if (alarmUtils.isRecording()) {
-      alarmUtils.recordVideo(*image, alarmBox);
+      alarmUtils.recordVideo(*image);
       break;
     }
 
@@ -142,7 +142,7 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
         if (alarmBox.second[4] > config->threshold) {
           // 存在符合条件的报警
           FLOWENGINE_LOGGER_DEBUG("{}: {}, {}, {}!", name, alarmBox.first,
-                                     alarmBox.second[4], alarmBox.second[5]);
+                                  alarmBox.second[4], alarmBox.second[5]);
           // 生成报警信息
           alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在报警行为",
                                        config.get());
@@ -152,10 +152,12 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
               *image, buf.frameType, config->isDraw, alarmBox);
 
           // 初始化报警视频
-          alarmUtils.initRecorder(buf.alarmInfo.alarmFile + "/" +
-                                      buf.alarmInfo.alarmId + ".mp4",
-                                  buf.alarmInfo.width, buf.alarmInfo.height, 25,
-                                  config->videoDuration);
+          if (config->videoDuration > 0) {
+            alarmUtils.initRecorder(buf.alarmInfo.alarmFile + "/" +
+                                        buf.alarmInfo.alarmId + ".mp4",
+                                    buf.alarmInfo.width, buf.alarmInfo.height,
+                                    25, config->videoDuration);
+          }
 
           // 本轮算法结果生成
           json algoRet;
