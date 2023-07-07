@@ -63,7 +63,7 @@ StreamModule::StreamModule(backend_ptr ptr, std::string const &_name,
 
   decoder = std::make_unique<VideoDecode>(config->uri, config->width, config->height);
   if (!decoder->init()) {
-    FLOWENGINE_LOGGER_INFO("VideoManager init failed!");
+    FLOWENGINE_LOGGER_INFO("{} VideoManager init failed!", name);
     throw std::runtime_error("StreamModule ctor has failed!");
   };
 }
@@ -105,7 +105,7 @@ void StreamModule::startup() {
   auto frame = decoder->getcvImage();
 
   if (!frame || frame->empty()) {
-    FLOWENGINE_LOGGER_WARN("StreamModule get frame is failed!");
+    FLOWENGINE_LOGGER_WARN("{} StreamModule get frame is failed!", name);
     return;
   }
 
@@ -125,7 +125,8 @@ void StreamModule::startup() {
   sendMessage.status = 0;
 
   autoSend(sendMessage);
-  std::this_thread::yield();
+  // std::this_thread::yield();
+  std::this_thread::sleep_for(std::chrono::milliseconds(20));
 }
 FlowEngineModuleRegister(StreamModule, backend_ptr, std::string const &,
                          MessageType const &, ModuleConfig &);

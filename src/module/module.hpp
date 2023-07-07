@@ -71,7 +71,7 @@ public:
     bool loop = false;
 
     beforeGetMessage();
-    if (!recvModule.empty()) {
+    if (recvModule.size() > 1) {
       while (mselector.empty() || loop) {
         MessageBus::returnFlag flag;
         std::string sender;
@@ -85,7 +85,6 @@ public:
         mselector[sender] = std::make_tuple(std::move(sender), std::move(stype),
                                             std::move(message));
       }
-      // std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
     beforeForward();
 

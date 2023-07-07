@@ -179,8 +179,28 @@ bool ConfigParser::parseConfig(std::string const &path,
           auto regions = p["regions"];
           for (auto const &region : regions) {
             Points2i ret;
-            for (size_t i = 0; i < region.size(); i += 2) {
-              ret.push_back(Point2i{region.at(i), region.at(i + 1)});
+            if (region.size() != 4) {
+              // TODO 暂时将所有形状处理成矩形
+              std::vector<int> oNumbers;
+              std::vector<int> eNumbers;
+              // 分别提取奇数位和偶数位的元素
+              for (std::size_t i = 0; i < region.size(); ++i) {
+                if (i % 2 == 0) {
+                  eNumbers.push_back(region[i]);
+                } else {
+                  oNumbers.push_back(region[i]);
+                }
+              }
+              auto x1 = std::min_element(oNumbers.begin(), oNumbers.end());
+              auto x2 = std::max_element(oNumbers.begin(), oNumbers.end());
+              auto y1 = std::min_element(eNumbers.begin(), eNumbers.end());
+              auto y2 = std::max_element(eNumbers.begin(), eNumbers.end());
+              ret.push_back(Point2i{*x1, *y1});
+              ret.push_back(Point2i{*x2, *y2});
+            } else {
+              for (size_t i = 0; i < region.size(); i += 2) {
+                ret.push_back(Point2i{region.at(i), region.at(i + 1)});
+              }
             }
             aarea.regions.emplace_back(ret);
           }

@@ -18,10 +18,15 @@ DEFINE_string(uri, "", "Specify the url of video.");
 DEFINE_int32(start, 0, "stream start index.");
 DEFINE_int32(end, 9, "stream end index.");
 
+const bool initLogger = []() {
+  FlowEngineLoggerInit(true, true, true, true);
+  return true;
+}();
+
 void run_stream(std::string const &url, int idx) {
 
   // 视频流
-  video::VideoDecode decoder{FLAGS_uri};
+  video::VideoDecode decoder{url};
 
   decoder.init();
   FLOWENGINE_LOGGER_INFO("Video manager has initialized!");
@@ -31,11 +36,6 @@ void run_stream(std::string const &url, int idx) {
   std::string savePath = std::to_string(idx) + "_test_xdecoder.jpg";
   int count = 0;
   while (1) {
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-    ++count;
-    if (count % 20 != 0) {
-      continue;
-    }
     std::cout << count << ": " << decoder.getHeight() << ", " << decoder.getWidth()
               << std::endl;
     FLOWENGINE_LOGGER_INFO("id: {}, height: {}, width: {}, count: {}", idx,
@@ -53,16 +53,12 @@ int main(int argc, char **argv) {
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   std::vector<std::string> streams{
-      "rtsp://admin:zkfd123.com@114.242.23.39:9303/Streaming/Channels/101",
-      "rtsp://admin:zkfd123.com@114.242.23.39:9304/Streaming/Channels/101",
-      "rtsp://114.242.23.39:6001/MainStream",
-      "rtsp://114.242.23.39:6002/MainStream",
-      "rtsp://114.242.23.39:6004/MainStream",
-      "rtsp://114.242.23.39:6006/MainStream",
-      "rtsp://114.242.23.39:6008/MainStream",
-      "rtsp://114.242.23.39:6554/live/test0",
-      "rtsp://114.242.23.39:6554/live/test1",
-      "rtsp://114.242.23.39:6554/live/test2",
+    "rtsp://admin:ghrq123456@114.242.23.39:6101/Streaming/Channels/101",  // 720
+    "rtsp://admin:ghrq123456@114.242.23.39:6100/Streaming/Channels/101",  // 720
+    "rtsp://114.242.23.39:6107/user=admin_password=tlJwpbo6_channel=1_stream=0.sdp?real_stream",  // 1080
+    "rtsp://114.242.23.39:6108/user=admin_password=tlJwpbo6_channel=1_stream=0.sdp?real_stream",  // 1080
+    "rtsp://114.242.23.39:6106/user=admin_password=tlJwpbo6_channel=1_stream=0.sdp?real_stream",  // 1080
+    "rtsp://admin:ghrq123456@114.242.23.39:6102/Streaming/Channels/101",  // 1080
   };
 
   assert(FLAGS_end <= int(streams.size()));

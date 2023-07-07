@@ -46,7 +46,7 @@ private:
   std::string config_path;
   utils::ConfigParser configParser;
   backend_ptr backendPtr = std::make_shared<Backend>(
-      std::make_unique<BoostMessage>(), std::make_unique<RouteFramePool>(2),
+      std::make_unique<BoostMessage>(), std::make_unique<RouteFramePool>(16),
       std::make_unique<AlgorithmManager>());
   // std::unique_ptr<thread_pool> pool;
   std::unique_ptr<thread_pool> pool;

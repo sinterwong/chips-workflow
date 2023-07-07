@@ -18,15 +18,15 @@
 
 namespace module {
 using common::ModuleConfig;
-using common::ObjectCounterConfig;
+using common::DetClsMonitor;
 class FrameDifferenceModule : public Module {
 
 public:
   FrameDifferenceModule(backend_ptr ptr, std::string const &name,
                         MessageType const &type, ModuleConfig &config_)
       : Module(ptr, name, type) {
-    config = std::make_unique<ObjectCounterConfig>(
-        *config_.getParams<ObjectCounterConfig>());
+    config = std::make_unique<DetClsMonitor>(
+        *config_.getParams<DetClsMonitor>());
   }
 
   ~FrameDifferenceModule() {}
@@ -37,7 +37,7 @@ private:
   int count = 0;
   infer::solution::FrameDifference fd;
   AlarmUtils alarmUtils;
-  std::unique_ptr<ObjectCounterConfig> config;
+  std::unique_ptr<DetClsMonitor> config;
 };
 } // namespace module
 #endif // __METAENGINE_FRAME_DIFFERENCE_MODULE_H

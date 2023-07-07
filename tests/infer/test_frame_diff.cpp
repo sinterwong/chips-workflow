@@ -20,6 +20,7 @@
 #include <utility>
 
 DEFINE_string(uri, "", "Specify the url of video.");
+DEFINE_double(thre, 0.5, "Specify the threshold of frame difference.");
 
 using namespace infer::solution;
 
@@ -57,10 +58,8 @@ int main(int argc, char **argv) {
       break;
     }
     std::vector<RetBox> bboxes;
-    frame_diff.update(input, bboxes);
+    frame_diff.update(input, bboxes, FLAGS_thre);
     for (auto &bbox : bboxes) {
-      FLOWENGINE_LOGGER_INFO("bbox: {},{},{},{},{}", bbox.first, bbox.second[0],
-                             bbox.second[1], bbox.second[2], bbox.second[3]);
       // draw bbox in frame
       cv::rectangle(input,
                     cv::Rect(bbox.second[0], bbox.second[1],
@@ -68,6 +67,7 @@ int main(int argc, char **argv) {
                              bbox.second[3] - bbox.second[1]),
                     cv::Scalar(0, 255, 0), 2);
     }
+    FLOWENGINE_LOGGER_INFO("num of bbox: {}", bboxes.size());
     cv::imwrite("draw.jpg", input);
   }
   gflags::ShutDownCommandLineFlags();
