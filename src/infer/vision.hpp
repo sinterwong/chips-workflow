@@ -9,16 +9,6 @@
  *
  */
 
-/**
- * @file inference.h
- * @author Sinter Wong (sintercver@gmail.com)
- * @brief
- * @version 0.1
- * @date 2022-06-01
- *
- * @copyright Copyright (c) 2022
- *
- */
 #ifndef __INFER_VISION_H_
 #define __INFER_VISION_H_
 #include "infer_common.hpp"
