@@ -27,12 +27,14 @@ DEFINE_string(config_path, "", "Specify config path.");
 DEFINE_int32(num_workers, 16, "Specify number of thread pool .");
 DEFINE_string(flowengine_conf, "flowengine_conf",
               "Specify config file of flowengine .");
+DEFINE_int32(log_level, 2, "Specify log level. 1:debug 2:info 3:warn 4:error");
 
 using namespace module;
 // using common::WORKER_TYPES;
 
 const auto initLogger = []() -> decltype(auto) {
   FlowEngineLoggerInit(true, true, true, true);
+  FlowEngineLoggerSetLevel(FLAGS_log_level);
   return true;
 }();
 

@@ -71,7 +71,7 @@ public:
     bool loop = false;
 
     beforeGetMessage();
-    if (!recvModule.empty()) {
+    if (recvModule.size() > 1) {
       while (mselector.empty() || loop) {
         MessageBus::returnFlag flag;
         std::string sender;

@@ -36,6 +36,9 @@ public:
     if (check()) {
       destory();
     }
+    // 手动析构编码器，确保析构完成后再释放channel
+    stream.reset();
+    // 释放channel
     ChannelsManager::getInstance().setChannel(channel);
   }
 

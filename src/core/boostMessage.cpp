@@ -48,21 +48,25 @@ bool BoostMessage::send(std::string const &source, std::string const &target,
                         MessageType const &type, queueMessage message) {
   /**
    * @brief 共享锁饥饿问题
-   * 
-   * @return std::shared_lock 
+   *
+   * @return std::shared_lock
    */
-  std::lock_guard lk(m);
-  auto iter = name2Queue.find(target);
-  if (iter == name2Queue.end())
-    return false;
+  cqueue_ptr sender;
+  {
+    std::shared_lock lk(m);
+    auto iter = name2Queue.find(target);
+    if (iter == name2Queue.end())
+      return false;
 
-  auto q_ptr = iter->second;
+    // shared_ptr保护数据，即使注销也暂时不会影响
+    sender = iter->second;
+  }
 
   message.send = source;
   message.recv = target;
   message.messageType = type;
 
-  q_ptr->enqueue(message);
+  sender->enqueue(message);
   return true;
 }
 
@@ -71,13 +75,21 @@ bool BoostMessage::recv(std::string const &name, MessageBus::returnFlag &flag,
                         queueMessage &message, bool waitFlag) {
   /**
    * @brief 共享锁饥饿问题
-   * 
-   * @return std::shared_lock 
+   *
+   * @return std::shared_lock
    */
-  std::lock_guard lk(m);
-  auto iter = name2Queue.find(name);
+  cqueue_ptr receiver;
+  {
+    std::shared_lock lk(m);
+    auto iter = name2Queue.find(name);
 
-  if (iter == name2Queue.end()) {
+    if (iter == name2Queue.end()) {
+      receiver = nullptr;
+    } else {
+      receiver = iter->second;
+    }
+  }
+  if (!receiver) {
     flag = MessageBus::returnFlag::null;
     send = "";
     type = MessageType::None;
@@ -85,7 +97,6 @@ bool BoostMessage::recv(std::string const &name, MessageBus::returnFlag &flag,
     FLOWENGINE_LOGGER_ERROR("{} is not registered!", name);
     return false;
   }
-  cqueue_ptr receiver = iter->second;
   flag = BoostMessageCheakEmpty(receiver);
   // do {
   //   if (receiver->size_approx() > 0) {

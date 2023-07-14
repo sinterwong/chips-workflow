@@ -16,10 +16,58 @@
 #include <atomic>
 #include <cassert>
 #include <cstddef>
+#include <list>
 #include <mutex>
 
 using namespace video::utils;
 namespace video {
+
+/**
+ * @brief
+ * 队列的方式管理全局的channel数，0~31。
+ * 使用队列管理不会导致刚刚释放的channel立即被再次使用，一定程度上避免编解码器释放之前该channel再次被使用
+ */
+class ChannelsQueueManager {
+public:
+  static ChannelsQueueManager &getInstance() {
+    static ChannelsQueueManager instance;
+    return instance;
+  }
+
+  int getChannel() {
+    std::lock_guard<std::mutex> lk(m_);
+    if (channelsStatus.empty()) {
+      return -1;
+    }
+    int channel = channelsStatus.front();
+    channelsStatus.pop_front();
+    return channel;
+  }
+
+  bool setChannel(int i) {
+    if (i < 0 || i >= size) {
+      return false;
+    }
+    std::lock_guard<std::mutex> lk(m_);
+    channelsStatus.push_back(i);
+    return true;
+  }
+
+private:
+  ChannelsQueueManager() {
+    for (int i = 0; i < size; i++) {
+      channelsStatus.push_back(i);
+    }
+  }
+  ~ChannelsQueueManager() = default;
+  ChannelsQueueManager(const ChannelsQueueManager &) = delete;
+  ChannelsQueueManager &operator=(const ChannelsQueueManager &) = delete;
+
+  std::mutex m_;
+  std::list<int> channelsStatus;
+  static constexpr int size = 32;
+};
+
 /**
  * @brief 提供全局的channel管理
  *
@@ -42,10 +90,13 @@ public:
     return -1;
   }
 
-  void setChannel(int i) {
+  bool setChannel(int i) {
+    if (i < 0 || i >= size) {
+      return false;
+    }
     std::lock_guard<std::mutex> lk(m_);
-    assert(i < size);
     channelsStatus[i].store(true);
+    return true;
   }
 
 private:
@@ -66,7 +117,7 @@ private:
 
 /**
  * @brief 视频组件初始化时的选项
- * 
+ *
  */
 struct videoOptions {
   URI resource;
@@ -76,5 +127,5 @@ struct videoOptions {
   int videoIdx;
 };
 
-} // namespace module::utils
+} // namespace video
 #endif

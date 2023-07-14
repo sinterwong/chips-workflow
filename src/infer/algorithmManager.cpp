@@ -71,8 +71,9 @@ bool AlgorithmManager::infer(std::string const &name, void *data,
                           params.cropScaling)) {
       FLOWENGINE_LOGGER_ERROR(
           "VisionInfer infer: cropImage is failed, rect is {},{},{},{}, "
-          "but the video resolution is {}x{}",
-          rect.x, rect.y, rect.width, rect.height, image.cols, image.rows);
+          "but the video resolution is {}x{}. The error comes from {}-{}.",
+          rect.x, rect.y, rect.width, rect.height, image.cols, image.rows,
+          params.name, name);
       return false;
     }
   } else {
