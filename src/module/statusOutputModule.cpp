@@ -58,7 +58,7 @@ void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
       stopFlag.store(true);
       return;
     }
-    if (buf.status == 2 || count++ >= 30) {
+    if (buf.status == 2 || count++ >= 5) {
       StatusInfo statusInfo{send, buf.status};
       std::string response;
       auto code = postResult(config->url, statusInfo, response);
