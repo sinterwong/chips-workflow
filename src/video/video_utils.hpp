@@ -11,6 +11,7 @@
 #include "common/common.hpp"
 #include "logger/logger.hpp"
 #include <experimental/filesystem>
+#include <opencv2/videoio.hpp>
 
 #ifndef __FLOWENGINE_VIDEO_UTILS_H_
 #define __FLOWENGINE_VIDEO_UTILS_H_
@@ -75,6 +76,37 @@ inline std::string getCodec(int fourcc) {
   }
   a[4] = '\0';
   return std::string{a};
+}
+
+inline bool videoRecordWithOpencv(std::string const &url,
+                                  std::string const &path, int videoDuration) {
+  // 视频直接截取，不涉及编解码
+  auto cap = cv::VideoCapture(url);
+
+  // Check if the video file was loaded successfully
+  if (!cap.isOpened()) {
+    FLOWENGINE_LOGGER_ERROR("Could not open the video {}", url);
+    return false;
+  }
+
+  int height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
+  int width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
+  int frameRate = cap.get(cv::CAP_PROP_FPS);
+  // 总共需要录制的帧数
+  int frameCount = videoDuration * frameRate;
+  // 获取rtsp流的原始编解码信息
+  int fourcc = static_cast<int>(cap.get(cv::CAP_PROP_FOURCC));
+
+  auto writer =
+      cv::VideoWriter(path, fourcc, frameRate, cv::Size{width, height});
+
+  cv::Mat frame;
+  while (frameCount > 0 && cap.read(frame)) {
+    writer.write(frame);
+  }
+  writer.release();
+  cap.release();
+  return true;
 }
 } // namespace video::utils
 
