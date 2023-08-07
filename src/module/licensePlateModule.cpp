@@ -148,7 +148,7 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
       autoSend(buf);
       // 录制报警视频
       if (config->videoDuration > 0) {
-        bool ret = video::utils::videoRecordWithOpencv(
+        bool ret = video::utils::videoRecordWithFFmpeg(
             buf.alarmInfo.cameraIp,
             buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".mp4",
             config->videoDuration);
