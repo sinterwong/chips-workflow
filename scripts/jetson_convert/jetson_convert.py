@@ -11,7 +11,7 @@ app.config['DEBUG'] = True
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    '--exec_root', default="/home/wangxt/workspace/projects/flowengine/build/aarch64/bin", type=str, help='your exec dir')
+    '--exec_root', default="/home/wangxt/workspace/projects/flowengine/build/aarch64/bin/jetson", type=str, help='your exec dir')
 parser.add_argument('--onnx_out_path', default="temp.onnx",
                     type=str, help='export the path of onnx model file')
 parser.add_argument('--engine_out_path', default="temp.engine",

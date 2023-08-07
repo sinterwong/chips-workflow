@@ -37,7 +37,7 @@ class AlarmUtils {
 protected:
   bool isRecord = false; // 是否是保存视频状态
   int frameCount = 0;    // 保存帧数
-  int drawTimes = 0;     // 视频上画的次数
+  // int drawTimes = 0;     // 视频上画的次数
   std::unique_ptr<VideoRecord> vr;
 
 public:
@@ -54,7 +54,7 @@ public:
                            int rate, int videDuration) {
     isRecord = true;
     frameCount = videDuration * rate;
-    drawTimes = floor(frameCount / 3);
+    // drawTimes = floor(frameCount / 3);
     videoOptions params;
     params.resource = path;
     params.width = width;
@@ -69,15 +69,16 @@ public:
     return vr->init();
   }
 
-  inline void recordVideo(cv::Mat &frame, RetBox const &bbox) {
-    if (drawTimes-- > 0) {
-      utils::drawRetBox(frame, bbox, cv::Scalar{255, 0, 0});
-    }
+  inline void recordVideo(cv::Mat &frame) {
+  // inline void recordVideo(cv::Mat &frame, RetBox const &bbox) {
+    // if (drawTimes-- > 0) {
+    //   utils::drawRetBox(frame, bbox, cv::Scalar{255, 0, 0});
+    // }
     vr->record(frame.data);
     if (!vr->check() || --frameCount <= 0) {
       isRecord = false;
       frameCount = 0;
-      drawTimes = 0;
+      // drawTimes = 0;
       vr->destory();
     }
   }

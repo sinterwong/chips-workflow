@@ -30,7 +30,7 @@ bool AlgorithmManager::registered(std::string const &name,
   // 注册算法 TODO 先直接给到 VisionInfer，话说这套框架有可能加入非视觉任务？
   name2algo[name] = std::make_shared<VisionInfer>(config);
   if (!name2algo.at(name)->init()) {
-    FLOWENGINE_LOGGER_ERROR("algorithm manager: failed to register {}", name);
+    FLOWENGINE_LOGGER_CRITICAL("algorithm manager: failed to register {}", name);
     return false;
   }
   return true;

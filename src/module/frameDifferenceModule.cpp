@@ -12,6 +12,7 @@
 #include "frameDifferenceModule.h"
 #include "frame_difference.h"
 #include "logger/logger.hpp"
+#include "video_utils.hpp"
 #include <cassert>
 #include <opencv2/imgcodecs.hpp>
 
@@ -26,6 +27,11 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
     auto frameBufMessage = ptr->pool->read(buf.key);
     auto frame =
         std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
+
+    if (alarmUtils.isRecording()) { // 正在录像
+      alarmUtils.recordVideo(*frame);
+      break;
+    }
 
     // 只能有一个区域被监控
     assert(config->regions.size() <= 1);
@@ -70,10 +76,38 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
     }
     FLOWENGINE_LOGGER_DEBUG("{} FrameDifferenceModule detect {} objects", name,
                             bboxes.size());
+    // 生成报警信息
+    alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在报警行为",
+                                 config.get());
+    // 生成报警图片
+    alarmUtils.saveAlarmImage(buf.alarmInfo.alarmFile + "/" +
+                                  buf.alarmInfo.alarmId + ".jpg",
+                              *frame, buf.frameType, config->isDraw);
+    // // 初始化报警视频
+    // if (config->videoDuration > 0) {
+    //   alarmUtils.initRecorder(
+    //       buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".mp4",
+    //       buf.alarmInfo.width, buf.alarmInfo.height, 25,
+    //       config->videoDuration);
+    // }
+
     autoSend(buf);
+    // 录制报警视频
+    if (config->videoDuration > 0) {
+      bool ret = video::utils::videoRecordWithFFmpeg(
+          buf.alarmInfo.cameraIp,
+          buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".mp4",
+          config->videoDuration);
+      if (!ret) {
+        FLOWENGINE_LOGGER_ERROR("{} video record is failed.", name);
+      }
+    }
+
     break;
   }
-  std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
+  if (!alarmUtils.isRecording()) {
+    std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
+  }
 }
 FlowEngineModuleRegister(FrameDifferenceModule, backend_ptr,
                          std::string const &, MessageType &, ModuleConfig &);

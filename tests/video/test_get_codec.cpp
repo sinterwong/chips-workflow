@@ -21,6 +21,10 @@ int main(int argc, char **argv) {
   auto cap = cv::VideoCapture();
 
   cap.open(FLAGS_uri);
+  if (!cap.isOpened()) {
+    std::cout << "Could not open the video " << FLAGS_uri << std::endl;
+    return -1;
+  }
   int height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
   int width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
   int frameRate = cap.get(cv::CAP_PROP_FPS);

@@ -15,7 +15,8 @@
 #include <sp_codec.h>
 #include <sp_vio.h>
 
-#define STREAM_FRAME_SIZE 2097152 // 2^21
+// #define STREAM_FRAME_SIZE 2097152 // 2^21
+#define STREAM_FRAME_SIZE 1048576 // 2^20
 
 namespace video {
 std::unique_ptr<XEncoder> XEncoder::Create(videoOptions const &options) {
@@ -43,7 +44,10 @@ bool XEncoder::Open() noexcept {
   int ret = sp_start_encode(encoder, mOptions.videoIdx, SP_ENCODER_H264,
                             mOptions.width, mOptions.height, 8000);
   if (ret != 0) {
-    FLOWENGINE_LOGGER_ERROR("sp_open_encode failed {}!", ret);
+    FLOWENGINE_LOGGER_ERROR("sp_open_encode failed {}, source: {}, channel: "
+                            "{}, height: {}, width: {}!",
+                            ret, mOptions.videoIdx, mOptions.resource.string,
+                            mOptions.height, mOptions.width);
     return false;
   }
   outStream = std::ofstream(mOptions.resource.location,

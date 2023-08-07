@@ -40,19 +40,19 @@ void VideoRecord::destory() noexcept {
     stream->Close();
   }
   stream = nullptr;
-  // 将视频转成mp4格式
-  std::string &location = params.resource.location;
-  std::string renamed = location.substr(0, location.find(".")) + ".h264";
-  filesystem::path oldPath(location);
-  filesystem::path newPath(renamed);
-  try {
-    filesystem::rename(oldPath, newPath);
-    FLOWENGINE_LOGGER_INFO("文件重命名成功");
-  } catch (const filesystem::filesystem_error &e) {
-    FLOWENGINE_LOGGER_ERROR("文件重命名失败：{}", e.what());
-    return;
-  }
-  wrapH2642mp4(renamed, location);
+  // // 将视频转成mp4格式
+  // std::string &location = params.resource.location;
+  // std::string renamed = location.substr(0, location.find(".")) + ".h264";
+  // filesystem::path oldPath(location);
+  // filesystem::path newPath(renamed);
+  // try {
+  //   filesystem::rename(oldPath, newPath);
+  //   FLOWENGINE_LOGGER_INFO("文件重命名成功");
+  // } catch (const filesystem::filesystem_error &e) {
+  //   FLOWENGINE_LOGGER_ERROR("文件重命名失败：{}", e.what());
+  //   return;
+  // }
+  // wrapH2642mp4(renamed, location);
 }
 
 bool VideoRecord::record(void *frame) { return stream->Render(&frame); }

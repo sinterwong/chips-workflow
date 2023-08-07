@@ -83,7 +83,10 @@ public:
     if (stream && stream->IsStreaming()) {
       stream->Close();
     }
-    ChannelsManager::getInstance().setChannel(channel); // 返还channel
+    // 手动析构解码器，确保析构完成后再释放channel
+    stream.reset();
+    // 释放channel
+    ChannelsManager::getInstance().setChannel(channel);
   }
 };
 } // namespace video

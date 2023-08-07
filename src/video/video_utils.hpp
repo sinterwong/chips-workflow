@@ -10,7 +10,11 @@
  */
 #include "common/common.hpp"
 #include "logger/logger.hpp"
+#include <atomic>
+#include <chrono>
 #include <experimental/filesystem>
+#include <opencv2/videoio.hpp>
+#include <thread>
 
 #ifndef __FLOWENGINE_VIDEO_UTILS_H_
 #define __FLOWENGINE_VIDEO_UTILS_H_
@@ -75,6 +79,94 @@ inline std::string getCodec(int fourcc) {
   }
   a[4] = '\0';
   return std::string{a};
+}
+
+inline void readFrame(cv::VideoCapture &cap, cv::Mat &frame,
+                      std::atomic<bool> &successFlag) {
+  successFlag = cap.read(frame);
+}
+
+inline bool videoRecordWithFFmpeg(std::string const &url,
+                                  std::string const &path, int videoDuration,
+                                  int const TIMEOUT_MS = 3000) {
+  // 构建ffmpeg命令
+  std::string cmd =
+      "ffmpeg -y -rtsp_transport tcp -analyzeduration 10M -probesize 10M -i " +
+      url + " -c copy -t " + std::to_string(videoDuration) + " " + path;
+
+  // 开启子进程执行FFmpeg命令
+  int result = std::system(cmd.c_str());
+
+  // 简单检查命令是否成功
+  return result == 0;
+}
+
+inline bool videoRecordWithOpencv(std::string const &url,
+                                  std::string const &path, int videoDuration,
+                                  int const TIMEOUT_MS = 3000) {
+
+  // 视频直接截取，不涉及编解码
+  auto cap = cv::VideoCapture(url, cv::CAP_FFMPEG);
+
+  // Check if the video file was loaded successfully
+  if (!cap.isOpened()) {
+    FLOWENGINE_LOGGER_ERROR("Could not open the video {}", url);
+    return false;
+  }
+
+  int height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
+  int width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
+  int frameRate = cap.get(cv::CAP_PROP_FPS);
+  // 总共需要录制的帧数
+  int frameCount = videoDuration * frameRate;
+  // 获取rtsp流的原始编解码信息
+  int fourcc = static_cast<int>(cap.get(cv::CAP_PROP_FOURCC));
+
+  FLOWENGINE_LOGGER_INFO(
+      "The video message to be recorded: size {}x{}, rate {}, fourcc {}",
+      height, width, frameRate, getCodec(fourcc));
+
+  auto writer =
+      cv::VideoWriter(path, fourcc, frameRate, cv::Size{width, height});
+
+  if (!writer.isOpened()) {
+    FLOWENGINE_LOGGER_ERROR("Could not initialize the video writer for {}",
+                            path);
+    cap.release();
+    return false;
+  }
+
+  cv::Mat frame;
+  std::atomic<bool> frameReadSuccessfully(false);
+  while (frameCount > 0) {
+    frameReadSuccessfully = false;
+    std::thread readingThread(readFrame, std::ref(cap), std::ref(frame),
+                              std::ref(frameReadSuccessfully));
+
+    auto start = std::chrono::high_resolution_clock::now();
+    while (!frameReadSuccessfully &&
+           std::chrono::duration_cast<std::chrono::milliseconds>(
+               std::chrono::high_resolution_clock::now() - start)
+                   .count() < TIMEOUT_MS) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    if (frameReadSuccessfully) {
+      readingThread.join();
+      writer.write(frame);
+      frameCount--;
+    } else {
+      // If we timed out, detach from the thread and handle the timeout
+      readingThread.detach();
+      FLOWENGINE_LOGGER_ERROR("Timeout while reading frame from {}", url);
+      writer.release();
+      cap.release();
+      return false;
+    }
+  }
+  writer.release();
+  cap.release();
+  return true;
 }
 } // namespace video::utils
 

@@ -49,6 +49,11 @@ using namespace infer::trt::sample;
 using time_point = std::chrono::time_point<std::chrono::high_resolution_clock>;
 using duration = std::chrono::duration<float>;
 
+const auto initLogger = []() -> decltype(auto) {
+  FlowEngineLoggerInit(true, true, true, true);
+  return true;
+}();
+
 bool printLayerInfo(const ReportingOptions &reporting,
                     const InferenceEnvironment &iEnv) {
   if (reporting.layerInfo) {
