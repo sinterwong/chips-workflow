@@ -92,7 +92,7 @@ inline bool videoRecordWithFFmpeg(std::string const &url,
   // 构建ffmpeg命令
   std::string cmd =
       "ffmpeg -y -rtsp_transport tcp -analyzeduration 10M -probesize 10M -i " +
-      url + " -c copy -t " + std::to_string(videoDuration) + " " + path;
+      url + " -c copy -an -t " + std::to_string(videoDuration) + " " + path;
 
   // 开启子进程执行FFmpeg命令
   int result = std::system(cmd.c_str());
