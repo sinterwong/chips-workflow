@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "infer/preprocess.hpp"
+#include "logger/logger.hpp"
 
 namespace infer {
 namespace dnn {
@@ -58,7 +59,7 @@ bool AlgoInference::initialize() {
   mEngine = std::shared_ptr<nvinfer1::ICudaEngine>(
       runtime->deserializeCudaEngine(trtModelStream, size));
   if (!mEngine) {
-    FLOWENGINE_LOGGER_WARN("CudaEngine is failed!");
+    FLOWENGINE_LOGGER_ERROR("CudaEngine is failed!");
     return false;
   }
   delete[] trtModelStream; // 创建完engine就没什么用了
@@ -66,17 +67,27 @@ bool AlgoInference::initialize() {
   context =
       UniquePtr<nvinfer1::IExecutionContext>(mEngine->createExecutionContext());
   if (!context) {
-    FLOWENGINE_LOGGER_WARN("ExecutionContext is failed!");
+    FLOWENGINE_LOGGER_ERROR("ExecutionContext is failed!");
     return false;
   }
 
   // set the input and output dims
   for (auto &name : mParams.inputNames) {
     auto index = mEngine->getBindingIndex(name.c_str());
+    if (index < 0) {
+      FLOWENGINE_LOGGER_ERROR("Cannot find binding of given name {} in {}",
+                              name, mParams.modelPath);
+      return false;
+    }
     inputDims.push_back(mEngine->getBindingDimensions(index));
   }
   for (auto &name : mParams.outputNames) {
     auto index = mEngine->getBindingIndex(name.c_str());
+    if (index < 0) {
+      FLOWENGINE_LOGGER_ERROR("Cannot find binding of given name {} in {}",
+                              name, mParams.modelPath);
+      return false;
+    }
     outputDims.push_back(mEngine->getBindingDimensions(index));
   }
   buffers =
@@ -101,10 +112,10 @@ bool AlgoInference::infer(FrameInfo &inputs, void **outputs) {
   // Memcpy from device output buffers to host output buffers
   buffers->copyOutputToHost();
 
-  float** output = reinterpret_cast<float**>(*outputs);
+  float **output = reinterpret_cast<float **>(*outputs);
   for (int i = 0; i < mParams.outputNames.size(); ++i) {
-    output[i] = static_cast<float *>(
-        buffers->getHostBuffer(mParams.outputNames[i]));
+    output[i] =
+        static_cast<float *>(buffers->getHostBuffer(mParams.outputNames[i]));
   }
   return true;
 }
@@ -113,7 +124,8 @@ bool AlgoInference::processInput(void *inputs) {
   float *deviceInputBuffer = static_cast<float *>(
       buffers->getDeviceBuffer(mParams.inputNames[0])); // explicit batch
   auto inputData = reinterpret_cast<FrameInfo *>(inputs);
-  cv::Mat image{inputData->shape[1], inputData->shape[0], CV_8UC3, *inputData->data};
+  cv::Mat image{inputData->shape[1], inputData->shape[0], CV_8UC3,
+                *inputData->data};
   // cv::imwrite("temp_out.jpg", image);
 
   std::array<int, 2> shape = {mParams.inputShape.at(0),
@@ -165,5 +177,5 @@ void AlgoInference::getModelInfo(ModelInfo &info) const {
   info.output_count = mParams.outputNames.size();
   info.outputShapes = std::move(outputShapes);
 }
-} // namespace trt
+} // namespace dnn
 } // namespace infer

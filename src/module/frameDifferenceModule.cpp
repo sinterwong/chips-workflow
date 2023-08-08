@@ -12,6 +12,7 @@
 #include "frameDifferenceModule.h"
 #include "frame_difference.h"
 #include "logger/logger.hpp"
+#include "video_utils.hpp"
 #include <cassert>
 #include <opencv2/imgcodecs.hpp>
 
@@ -82,14 +83,26 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
     alarmUtils.saveAlarmImage(buf.alarmInfo.alarmFile + "/" +
                                   buf.alarmInfo.alarmId + ".jpg",
                               *frame, buf.frameType, config->isDraw);
-    // 初始化报警视频
-    if (config->videoDuration > 0) {
-      alarmUtils.initRecorder(
-          buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".mp4",
-          buf.alarmInfo.width, buf.alarmInfo.height, 25, config->videoDuration);
-    }
+    // // 初始化报警视频
+    // if (config->videoDuration > 0) {
+    //   alarmUtils.initRecorder(
+    //       buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".mp4",
+    //       buf.alarmInfo.width, buf.alarmInfo.height, 25,
+    //       config->videoDuration);
+    // }
 
     autoSend(buf);
+    // 录制报警视频
+    if (config->videoDuration > 0) {
+      bool ret = video::utils::videoRecordWithFFmpeg(
+          buf.alarmInfo.cameraIp,
+          buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".mp4",
+          config->videoDuration);
+      if (!ret) {
+        FLOWENGINE_LOGGER_ERROR("{} video record is failed.", name);
+      }
+    }
+
     break;
   }
   if (!alarmUtils.isRecording()) {

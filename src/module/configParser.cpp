@@ -211,7 +211,7 @@ bool ConfigParser::parseConfig(std::string const &path,
           auto eventId = p["event_id"].get<int>();
           auto page = p["page"].get<std::string>();
 
-          SupportedFunc func = moduleMapping[info.className];
+          auto func = moduleMapping.at(info.className);
           switch (func) {
           case SupportedFunc::OCRModule:
           case SupportedFunc::LicensePlateModule: {
@@ -226,6 +226,7 @@ bool ConfigParser::parseConfig(std::string const &path,
             config.setParams(std::move(config_));
             break;
           }
+          case SupportedFunc::FrameDifferenceModule:
           case SupportedFunc::DetClsModule: {
             // 报警配置获取
             auto thre = p["threshold"].get<float>();

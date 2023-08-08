@@ -11,6 +11,7 @@
 
 #include "detClsModule.h"
 #include "logger/logger.hpp"
+#include "video_utils.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -146,19 +147,20 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
           // 生成报警信息
           alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在报警行为",
                                        config.get());
+
           // 生成报警图片
           alarmUtils.saveAlarmImage(
               buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".jpg",
               *image, buf.frameType, config->isDraw, alarmBox);
 
           // 初始化报警视频
-          if (config->videoDuration > 0) {
-            alarmUtils.initRecorder(buf.alarmInfo.alarmFile + "/" +
-                                        buf.alarmInfo.alarmId + ".mp4",
-                                    buf.alarmInfo.width, buf.alarmInfo.height,
-                                    25, config->videoDuration);
-          }
-
+          // if (config->videoDuration > 0) {
+          //   alarmUtils.initRecorder(buf.alarmInfo.alarmFile + "/" +
+          //                               buf.alarmInfo.alarmId + ".mp4",
+          //                           buf.alarmInfo.width,
+          //                           buf.alarmInfo.height, 25,
+          //                           config->videoDuration);
+          // }
           // 本轮算法结果生成
           json algoRet;
           for (auto &info : algoRegions) {
@@ -174,6 +176,17 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
           }
           buf.alarmInfo.algorithmResult = algoRet.dump();
           autoSend(buf);
+
+          // 录制报警视频
+          if (config->videoDuration > 0) {
+            bool ret = video::utils::videoRecordWithFFmpeg(
+                buf.alarmInfo.cameraIp,
+                buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".mp4",
+                config->videoDuration);
+            if (!ret) {
+              FLOWENGINE_LOGGER_ERROR("{} video record is failed.", name);
+            }
+          }
           break;
         }
       }
