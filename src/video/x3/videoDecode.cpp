@@ -64,6 +64,6 @@ std::shared_ptr<cv::Mat> VideoDecode::getcvImage() {
     return nullptr;
   }
   return std::make_shared<cv::Mat>(
-      cv::Mat(getHeight() * 3 / 2, getWidth(), CV_8UC1, frame));
+      cv::Mat(getHeight() * 3 / 2, getWidth(), CV_8UC1, frame).clone());
 }
 } // namespace video
