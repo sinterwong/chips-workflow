@@ -86,7 +86,7 @@ public:
     producter = std::make_unique<joining_thread>([this]() {
       // 优化成一个条件变量
       while (stream && stream->isRunning()) {
-        std::this_thread::sleep_for(10ms);
+        std::this_thread::sleep_for(5ms);
         int bufSize = stream->getRawFrame(&raw_data);
         if (bufSize < 0)
           break;
@@ -95,7 +95,7 @@ public:
                                  mOptions.videoIdx, bufSize, 0);
         if (ret != 0) {
           FLOWENGINE_LOGGER_WARN("sp_decoder_set_image is failed: {}", ret);
-          std::this_thread::sleep_for(2s);
+          std::this_thread::sleep_for(20ms);
           continue;
         }
       }
@@ -137,12 +137,13 @@ public:
 
   virtual bool Capture(void **image,
                        size_t timeout = DEFAULT_TIMEOUT) override {
+    // TODO 如果数次Capture获取不到数据应该有点动作
     int ret = sp_decoder_get_image(decoder, yuv_data);
     if (ret != 0) {
       FLOWENGINE_LOGGER_WARN("sp_decoder_get_image get next frame is failed!");
+      std::this_thread::sleep_for(10ms);
       return false;
     }
-    // TODO 数据如何给出去? copy? 先写出来吧，这样是不安全的
     *image = reinterpret_cast<void *>(yuv_data);
     return true;
   }

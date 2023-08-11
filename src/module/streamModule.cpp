@@ -75,6 +75,7 @@ void StreamModule::beforeForward() {
       FLOWENGINE_LOGGER_INFO("StreamModule video is opened!");
     } else {
       FLOWENGINE_LOGGER_ERROR("StreamModule is failed to open!");
+      std::this_thread::sleep_for(std::chrono::seconds(1));
     }
   }
 };
@@ -126,7 +127,7 @@ void StreamModule::startup() {
 
   autoSend(sendMessage);
   // std::this_thread::yield();
-  std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 FlowEngineModuleRegister(StreamModule, backend_ptr, std::string const &,
                          MessageType const &, ModuleConfig &);

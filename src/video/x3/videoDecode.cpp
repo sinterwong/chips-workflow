@@ -63,6 +63,10 @@ std::shared_ptr<cv::Mat> VideoDecode::getcvImage() {
     FLOWENGINE_LOGGER_WARN("{} Getframe is failed!", stream->GetResource().string);
     return nullptr;
   }
+  /** TODO
+   * @brief frame管理优化 
+   * 设置一个frame buffer，缓解刷新过快的问题 
+   */
   return std::make_shared<cv::Mat>(
       cv::Mat(getHeight() * 3 / 2, getWidth(), CV_8UC1, frame).clone());
 }
