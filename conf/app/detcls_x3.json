@@ -16,7 +16,7 @@
         3
       ],
       "isScale": false,
-      "modelPath": "/root/workspace/softwares/flowengine/models/yolov5_640x640_nv12.bin",
+      "modelPath": "/opt/deploy/models/yolov5_640x640_nv12.bin",
       "nms_thr": 0.45,
       "outputNames": [
         "output"
@@ -38,7 +38,7 @@
         3
       ],
       "isScale": false,
-      "modelPath": "/root/workspace/softwares/flowengine/models/resnet_64x64_nv12.bin",
+      "modelPath": "/opt/deploy/models/resnet_64x64_nv12.bin",
       "nms_thr": 0,
       "outputNames": [
         "softmax"
