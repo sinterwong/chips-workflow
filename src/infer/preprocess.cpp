@@ -115,6 +115,40 @@ void YU122NV12(cv::Mat const &input, cv::Mat &output) {
   }
 }
 
+void YU122NV12_parallel(cv::Mat const &input, cv::Mat &output) {
+  int y_rows = input.rows * 2 / 3;
+  cv::Mat y = input.rowRange(0, y_rows).colRange(0, input.cols);
+  cv::Mat uv = input.rowRange(y_rows, input.rows).colRange(0, input.cols);
+  output.create(cv::Size(input.cols, input.rows), CV_8UC1);
+
+  y.copyTo(output.rowRange(0, y.rows).colRange(0, y.cols));
+
+  cv::Mat uvInterleaved =
+      output.rowRange(y_rows, input.rows).colRange(0, uv.cols);
+
+  cv::Mat u = uv.rowRange(0, uv.rows / 2).colRange(0, uv.cols / 2);
+  cv::Mat v = uv.rowRange(uv.rows / 2, uv.rows).colRange(0, uv.cols / 2);
+
+  // Use cv::parallel_for_ to parallelize the filling of uvInterleaved
+  cv::parallel_for_(cv::Range(0, uv.rows / 2), [&](const cv::Range &range) {
+    for (int row = range.start; row < range.end; ++row) {
+      uchar *uvInterleavedRow = uvInterleaved.ptr<uchar>(2 * row);
+      uchar *uRow = u.ptr<uchar>(row);
+      uchar *vRow = v.ptr<uchar>(row);
+
+      for (int col = 0; col < uv.cols / 2; ++col) {
+        uvInterleavedRow[2 * col] = uRow[col];
+        uvInterleavedRow[2 * col + 1] = vRow[col];
+      }
+      uvInterleavedRow = uvInterleaved.ptr<uchar>(2 * row + 1);
+      for (int col = 0; col < uv.cols / 2; ++col) {
+        uvInterleavedRow[2 * col] = uRow[col];
+        uvInterleavedRow[2 * col + 1] = vRow[col];
+      }
+    }
+  });
+}
+
 void YUV444toNV12(cv::Mat const &input, cv::Mat &output) {
   output.create(cv::Size(input.cols, input.rows * 3 / 2), CV_8UC1);
   int uv_rows = input.rows / 2;
@@ -146,7 +180,7 @@ void YUV444toNV12(cv::Mat const &input, cv::Mat &output) {
 }
 
 // template<typename ColorType Src=ColorType::RGB888>
-void RGB2NV12(cv::Mat const &input, cv::Mat &output) {
+void RGB2NV12(cv::Mat const &input, cv::Mat &output, bool is_parallel) {
   // 这里图片的宽高必须是偶数，否则直接卡死这里
   cv::Rect rect{0, 0, input.cols, input.rows};
   if (rect.width % 2 != 0)
@@ -157,7 +191,11 @@ void RGB2NV12(cv::Mat const &input, cv::Mat &output) {
   cv::Mat in_temp = input(rect);
   cv::Mat temp;
   cv::cvtColor(in_temp, temp, cv::COLOR_RGB2YUV_I420);
-  YU122NV12(temp, output);
+  if (is_parallel) {
+    YU122NV12_parallel(temp, output);
+  } else {
+    YU122NV12(temp, output);
+  }
 
   // cv::cvtColor(input, temp, cv::COLOR_RGB2YUV);
   // YUV444toNV12(temp, output);

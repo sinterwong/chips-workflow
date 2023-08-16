@@ -147,11 +147,12 @@ struct DetClsMonitor : public AttentionArea,
                        public LogicBase,
                        public AlarmBase {
   DetClsMonitor(AttentionArea &&aaera, LogicBase &&logic_, AlarmBase &&alarm_,
-                float threshold_)
+                float threshold_, size_t requireExistence_ = 1)
       : AttentionArea(aaera), LogicBase(logic_), AlarmBase(alarm_),
-        threshold(threshold_) {}
+        threshold(threshold_), requireExistence(requireExistence_) {}
 
-  float threshold; // 报警阈值
+  float threshold;         // 报警阈值
+  size_t requireExistence; // 要求目标类别存在或不存在
 };
 
 /**

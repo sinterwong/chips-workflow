@@ -31,9 +31,13 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
     }
 
     // 读取图片
-    FrameBuf frameBufMessage = ptr->pool->read(buf.key);
-    auto image =
-        std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
+    frame_ptr frameBuf = ptr->pools->read(buf.steramName, buf.key);
+    if (!frameBuf) {
+      FLOWENGINE_LOGGER_WARN("{} ObjectNumberModule read frame is failed!",
+                             name);
+      return;
+    }
+    auto image = std::any_cast<std::shared_ptr<cv::Mat>>(frameBuf->read("Mat"));
 
     if (alarmUtils.isRecording()) {
       alarmUtils.recordVideo(*image);
@@ -59,6 +63,8 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
     auto &attentions = detNet.second.attentions; // 检测关注的类别
 
     int objectNumber = 0;
+    std::vector<RetBox> rbboxes; // 报警框
+
     for (auto &region : regions) {
 
       InferParams detParams{name,
@@ -77,7 +83,6 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
         FLOWENGINE_LOGGER_ERROR("ObjectNumberModule: Wrong algorithm type!");
         return;
       }
-
       for (auto &bbox : *bboxes) {
         // 需要过滤掉不关注的类别
         if (!attentions.empty()) {
@@ -86,7 +91,17 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
           if (iter == attentions.end()) { // 该类别没有出现在关注类别中
             continue;
           }
+          // // 阈值太低的过滤
+          // if (bbox.det_confidence < 0.6) {
+          //   continue;
+          // }
         }
+        common::RetBox b = {
+            name,
+            {bbox.bbox[0] + region.second[0], bbox.bbox[1] + region.second[1],
+             bbox.bbox[2] + region.second[0], bbox.bbox[3] + region.second[1],
+             bbox.det_confidence, bbox.class_id}};
+        rbboxes.emplace_back(std::move(b));
         objectNumber++;
       }
     }
@@ -98,17 +113,10 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
       // 生成报警信息
       alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "数量达标",
                                    config.get());
-      // 生成报警图片，此处相当于截了个图
+      // 生成报警图片并画框
       alarmUtils.saveAlarmImage(buf.alarmInfo.alarmFile + "/" +
                                     buf.alarmInfo.alarmId + ".jpg",
-                                *image, buf.frameType, config->isDraw);
-      // // 初始化报警视频
-      // if (config->videoDuration > 0) {
-      //   alarmUtils.initRecorder(buf.alarmInfo.alarmFile + "/" +
-      //                               buf.alarmInfo.alarmId + ".mp4",
-      //                           buf.alarmInfo.width, buf.alarmInfo.height,
-      //                           25, config->videoDuration);
-      // }
+                                *image, buf.frameType, config->isDraw, rbboxes);
       autoSend(buf);
       // 录制报警视频
       if (config->videoDuration > 0) {

@@ -50,6 +50,7 @@ struct AlarmInfo {
  *
  */
 struct queueMessage {
+  std::string steramName;  // 流标识
   int key;                 // 帧id
   int status;              // 上游状态
   std::string send;        // 上游模块名称

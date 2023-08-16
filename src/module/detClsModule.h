@@ -38,7 +38,6 @@ public:
 
 private:
   AlarmUtils alarmUtils;
-  RetBox alarmBox = {name, {0, 0, 0, 0, 0, 0}};
 };
 } // namespace module
 #endif // __METAENGINE_HELMET_MODULE_H_

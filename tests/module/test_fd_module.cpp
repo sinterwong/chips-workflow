@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   module::backend_ptr backendPtr = std::make_shared<Backend>(
-      std::make_unique<BoostMessage>(), std::make_unique<RouteFramePool>(2),
+      std::make_unique<BoostMessage>(), std::make_unique<StreamPoolBus>(),
       std::make_unique<infer::AlgorithmManager>());
 
   module::ModuleConfig streamConfig; // 用于初始化 ModuleConfig::configMap

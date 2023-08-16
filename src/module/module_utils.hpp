@@ -23,9 +23,9 @@
 #ifndef __FLOWENGINE_MODULE_UTILS_H_
 #define __FLOWENGINE_MODULE_UTILS_H_
 
+using common::OCRRet;
 using common::RetBox;
 using common::RetPoly;
-using common::OCRRet;
 
 namespace module::utils {
 
@@ -65,7 +65,7 @@ static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                         "abcdefghijklmnopqrstuvwxyz"
                                         "0123456789+/";
 
-bool drawRetBox(cv::Mat &image, RetBox const &bbox,
+bool drawRetBox(cv::Mat &image, std::vector<RetBox> const &bboxes,
                 cv::Scalar const &scalar = {0, 0, 255});
 
 bool drawRetPoly(cv::Mat &image, RetPoly const &poly,
