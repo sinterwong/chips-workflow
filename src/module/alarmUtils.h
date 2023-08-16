@@ -70,7 +70,7 @@ public:
   }
 
   inline void recordVideo(cv::Mat &frame) {
-  // inline void recordVideo(cv::Mat &frame, RetBox const &bbox) {
+    // inline void recordVideo(cv::Mat &frame, RetBox const &bbox) {
     // if (drawTimes-- > 0) {
     //   utils::drawRetBox(frame, bbox, cv::Scalar{255, 0, 0});
     // }
@@ -103,7 +103,7 @@ public:
 
   inline void saveAlarmImage(std::string const &path, cv::Mat const &frame,
                              ColorType const ctype, bool isDraw = false,
-                             RetBox bbox = RetBox{"", {0, 0, 0, 0, 0, 0}}) {
+                             std::vector<RetBox> bboxes = {}) {
     cv::Mat showImage;
     // 临时画个图（后续根据前端参数来决定返回的图片是否带有画图标记）
     switch (ctype) {
@@ -125,7 +125,7 @@ public:
     }
     // 画报警框
     if (isDraw) {
-      utils::drawRetBox(showImage, bbox);
+      utils::drawRetBox(showImage, bboxes);
     }
 
     // // 报警框名称操作

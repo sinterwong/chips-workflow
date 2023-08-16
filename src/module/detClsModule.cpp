@@ -167,7 +167,7 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
       // 生成报警图片
       alarmUtils.saveAlarmImage(
           buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".jpg",
-          *image, buf.frameType, config->isDraw, alarmBox);
+          *image, buf.frameType, config->isDraw, {alarmBox});
 
       // 本轮算法结果生成
       json algoRet;

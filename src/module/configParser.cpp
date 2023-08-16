@@ -275,7 +275,7 @@ bool ConfigParser::parseConfig(std::string const &path,
           int amount;
           EXTRACT_JSON_VALUE(p, "amount", amount);
 
-          auto isDraw = false;
+          auto isDraw = true;
           AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
                           isDraw};
 
