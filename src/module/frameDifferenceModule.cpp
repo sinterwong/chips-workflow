@@ -24,9 +24,14 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
       stopFlag.store(true);
       return;
     }
-    auto frameBufMessage = ptr->pool->read(buf.key);
-    auto frame =
-        std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
+    // 读取图片
+    frame_ptr frameBuf = ptr->pools->read(buf.steramName, buf.key);
+    if (!frameBuf) {
+      FLOWENGINE_LOGGER_WARN("{} FrameDifferenceModule read frame is failed!",
+                             name);
+      return;
+    }
+    auto frame = std::any_cast<std::shared_ptr<cv::Mat>>(frameBuf->read("Mat"));
 
     if (alarmUtils.isRecording()) { // 正在录像
       alarmUtils.recordVideo(*frame);

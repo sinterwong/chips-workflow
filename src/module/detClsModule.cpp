@@ -33,9 +33,12 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
     }
 
     // 读取图片
-    FrameBuf frameBufMessage = ptr->pool->read(buf.key);
-    auto image =
-        std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
+    frame_ptr frameBuf = ptr->pools->read(buf.steramName, buf.key);
+    if (!frameBuf) {
+      FLOWENGINE_LOGGER_WARN("{} DetClsModule read frame is failed!", name);
+      return;
+    }
+    auto image = std::any_cast<std::shared_ptr<cv::Mat>>(frameBuf->read("Mat"));
 
     if (alarmUtils.isRecording()) {
       alarmUtils.recordVideo(*image);
@@ -137,7 +140,7 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
     // 至此，所有的算法模块执行完成，整合算法结果判断是否报警
     auto lastPipeName = apipes.at(apipes.size() - 1).first;
     auto &alarmRegions = algoRegions.at(lastPipeName);
-    if (alarmRegions.size() > 0) {
+    if ((alarmRegions.size() > 0) == (config->requireExistence)) {
       for (auto const &box : algoRegions.at(lastPipeName)) {
         alarmBox = box;
         if (alarmBox.second[4] > config->threshold) {

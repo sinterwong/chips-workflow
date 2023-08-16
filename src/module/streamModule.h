@@ -41,21 +41,15 @@ public:
   StreamModule(backend_ptr ptr, std::string const &, MessageType const &,
                ModuleConfig &) noexcept(false);
 
-  ~StreamModule() {}
+  ~StreamModule() { ptr->pools->unregistered(name); }
 
   virtual void beforeForward() override;
 
-  virtual void forward(std::vector<forwardMessage> &message) override {};
+  virtual void forward(std::vector<forwardMessage> &message) override{};
 
   void startup();
 
   void step() override;
-
-  static void delBuffer(std::vector<std::any> &);
-
-  std::any getMatBuffer(std::vector<std::any> &list, FrameBuf *buf);
-
-  std::any getPtrBuffer(std::vector<std::any> &list, FrameBuf *buf);
 };
 
 } // namespace module

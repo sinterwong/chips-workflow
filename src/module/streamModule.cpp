@@ -10,6 +10,7 @@
  *
  */
 #include "streamModule.h"
+#include "framePool.hpp"
 #include "logger/logger.hpp"
 #include "messageBus.h"
 #include <array>
@@ -38,21 +39,20 @@ std::any getPtrBuffer(std::vector<std::any> &list, FrameBuf *buf) {
   return reinterpret_cast<void *>(mat->data);
 }
 
-FrameBuf makeFrameBuf(std::shared_ptr<cv::Mat> frame, int height, int width) {
-  FrameBuf temp;
-  temp.write({frame},
-             {std::make_pair("void*", getPtrBuffer),
-              std::make_pair("Mat", getMatBuffer)},
-             &StreamModule::delBuffer,
-             std::make_tuple(width, height, 3, UINT8));
-  return temp;
-}
-
-void StreamModule::delBuffer(std::vector<std::any> &list) {
+void delBuffer(std::vector<std::any> &list) {
   assert(list.size() == 1);
   assert(list[0].has_value());
   assert(list[0].type() == typeid(std::shared_ptr<cv::Mat>));
   list.clear();
+}
+
+frame_ptr makeFrameBuf(std::shared_ptr<cv::Mat> frame, int height, int width) {
+  FrameBuf temp;
+  temp.write({frame},
+             {std::make_pair("void*", getPtrBuffer),
+              std::make_pair("Mat", getMatBuffer)},
+             &delBuffer);
+  return std::make_shared<FrameBuf>(temp);
 }
 
 StreamModule::StreamModule(backend_ptr ptr, std::string const &_name,
@@ -61,11 +61,18 @@ StreamModule::StreamModule(backend_ptr ptr, std::string const &_name,
 
   config = std::make_unique<StreamBase>(*_config.getParams<StreamBase>());
 
-  decoder = std::make_unique<VideoDecode>(config->uri, config->width, config->height);
+  decoder =
+      std::make_unique<VideoDecode>(config->uri, config->width, config->height);
   if (!decoder->init()) {
-    FLOWENGINE_LOGGER_INFO("{} VideoManager init failed!", name);
+    FLOWENGINE_LOGGER_CRITICAL("{} VideoManager init is failed!", name);
     throw std::runtime_error("StreamModule ctor has failed!");
   };
+  if (ptr->pools->registered(name, 2)) {
+    FLOWENGINE_LOGGER_INFO("{} stream pool registering is successful", name);
+  } else {
+    FLOWENGINE_LOGGER_CRITICAL("{} stream pool registering is failed!", name);
+    throw std::runtime_error("StreamModule ctor has failed!");
+  }
 }
 
 void StreamModule::beforeForward() {
@@ -110,8 +117,9 @@ void StreamModule::startup() {
     return;
   }
 
-  FrameBuf fbm = makeFrameBuf(frame, decoder->getHeight(), decoder->getWidth());
-  int returnKey = ptr->pool->write(fbm);
+  frame_ptr fbm =
+      makeFrameBuf(frame, decoder->getHeight(), decoder->getWidth());
+  int returnKey = ptr->pools->write(name, fbm);
 
   // 报警时所需的视频流的信息
   AlarmInfo alarmInfo;
@@ -120,6 +128,7 @@ void StreamModule::startup() {
   alarmInfo.height = decoder->getHeight();
   alarmInfo.width = decoder->getWidth();
   sendMessage.frameType = decoder->getType();
+  sendMessage.steramName = name;
   sendMessage.key = returnKey;
   // sendMessage.cameraResult = cameraResult;
   sendMessage.alarmInfo = std::move(alarmInfo);

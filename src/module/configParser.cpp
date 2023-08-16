@@ -42,6 +42,16 @@ using common::StreamBase;
 
 using json = nlohmann::json;
 
+#define EXTRACT_JSON_VALUE(json_obj, key, var)                                 \
+  do {                                                                         \
+    if ((json_obj).count(key) > 0) {                                           \
+      var = (json_obj)[key].get<decltype(var)>();                              \
+    } else {                                                                   \
+      FLOWENGINE_LOGGER_ERROR("ConfigParser: {} doesn't exist.", key);         \
+      return false;                                                            \
+    }                                                                          \
+  } while (0)
+
 namespace module::utils {
 bool ConfigParser::parseConfig(std::string const &path,
                                std::vector<PipelineParams> &pipelines,
@@ -230,12 +240,13 @@ bool ConfigParser::parseConfig(std::string const &path,
           case SupportedFunc::DetClsModule: {
             // 报警配置获取
             auto thre = p["threshold"].get<float>();
+            auto requireExistence = p["requireExistence"].get<size_t>();
             auto isDraw = true;
             AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
                             isDraw};
 
             DetClsMonitor config_{std::move(aarea), std::move(lBase),
-                                  std::move(aBase), thre};
+                                  std::move(aBase), thre, requireExistence};
             config.setParams(std::move(config_));
             break;
           }

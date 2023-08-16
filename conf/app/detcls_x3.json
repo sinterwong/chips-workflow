@@ -16,7 +16,7 @@
         3
       ],
       "isScale": false,
-      "modelPath": "/opt/deploy/flowengine/models/detection/yolo/yolov5_640x640_nv12.bin",
+      "modelPath": "/root/workspace/softwares/flowengine/models/yolov5_640x640_nv12.bin",
       "nms_thr": 0.45,
       "outputNames": [
         "output"
@@ -38,7 +38,7 @@
         3
       ],
       "isScale": false,
-      "modelPath": "/opt/deploy/flowengine/models/classifier/resnet/resnet_64x64_nv12.bin",
+      "modelPath": "/root/workspace/softwares/flowengine/models/resnet_64x64_nv12.bin",
       "nms_thr": 0,
       "outputNames": [
         "softmax"
@@ -99,6 +99,7 @@
           "sendName": "output_alarm_01_1673517182674",
           "sub_type": "DetClsModule",
           "threshold": 0.3,
+          "requireExistence": 1,
           "type": "logic",
           "video_duration": 10,
           "width": "1080",
