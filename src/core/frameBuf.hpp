@@ -16,6 +16,8 @@
 #include <unordered_map>
 #include <vector>
 
+#ifndef _FLOWCORE_FRAMEBUF_H_
+#define _FLOWCORE_FRAMEBUF_H_
 class FrameBuf;
 
 // 获取帧的函数
@@ -47,3 +49,5 @@ public:
 
   ~FrameBuf() { delFunction(dataList); }
 };
+
+#endif
