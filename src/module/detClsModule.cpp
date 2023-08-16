@@ -40,11 +40,6 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
     }
     auto image = std::any_cast<std::shared_ptr<cv::Mat>>(frameBuf->read("Mat"));
 
-    if (alarmUtils.isRecording()) {
-      alarmUtils.recordVideo(*image);
-      break;
-    }
-
     // 各个算法结果的区域
     std::unordered_map<std::string, std::vector<common::RetBox>> algoRegions;
 
@@ -140,64 +135,62 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
     // 至此，所有的算法模块执行完成，整合算法结果判断是否报警
     auto lastPipeName = apipes.at(apipes.size() - 1).first;
     auto &alarmRegions = algoRegions.at(lastPipeName);
+    RetBox alarmBox = {name, {0, 0, 0, 0, 0, 0}};
+    bool isAlarm = false;
     if ((alarmRegions.size() > 0) == (config->requireExistence)) {
-      for (auto const &box : algoRegions.at(lastPipeName)) {
-        alarmBox = box;
-        if (alarmBox.second[4] > config->threshold) {
-          // 存在符合条件的报警
-          FLOWENGINE_LOGGER_DEBUG("{}: {}, {}, {}!", name, alarmBox.first,
-                                  alarmBox.second[4], alarmBox.second[5]);
-          // 生成报警信息
-          alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在报警行为",
-                                       config.get());
-
-          // 生成报警图片
-          alarmUtils.saveAlarmImage(
-              buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".jpg",
-              *image, buf.frameType, config->isDraw, alarmBox);
-
-          // 初始化报警视频
-          // if (config->videoDuration > 0) {
-          //   alarmUtils.initRecorder(buf.alarmInfo.alarmFile + "/" +
-          //                               buf.alarmInfo.alarmId + ".mp4",
-          //                           buf.alarmInfo.width,
-          //                           buf.alarmInfo.height, 25,
-          //                           config->videoDuration);
-          // }
-          // 本轮算法结果生成
-          json algoRet;
-          for (auto &info : algoRegions) {
-            std::string bboxesJson, aname;
-            utils::retBoxes2json(info.second, bboxesJson);
-
-            // // 模块名称提取
-            // std::string_view str_view = info.first;
-            // auto pos1 = str_view.find('_');
-            // auto pos2 = str_view.find('_', pos1 + 1);
-            // aname = str_view.substr(pos1 + 1, pos2 - pos1 - 1);
-            algoRet[info.first] = std::move(bboxesJson);
+      /**
+       * @brief 报警条件：关注类别是否存在 == 存在关注类别后报/不报警
+       *  设关注类型是否存在为a, 存在关注类别后报/不报警为b:
+       * 会报警的情况：a=true and b=true, a=false and b=false
+       * 当 a=true，b=true, 此时需要通过阈值判定，当阈值通过才会报警
+       */
+      if (alarmRegions.size() == 0) {
+        isAlarm = true; // a=false and b=false的情况
+      } else {
+        // a=true and b=true的情况
+        for (auto const &box : alarmRegions) {
+          if (box.second[4] > config->threshold) {
+            // 存在符合条件的报警
+            alarmBox = box;
+            isAlarm = true;
+            FLOWENGINE_LOGGER_DEBUG("{}: {}, {}, {}!", name, alarmBox.first,
+                                    alarmBox.second[4], alarmBox.second[5]);
           }
-          buf.alarmInfo.algorithmResult = algoRet.dump();
-          autoSend(buf);
+        }
+      }
+    }
+    if (isAlarm) { // 需要报警
+      // 生成报警信息
+      alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在报警行为",
+                                   config.get());
+      // 生成报警图片
+      alarmUtils.saveAlarmImage(
+          buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".jpg",
+          *image, buf.frameType, config->isDraw, alarmBox);
 
-          // 录制报警视频
-          if (config->videoDuration > 0) {
-            bool ret = video::utils::videoRecordWithFFmpeg(
-                buf.alarmInfo.cameraIp,
-                buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".mp4",
-                config->videoDuration);
-            if (!ret) {
-              FLOWENGINE_LOGGER_ERROR("{} video record is failed.", name);
-            }
-          }
-          break;
+      // 本轮算法结果生成
+      json algoRet;
+      for (auto &info : algoRegions) {
+        std::string bboxesJson, aname;
+        utils::retBoxes2json(info.second, bboxesJson);
+        algoRet[info.first] = std::move(bboxesJson);
+      }
+      buf.alarmInfo.algorithmResult = algoRet.dump();
+      autoSend(buf);
+
+      // 录制报警视频
+      if (config->videoDuration > 0) {
+        bool ret = video::utils::videoRecordWithFFmpeg(
+            buf.alarmInfo.cameraIp,
+            buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".mp4",
+            config->videoDuration);
+        if (!ret) {
+          FLOWENGINE_LOGGER_ERROR("{} video record is failed.", name);
         }
       }
     }
   }
-  if (!alarmUtils.isRecording()) {
-    std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
-  }
+  std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
 }
 
 FlowEngineModuleRegister(DetClsModule, backend_ptr, std::string const &,
