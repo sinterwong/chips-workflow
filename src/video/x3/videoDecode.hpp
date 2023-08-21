@@ -80,9 +80,6 @@ public:
   }
 
   ~VideoDecode() noexcept {
-    if (stream && stream->IsStreaming()) {
-      stream->Close();
-    }
     // 手动析构解码器，确保析构完成后再释放channel
     stream.reset();
     // 释放channel

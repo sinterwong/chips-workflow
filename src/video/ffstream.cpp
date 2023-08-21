@@ -11,6 +11,7 @@
 
 #include "ffstream.hpp"
 #include "libavcodec/avcodec.h"
+#include <cstdlib>
 #include <mutex>
 
 using namespace std::chrono_literals;
@@ -148,6 +149,7 @@ bool FFStream::openStream() {
   ret = avformat_open_input(&avContext, uri.c_str(), 0, &option);
   if (ret < 0) {
     FLOWENGINE_LOGGER_INFO("avformat_open_input failed");
+    av_dict_free(&option); // 释放 option 内存
     return false;
   }
   ret = avformat_find_stream_info(avContext, 0);
@@ -200,6 +202,10 @@ int FFStream::getRawFrame(void **data, bool isCopy) {
       AVCodecParameters *codec;
       int retSize = 0;
       codec = avContext->streams[av_param.videoIndex]->codecpar;
+      if (seqHeader) { // 如果此时seqHeader已经申请过内存，需要先释放
+        free(seqHeader);
+        seqHeader = nullptr;
+      }
       seqHeader = (uint8_t *)malloc(codec->extradata_size + 1024);
       if (seqHeader == nullptr) {
         FLOWENGINE_LOGGER_INFO("Failed to mallock seqHeader");
