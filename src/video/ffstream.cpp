@@ -177,7 +177,7 @@ bool FFStream::openStream() {
   return true;
 }
 
-int FFStream::getRawFrame(void **data, bool isCopy) {
+int FFStream::getRawFrame(void **data, bool isCopy, bool onlyIFrame) {
   std::lock_guard<std::shared_mutex> lk(ctx_m);
   if (!isRunning())
     return -1; // 流已关闭
@@ -229,11 +229,19 @@ int FFStream::getRawFrame(void **data, bool isCopy) {
       }
     } else {
       av_param.bufSize = avpacket.size;
+      if (onlyIFrame) {
+        if (!(avpacket.flags & AV_PKT_FLAG_KEY)) {
+          // 这不是I帧，所以我们释放数据包并返回
+          av_packet_unref(&avpacket);
+          return 0;
+        }
+      }
       if (isCopy) {
         memcpy(*data, (void *)avpacket.data, avpacket.size);
       } else {
         *data = (void *)avpacket.data;
       }
+      // 置0
       avpacket.size = 0;
     }
     ++av_param.count;
