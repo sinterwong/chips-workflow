@@ -28,7 +28,7 @@ using video::utils::FFStream;
 
 bool set_and_get_data(std::shared_ptr<FFStream> stream, void *decoder,
                       char *yuv_data, int channel, bool first = false) {
-  void *raw_data; 
+  void *raw_data;
   // 只取I帧的情况下可以做到一路解码处理多路视频流
   int bufSize = stream->getRawFrame(&raw_data, false, true);
   if (bufSize < 0)
@@ -60,9 +60,9 @@ bool set_and_get_data(std::shared_ptr<FFStream> stream, void *decoder,
 
 int main(int argc, char **argv) {
   std::string url1 =
-      "rtsp://admin:ghrq123456@114.242.23.39:6104/Streaming/Channels/101";
+      "rtsp://admin:ghrq123456@114.242.23.39:6102/Streaming/Channels/101";
   std::string url2 =
-      "rtsp://admin:ghrq123456@114.242.23.39:6104/Streaming/Channels/201";
+      "rtsp://114.242.23.39:6106/user=admin_password=tlJwpbo6_channel=1_stream=0.sdp?real_stream";
 
   // 解码器handle
   void *decoder;
@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
   FLOWENGINE_LOGGER_INFO("opening the streams has successed!");
 
   // 启动解码器
-  int ret = sp_start_decode(decoder, "", 0, SP_ENCODER_H265,
+  int ret = sp_start_decode(decoder, "", 0, SP_ENCODER_H264,
                             stream1->getWidth(), stream1->getHeight());
   if (ret != 0) {
     FLOWENGINE_LOGGER_ERROR("opening sp_open_decoder has failed {}!", ret);
@@ -122,6 +122,9 @@ int main(int argc, char **argv) {
       cv::cvtColor(image1_nv12, image1_bgr, cv::COLOR_YUV2BGR_NV12);
       cv::imwrite("test_decoder_pool_image1_bgr.jpg", image1_bgr);
     }
+  }
+  count = 0;
+  while (count++ < 100) {
     auto ret2 = set_and_get_data(stream2, decoder, yuv_data2, 0);
     if (ret2) {
       // 解码成功，打印图片
