@@ -11,6 +11,8 @@
 
 #include "ffstream.hpp"
 #include "libavcodec/avcodec.h"
+#include "logger/logger.hpp"
+#include <cstdlib>
 #include <mutex>
 
 using namespace std::chrono_literals;
@@ -147,12 +149,13 @@ bool FFStream::openStream() {
   av_dict_set(&option, "rtsp_transport", "tcp", 0);
   ret = avformat_open_input(&avContext, uri.c_str(), 0, &option);
   if (ret < 0) {
-    FLOWENGINE_LOGGER_INFO("avformat_open_input failed");
+    FLOWENGINE_LOGGER_ERROR("avformat_open_input failed {}", uri);
+    av_dict_free(&option); // 释放 option 内存
     return false;
   }
   ret = avformat_find_stream_info(avContext, 0);
   if (ret < 0) {
-    FLOWENGINE_LOGGER_INFO("avformat_find_stream_info failed");
+    FLOWENGINE_LOGGER_ERROR("avformat_find_stream_info failed {}", uri);
     return false;
   }
   FLOWENGINE_LOGGER_INFO("probesize: {}", avContext->probesize);
@@ -162,8 +165,8 @@ bool FFStream::openStream() {
   av_param.videoIndex =
       av_find_best_stream(avContext, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
   if (av_param.videoIndex < 0) {
-    FLOWENGINE_LOGGER_INFO("av_find_best_stream failed, ret: {}",
-                           av_param.videoIndex);
+    FLOWENGINE_LOGGER_ERROR("av_find_best_stream failed, ret: {}, url: {}",
+                            av_param.videoIndex, uri);
     return false;
   }
   av_init_packet(&avpacket);
@@ -175,7 +178,7 @@ bool FFStream::openStream() {
   return true;
 }
 
-int FFStream::getRawFrame(void **data, bool isCopy) {
+int FFStream::getRawFrame(void **data, bool isCopy, bool onlyIFrame) {
   std::lock_guard<std::shared_mutex> lk(ctx_m);
   if (!isRunning())
     return -1; // 流已关闭
@@ -200,6 +203,10 @@ int FFStream::getRawFrame(void **data, bool isCopy) {
       AVCodecParameters *codec;
       int retSize = 0;
       codec = avContext->streams[av_param.videoIndex]->codecpar;
+      if (seqHeader) { // 如果此时seqHeader已经申请过内存，需要先释放
+        free(seqHeader);
+        seqHeader = nullptr;
+      }
       seqHeader = (uint8_t *)malloc(codec->extradata_size + 1024);
       if (seqHeader == nullptr) {
         FLOWENGINE_LOGGER_INFO("Failed to mallock seqHeader");
@@ -223,11 +230,19 @@ int FFStream::getRawFrame(void **data, bool isCopy) {
       }
     } else {
       av_param.bufSize = avpacket.size;
+      if (onlyIFrame) {
+        if (!(avpacket.flags & AV_PKT_FLAG_KEY)) {
+          // 这不是I帧，所以我们释放数据包并返回
+          av_packet_unref(&avpacket);
+          return 0;
+        }
+      }
       if (isCopy) {
         memcpy(*data, (void *)avpacket.data, avpacket.size);
       } else {
         *data = (void *)avpacket.data;
       }
+      // 置0
       avpacket.size = 0;
     }
     ++av_param.count;

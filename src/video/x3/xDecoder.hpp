@@ -18,6 +18,7 @@
 #include "videoSource.hpp"
 
 #include <atomic>
+#include <memory>
 #include <sp_codec.h>
 #include <sp_vio.h>
 
@@ -59,8 +60,9 @@ public:
   };
 
   virtual bool Open() override {
+    std::lock_guard<std::mutex> lk(resourceMutex);
     // 启动流
-    stream = std::make_unique<FFStream>(mOptions.resource);
+    stream = std::make_shared<FFStream>(mOptions.resource);
     if (!stream->openStream()) {
       FLOWENGINE_LOGGER_ERROR("can't open the stream {}!",
                               std::string(mOptions.resource));
@@ -80,13 +82,14 @@ public:
     }
     FLOWENGINE_LOGGER_INFO("sp_open_decoder is successed!");
     int yuv_size = FRAME_BUFFER_SIZE(mOptions.width, mOptions.height);
-    yuv_data = reinterpret_cast<char *>(malloc(yuv_size * sizeof(char)));
+    // yuv_data = reinterpret_cast<char *>(malloc(yuv_size * sizeof(char)));
+    yuv_data = new char[yuv_size];
     // raw_data = malloc(mOptions.width * mOptions.height * 3 * sizeof(char));
     mStreaming.store(true);
     producter = std::make_unique<joining_thread>([this]() {
+      isClosed.store(false);
       // 优化成一个条件变量
-      while (stream && stream->isRunning()) {
-        std::this_thread::sleep_for(5ms);
+      while (!mTerminate.load() && stream && stream->isRunning()) {
         int bufSize = stream->getRawFrame(&raw_data);
         if (bufSize < 0)
           break;
@@ -99,44 +102,76 @@ public:
           continue;
         }
       }
-      FLOWENGINE_LOGGER_WARN("streaming is over: {}",
-                             std::string(mOptions.resource));
-      if (mStreaming.load()) {
-        Close();
-      }
+      std::lock_guard<std::mutex> lock(closeMutex);
+      isClosed.store(true);
+      cv.notify_one(); // 通知析构函数线程已经结束
     });
     return true;
-  };
+  }
 
   /**
    * Close the stream.
    * @see videoSource::Close()
    */
   virtual inline void Close() noexcept override {
-    if (stream->isRunning()) {
-      stream->closeStream();
+    std::lock_guard<std::mutex> lk(resourceMutex);
+
+    // 通知生产者线程结束
+    mTerminate.store(true);
+    {
+      // 等待生产者线程结束
+      std::unique_lock<std::mutex> closeLock(closeMutex);
+      cv.wait(closeLock, [this]() { return isClosed.load(); });
     }
-    sp_stop_decode(decoder);
-    if (yuv_data) {
-      free(yuv_data);
+    if (mStreaming.load()) {
+      // 停止解码
+      sp_stop_decode(decoder);
+
+      // 结束流
+      if (stream && stream->isRunning()) {
+        stream->closeStream();
+        stream = nullptr;
+      }
+      // 释放资源
+      if (yuv_data) {
+        delete[] yuv_data;
+        yuv_data = nullptr;
+      }
+      mStreaming.store(false);
     }
-    mStreaming.store(false);
   }
 
   virtual inline size_t GetWidth() const noexcept override {
+    if (!stream) {
+      FLOWENGINE_LOGGER_ERROR("Stream object is null!");
+      return 0; // Or another default value.
+    }
     return stream->getWidth();
   }
 
   virtual inline size_t GetHeight() const noexcept override {
+    if (!stream) {
+      FLOWENGINE_LOGGER_ERROR("Stream object is null!");
+      return 0; // Or another default value.
+    }
     return stream->getHeight();
   }
 
   virtual inline size_t GetFrameRate() const noexcept override {
+    if (!stream) {
+      FLOWENGINE_LOGGER_ERROR("Stream object is null!");
+      return 0; // Or another default value.
+    }
     return stream->getRate();
   }
 
   virtual bool Capture(void **image,
                        size_t timeout = DEFAULT_TIMEOUT) override {
+    std::lock_guard<std::mutex> lk(resourceMutex);
+    if (!mStreaming.load()) {
+      return false;
+    }
+
     // TODO 如果数次Capture获取不到数据应该有点动作
     int ret = sp_decoder_get_image(decoder, yuv_data);
     if (ret != 0) {
@@ -160,15 +195,23 @@ public:
 
 private:
   XDecoder(videoOptions const &options) : videoSource(options) {}
+
   const std::unordered_map<std::string, int> entypeMapping{
       std::pair<std::string, int>("h264", SP_ENCODER_H264),
       std::pair<std::string, int>("h265", SP_ENCODER_H265),
       std::pair<std::string, int>("mpeg", SP_ENCODER_MJPEG),
   };
-  std::unique_ptr<FFStream> stream;
+  std::shared_ptr<FFStream> stream;
   void *decoder;
   char *yuv_data;
   void *raw_data;
+  std::mutex resourceMutex;
+
+  // 用于结束生产者线程
+  std::mutex closeMutex;
+  std::atomic<bool> mTerminate{false}; 
+  std::atomic<bool> isClosed{true};
+  std::condition_variable cv;
 
   virtual bool Init() override {
     decoder = sp_init_decoder_module();
