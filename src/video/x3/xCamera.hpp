@@ -14,6 +14,7 @@
 
 #include "logger/logger.hpp"
 #include "videoSource.hpp"
+#include "video_common.hpp"
 #include <chrono>
 #include <memory>
 
@@ -61,8 +62,8 @@ public:
       if (!Open())
         return false;
 
-    int ret = sp_vio_get_yuv(camera, yuv_data, mOptions.width, mOptions.height,
-                             DEFAULT_TIMEOUT);
+    int ret = sp_vio_get_yuv(camera, yuv_data, mOptions->width,
+                             mOptions->height, DEFAULT_TIMEOUT);
     if (ret != 0) {
       FLOWENGINE_LOGGER_WARN("sp_vio_get_yuv get next frame is failed!");
       return false;
@@ -77,19 +78,25 @@ public:
    * @see videoSource::Open()
    */
   virtual bool Open() override {
-    int ret = sp_open_camera(camera, 0, mOptions.videoIdx, &mOptions.width,
-                             &mOptions.height);
+    int ret = sp_open_camera(camera, 0, mOptions->videoIdx, &mOptions->width,
+                             &mOptions->height);
     std::this_thread::sleep_for(2s);
     if (ret != 0) {
       FLOWENGINE_LOGGER_ERROR("sp_open_camera failed!");
       return false;
     }
     FLOWENGINE_LOGGER_INFO("sp_open_camera is successed!");
-    int yuv_size = FRAME_BUFFER_SIZE(mOptions.width, mOptions.height);
+    int yuv_size = FRAME_BUFFER_SIZE(mOptions->width, mOptions->height);
     yuv_data = reinterpret_cast<char *>(malloc(yuv_size * sizeof(char)));
     mStreaming.store(true);
     return true;
   };
+
+  virtual bool Open(videoOptions const &options) override {
+    // 这里初始化一下参数即可
+    mOptions = std::make_unique<videoOptions>(options);
+    return Open();
+  }
 
   /**
    * Close the stream.
@@ -112,6 +119,8 @@ public:
   static const size_t Type = (1 << 0);
 
 private:
+  XCamera() : videoSource() {}
+
   XCamera(videoOptions const &options) : videoSource(options) {}
   void *camera;
   char *yuv_data;

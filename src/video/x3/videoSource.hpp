@@ -27,6 +27,8 @@ class videoSource {
 public:
   static std::unique_ptr<videoSource> Create(videoOptions const &options);
 
+  static std::unique_ptr<videoSource> Create();
+
   virtual ~videoSource() {}
 
   virtual bool Capture(void **image, uint64_t timeout = DEFAULT_TIMEOUT) = 0;
@@ -35,25 +37,27 @@ public:
 
   virtual bool Open() = 0;
 
+  virtual bool Open(videoOptions const &options) = 0;
+
   virtual void Close() noexcept = 0;
 
   inline bool IsStreaming() const noexcept { return mStreaming.load(); }
 
-  virtual inline size_t GetWidth() const noexcept { return mOptions.width; }
+  virtual inline size_t GetWidth() const noexcept { return mOptions->width; }
 
-  virtual inline size_t GetHeight() const noexcept { return mOptions.height; }
+  virtual inline size_t GetHeight() const noexcept { return mOptions->height; }
 
   virtual inline size_t GetFrameRate() const noexcept {
-    return mOptions.frameRate;
+    return mOptions->frameRate;
   }
 
   uint64_t GetLastTimestamp() const noexcept { return mLastTimestamp; }
 
   inline ColorType GetRawFormat() const noexcept { return mRawFormat; }
 
-  inline const URI &GetResource() const noexcept { return mOptions.resource; }
+  inline const URI &GetResource() const noexcept { return mOptions->resource; }
 
-  inline const videoOptions &GetOptions() const noexcept { return mOptions; }
+  inline const videoOptions &GetOptions() const noexcept { return *mOptions; }
 
   virtual inline size_t GetType() const noexcept { return 0; }
 
@@ -70,10 +74,18 @@ public:
 protected:
   ColorType mRawFormat;
   std::atomic<bool> mStreaming;
-  videoOptions mOptions;
+  std::unique_ptr<videoOptions> mOptions;
   size_t mLastTimestamp;
 
-  videoSource(videoOptions const &options) : mOptions(options) {
+  videoSource() {
+    mStreaming.store(false);
+    mLastTimestamp = 0;
+    mRawFormat = ColorType::NV12;
+    mOptions = nullptr;
+  }
+
+  videoSource(videoOptions const &options)
+      : mOptions(std::make_unique<videoOptions>(options)) {
     mStreaming.store(false);
     mLastTimestamp = 0;
     mRawFormat = ColorType::NV12;

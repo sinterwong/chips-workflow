@@ -42,6 +42,10 @@ public:
 
   bool run() override;
 
+  bool start(std::string const &) override;
+
+  bool stop() override;
+
   inline bool isRunning() override { return stream && stream->IsStreaming(); }
 
   inline int getHeight() override {
@@ -69,6 +73,13 @@ public:
 
   inline common::ColorType getType() const noexcept override {
     return common::ColorType::NV12;
+  }
+
+  explicit VideoDecode() {
+    channel = ChannelsManager::getInstance().getChannel();
+    if (channel < 0) {
+      throw std::runtime_error("Channel usage overflow!");
+    }
   }
 
   explicit VideoDecode(std::string const &uri_, int w_ = 1920, int h_ = 1080)
