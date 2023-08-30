@@ -13,11 +13,13 @@
 #include "logger/logger.hpp"
 #include "videoDecode.hpp"
 #include <chrono>
+#include <condition_variable>
 #include <cstddef>
 #include <list>
 #include <memory>
 #include <mutex>
 #include <opencv2/imgcodecs.hpp>
+#include <queue>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -68,32 +70,115 @@ public:
   }
 };
 
-void run_stream(std::unique_ptr<VideoDecode> &decoder, std::string url,
-                int idx);
+class FIFOVideoDecoderPool {
+private:
+  std::list<std::unique_ptr<VideoDecode>> available;
+  std::queue<std::condition_variable *> waitingQueue;
+  std::mutex mtx;
+
+public:
+  FIFOVideoDecoderPool(size_t initialSize) {
+    for (size_t i = 0; i < initialSize; ++i) {
+      auto decoder = std::make_unique<VideoDecode>();
+      if (decoder->init()) { // 初始化解码器
+        available.emplace_back(std::move(decoder));
+      } else {
+        FLOWENGINE_LOGGER_ERROR("decoder init is failed!");
+      }
+    }
+    FLOWENGINE_LOGGER_INFO(
+        "Expected to start {} deocders, {} decoders have been started.",
+        initialSize, available.size());
+  }
+
+  std::unique_ptr<VideoDecode> acquire() {
+
+    std::unique_lock<std::mutex> lock(mtx);
+    std::condition_variable cv;
+
+    waitingQueue.push(&cv);
+    cv.wait(lock, [this, &cv] {
+      return !available.empty() && waitingQueue.front() == &cv;
+    });
+    waitingQueue.pop();
+
+    auto decoder = std::move(available.front());
+    available.pop_front();
+
+    // 为了避免有资源的情况下，因同时竞争而导致的资源空闲
+    if (!waitingQueue.empty()) {
+      waitingQueue.front()->notify_one();
+    }
+
+    return decoder;
+  }
+
+  void release(std::unique_ptr<VideoDecode> obj) {
+    std::lock_guard<std::mutex> lock(mtx);
+
+    obj->stop();
+    available.push_back(std::move(obj));
+
+    if (!waitingQueue.empty()) {
+      // 这里相当于只条件变量通知所在的线程，因为是栈内局部变量
+      waitingQueue.front()->notify_one();
+    }
+    std::this_thread::sleep_for(std::chrono::microseconds(500));
+  }
+};
+
+template <typename Pool> void run_stream(Pool &pool, std::string url, int idx);
+
+/**
+ * @brief 普通解码对象池测试
+ *
+ */
+void test_decoder_pool(std::vector<std::string> &urls) {
+  VideoDecoderPool videoPool(1);
+
+  auto t1 = std::thread(run_stream<VideoDecoderPool>, std::ref(videoPool),
+                        urls.at(0), 0);
+  t1.join();
+
+  auto d2 = videoPool.acquire();
+  auto t2 = std::thread(run_stream<VideoDecoderPool>, std::ref(videoPool),
+                        urls.at(1), 1);
+  t2.join();
+}
+
+/**
+ * @brief 先进先出解码池对象测试
+ *
+ */
+void test_fifo_decoder_pool(std::vector<std::string> &urls) {
+  FIFOVideoDecoderPool videoPool(2);
+  std::vector<std::thread> threads;
+
+  for (size_t i = 0; i < urls.size(); ++i) {
+    threads.emplace_back(run_stream<FIFOVideoDecoderPool>, std::ref(videoPool),
+                         urls.at(i), i);
+  }
+
+  for (auto &t : threads) {
+    t.join();
+  }
+}
+
 int main(int argc, char **argv) {
   std::vector<std::string> urls = {
       "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101",
-      "rtsp://admin:zkfd123.com@192.168.31.41:554/Streaming/Channels/101"
+      "rtsp://admin:zkfd123.com@192.168.31.41:554/Streaming/Channels/101",
+      "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101"};
 
-  };
-  VideoDecoderPool videoPool(1);
+  // test_decoder_pool(urls);
 
-  std::vector<std::unique_ptr<VideoDecode>> decoders;
-  auto d1 = videoPool.acquire();
-  auto t1 = std::thread(run_stream, std::ref(d1), urls.at(0), 0);
-  t1.join();
-  videoPool.release(std::move(d1));
-
-  auto d2 = videoPool.acquire();
-  auto t2 = std::thread(run_stream, std::ref(d2), urls.at(1), 1);
-  t2.join();
-  videoPool.release(std::move(d2));
-
+  test_fifo_decoder_pool(urls);
   return 0;
 }
 
-void run_stream(std::unique_ptr<VideoDecode> &decoder, std::string url,
-                int idx) {
+template <typename Pool>
+void run_stream(Pool &pool, std::string url, int idx) {
+  auto decoder = pool.acquire();
   if (!decoder->start(url)) {
     FLOWENGINE_LOGGER_INFO("{} start failed!", idx);
     return;
@@ -117,4 +202,5 @@ void run_stream(std::unique_ptr<VideoDecode> &decoder, std::string url,
     }
     ++count;
   }
+  pool.release(std::move(decoder));
 }
