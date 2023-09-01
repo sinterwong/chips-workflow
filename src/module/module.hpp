@@ -60,7 +60,7 @@ public:
 
   virtual void afterForward(){};
 
-  void go() {
+  virtual void go() {
     while (!stopFlag.load()) {
       step();
     }

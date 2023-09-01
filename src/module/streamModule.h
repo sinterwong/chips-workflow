@@ -31,11 +31,22 @@ namespace module {
 
 class StreamModule : public Module {
 
+using TIMEPOINT = std::chrono::time_point<std::chrono::high_resolution_clock>;
+
 private:
   // CameraResult cameraResult;
   std::unique_ptr<StreamBase> config;
 
   std::unique_ptr<VideoDecode> decoder;
+
+  void messageListener(); // 监听外部消息
+
+  // stream 是否在执行时间段
+  bool streamTime = false;
+
+  // 开始和结束执行程序的时间
+  TIMEPOINT startTime;
+  TIMEPOINT endTime;
 
 public:
   StreamModule(backend_ptr ptr, std::string const &, MessageType const &,
@@ -43,7 +54,11 @@ public:
 
   ~StreamModule() { ptr->pools->unregistered(name); }
 
+  virtual void go() override;
+
   virtual void beforeForward() override;
+
+  virtual void afterForward() override;
 
   virtual void forward(std::vector<forwardMessage> &message) override{};
 
