@@ -84,7 +84,7 @@ void StreamModule::messageListener() {
       return;
     }
     // 避免内旋过分占用资源
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
   }
 }
 
@@ -99,13 +99,16 @@ void StreamModule::go() {
 }
 
 void StreamModule::step() {
-  beforeForward();
+  // 轮询逻辑
+  if (!decoder) { // 解码器不在工作状态
+    beforeForward();
+  }
+
   if (!decoder && !decoder->isRunning()) {
-    streamTime = false;
     return;
   }
   auto currentTime = std::chrono::high_resolution_clock::now();
-  if (currentTime < endTime) {
+  if (config->runTime == 0 || currentTime < endTime) {
     startup();
   } else {
     afterForward();
@@ -113,13 +116,9 @@ void StreamModule::step() {
 }
 
 void StreamModule::beforeForward() {
-  // 轮询逻辑
-  if (decoder) { // 解码器正在工作中
-    return;
-  }
-
-  // 此处会悬停等待解码器
+  // 此处会悬停等待解码器（即使是收到了Close信号依然会继续排队）
   decoder = FIFOVideoDecoderPool::getInstance().acquire();
+
   // 启动解码器
   if (!decoder->start(config->uri)) {
     FLOWENGINE_LOGGER_ERROR("StreamModule is failed to open {}!", config->uri);
@@ -128,9 +127,8 @@ void StreamModule::beforeForward() {
     decoder = nullptr;
     return;
   }
-  streamTime = true;
   startTime = std::chrono::high_resolution_clock::now(); // 初始化开始时间
-  endTime = startTime + std::chrono::seconds(5); // 初始化结束时间
+  endTime = startTime + std::chrono::seconds(config->runTime); // 初始化结束时间
   FLOWENGINE_LOGGER_INFO("StreamModule video is opened {}!", config->uri);
 };
 
@@ -168,9 +166,10 @@ void StreamModule::startup() {
 
 void StreamModule::afterForward() {
   // 此时意味着需要对decoder进行归还
-  if (decoder && !streamTime) {
+  if (decoder) {
     FIFOVideoDecoderPool::getInstance().release(std::move(decoder));
     decoder = nullptr;
+    FLOWENGINE_LOGGER_DEBUG("{} has finished!", name);
   }
 }
 

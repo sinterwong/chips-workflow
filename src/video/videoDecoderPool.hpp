@@ -15,10 +15,6 @@
 #ifndef __FLOWENGINE_VIDEO_DECODER_POOL_H_
 #define __FLOWENGINE_VIDEO_DECODER_POOL_H_
 
-#ifndef DECODER_POOL_SIZE
-#define DECODER_POOL_SIZE 4
-#endif
-
 namespace video {
 
 struct PriorityStreamModule {
@@ -238,6 +234,9 @@ public:
     std::this_thread::sleep_for(std::chrono::microseconds(500));
   }
 };
+
+std::unique_ptr<FIFOVideoDecoderPool> FIFOVideoDecoderPool::instance = nullptr;
+std::mutex FIFOVideoDecoderPool::instanceMtx;
 
 } // namespace video
 #endif

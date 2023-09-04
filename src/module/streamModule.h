@@ -41,9 +41,6 @@ private:
 
   void messageListener(); // 监听外部消息
 
-  // stream 是否在执行时间段
-  bool streamTime = false;
-
   // 开始和结束执行程序的时间
   TIMEPOINT startTime;
   TIMEPOINT endTime;
