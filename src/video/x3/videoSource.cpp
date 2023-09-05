@@ -26,8 +26,14 @@ std::unique_ptr<videoSource> videoSource::Create(videoOptions const &options) {
     FLOWENGINE_LOGGER_ERROR("videoSource -- unsupported protocol {}",
                             uri.protocol.size() > 0 ? uri.protocol : "null");
   }
-  FLOWENGINE_LOGGER_INFO("create {} from {}", src->typeTostr(),
+  FLOWENGINE_LOGGER_INFO("XDecoder is created {} from {}", src->typeTostr(),
                          src->GetResource().string);
+  return src;
+}
+
+std::unique_ptr<videoSource> videoSource::Create() {
+  std::unique_ptr<videoSource> src = XDecoder::Create();
+  FLOWENGINE_LOGGER_INFO("XDecoder is created");
   return src;
 }
 

@@ -16,6 +16,7 @@
 #include "joining_thread.h"
 #include "logger/logger.hpp"
 #include "videoSource.hpp"
+#include "video_common.hpp"
 
 #include <atomic>
 #include <memory>
@@ -50,6 +51,23 @@ public:
   }
 
   /**
+   * Create a decoder without options.
+   */
+  static std::unique_ptr<XDecoder> Create() {
+    std::unique_ptr<XDecoder> cam = std::unique_ptr<XDecoder>(new XDecoder());
+    if (!cam) {
+      return nullptr;
+    }
+    // initialize decoder (with fallback)
+    if (!cam->Init()) {
+      FLOWENGINE_LOGGER_ERROR("XDecoder -- failed to create device!");
+      return nullptr;
+    }
+    FLOWENGINE_LOGGER_INFO("XDecoder -- successfully created device!");
+    return cam;
+  }
+
+  /**
    * Destructor
    */
   ~XDecoder() {
@@ -60,20 +78,26 @@ public:
   };
 
   virtual bool Open() override {
-    std::lock_guard<std::mutex> lk(resourceMutex);
-    // 启动流
-    stream = std::make_shared<FFStream>(mOptions.resource);
-    if (!stream->openStream()) {
-      FLOWENGINE_LOGGER_ERROR("can't open the stream {}!",
-                              std::string(mOptions.resource));
+    if (!mOptions) {
+      // 没有初始化过参数配置
+      FLOWENGINE_LOGGER_CRITICAL(
+          "Please offer the options before using Open().");
       return false;
     }
-    mOptions.width = stream->getWidth();
-    mOptions.height = stream->getHeight();
-    mOptions.frameRate = stream->getRate();
-    FLOWENGINE_LOGGER_INFO("{} video is opened!", mOptions.resource.string);
+    std::lock_guard<std::mutex> lk(resourceMutex);
+    // 启动流
+    stream = std::make_unique<FFStream>(mOptions->resource);
+    if (!stream->openStream()) {
+      FLOWENGINE_LOGGER_ERROR("can't open the stream {}!",
+                              std::string(mOptions->resource));
+      return false;
+    }
+    mOptions->width = stream->getWidth();
+    mOptions->height = stream->getHeight();
+    mOptions->frameRate = stream->getRate();
+    FLOWENGINE_LOGGER_INFO("{} video is opened!", mOptions->resource.string);
 
-    int ret = sp_start_decode(decoder, "", mOptions.videoIdx,
+    int ret = sp_start_decode(decoder, "", mOptions->videoIdx,
                               entypeMapping.at(stream->getCodecType()),
                               stream->getWidth(), stream->getHeight());
     if (ret != 0) {
@@ -81,10 +105,10 @@ public:
       return false;
     }
     FLOWENGINE_LOGGER_INFO("sp_open_decoder is successed!");
-    int yuv_size = FRAME_BUFFER_SIZE(mOptions.width, mOptions.height);
+    int yuv_size = FRAME_BUFFER_SIZE(mOptions->width, mOptions->height);
     // yuv_data = reinterpret_cast<char *>(malloc(yuv_size * sizeof(char)));
     yuv_data = new char[yuv_size];
-    // raw_data = malloc(mOptions.width * mOptions.height * 3 * sizeof(char));
+    // raw_data = malloc(mOptions->width * mOptions->height * 3 * sizeof(char));
     mStreaming.store(true);
     producter = std::make_unique<joining_thread>([this]() {
       isClosed.store(false);
@@ -95,7 +119,7 @@ public:
           break;
         int ret =
             sp_decoder_set_image(decoder, reinterpret_cast<char *>(raw_data),
-                                 mOptions.videoIdx, bufSize, 0);
+                                 mOptions->videoIdx, bufSize, 0);
         if (ret != 0) {
           FLOWENGINE_LOGGER_WARN("sp_decoder_set_image is failed: {}", ret);
           std::this_thread::sleep_for(20ms);
@@ -107,6 +131,12 @@ public:
       cv.notify_one(); // 通知析构函数线程已经结束
     });
     return true;
+  }
+
+  virtual bool Open(videoOptions const &options) override {
+    // 这里初始化一下参数即可
+    mOptions = std::make_unique<videoOptions>(options);
+    return Open();
   }
 
   /**
@@ -122,6 +152,7 @@ public:
       // 等待生产者线程结束
       std::unique_lock<std::mutex> closeLock(closeMutex);
       cv.wait(closeLock, [this]() { return isClosed.load(); });
+      mTerminate.store(false);  // 重置
     }
     if (mStreaming.load()) {
       // 停止解码
@@ -196,12 +227,14 @@ public:
 private:
   XDecoder(videoOptions const &options) : videoSource(options) {}
 
+  XDecoder() : videoSource() {}
+
   const std::unordered_map<std::string, int> entypeMapping{
       std::pair<std::string, int>("h264", SP_ENCODER_H264),
       std::pair<std::string, int>("h265", SP_ENCODER_H265),
       std::pair<std::string, int>("mpeg", SP_ENCODER_MJPEG),
   };
-  std::shared_ptr<FFStream> stream;
+  std::unique_ptr<FFStream> stream;
   void *decoder;
   char *yuv_data;
   void *raw_data;
@@ -209,7 +242,7 @@ private:
 
   // 用于结束生产者线程
   std::mutex closeMutex;
-  std::atomic<bool> mTerminate{false}; 
+  std::atomic<bool> mTerminate{false};
   std::atomic<bool> isClosed{true};
   std::condition_variable cv;
 

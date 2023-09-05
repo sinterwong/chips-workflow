@@ -25,13 +25,65 @@ using namespace std::chrono_literals;
 namespace video {
 
 bool VideoDecode::init() {
+  if (uri.empty()) {
+    // X3这里在构造对象的时候需要初始化解码器
+    stream = videoSource::Create();
+  } else {
+    videoOptions opt;
+    opt.videoIdx = channel;
+    opt.resource = uri;
+    opt.height = h;
+    opt.width = w;
+    stream = videoSource::Create(opt);
+  }
+  return stream.get();
+}
+
+bool VideoDecode::start(const std::string &url) {
+  if (stream->IsStreaming()) {
+    FLOWENGINE_LOGGER_INFO("The stream had started {}",
+                           stream->GetResource().string);
+    return false;
+  }
+  uri = url;
   videoOptions opt;
   opt.videoIdx = channel;
   opt.resource = uri;
-  opt.height = h;
-  opt.width = w;
-  stream = videoSource::Create(opt);
+
+  return stream->Open(opt);
+}
+
+bool VideoDecode::stop() {
+  if (!stream->IsStreaming()) {
+    FLOWENGINE_LOGGER_ERROR("The stream was not started {}.", uri);
+    return false;
+  }
+  stream->Close();
   return true;
+}
+
+bool VideoDecode::run() {
+  if (!stream->Open()) {
+    return false;
+  }
+  consumer = std::make_unique<joining_thread>(&VideoDecode::consumeFrame, this);
+  return true;
+}
+
+std::shared_ptr<cv::Mat> VideoDecode::getcvImage() {
+  std::lock_guard lk(frame_m);
+  bool ret = stream->Capture(&frame, 1000);
+  if (!ret) {
+    FLOWENGINE_LOGGER_WARN("{} Getframe is failed!",
+                           stream->GetResource().string);
+    return nullptr;
+  }
+  /** TODO
+   * @brief frame管理优化
+   * 设置一个frame buffer，缓解刷新过快的问题
+   */
+  return std::make_shared<cv::Mat>(
+      cv::Mat(getHeight() * 3 / 2, getWidth(), CV_8UC1, frame).clone());
 }
 
 void VideoDecode::consumeFrame() {
@@ -48,26 +100,4 @@ void VideoDecode::consumeFrame() {
   }
 }
 
-bool VideoDecode::run() {
-  if (!stream->Open()) {
-    return false;
-  }
-  consumer = std::make_unique<joining_thread>(&VideoDecode::consumeFrame, this);
-  return true;
-}
-
-std::shared_ptr<cv::Mat> VideoDecode::getcvImage() {
-  std::lock_guard lk(frame_m);
-  bool ret = stream->Capture(&frame, 1000);
-  if (!ret) {
-    FLOWENGINE_LOGGER_WARN("{} Getframe is failed!", stream->GetResource().string);
-    return nullptr;
-  }
-  /** TODO
-   * @brief frame管理优化 
-   * 设置一个frame buffer，缓解刷新过快的问题 
-   */
-  return std::make_shared<cv::Mat>(
-      cv::Mat(getHeight() * 3 / 2, getWidth(), CV_8UC1, frame).clone());
-}
 } // namespace video

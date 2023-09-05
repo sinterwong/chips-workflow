@@ -59,6 +59,7 @@ struct StreamBase {
   std::string videoCode;  // 视频编码类型（h264, h265, ..)
   std::string flowType;   // 流协议类型（rtsp, rtmp, ..)
   std::string cameraName; // 摄像机名称(uuid)
+  int runTime = 0;        // 每次轮询执行多长时间
 };
 
 /**

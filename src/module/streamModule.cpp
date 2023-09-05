@@ -21,6 +21,8 @@
 #include <unordered_map>
 #include <utility>
 
+#include "videoDecoderPool.hpp"
+
 namespace module {
 
 std::any getMatBuffer(std::vector<std::any> &list, FrameBuf *buf) {
@@ -60,13 +62,6 @@ StreamModule::StreamModule(backend_ptr ptr, std::string const &_name,
     : Module(ptr, _name, _type) {
 
   config = std::make_unique<StreamBase>(*_config.getParams<StreamBase>());
-
-  decoder =
-      std::make_unique<VideoDecode>(config->uri, config->width, config->height);
-  if (!decoder->init()) {
-    FLOWENGINE_LOGGER_CRITICAL("{} VideoManager init is failed!", name);
-    throw std::runtime_error("StreamModule ctor has failed!");
-  };
   if (ptr->pools->registered(name, 2)) {
     FLOWENGINE_LOGGER_INFO("{} stream pool registering is successful", name);
   } else {
@@ -75,37 +70,67 @@ StreamModule::StreamModule(backend_ptr ptr, std::string const &_name,
   }
 }
 
-void StreamModule::beforeForward() {
-  // 视频流检查
-  if (!decoder->isRunning()) {
-    if (decoder->run()) {
-      FLOWENGINE_LOGGER_INFO("StreamModule video is opened!");
-    } else {
-      FLOWENGINE_LOGGER_ERROR("StreamModule is failed to open!");
-      std::this_thread::sleep_for(std::chrono::seconds(1));
+void StreamModule::messageListener() {
+  // 在此处监听外界的消息，这样的话就可以放心大胆的实现轮询逻辑了
+  while (!stopFlag.load()) {
+    // 检查外界消息
+    MessageBus::returnFlag flag;
+    std::string sender;
+    MessageType stype = MessageType::None;
+    queueMessage message;
+    ptr->message->recv(name, flag, sender, stype, message, false);
+    if (stype == MessageType::Close) {
+      stopFlag.store(true);
+      return;
     }
+    // 避免内旋过分占用资源
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
   }
-};
+}
+
+void StreamModule::go() {
+  std::thread listenerThread(&StreamModule::messageListener, this);
+  // 或者保存该线程，并在适当的时机进行 join()
+  listenerThread.detach();
+
+  while (!stopFlag.load()) {
+    step();
+  }
+}
 
 void StreamModule::step() {
-  beforeForward();
-  if (!decoder->isRunning()) {
-    return;
+  // 轮询逻辑
+  if (!decoder) { // 解码器不在工作状态
+    beforeForward();
   }
 
-  // 按目前的设计只需要监测Close消息类型。
-  MessageBus::returnFlag flag;
-  std::string sender;
-  MessageType stype = MessageType::None;
-  queueMessage message;
-  ptr->message->recv(name, flag, sender, stype, message, false);
-  if (stype == MessageType::Close) {
-    FLOWENGINE_LOGGER_INFO("{} StreamModule was done!", name);
-    stopFlag.store(true);
+  if (!decoder && !decoder->isRunning()) {
     return;
   }
-  startup();
+  auto currentTime = std::chrono::high_resolution_clock::now();
+  if (config->runTime == 0 || currentTime < endTime) {
+    startup();
+  } else {
+    afterForward();
+  }
 }
+
+void StreamModule::beforeForward() {
+  // 此处会悬停等待解码器（即使是收到了Close信号依然会继续排队）
+  decoder = FIFOVideoDecoderPool::getInstance().acquire();
+
+  // 启动解码器
+  if (!decoder->start(config->uri)) {
+    FLOWENGINE_LOGGER_ERROR("StreamModule is failed to open {}!", config->uri);
+    // 归还解码器
+    FIFOVideoDecoderPool::getInstance().release(std::move(decoder));
+    decoder = nullptr;
+    return;
+  }
+  startTime = std::chrono::high_resolution_clock::now(); // 初始化开始时间
+  endTime = startTime + std::chrono::seconds(config->runTime); // 初始化结束时间
+  FLOWENGINE_LOGGER_INFO("StreamModule video is opened {}!", config->uri);
+};
 
 void StreamModule::startup() {
 
@@ -138,6 +163,16 @@ void StreamModule::startup() {
   // std::this_thread::yield();
   std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
+
+void StreamModule::afterForward() {
+  // 此时意味着需要对decoder进行归还
+  if (decoder) {
+    FIFOVideoDecoderPool::getInstance().release(std::move(decoder));
+    decoder = nullptr;
+    FLOWENGINE_LOGGER_DEBUG("{} has finished!", name);
+  }
+}
+
 FlowEngineModuleRegister(StreamModule, backend_ptr, std::string const &,
                          MessageType const &, ModuleConfig &);
 } // namespace module
