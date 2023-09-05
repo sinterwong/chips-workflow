@@ -26,6 +26,7 @@ namespace video {
 
 bool VideoDecode::init() {
   if (uri.empty()) {
+    // X3这里在构造对象的时候需要初始化解码器
     stream = videoSource::Create();
   } else {
     videoOptions opt;
@@ -44,14 +45,19 @@ bool VideoDecode::start(const std::string &url) {
                            stream->GetResource().string);
     return false;
   }
+  uri = url;
   videoOptions opt;
   opt.videoIdx = channel;
-  opt.resource = url;
+  opt.resource = uri;
 
   return stream->Open(opt);
 }
 
 bool VideoDecode::stop() {
+  if (!stream->IsStreaming()) {
+    FLOWENGINE_LOGGER_ERROR("The stream was not started {}.", uri);
+    return false;
+  }
   stream->Close();
   return true;
 }

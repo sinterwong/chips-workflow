@@ -48,6 +48,8 @@ public:
 
   inline bool isRunning() override { return stream && stream->IsStreaming(); }
 
+  inline std::string getUri() override { return uri; }
+
   inline int getHeight() override {
     if (isRunning()) {
       return stream->GetHeight();

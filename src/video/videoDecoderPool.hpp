@@ -10,6 +10,8 @@
  */
 
 #include "videoDecode.hpp"
+#include <condition_variable>
+#include <list>
 #include <queue>
 
 #ifndef __FLOWENGINE_VIDEO_DECODER_POOL_H_

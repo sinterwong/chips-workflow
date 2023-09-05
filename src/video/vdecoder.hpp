@@ -34,6 +34,7 @@ public:
   virtual bool isRunning() = 0;
 
   // 基础信息获取
+  virtual std::string getUri() = 0;
   virtual int getHeight() = 0;
   virtual int getWidth() = 0;
   virtual int getRate() = 0;
