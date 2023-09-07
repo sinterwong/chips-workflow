@@ -54,7 +54,7 @@ bool VideoDecode::start(const std::string &url) {
 }
 
 bool VideoDecode::stop() {
-  if (!stream->IsStreaming()) {
+  if (!stream || !stream->IsStreaming()) {
     FLOWENGINE_LOGGER_ERROR("The stream was not started {}.", uri);
     return false;
   }

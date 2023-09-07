@@ -104,7 +104,7 @@ void StreamModule::step() {
     beforeForward();
   }
 
-  if (!decoder && !decoder->isRunning()) {
+  if (!decoder || !decoder->isRunning()) {
     return;
   }
   auto currentTime = std::chrono::high_resolution_clock::now();

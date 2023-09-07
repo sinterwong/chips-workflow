@@ -183,11 +183,8 @@ void YUV444toNV12(cv::Mat const &input, cv::Mat &output) {
 void RGB2NV12(cv::Mat const &input, cv::Mat &output, bool is_parallel) {
   // 这里图片的宽高必须是偶数，否则直接卡死这里
   cv::Rect rect{0, 0, input.cols, input.rows};
-  if (rect.width % 2 != 0)
-    rect.width -= 1;
-  if (rect.height % 2 != 0) {
-    rect.height -= 1;
-  }
+  rect.width -= rect.width % 2;
+  rect.height -= rect.height % 2;
   cv::Mat in_temp = input(rect);
   cv::Mat temp;
   cv::cvtColor(in_temp, temp, cv::COLOR_RGB2YUV_I420);
@@ -226,14 +223,11 @@ bool _crop<ColorType::NV12>(cv::Mat const &input, cv::Mat &output,
                    .rowRange(input.rows * 2 / 3 + rect.y / 2,
                              input.rows * 2 / 3 + (rect.y + rect.height) / 2)
                    .colRange(rect.x, rect.x + rect.width);
-  cv::Mat y_cropped = y.clone();
-  cv::Mat uv_cropped = uv.clone();
   cv::Rect2i rect_y(0, 0, rect.width, rect.height);
   cv::Rect2i rect_uv(0, 0, rect.width, rect.height / 2);
-  y_cropped = y_cropped(rect_y);
-  uv_cropped = uv_cropped(rect_uv);
+  cv::Mat y_cropped = y(rect_y);
+  cv::Mat uv_cropped = uv(rect_uv);
   cv::vconcat(y_cropped, uv_cropped, output);
-
   return true;
 }
 
@@ -251,11 +245,9 @@ bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
     rect.height = std::min(maxHeight - rect.y, rect.height + sh);
   }
   // width 和 height 如果为奇数的话至少是1，因此可以直接操作
-  if (rect.width % 2 != 0)
-    rect.width -= 1;
-  if (rect.height % 2 != 0) {
-    rect.height -= 1;
-  }
+  rect.width -= rect.width % 2;
+  rect.height -= rect.height % 2;
+
   if (rect.width + rect.x > maxWidth || rect.height + rect.y > maxHeight) {
     FLOWENGINE_LOGGER_ERROR("cropImage is failed: error region!");
     return false;
