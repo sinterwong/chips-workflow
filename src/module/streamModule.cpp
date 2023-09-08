@@ -14,6 +14,7 @@
 #include "logger/logger.hpp"
 #include "messageBus.h"
 #include <array>
+#include <chrono>
 #include <memory>
 #include <opencv2/opencv.hpp>
 #include <stdexcept>
@@ -125,6 +126,8 @@ void StreamModule::beforeForward() {
     // 归还解码器
     FIFOVideoDecoderPool::getInstance().release(std::move(decoder));
     decoder = nullptr;
+    // 等待一会再回去排队
+    std::this_thread::sleep_for(std::chrono::seconds(2));
     return;
   }
   startTime = std::chrono::high_resolution_clock::now(); // 初始化开始时间
