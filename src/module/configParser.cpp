@@ -163,18 +163,18 @@ bool ConfigParser::parseConfig(std::string const &path,
         EXTRACT_JSON_VALUE(p, "Id", stream_config.cameraId);
         EXTRACT_JSON_VALUE(p, "height", stream_config.height);
         EXTRACT_JSON_VALUE(p, "width", stream_config.width);
-        if (p.count("runTime") > 0) {
-          try {
-            stream_config.runTime =
-                p["runTime"].get<decltype(stream_config.runTime)>();
-          } catch (std::exception const &e) {
-            FLOWENGINE_LOGGER_ERROR(
-                "ConfigParser: Paramer extracting \"{}\" was failed!",
-                "runTime");
-            return false;
-          }
-        }
-        // EXTRACT_JSON_VALUE(p, "runTime", stream_config.runTime);
+        // if (p.count("runTime") > 0) {
+        //   try {
+        //     stream_config.runTime =
+        //         p["runTime"].get<decltype(stream_config.runTime)>();
+        //   } catch (std::exception const &e) {
+        //     FLOWENGINE_LOGGER_ERROR(
+        //         "ConfigParser: Paramer extracting \"{}\" was failed!",
+        //         "runTime");
+        //     return false;
+        //   }
+        // }
+        EXTRACT_JSON_VALUE(p, "runTime", stream_config.runTime);
 
         config.setParams(std::move(stream_config));
         break;

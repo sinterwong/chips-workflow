@@ -233,7 +233,8 @@ public:
       // 这里相当于只条件变量通知所在的线程，因为是栈内局部变量
       waitingQueue.front()->notify_one();
     }
-    std::this_thread::sleep_for(std::chrono::microseconds(500));
+    // 因为解码器会被析构掉，因此这里就不用等待了
+    // std::this_thread::sleep_for(std::chrono::microseconds(500));
   }
 };
 
