@@ -191,10 +191,10 @@ int FFStream::getRawFrame(void **data, bool isCopy, bool onlyIFrame) {
     error = av_read_frame(avContext, &avpacket);
   }
   if (error < 0) {
-    if (error == AVERROR_EOF || avContext->pb->eof_reached) {
+    if (error == AVERROR_EOF || (avContext->pb && avContext->pb->eof_reached)) {
       FLOWENGINE_LOGGER_INFO("There is no more input data, {}!", avpacket.size);
     } else {
-      FLOWENGINE_LOGGER_INFO("Failed to av_read_frame error(0x{})", error);
+      FLOWENGINE_LOGGER_ERROR("Failed to av_read_frame error(0x{})", error);
     }
     return -1;
   } else {

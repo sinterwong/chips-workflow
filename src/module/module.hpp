@@ -13,7 +13,9 @@
 #define FLOWCORE_MODULE_HPP
 
 #include <atomic>
+#include <chrono>
 #include <memory>
+#include <thread>
 #include <vector>
 
 #include "backend.h"
@@ -46,9 +48,7 @@ public:
     stopFlag.store(false);
     ptr->message->registered(name);
   }
-  virtual ~Module() {
-    ptr->message->unregistered(name);
-  }
+  virtual ~Module() { ptr->message->unregistered(name); }
 
   virtual bool isRunning() { return !stopFlag.load(); };
 
@@ -71,14 +71,18 @@ public:
     bool loop = false;
 
     beforeGetMessage();
+    // 所有module的recv都会有一个Administrator来控制关闭，因此初始长度为1
     if (recvModule.size() > 1) {
+      // 目前这里实际每次只会接收一个消息去处理
       while (mselector.empty() || loop) {
         MessageBus::returnFlag flag;
         std::string sender;
         MessageType stype;
         queueMessage message;
         loop = ptr->message->recv(name, flag, sender, stype, message, true);
-        if (!loop) { // 消息收集为空，执行下一次任务
+        if (!loop) { // 消息收集为空，继续忙等扫描。
+          // TODO 不设置sleep在没有消息传入时会导致cpu空转，考虑条件变量
+          std::this_thread::sleep_for(std::chrono::microseconds(30));
           continue;
         }
         // 如果存在同一发送者的消息，只处理一次，用新的去覆盖旧的即可
