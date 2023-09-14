@@ -27,7 +27,7 @@ class VideoDecode : private VDecoder {
 private:
   std::string uri; // 流地址
   int w, h;        // 流分辨率
-  std::unique_ptr<videoSource> stream;
+  std::unique_ptr<videoSource> stream = nullptr;
   std::unique_ptr<joining_thread> consumer; // 消费者
   std::mutex frame_m;
   uchar3 *frame = nullptr;
@@ -35,39 +35,51 @@ private:
 
   void consumeFrame();
 
+  void fillOptionByCV(std::string &url, videoOptions &options);
+
 public:
-  bool init();
+  bool init() override;
 
-  bool run();
+  bool run() override;
 
-  inline bool isRunning() { return stream && stream->IsStreaming(); }
+  bool start(std::string const &) override;
 
-  inline int getHeight() {
+  bool stop() override;
+
+  inline bool isRunning() override { return stream && stream->IsStreaming(); }
+
+  inline std::string getUri() override {
+    return uri;
+  } 
+  
+  inline int getHeight() override {
     if (isRunning()) {
       return stream->GetHeight();
     }
     return -1;
   }
 
-  inline int getWidth() {
+  inline int getWidth() override {
     if (isRunning()) {
       return stream->GetWidth();
     }
     return -1;
   }
 
-  inline int getRate() {
+  inline int getRate() override {
     if (isRunning()) {
       return stream->GetFrameRate();
     }
     return -1;
   }
 
-  std::shared_ptr<cv::Mat> getcvImage();
+  std::shared_ptr<cv::Mat> getcvImage() override;
 
-  inline common::ColorType getType() const noexcept {
+  inline common::ColorType getType() const noexcept override {
     return common::ColorType::RGB888;
   }
+
+  explicit VideoDecode() {}
 
   explicit VideoDecode(std::string const &uri_, int w_ = 1920, int h_ = 1080)
       : uri(uri_), w(w_), h(h_) {}

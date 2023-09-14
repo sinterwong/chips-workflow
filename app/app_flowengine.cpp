@@ -1,5 +1,5 @@
 /**
- * @file detect_module.cpp
+ * @file app_flowengine.cpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
@@ -32,9 +32,9 @@ DEFINE_int32(log_level, 2, "Specify log level. 1:debug 2:info 3:warn 4:error");
 using namespace module;
 // using common::WORKER_TYPES;
 
+// 该方法执行在main()函数之前，无法接收到日志参数，因此对日志等级的设置放在main()中
 const auto initLogger = []() -> decltype(auto) {
   FlowEngineLoggerInit(true, true, true, true);
-  FlowEngineLoggerSetLevel(FLAGS_log_level);
   return true;
 }();
 
@@ -42,6 +42,9 @@ int main(int argc, char **argv) {
   gflags::SetUsageMessage("some usage message");
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
+
+  FlowEngineLoggerSetLevel(FLAGS_log_level);
+
   /*
   #ifndef NX_SERIAL_NUMBER
     FLOWENGINE_LOGGER_ERROR("device error!");

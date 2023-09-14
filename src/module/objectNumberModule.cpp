@@ -39,11 +39,6 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
     }
     auto image = std::any_cast<std::shared_ptr<cv::Mat>>(frameBuf->read("Mat"));
 
-    if (alarmUtils.isRecording()) {
-      alarmUtils.recordVideo(*image);
-      break;
-    }
-
     // 初始待计算区域，每次算法结果出来之后需要更新regions
     std::vector<common::RetBox> regions;
     for (auto const &area : config->regions) {
@@ -129,9 +124,6 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
         }
       }
     }
-  }
-  if (!alarmUtils.isRecording()) {
-    std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
   }
 }
 

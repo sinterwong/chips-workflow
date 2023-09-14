@@ -30,7 +30,7 @@ class LicensePlateModule : Module {
 public:
   LicensePlateModule(backend_ptr ptr, std::string const &name,
                      MessageType const &type, ModuleConfig &config_)
-      : Module(ptr, name, type) {
+      : Module(ptr, name, type, *config_.getParams<OCRConfig>()) {
     config = std::make_unique<OCRConfig>(*config_.getParams<OCRConfig>());
   }
 

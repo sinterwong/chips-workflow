@@ -24,14 +24,14 @@ int main(int argc, char **argv) {
       std::make_unique<infer::AlgorithmManager>());
 
   module::ModuleConfig streamConfig; // 用于初始化 ModuleConfig::configMap
-  common::StreamBase streamBase{0,      1920,   1080,      FLAGS_uri,
-                                "h264", "rtsp", "myStream"};
+  common::StreamBase streamBase{{100},     0,      1920,   1080,
+                                FLAGS_uri, "h264", "rtsp", "myStream"};
   streamConfig.setParams(std::move(streamBase));
   module::StreamModule streamModule{backendPtr, "stream", MessageType::Stream,
                                     streamConfig};
 
   module::ModuleConfig statusConfig;
-  common::OutputBase outputBase{"http://localhost:9876/v1/flow/alarm"};
+  common::OutputBase outputBase{{100}, "http://localhost:9876/v1/flow/alarm"};
   statusConfig.setParams(std::move(outputBase));
   module::StatusOutputModule statusOutputModule{
       backendPtr, "statusOutput", MessageType::Status, statusConfig};

@@ -24,7 +24,7 @@ class FrameDifferenceModule : public Module {
 public:
   FrameDifferenceModule(backend_ptr ptr, std::string const &name,
                         MessageType const &type, ModuleConfig &config_)
-      : Module(ptr, name, type) {
+      : Module(ptr, name, type, *config_.getParams<DetClsMonitor>()) {
     config = std::make_unique<DetClsMonitor>(
         *config_.getParams<DetClsMonitor>());
   }

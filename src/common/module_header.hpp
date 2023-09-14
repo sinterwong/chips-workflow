@@ -48,10 +48,18 @@ struct ModuleInfo {
 };
 
 /**
+ * @brief module 基本参数
+ *
+ */
+struct ModuleBase {
+  int64_t interval = 100; // 模块执行后间隔时间(ms)
+};
+
+/**
  * @brief 流组件的基本参数
  *
  */
-struct StreamBase {
+struct StreamBase : public ModuleBase {
   int cameraId;           // 摄像机 ID
   int width;              // 视频宽度
   int height;             // 视频高度
@@ -59,13 +67,14 @@ struct StreamBase {
   std::string videoCode;  // 视频编码类型（h264, h265, ..)
   std::string flowType;   // 流协议类型（rtsp, rtmp, ..)
   std::string cameraName; // 摄像机名称(uuid)
+  int runTime;            // 每次轮询执行多长时间
 };
 
 /**
  * @brief 输出组件基本的参数
  *
  */
-struct OutputBase {
+struct OutputBase : public ModuleBase {
   std::string url; // 通信的url
 };
 
@@ -86,40 +95,23 @@ using algo_pipelines = std::vector<std::pair<std::string, AlgoParams>>;
  * @brief 逻辑的基本参数，logic包含报警时的配置
  *
  */
-struct LogicBase {
-  algo_pipelines algoPipelines; // 算法执行的pipeline
-  int64_t interval = 100;       // 间隔时间(ms)
-};
-
-/**
- * @brief 报警逻辑的参数
- *
- */
-struct AlarmBase {
-  int eventId;           // unknow，需要原路返回给后端
-  std::string page;      // unknow，需要原路返回给后端
-  std::string outputDir; // 报警内容存储路径
-  int videoDuration;     // 报警视频录制时长
-  bool isDraw;           // 报警图像是否需要标记报警信息
-};
-
-/**
- * @brief 前端划定区域
- *
- */
-struct AttentionArea {
+struct LogicBase : public ModuleBase {
+  algo_pipelines algoPipelines;  // 算法执行的pipeline
   std::vector<Points2i> regions; // 划定区域
+  int eventId;                   // unknow，需要原路返回给后端
+  std::string page;              // unknow，需要原路返回给后端
+  std::string outputDir;         // 报警内容存储路径
+  int videoDuration;             // 报警视频录制时长
+  bool isDraw;                   // 报警图像是否需要标记报警信息
 };
 
 /**
  * @brief OCR类型的算法逻辑
  *
  */
-struct OCRConfig : public AttentionArea, public LogicBase, public AlarmBase {
-  OCRConfig(AttentionArea &&aaera, LogicBase &&alarm, AlarmBase &&alarmBase_,
-            std::string &&chars_)
-      : AttentionArea(aaera), LogicBase(alarm), AlarmBase(alarmBase_),
-        chars(chars_) {}
+struct OCRConfig : public LogicBase {
+  OCRConfig(LogicBase &&alarm, std::string &&chars_)
+      : LogicBase(alarm), chars(chars_) {}
 
   std::string chars; // 需要匹配的字符集
 };
@@ -128,13 +120,9 @@ struct OCRConfig : public AttentionArea, public LogicBase, public AlarmBase {
  * @brief 计数监控
  *
  */
-struct ObjectCounterConfig : public AttentionArea,
-                             public LogicBase,
-                             public AlarmBase {
-  ObjectCounterConfig(AttentionArea &&aaera, LogicBase &&alarm,
-                      AlarmBase &&abase_, int amount_)
-      : AttentionArea(aaera), LogicBase(alarm), AlarmBase(abase_),
-        amount(amount_) {}
+struct ObjectCounterConfig : public LogicBase {
+  ObjectCounterConfig(LogicBase &&alarm, int amount_)
+      : LogicBase(alarm), amount(amount_) {}
 
   int amount; // 达到一定数量之后报警
 };
@@ -143,13 +131,11 @@ struct ObjectCounterConfig : public AttentionArea,
  * @brief 依靠检测与分类类型的报警模块
  *
  */
-struct DetClsMonitor : public AttentionArea,
-                       public LogicBase,
-                       public AlarmBase {
-  DetClsMonitor(AttentionArea &&aaera, LogicBase &&logic_, AlarmBase &&alarm_,
-                float threshold_, size_t requireExistence_ = 1)
-      : AttentionArea(aaera), LogicBase(logic_), AlarmBase(alarm_),
-        threshold(threshold_), requireExistence(requireExistence_) {}
+struct DetClsMonitor : public LogicBase {
+  DetClsMonitor(LogicBase &&logic_, float threshold_,
+                size_t requireExistence_ = 1)
+      : LogicBase(logic_), threshold(threshold_),
+        requireExistence(requireExistence_) {}
 
   float threshold;         // 报警阈值
   size_t requireExistence; // 要求目标类别存在或不存在

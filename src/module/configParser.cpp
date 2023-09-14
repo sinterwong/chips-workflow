@@ -21,12 +21,10 @@
 #include <utility>
 #include <vector>
 
-using common::AlarmBase;
 using common::algo_pipelines;
 using common::AlgoBase;
 using common::AlgoConfig;
 using common::AlgoParams;
-using common::AttentionArea;
 using common::ClassAlgo;
 using common::DetAlgo;
 using common::DetClsMonitor;
@@ -163,6 +161,18 @@ bool ConfigParser::parseConfig(std::string const &path,
         EXTRACT_JSON_VALUE(p, "Id", stream_config.cameraId);
         EXTRACT_JSON_VALUE(p, "height", stream_config.height);
         EXTRACT_JSON_VALUE(p, "width", stream_config.width);
+        // if (p.count("runTime") > 0) {
+        //   try {
+        //     stream_config.runTime =
+        //         p["runTime"].get<decltype(stream_config.runTime)>();
+        //   } catch (std::exception const &e) {
+        //     FLOWENGINE_LOGGER_ERROR(
+        //         "ConfigParser: Paramer extracting \"{}\" was failed!",
+        //         "runTime");
+        //     return false;
+        //   }
+        // }
+        EXTRACT_JSON_VALUE(p, "runTime", stream_config.runTime);
 
         config.setParams(std::move(stream_config));
         break;
@@ -198,7 +208,6 @@ bool ConfigParser::parseConfig(std::string const &path,
         }
 
         // 前端划定区域 目前来说一定会有这个字段
-        AttentionArea aarea;
         auto regions = p["regions"];
         for (auto const &region : regions) {
           Points2i ret;
@@ -225,16 +234,15 @@ bool ConfigParser::parseConfig(std::string const &path,
               ret.push_back(Point2i{region.at(i), region.at(i + 1)});
             }
           }
-          aarea.regions.emplace_back(ret);
+          lBase.regions.emplace_back(ret);
         }
 
         // 报警配置获取 目前来说一定会有这些字段
-        std::string outputDir, page;
-        int videoDuration, eventId;
-        EXTRACT_JSON_VALUE(p, "alarm_output_dir", outputDir);
-        EXTRACT_JSON_VALUE(p, "video_duration", videoDuration);
-        EXTRACT_JSON_VALUE(p, "event_id", eventId);
-        EXTRACT_JSON_VALUE(p, "page", page);
+        EXTRACT_JSON_VALUE(p, "event_id", lBase.eventId);
+        EXTRACT_JSON_VALUE(p, "page", lBase.page);
+        EXTRACT_JSON_VALUE(p, "alarm_output_dir", lBase.outputDir);
+        EXTRACT_JSON_VALUE(p, "video_duration", lBase.videoDuration);
+        lBase.isDraw = true;
 
         auto func = moduleMapping.at(info.className);
         switch (func) {
@@ -244,12 +252,7 @@ bool ConfigParser::parseConfig(std::string const &path,
           std::string chars;
           EXTRACT_JSON_VALUE(p, "chars", chars);
 
-          auto isDraw = true;
-          AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
-                          isDraw};
-
-          OCRConfig config_{std::move(aarea), std::move(lBase),
-                            std::move(aBase), std::move(chars)};
+          OCRConfig config_{std::move(lBase), std::move(chars)};
           config.setParams(std::move(config_));
           break;
         }
@@ -261,12 +264,7 @@ bool ConfigParser::parseConfig(std::string const &path,
           EXTRACT_JSON_VALUE(p, "threshold", thre);
           EXTRACT_JSON_VALUE(p, "requireExistence", requireExistence);
 
-          auto isDraw = true;
-          AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
-                          isDraw};
-
-          DetClsMonitor config_{std::move(aarea), std::move(lBase),
-                                std::move(aBase), thre, requireExistence};
+          DetClsMonitor config_{std::move(lBase), thre, requireExistence};
           config.setParams(std::move(config_));
           break;
         }
@@ -275,12 +273,7 @@ bool ConfigParser::parseConfig(std::string const &path,
           int amount;
           EXTRACT_JSON_VALUE(p, "amount", amount);
 
-          auto isDraw = true;
-          AlarmBase aBase{eventId, page, std::move(outputDir), videoDuration,
-                          isDraw};
-
-          ObjectCounterConfig config_{std::move(aarea), std::move(lBase),
-                                      std::move(aBase), amount};
+          ObjectCounterConfig config_{std::move(lBase), amount};
           config.setParams(std::move(config_));
           break;
         }

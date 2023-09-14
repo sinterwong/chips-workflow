@@ -114,24 +114,11 @@ void PipelineModule::stopModule(std::string const &moduleName) {
   backendPtr->message->send(name, moduleName, MessageType::Close,
                             queueMessage());
 
-  // 从atm中删除对象
+  // 从atm中删除对象（这里实际的对象不会立即销毁，因为在线程池中还有一个引用，因此会等到线程终止后才会真正销毁）
   atm.erase(moduleName);
 }
 
-/**
- * @brief 根据配置文件的更新启动或者关闭pipeline
- * 1. 解析配置文件，获取模块关联信息和各个模块的配置参数
- * 2. 将配置中没有启动的模块和算法启动
- * 3. 建立模块之间的关系
- * 4. 关闭已经停止的模块以及前端已经关闭的模块
- * 5. 启动算法模块
- * 6. 关闭停用的算法 TODO
- *
- * @return true
- * @return false
- */
-bool PipelineModule::startPipeline() {
-  // 更新模块之前，首先删除已经停用的模块
+void PipelineModule::removeInactiveModules() {
   std::unordered_map<std::string, module_ptr>::iterator it;
   for (it = atm.begin(); it != atm.end();) {
     if (!it->second->isRunning()) {
@@ -143,22 +130,51 @@ bool PipelineModule::startPipeline() {
       ++it;
     }
   }
-  // 暂时不考虑sever的形式
-  std::vector<PipelineParams> pipelines;
-  std::vector<AlgorithmParams> algorithms;
+}
+
+bool PipelineModule::loadConfigs(std::vector<PipelineParams> &pipelines,
+                                 std::vector<AlgorithmParams> &algorithms) {
+
   if (!parseConfigs(config_path, pipelines, algorithms)) {
     FLOWENGINE_LOGGER_ERROR("parse config error");
     return false;
   }
+  return true;
+}
+
+void PipelineModule::updateAlgorithms(
+    const std::vector<AlgorithmParams> &algorithms) {
+  std::vector<std::string> activedAlgos, recentAlgos, willStopAlgos;
+  // 获取已经在活动中的算法列表
+  backendPtr->algo->getActiveAlgorithms(activedAlgos);
+
+  // 获取最新要启动的算法列表
+  recentAlgos.reserve(algorithms.size()); // 预留空间，优化性能
+  std::transform(algorithms.begin(), algorithms.end(),
+                 std::back_inserter(recentAlgos),
+                 [](const auto &pair) { return pair.first; });
+
+  // 比较出需要关闭的算法列表
+  std::copy_if(activedAlgos.begin(), activedAlgos.end(),
+               std::back_inserter(willStopAlgos),
+               [&recentAlgos](const std::string &algo) {
+                 return std::find(recentAlgos.begin(), recentAlgos.end(),
+                                  algo) == recentAlgos.end();
+               });
 
   // 启动算法
   for (auto const &algo : algorithms) {
     submitAlgo(algo.first, algo.second);
   }
 
-  // TODO 关停目前没有使用的算法
+  // 关停目前没有使用的算法
+  for (auto const &name : willStopAlgos) {
+    stopAlgo(name);
+  }
+}
 
-  // 启动pipeline
+void PipelineModule::updatePipelines(
+    const std::vector<PipelineParams> &pipelines) {
   std::vector<std::string> currentModules;
   std::vector<ModuleInfo> moduleRelations;
   for (auto &pipeline : pipelines) {
@@ -196,6 +212,39 @@ bool PipelineModule::startPipeline() {
       }
     }
   }
+}
+
+/**
+ * @brief 根据配置文件的更新启动或者关闭pipeline
+ * 1. 解析配置文件，获取模块关联信息和各个模块的配置参数
+ * 2. 将配置中没有启动的模块和算法启动
+ * 3. 建立模块之间的关系
+ * 4. 关闭已经停止的模块以及前端已经关闭的模块
+ * 5. 启动算法模块
+ * 6. 关闭停用的算法 TODO
+ *
+ * @return true
+ * @return false
+ */
+bool PipelineModule::startPipeline() {
+  // 更新模块之前，首先删除已经停用的模块
+  removeInactiveModules();
+
+  // 读取最新配置
+  std::vector<PipelineParams> pipelines;
+  std::vector<AlgorithmParams> algorithms;
+  if (!loadConfigs(pipelines, algorithms)) {
+    return false;
+  }
+  if (pipelines.empty()) {
+    return true; // 没有最新的配置
+  }
+
+  // 更新算法
+  updateAlgorithms(algorithms);
+
+  // 更新最新的pipelines
+  updatePipelines(pipelines);
   return true;
 }
 

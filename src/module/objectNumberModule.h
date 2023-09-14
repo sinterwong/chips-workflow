@@ -1,12 +1,12 @@
 /**
  * @file objectNumber.h
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2023-04-18
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 
 #ifndef __METAENGINE_OBJECT_NUMBER_MODULE_H_
@@ -26,8 +26,8 @@ class ObjectNumberModule : Module {
 
 public:
   ObjectNumberModule(backend_ptr ptr, std::string const &name,
-                      MessageType const &type, ModuleConfig &config_)
-      : Module(ptr, name, type) {
+                     MessageType const &type, ModuleConfig &config_)
+      : Module(ptr, name, type, *config_.getParams<ObjectCounterConfig>()) {
     config = std::make_unique<ObjectCounterConfig>(
         *config_.getParams<ObjectCounterConfig>());
   }

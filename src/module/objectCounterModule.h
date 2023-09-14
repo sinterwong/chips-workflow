@@ -29,7 +29,7 @@ class ObjectCounterModule : Module {
 public:
   ObjectCounterModule(backend_ptr ptr, std::string const &name,
                       MessageType const &type, ModuleConfig &config_)
-      : Module(ptr, name, type) {
+      : Module(ptr, name, type, *config_.getParams<ObjectCounterConfig>()) {
     config = std::make_unique<ObjectCounterConfig>(
         *config_.getParams<ObjectCounterConfig>());
 
@@ -42,8 +42,8 @@ public:
 
 private:
   AlarmUtils alarmUtils;
-  std::unique_ptr<DeepSortTracker> deepsort;  // 跟踪器
-  std::set<int> counter;  // 计数器
+  std::unique_ptr<DeepSortTracker> deepsort; // 跟踪器
+  std::set<int> counter;                     // 计数器
 };
 } // namespace module
 #endif // __METAENGINE_HELMET_MODULE_H_

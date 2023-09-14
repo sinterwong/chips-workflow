@@ -148,9 +148,6 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
       break;
     }
   }
-  if (!alarmUtils.isRecording()) {
-    std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
-  }
 }
 
 FlowEngineModuleRegister(ObjectCounterModule, backend_ptr, std::string const &,

@@ -25,19 +25,16 @@ int main(int argc, char **argv) {
       std::make_unique<infer::AlgorithmManager>());
 
   module::ModuleConfig streamConfig; // 用于初始化 ModuleConfig::configMap
-  common::StreamBase streamBase{0,      1920,   1080,      FLAGS_uri,
-                                "h264", "rtsp", "myStream"};
+  common::StreamBase streamBase{{100},     0,      1920,   1080,
+                                FLAGS_uri, "h264", "rtsp", "myStream"};
   streamConfig.setParams(std::move(streamBase));
   module::StreamModule streamModule{backendPtr, "stream", MessageType::Stream,
                                     streamConfig};
 
   module::ModuleConfig frameDiffConfig;
-  common::AttentionArea aarea;
   common::LogicBase logic_;
-  common::AlarmBase alarm_;
   float threshold_ = FLAGS_thre;
-  common::DetClsMonitor dcMonitor{std::move(aarea), std::move(logic_),
-                                  std::move(alarm_), threshold_};
+  common::DetClsMonitor dcMonitor{std::move(logic_), threshold_};
   frameDiffConfig.setParams(std::move(dcMonitor));
   module::FrameDifferenceModule fdModule{backendPtr, "frameDiff",
                                          MessageType::None, frameDiffConfig};
