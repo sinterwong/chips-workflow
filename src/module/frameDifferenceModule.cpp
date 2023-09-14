@@ -33,11 +33,6 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
     }
     auto frame = std::any_cast<std::shared_ptr<cv::Mat>>(frameBuf->read("Mat"));
 
-    if (alarmUtils.isRecording()) { // 正在录像
-      alarmUtils.recordVideo(*frame);
-      break;
-    }
-
     // 只能有一个区域被监控
     assert(config->regions.size() <= 1);
     cv::Mat croppedImage;
@@ -88,14 +83,6 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
     alarmUtils.saveAlarmImage(buf.alarmInfo.alarmFile + "/" +
                                   buf.alarmInfo.alarmId + ".jpg",
                               *frame, buf.frameType, config->isDraw);
-    // // 初始化报警视频
-    // if (config->videoDuration > 0) {
-    //   alarmUtils.initRecorder(
-    //       buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".mp4",
-    //       buf.alarmInfo.width, buf.alarmInfo.height, 25,
-    //       config->videoDuration);
-    // }
-
     autoSend(buf);
     // 录制报警视频
     if (config->videoDuration > 0) {
@@ -109,9 +96,6 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
     }
 
     break;
-  }
-  if (!alarmUtils.isRecording()) {
-    std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
   }
 }
 FlowEngineModuleRegister(FrameDifferenceModule, backend_ptr,

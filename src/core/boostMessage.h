@@ -38,9 +38,8 @@ public:
   virtual bool send(std::string const &source, std::string const &target,
                     MessageType const &type, queueMessage message) override;
 
-  virtual bool recv(std::string const &name, returnFlag &flag,
-                    std::string &sender, MessageType &type,
-                    queueMessage &message, bool waitFlag = true) override;
+  virtual bool recv(std::string const &name, std::string &sender,
+                    MessageType &type, queueMessage &message) override;
 };
 
 #endif // FLOWCORE_BOOSTMESSAGE_H

@@ -66,7 +66,7 @@ public:
 
     obj->stop();
     available.push_back(std::move(obj));
-    std::this_thread::sleep_for(std::chrono::microseconds(500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
 };
 
@@ -123,7 +123,7 @@ public:
       // 这里相当于只条件变量通知所在的线程，因为是栈内局部变量
       waitingQueue.front()->notify_one();
     }
-    std::this_thread::sleep_for(std::chrono::microseconds(500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
 };
 

@@ -11,6 +11,7 @@
 
 #include "core/algoInfer.hpp"
 #include "core/algorithmBus.h"
+#include <algorithm>
 #include <memory>
 #include <shared_mutex>
 #include <unordered_map>
@@ -40,6 +41,15 @@ public:
   getSerial(std::string const &name) const noexcept override {
     return name2algo.at(name)->getSerial();
   };
+
+  virtual void
+  getActiveAlgorithms(std::vector<std::string> &activedAlgorithms) override {
+    std::shared_lock<std::shared_mutex> lock(m); // 为读取加锁
+    activedAlgorithms.reserve(name2algo.size()); // 预留空间，优化性能
+    std::transform(name2algo.begin(), name2algo.end(),
+                   std::back_inserter(activedAlgorithms),
+                   [](const auto &pair) { return pair.first; });
+  }
 
 protected:
   // 名称索引算法

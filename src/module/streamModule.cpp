@@ -59,10 +59,10 @@ frame_ptr makeFrameBuf(std::shared_ptr<cv::Mat> frame, int height, int width) {
 }
 
 StreamModule::StreamModule(backend_ptr ptr, std::string const &_name,
-                           MessageType const &_type, ModuleConfig &_config)
-    : Module(ptr, _name, _type) {
+                           MessageType const &_type, ModuleConfig &config_)
+    : Module(ptr, _name, _type, *config_.getParams<StreamBase>()) {
 
-  config = std::make_unique<StreamBase>(*_config.getParams<StreamBase>());
+  config = std::make_unique<StreamBase>(*config_.getParams<StreamBase>());
   if (ptr->pools->registered(name, 2)) {
     FLOWENGINE_LOGGER_INFO("{} stream pool registering is successful", name);
   } else {
@@ -75,11 +75,10 @@ void StreamModule::messageListener() {
   // 在此处监听外界的消息，这样的话就可以放心大胆的实现轮询逻辑了
   while (!stopFlag.load()) {
     // 检查外界消息
-    MessageBus::returnFlag flag;
     std::string sender;
     MessageType stype = MessageType::None;
     queueMessage message;
-    ptr->message->recv(name, flag, sender, stype, message, false);
+    ptr->message->recv(name, sender, stype, message);
     if (stype == MessageType::Close) {
       stopFlag.store(true);
       return;

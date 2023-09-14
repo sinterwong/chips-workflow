@@ -44,11 +44,6 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
     }
     auto image = std::any_cast<std::shared_ptr<cv::Mat>>(frameBuf->read("Mat"));
 
-    // if (alarmUtils.isRecording()) {
-    //   alarmUtils.recordVideo(*image);
-    //   break;
-    // }
-
     // 初始待计算区域，每次算法结果出来之后需要更新regions
     std::vector<common::RetBox> regions;
     for (auto const &area : config->regions) {
@@ -142,13 +137,6 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
       alarmUtils.saveAlarmImage(buf.alarmInfo.alarmFile + "/" +
                                     buf.alarmInfo.alarmId + ".jpg",
                                 *image, buf.frameType, config->isDraw);
-      // // 初始化报警视频
-      // if (config->videoDuration > 0) {
-      //   alarmUtils.initRecorder(buf.alarmInfo.alarmFile + "/" +
-      //                               buf.alarmInfo.alarmId + ".mp4",
-      //                           buf.alarmInfo.width, buf.alarmInfo.height,
-      //                           25, config->videoDuration);
-      // }
       autoSend(buf);
       // 录制报警视频
       if (config->videoDuration > 0) {
@@ -162,9 +150,6 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
       }
     }
   }
-  // if (!alarmUtils.isRecording()) {
-  std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
-  // }
 }
 
 FlowEngineModuleRegister(LicensePlateModule, backend_ptr, std::string const &,

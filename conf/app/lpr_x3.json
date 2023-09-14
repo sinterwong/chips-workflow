@@ -16,7 +16,7 @@
         3
       ],
       "isScale": false,
-      "modelPath": "/root/workspace/softwares/flowengine/models/plate_detect_640x640_nv12.bin",
+      "modelPath": "/opt/deploy/models/plate_detect_640x640_nv12.bin",
       "num_points": 4,
       "nms_thr": 0.45,
       "outputNames": [
@@ -39,7 +39,7 @@
         3
       ],
       "isScale": false,
-      "modelPath": "/root/workspace/softwares/flowengine/models/lprnet_48x176_nv12.bin",
+      "modelPath": "/opt/deploy/models/lprnet_48x176_nv12.bin",
       "outputNames": [
         "softmax"
       ]
@@ -81,7 +81,7 @@
           "event_id": 8,
           "height": "1280",
           "name": "logic_lpr_1673517182740",
-          "interval": 10,
+          "interval": 2,
           "page": "1_0_0",
           "recvName": "stream_8677cd23-9813-4152-aa58-43fa0d1858aa",
           "regions": [],

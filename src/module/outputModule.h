@@ -41,7 +41,7 @@ protected:
 public:
   OutputModule(backend_ptr ptr, std::string const &name,
                MessageType const &type, ModuleConfig &config_)
-      : Module(ptr, name, type) {
+      : Module(ptr, name, type, *config_.getParams<OutputBase>()) {
     config = std::make_unique<OutputBase>(*config_.getParams<OutputBase>());
   }
   ~OutputModule() {}
