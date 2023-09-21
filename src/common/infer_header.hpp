@@ -67,42 +67,43 @@ struct FrameInfo {
  * @brief bbox result type, x1, y1, x2, y2, conf, class_id
  *
  */
-using RetBox = std::pair<std::string, std::array<float, 6>>;
+// using RetBox = std::pair<std::string, std::array<float, 6>>;
 
-struct NewRetBox {
-  // 外界框的坐标
-  std::vector<Points2i> points;
-  int x, y, width, height, idx;
-  float confidence;
+struct RetBox {
+  std::string name;
+  Points2i points;
+  int x = 0, y = 0, width = 0, height = 0, idx = 0;
+  float confidence = 0.0;
+  bool isPoly = false;
 
-  NewRetBox() = default;
+  RetBox() = default;
 
-  NewRetBox(int x_, int y_, int width_, int height_)
-      : x(x_), y(y_), width(width_), height(height_), idx(0), confidence(0.0) {}
+  RetBox(std::string name_, Points2i points_ = {})
+      : name(std::move(name_)), points(std::move(points_)) {
+    if (points.size() > 2) {
+      isPoly = true;
+      getRectBox(points);
+    }
+  }
 
-  NewRetBox(int x_, int y_, int width_, int height_, int idx_, float conf_)
-      : x(x_), y(y_), width(width_), height(height_), idx(idx_),
-        confidence(conf_) {}
-
-  NewRetBox(std::vector<Points2i> &regions) {}
+  RetBox(std::string name_, int x_, int y_, int width_, int height_,
+         float conf_ = 0.0, int idx_ = 0)
+      : name(std::move(name_)), x(x_), y(y_), width(width_), height(height_),
+        idx(idx_), confidence(conf_) {}
 
 private:
-  void getRectBox(std::vector<Points2i> &regions) {
+  void getRectBox(Points2i &area) {
     int minX = INT_MAX, minY = INT_MAX, maxX = INT_MIN, maxY = INT_MIN;
-
-    for (const auto &region : regions) {
-      for (const auto &point : region) {
-        minX = std::min(minX, point.x);
-        minY = std::min(minY, point.y);
-        maxX = std::max(maxX, point.x);
-        maxY = std::max(maxY, point.y);
-      }
+    for (const auto &point : area) {
+      minX = std::min(minX, point.x);
+      minY = std::min(minY, point.y);
+      maxX = std::max(maxX, point.x);
+      maxY = std::max(maxY, point.y);
     }
-
     x = minX;
     y = minY;
-    width = maxX - minX + 1;
-    height = maxY - minY + 1;
+    width = maxX - minX;
+    height = maxY - minY;
   }
 };
 

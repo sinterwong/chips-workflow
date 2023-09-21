@@ -60,5 +60,9 @@ void RGB2NV12(cv::Mat const &input, cv::Mat &output, bool is_parallel = false);
 
 bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
                common::ColorType type, float sr = 0.0);
+
+using common::RetBox;
+bool cropImage(cv::Mat const &input, cv::Mat &output, RetBox &bbox,
+               common::ColorType type, float sr = 0);
 } // namespace infer::utils
 #endif

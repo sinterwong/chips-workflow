@@ -48,7 +48,7 @@ algo_ptr getVision(AlgoConfig &&config) {
 void inference(cv::Mat &image, InferResult &ret,
                std::shared_ptr<AlgoInfer> vision) {
 
-  RetBox region{"hello", {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
+  RetBox region{"hello"};
 
   InferParams params{std::string("hello"),
                      ColorType::NV12,

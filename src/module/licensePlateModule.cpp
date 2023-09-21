@@ -47,15 +47,11 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
     // 初始待计算区域，每次算法结果出来之后需要更新regions
     std::vector<common::RetBox> regions;
     for (auto const &area : config->regions) {
-      regions.emplace_back(common::RetBox{
-          name,
-          {static_cast<float>(area[0].x), static_cast<float>(area[0].y),
-           static_cast<float>(area[1].x), static_cast<float>(area[1].y), 0.0,
-           0.0}});
+      regions.emplace_back(RetBox(name, area));
     }
     if (regions.empty()) {
       // 前端没有画框
-      regions.emplace_back(common::RetBox{name, {0, 0, 0, 0, 0, 0}});
+      regions.emplace_back(common::RetBox{name});
     }
 
     assert(regions.size() == 1);
@@ -107,7 +103,7 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
       InferParams recParams{name,
                             buf.frameType,
                             0.0,
-                            common::RetBox{name, {0, 0, 0, 0, 0, 0}},
+                            common::RetBox{name},
                             {licensePlateImage.cols, licensePlateImage.rows,
                              licensePlateImage.channels()}};
       InferResult textRecRet;

@@ -61,10 +61,7 @@ int main(int argc, char **argv) {
     frame_diff.update(input, bboxes, FLAGS_thre);
     for (auto &bbox : bboxes) {
       // draw bbox in frame
-      cv::rectangle(input,
-                    cv::Rect(bbox.second[0], bbox.second[1],
-                             bbox.second[2] - bbox.second[0],
-                             bbox.second[3] - bbox.second[1]),
+      cv::rectangle(input, cv::Rect(bbox.x, bbox.y, bbox.width, bbox.height),
                     cv::Scalar(0, 255, 0), 2);
     }
     FLOWENGINE_LOGGER_INFO("num of bbox: {}", bboxes.size());

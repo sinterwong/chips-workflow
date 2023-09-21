@@ -1,7 +1,7 @@
 #include "gflags/gflags.h"
 #include "infer/preprocess.hpp"
-#include "utils/time_utils.hpp"
 #include "logger/logger.hpp"
+#include "utils/time_utils.hpp"
 #include <chrono>
 #include <memory>
 #include <opencv2/core/mat.hpp>
@@ -15,11 +15,16 @@ DEFINE_string(image_path, "", "Specify the path of image.");
 using namespace std::chrono_literals;
 using namespace infer::utils;
 using namespace utils;
-int main(int argc, char **argv) {
-  gflags::SetUsageMessage("some usage message");
-  gflags::SetVersionString("1.0.0");
-  gflags::ParseCommandLineFlags(&argc, &argv, true);
+using common::Points2i;
+using Point2i = common::Point<int>;
+using common::RetBox;
 
+const auto initLogger = []() -> decltype(auto) {
+  FlowEngineLoggerInit(true, true, true, true);
+  return true;
+}();
+
+void test_color_convert() {
   cv::Mat image_bgr = cv::imread(FLAGS_image_path);
 
   FLOWENGINE_LOGGER_INFO("Image size: {}x{}", image_bgr.cols, image_bgr.rows);
@@ -129,6 +134,41 @@ int main(int argc, char **argv) {
   cv::Mat image_resized_bgr;
   cv::cvtColor(image_nv12_resized, image_resized_bgr, CV_YUV2BGR_NV12);
   cv::imwrite("bgr_resized_image.jpg", image_resized_bgr);
+}
+
+void test_new_crop() {
+  cv::Mat image_bgr = cv::imread(FLAGS_image_path);
+  FLOWENGINE_LOGGER_INFO("Image size: {}x{}", image_bgr.cols, image_bgr.rows);
+  // bgr to rgb
+  cv::Mat image_rgb, image_rgb_croped;
+  cv::cvtColor(image_bgr, image_rgb, cv::COLOR_BGR2RGB);
+  // rgb to nv12
+  cv::Mat image_nv12, image_nv12_croped, image_nv12_croped_bgr;
+  RGB2NV12(image_rgb, image_nv12);
+
+  common::Points2i points{Point2i{100, 100}, Point2i{300, 100},
+                          Point2i{350, 400}, Point2i{80, 450}};
+
+  RetBox bbox{"hello", points};
+
+  cropImage(image_rgb, image_rgb_croped, bbox, common::ColorType::RGB888, 0.5);
+  cv::imwrite("test_new_crop_rgb.jpg", image_rgb_croped);
+
+  cropImage(image_nv12, image_nv12_croped, bbox, common::ColorType::NV12, 0.5);
+  cv::imwrite("test_new_crop_nv12.jpg", image_nv12_croped);
+
+  cv::cvtColor(image_nv12_croped, image_nv12_croped_bgr, cv::COLOR_YUV2BGR_NV12);
+  cv::imwrite("test_new_crop_nv12_bgr.jpg", image_nv12_croped_bgr);
+}
+
+int main(int argc, char **argv) {
+  gflags::SetUsageMessage("some usage message");
+  gflags::SetVersionString("1.0.0");
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
+
+  // test_color_convert();
+
+  test_new_crop();
 
   return 0;
 }

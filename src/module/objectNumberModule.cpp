@@ -42,15 +42,11 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
     // 初始待计算区域，每次算法结果出来之后需要更新regions
     std::vector<common::RetBox> regions;
     for (auto const &area : config->regions) {
-      regions.emplace_back(common::RetBox{
-          name,
-          {static_cast<float>(area[0].x), static_cast<float>(area[0].y),
-           static_cast<float>(area[1].x), static_cast<float>(area[1].y), 0.0,
-           0.0}});
+      regions.emplace_back(RetBox(name, area));
     }
     if (regions.empty()) {
       // 前端没有画框
-      regions.emplace_back(common::RetBox{name, {0, 0, 0, 0, 0, 0}});
+      regions.emplace_back(common::RetBox{name});
     }
 
     // 根据提供的配置执行算法，
@@ -91,11 +87,13 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
           //   continue;
           // }
         }
-        common::RetBox b = {
-            name,
-            {bbox.bbox[0] + region.second[0], bbox.bbox[1] + region.second[1],
-             bbox.bbox[2] + region.second[0], bbox.bbox[3] + region.second[1],
-             bbox.det_confidence, bbox.class_id}};
+        common::RetBox b = {name,
+                            static_cast<int>(bbox.bbox[0] + region.x),
+                            static_cast<int>(bbox.bbox[1] + region.y),
+                            static_cast<int>(bbox.bbox[2] - bbox.bbox[0]),
+                            static_cast<int>(bbox.bbox[3] - bbox.bbox[1]),
+                            bbox.det_confidence,
+                            static_cast<int>(bbox.class_id)};
         rbboxes.emplace_back(std::move(b));
         objectNumber++;
       }

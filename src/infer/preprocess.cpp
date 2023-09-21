@@ -11,6 +11,8 @@
 #include "preprocess.hpp"
 #include "logger/logger.hpp"
 #include <common/common.hpp>
+#include <opencv2/core/types.hpp>
+#include <opencv2/imgproc.hpp>
 #include <opencv2/imgproc/types_c.h>
 
 using common::ColorType;
@@ -271,6 +273,76 @@ bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
 bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
                ColorType type, float sr) {
   return crop(input, output, rect, type, sr);
+}
+
+bool delBoundaryInfo(cv::Mat const &input, cv::Mat &output,
+                     std::vector<cv::Point2i> &points, ColorType type) {
+
+  if (type == ColorType::NV12) {
+
+    cv::Mat yMask(cv::Size(input.cols, input.rows * 2 / 3), CV_8UC1,
+                  cv::Scalar(0));
+
+    cv::fillPoly(yMask, std::vector<std::vector<cv::Point2i>>{points},
+                 cv::Scalar(255));
+
+    // u和v分量的mask
+    cv::Mat uMask, vMask;
+    cv::resize(yMask, uMask, cv::Size(yMask.cols / 2, yMask.rows / 2));
+    vMask = uMask;
+
+    cv::Mat uvMask;
+    // 合并uMask和vMask到uvMask(uv是交叉排列的)
+    uvMask.create(uMask.rows, uMask.cols * 2, CV_8UC1);
+    for (int y = 0; y < uvMask.rows; y++) {
+      for (int x = 0; x < uvMask.cols; x += 2) {
+        uvMask.at<uchar>(y, x) = uMask.at<uchar>(y, x / 2);
+        uvMask.at<uchar>(y, x + 1) = vMask.at<uchar>(y, x / 2);
+      }
+    }
+
+    // 将yMask为0的部分对应的output填0
+    output(cv::Rect(0, 0, input.cols, input.rows * 2 / 3)).setTo(0, yMask == 0);
+
+    // 将uvMask为0的部分对应的output填128
+    output(cv::Rect(0, input.rows * 2 / 3, input.cols, input.rows / 3))
+        .setTo(128, uvMask == 0);
+
+  } else if (type == ColorType::BGR888 || type == ColorType::RGB888) {
+    // 创建一个空的黑色掩膜
+    cv::Mat mask(output.size(), CV_8UC1, cv::Scalar(0));
+    cv::fillPoly(mask, std::vector<std::vector<cv::Point2i>>{points},
+                 cv::Scalar(255));
+    output.setTo(0, mask == 0);
+  } else {
+    FLOWENGINE_LOGGER_ERROR(
+        "delBoundaryInfo failed: unknow the image ColorType!");
+    return false;
+  }
+
+  return true;
+}
+
+bool cropImage(cv::Mat const &input, cv::Mat &output, RetBox &bbox,
+               ColorType type, float sr) {
+  // 先抠图，如果是多边区域的话，就将多变区域描黑
+  cv::Rect2i rect{bbox.x, bbox.y, bbox.width, bbox.height};
+  if (sr > 0) {  // 如果需要放大边框，直接不用扣了
+    return cropImage(input, output, rect, type, sr);
+  }
+  if (!crop(input, output, rect, type, sr)) {
+    return false;
+  };
+  if (bbox.isPoly) {
+    // 为points做坐标偏移
+    std::vector<cv::Point2i> offsetPoints;
+    for (const auto &pt : bbox.points) {
+      offsetPoints.emplace_back(pt.x - bbox.x, pt.y - bbox.y);
+    }
+    // 去除边界信息
+    delBoundaryInfo(output, output, offsetPoints, type);
+  }
+  return true;
 }
 
 } // namespace infer::utils

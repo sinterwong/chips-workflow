@@ -215,7 +215,7 @@ bool ConfigParser::parseConfig(std::string const &path,
 
         // 前端划定区域 目前来说一定会有这个字段
         auto regions = p["regions"];
-        // /**
+        /**
         for (auto const &region : regions) {
           Points2i ret;
           if (region.size() != 4) {
@@ -243,8 +243,8 @@ bool ConfigParser::parseConfig(std::string const &path,
           }
           lBase.regions.emplace_back(ret);
         }
-        // */
-        /*
+        */
+        // /*
         for (auto const &region : regions) {
           Points2i ret;
           for (size_t i = 0; i < region.size(); i += 2) {
@@ -252,7 +252,7 @@ bool ConfigParser::parseConfig(std::string const &path,
           }
           lBase.regions.emplace_back(ret);
         }
-        */
+        // */
         // 报警配置获取 目前来说一定会有这些字段
         EXTRACT_JSON_VALUE(p, "event_id", lBase.eventId);
         EXTRACT_JSON_VALUE(p, "page", lBase.page);
