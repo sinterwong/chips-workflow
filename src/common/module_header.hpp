@@ -18,7 +18,6 @@
 namespace common {
 
 using namespace std::chrono_literals;
-using svector = std::vector<std::string>;
 
 /**
  * @brief 组件之间发送消息的类型

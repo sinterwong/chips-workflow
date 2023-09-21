@@ -46,6 +46,7 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
     // 初始待计算区域，每次算法结果出来之后需要更新regions
     std::vector<common::RetBox> regions;
     for (auto const &area : config->regions) {
+      // TODO area有可能是多边框，如果是多边框的话，在计算时应该忽略掉rect中非多边的区域
       regions.emplace_back(common::RetBox{
           name,
           {static_cast<float>(area[0].x), static_cast<float>(area[0].y),

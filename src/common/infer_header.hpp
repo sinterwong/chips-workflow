@@ -10,6 +10,7 @@
  */
 
 #include <array>
+#include <climits>
 #include <cstdint>
 #include <getopt.h>
 #include <iostream>
@@ -23,7 +24,21 @@
 
 namespace common {
 
-using svector = std::vector<std::string>;
+// point 数据
+template <typename T> struct Point {
+  T x;
+  T y;
+};
+
+// 单次分类结果
+using ClsRet = std::pair<int, float>;
+
+// 字符识别结果
+using CharsRet = std::vector<int>;
+
+// 点集
+using Points2i = std::vector<Point<int>>;
+using Points2f = std::vector<Point<float>>;
 
 /**
  * @brief 颜色类型
@@ -53,6 +68,44 @@ struct FrameInfo {
  *
  */
 using RetBox = std::pair<std::string, std::array<float, 6>>;
+
+struct NewRetBox {
+  // 外界框的坐标
+  std::vector<Points2i> points;
+  int x, y, width, height, idx;
+  float confidence;
+
+  NewRetBox() = default;
+
+  NewRetBox(int x_, int y_, int width_, int height_)
+      : x(x_), y(y_), width(width_), height(height_), idx(0), confidence(0.0) {}
+
+  NewRetBox(int x_, int y_, int width_, int height_, int idx_, float conf_)
+      : x(x_), y(y_), width(width_), height(height_), idx(idx_),
+        confidence(conf_) {}
+
+  NewRetBox(std::vector<Points2i> &regions) {}
+
+private:
+  void getRectBox(std::vector<Points2i> &regions) {
+    int minX = INT_MAX, minY = INT_MAX, maxX = INT_MIN, maxY = INT_MIN;
+
+    for (const auto &region : regions) {
+      for (const auto &point : region) {
+        minX = std::min(minX, point.x);
+        minY = std::min(minY, point.y);
+        maxX = std::max(maxX, point.x);
+        maxY = std::max(maxY, point.y);
+      }
+    }
+
+    x = minX;
+    y = minY;
+    width = maxX - minX + 1;
+    height = maxY - minY + 1;
+  }
+};
+
 /**
  * @brief poly result type x1, y1, x2, y2, x3, y3, x4, y4, class_id
  *
@@ -96,24 +149,8 @@ struct alignas(float) BBox {
   float det_confidence;
 };
 
-// point 数据
-template <typename T> struct Point {
-  T x;
-  T y;
-};
-
-// 单次分类结果
-using ClsRet = std::pair<int, float>;
-
 // 目标检测框集
 using BBoxes = std::vector<BBox>;
-
-// 字符识别结果
-using CharsRet = std::vector<int>;
-
-// 点集
-using Points2i = std::vector<Point<int>>;
-using Points2f = std::vector<Point<float>>;
 
 // 关键点框
 struct KeypointsBox {
@@ -161,16 +198,16 @@ struct ModelInfo {
  *
  */
 struct AlgoBase {
-  int batchSize;         // batch of number
-  svector inputNames;    // input names
-  svector outputNames;   // output names
-  std::string modelPath; // 算法模型
-  std::string serial;    // 算法系列 {Yolo, Assd, Softmax, ...}
-  Shape inputShape;      // 输入图像尺寸
-  bool isScale;          // 预处理时是否等比例缩放
-  float alpha;           // 预处理时除数
-  float beta;            // 预处理时减数
-  float cond_thr;        // 置信度阈值
+  int batchSize;                        // batch of number
+  std::vector<std::string> inputNames;  // input names
+  std::vector<std::string> outputNames; // output names
+  std::string modelPath;                // 算法模型
+  std::string serial; // 算法系列 {Yolo, Assd, Softmax, ...}
+  Shape inputShape;   // 输入图像尺寸
+  bool isScale;       // 预处理时是否等比例缩放
+  float alpha;        // 预处理时除数
+  float beta;         // 预处理时减数
+  float cond_thr;     // 置信度阈值
 };
 
 /**
