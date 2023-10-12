@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
   AlgoConfig config;
   config.setParams(std::move(det_config));
 
-  RetBox region{"hello", {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
+  RetBox region{"hello"};
 
   InferParams params{std::string("hello"),
                      ColorType::NV12,

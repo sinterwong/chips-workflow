@@ -56,6 +56,23 @@ using json = nlohmann::json;
     }                                                                          \
   } while (0)
 
+#define EXTRACT_JSON_VALUE_WITH_DEFAULT(json_obj, key, var, default_val)       \
+  do {                                                                         \
+    if ((json_obj).count(key) > 0) {                                           \
+      try {                                                                    \
+        var = (json_obj)[key].get<decltype(var)>();                            \
+      } catch (std::exception const &e) {                                      \
+        FLOWENGINE_LOGGER_ERROR(                                               \
+            "ConfigParser: Paramer extracting \"{}\" was failed!", key);       \
+        return false;                                                          \
+      }                                                                        \
+    } else {                                                                   \
+      FLOWENGINE_LOGGER_WARN(                                                  \
+          "ConfigParser: \"{}\" doesn't exist. Using default value.", key);    \
+      var = default_val;                                                       \
+    }                                                                          \
+  } while (0)
+
 namespace module::utils {
 bool ConfigParser::parseConfig(std::string const &path,
                                std::vector<PipelineParams> &pipelines,
@@ -161,17 +178,6 @@ bool ConfigParser::parseConfig(std::string const &path,
         EXTRACT_JSON_VALUE(p, "Id", stream_config.cameraId);
         EXTRACT_JSON_VALUE(p, "height", stream_config.height);
         EXTRACT_JSON_VALUE(p, "width", stream_config.width);
-        // if (p.count("runTime") > 0) {
-        //   try {
-        //     stream_config.runTime =
-        //         p["runTime"].get<decltype(stream_config.runTime)>();
-        //   } catch (std::exception const &e) {
-        //     FLOWENGINE_LOGGER_ERROR(
-        //         "ConfigParser: Paramer extracting \"{}\" was failed!",
-        //         "runTime");
-        //     return false;
-        //   }
-        // }
         EXTRACT_JSON_VALUE(p, "runTime", stream_config.runTime);
 
         config.setParams(std::move(stream_config));
@@ -209,6 +215,7 @@ bool ConfigParser::parseConfig(std::string const &path,
 
         // 前端划定区域 目前来说一定会有这个字段
         auto regions = p["regions"];
+        /**
         for (auto const &region : regions) {
           Points2i ret;
           if (region.size() != 4) {
@@ -236,7 +243,16 @@ bool ConfigParser::parseConfig(std::string const &path,
           }
           lBase.regions.emplace_back(ret);
         }
-
+        */
+        // /*
+        for (auto const &region : regions) {
+          Points2i ret;
+          for (size_t i = 0; i < region.size(); i += 2) {
+            ret.push_back(Point2i{region.at(i), region.at(i + 1)});
+          }
+          lBase.regions.emplace_back(ret);
+        }
+        // */
         // 报警配置获取 目前来说一定会有这些字段
         EXTRACT_JSON_VALUE(p, "event_id", lBase.eventId);
         EXTRACT_JSON_VALUE(p, "page", lBase.page);
@@ -262,7 +278,8 @@ bool ConfigParser::parseConfig(std::string const &path,
           float thre;
           size_t requireExistence;
           EXTRACT_JSON_VALUE(p, "threshold", thre);
-          EXTRACT_JSON_VALUE(p, "requireExistence", requireExistence);
+          // EXTRACT_JSON_VALUE(p, "requireExistence", requireExistence);
+          EXTRACT_JSON_VALUE_WITH_DEFAULT(p, "requireExistence", requireExistence, 1);
 
           DetClsMonitor config_{std::move(lBase), thre, requireExistence};
           config.setParams(std::move(config_));

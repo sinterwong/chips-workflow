@@ -174,9 +174,10 @@ bool retBoxes2json(std::vector<RetBox> const &retBoxes, std::string &result) {
   json bboxes;
   for (auto const &bbox : retBoxes) {
     json b;
-    json coord = bbox.second;
+    json coord = {bbox.x,      bbox.y,          bbox.width,
+                  bbox.height, bbox.confidence, bbox.idx};
     b["coord"] = coord;
-    b["class_name"] = bbox.first;
+    b["class_name"] = bbox.name;
     bboxes.push_back(b);
   }
   result = bboxes.dump();
@@ -224,14 +225,12 @@ bool retOCR2json(std::vector<OCRRet> const &retOCRs, std::string &result) {
 bool drawRetBox(cv::Mat &image, std::vector<RetBox> const &bboxes,
                 cv::Scalar const &scalar) {
   for (auto &bbox : bboxes) {
-    cv::Rect rect(bbox.second[0], bbox.second[1],
-                  bbox.second[2] - bbox.second[0],
-                  bbox.second[3] - bbox.second[1]);
+    cv::Rect rect(bbox.x, bbox.y, bbox.width, bbox.height);
     if (rect.area() == 0) {
       return false;
     }
     cv::rectangle(image, rect, scalar, 2);
-    cv::putText(image, bbox.first, cv::Point(rect.x, rect.y - 1),
+    cv::putText(image, bbox.name, cv::Point(rect.x, rect.y - 1),
                 cv::FONT_HERSHEY_PLAIN, 2, {255, 255, 255});
   }
 

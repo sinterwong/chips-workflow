@@ -13,6 +13,7 @@
 #include "frame_difference.h"
 #include "logger/logger.hpp"
 #include "video_utils.hpp"
+#include <algorithm>
 #include <cassert>
 #include <opencv2/imgcodecs.hpp>
 
@@ -38,11 +39,11 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
     cv::Mat croppedImage;
     cv::Rect rect;
     if (config->regions.size() == 1) {
-      auto &region = config->regions.at(0);
-      int x = region[0].x;
-      int y = region[0].y;
-      int w = region[1].x - x;
-      int h = region[1].y - y;
+      auto &points = config->regions.at(0);
+      int x = std::min(points[0].x, points[1].x);
+      int y = std::min(points[0].y, points[1].y);
+      int w = std::max(points[0].x, points[1].x) - x;
+      int h = std::max(points[0].y, points[1].y) - y;
       rect = {x, y, w, h};
       // 截取待计算区域
       infer::utils::cropImage(*frame, croppedImage, rect, buf.frameType);
@@ -69,10 +70,10 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
     // 意味着检测到了动态目标，可以进行后续的逻辑（5进3或其他过滤方法，当前只是用了阈值）
     for (auto &bbox : bboxes) {
       // offset bbox
-      bbox.second.at(0) += rect.x;
-      bbox.second.at(1) += rect.y;
-      bbox.second.at(2) += rect.x;
-      bbox.second.at(3) += rect.y;
+      bbox.x += rect.x;
+      bbox.y += rect.y;
+      // bbox.second.at(2) += rect.x;
+      // bbox.second.at(3) += rect.y;
     }
     FLOWENGINE_LOGGER_DEBUG("{} FrameDifferenceModule detect {} objects", name,
                             bboxes.size());

@@ -23,7 +23,7 @@ std::vector<float> getFeature(std::string &imPath,
   cv::Mat image_rgb, image_nv12;
   cv::cvtColor(image_bgr, image_rgb, cv::COLOR_BGR2RGB);
   infer::utils::RGB2NV12(image_rgb, image_nv12);
-  RetBox region{"hello", {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
+  RetBox region{"hello"};
 
   InferParams params{std::string("hello"),
                      ColorType::NV12,

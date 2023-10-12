@@ -44,15 +44,11 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
     // 初始待计算区域，每次算法结果出来之后需要更新regions
     std::vector<common::RetBox> regions;
     for (auto const &area : config->regions) {
-      regions.emplace_back(common::RetBox{
-          name,
-          {static_cast<float>(area[0].x), static_cast<float>(area[0].y),
-           static_cast<float>(area[1].x), static_cast<float>(area[1].y), 0.0,
-           0.0}});
+      regions.emplace_back(RetBox(name, area));
     }
     if (regions.empty()) {
       // 前端没有画框
-      regions.emplace_back(common::RetBox{name, {0, 0, 0, 0, 0, 0}});
+      regions.emplace_back(common::RetBox{name});
     }
 
     assert(regions.size() == 1);
@@ -99,9 +95,12 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
           name,
           buf.frameType,
           reidNet.second.cropScaling,
-          common::RetBox{detNet.first,
-                         {bbox.bbox[0], bbox.bbox[1], bbox.bbox[2],
-                          bbox.bbox[3], bbox.class_confidence, bbox.class_id}},
+          common::RetBox{detNet.first, static_cast<int>(bbox.bbox[0]),
+                         static_cast<int>(bbox.bbox[1]),
+                         static_cast<int>(bbox.bbox[2] - bbox.bbox[0]),
+                         static_cast<int>(bbox.bbox[3] - bbox.bbox[1]),
+                         bbox.class_confidence,
+                         static_cast<int>(bbox.class_id)},
           {image->cols, image->rows, image->channels()}};
       InferResult reidRet;
       if (!ptr->algo->infer(reidNet.first, image->data, reidParams, reidRet)) {

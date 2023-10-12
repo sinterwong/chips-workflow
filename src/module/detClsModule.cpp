@@ -19,11 +19,8 @@ using json = nlohmann::json;
 
 namespace module {
 
-/**
- * @brief
- *
- * @param message
- */
+using common::RetBox;
+
 void DetClsModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == MessageType::Close) {
@@ -46,15 +43,11 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
     // 初始待计算区域，每次算法结果出来之后需要更新regions
     std::vector<common::RetBox> regions;
     for (auto const &area : config->regions) {
-      regions.emplace_back(common::RetBox{
-          name,
-          {static_cast<float>(area[0].x), static_cast<float>(area[0].y),
-           static_cast<float>(area[1].x), static_cast<float>(area[1].y), 0.0,
-           0.0}});
+      regions.emplace_back(RetBox(name, area));
     }
     if (regions.empty()) {
       // 前端没有画框
-      regions.emplace_back(common::RetBox{name, {0, 0, 0, 0, 0, 0}});
+      regions.emplace_back(RetBox{name});
     }
     algoRegions["regions"] = std::move(regions);
 
@@ -92,10 +85,13 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
                 continue;
               }
             }
-            common::RetBox b = {ap.first,
-                                {region.second[0], region.second[1],
-                                 region.second[2], region.second[3],
-                                 cls->second, static_cast<float>(cls->first)}};
+            RetBox b{ap.first,
+                     region.x,
+                     region.y,
+                     region.width,
+                     region.height,
+                     cls->second,
+                     cls->first};
             algoRegions[ap.first].emplace_back(std::move(b));
             break;
           }
@@ -113,12 +109,13 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
                 }
               }
               // 记录算法结果
-              common::RetBox b = {ap.first,
-                                  {bbox.bbox[0] + region.second[0],
-                                   bbox.bbox[1] + region.second[1],
-                                   bbox.bbox[2] + region.second[0],
-                                   bbox.bbox[3] + region.second[1],
-                                   bbox.det_confidence, bbox.class_id}};
+              common::RetBox b{ap.first,
+                               static_cast<int>(bbox.bbox[0] + region.x),
+                               static_cast<int>(bbox.bbox[1] + region.y),
+                               static_cast<int>(bbox.bbox[2] - bbox.bbox[0]),
+                               static_cast<int>(bbox.bbox[3] - bbox.bbox[1]),
+                               bbox.det_confidence,
+                               static_cast<int>(bbox.class_id)};
               algoRegions[ap.first].emplace_back(std::move(b));
             }
             break;
@@ -135,7 +132,7 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
     // 至此，所有的算法模块执行完成，整合算法结果判断是否报警
     auto lastPipeName = apipes.at(apipes.size() - 1).first;
     auto &alarmRegions = algoRegions.at(lastPipeName);
-    RetBox alarmBox = {name, {0, 0, 0, 0, 0, 0}};
+    RetBox alarmBox = {name};
     bool isAlarm = false;
     if ((alarmRegions.size() > 0) == (config->requireExistence)) {
       /**
@@ -149,12 +146,12 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
       } else {
         // a=true and b=true的情况
         for (auto const &box : alarmRegions) {
-          if (box.second[4] > config->threshold) {
+          if (box.confidence > config->threshold) {
             // 存在符合条件的报警
             alarmBox = box;
             isAlarm = true;
-            FLOWENGINE_LOGGER_DEBUG("{}: {}, {}, {}!", name, alarmBox.first,
-                                    alarmBox.second[4], alarmBox.second[5]);
+            FLOWENGINE_LOGGER_DEBUG("{}: {}, {}, {}!", name, alarmBox.name,
+                                    alarmBox.confidence, alarmBox.idx);
             break;
           }
         }

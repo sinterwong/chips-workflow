@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  RetBox region{"hello", {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
+  RetBox region{"hello"};
 
   InferParams params{std::string("hello"),
                      ColorType::NV12,
