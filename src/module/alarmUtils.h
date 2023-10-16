@@ -32,6 +32,13 @@ using common::LogicBase;
 
 namespace module {
 namespace filesystem = std::experimental::filesystem;
+
+enum class DRAW_TYPE : uint8_t{
+  NOT_DRAW = 0,
+  DRAW_BBOX,
+  DRAW_BBOX_WITH_ORIGINAL,
+};
+
 class AlarmUtils {
 protected:
   bool isRecord = false; // 是否是保存视频状态
@@ -101,7 +108,8 @@ public:
   }
 
   inline void saveAlarmImage(std::string const &path, cv::Mat const &frame,
-                             ColorType const ctype, bool isDraw = false,
+                             ColorType const ctype,
+                             DRAW_TYPE dtype = DRAW_TYPE::NOT_DRAW,
                              std::vector<RetBox> bboxes = {}) {
     cv::Mat showImage;
     // 临时画个图（后续根据前端参数来决定返回的图片是否带有画图标记）
@@ -123,15 +131,23 @@ public:
     }
     }
     // 画报警框
-    if (isDraw) {
-      utils::drawRetBox(showImage, bboxes);
+    switch (dtype) {
+    case DRAW_TYPE::DRAW_BBOX_WITH_ORIGINAL: {
+      cv::imwrite("original_" + path, showImage);
     }
-
+    case DRAW_TYPE::DRAW_BBOX: {
+      utils::drawRetBox(showImage, bboxes);
+      break;
+    }
+    default: {
+      break;
+    }
+    }
     // // 报警框名称操作
     // auto pos = name.find("_");
     // alarmBox.first = name.substr(pos + 1).substr(0, name.substr(pos +
     // 1).find("_"));
-
+    
     // 输出alarm image
     cv::imwrite(path, showImage);
   }

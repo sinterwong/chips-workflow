@@ -130,9 +130,9 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
       alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在车牌",
                                    config.get());
       // 生成报警图片
-      alarmUtils.saveAlarmImage(buf.alarmInfo.alarmFile + "/" +
-                                    buf.alarmInfo.alarmId + ".jpg",
-                                *image, buf.frameType, config->isDraw);
+      alarmUtils.saveAlarmImage(
+          buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".jpg",
+          *image, buf.frameType, static_cast<DRAW_TYPE>(config->drawType));
       autoSend(buf);
       // 录制报警视频
       if (config->videoDuration > 0) {
