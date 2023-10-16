@@ -16,6 +16,7 @@
 #include <memory>
 #include <opencv2/imgproc.hpp>
 #include <stdexcept>
+#include <string_view>
 #include <vector>
 
 #include "common/common.hpp"
@@ -33,7 +34,7 @@ using common::LogicBase;
 namespace module {
 namespace filesystem = std::experimental::filesystem;
 
-enum class DRAW_TYPE : uint8_t{
+enum class DRAW_TYPE : uint8_t {
   NOT_DRAW = 0,
   DRAW_BBOX,
   DRAW_BBOX_WITH_ORIGINAL,
@@ -133,7 +134,13 @@ public:
     // 画报警框
     switch (dtype) {
     case DRAW_TYPE::DRAW_BBOX_WITH_ORIGINAL: {
-      cv::imwrite("original_" + path, showImage);
+      // 报警框名称操作
+      std::string oriPath = path;
+      size_t pos = path.rfind(".jpg");
+      if (pos != std::string::npos) {
+        oriPath.erase(pos);
+      }
+      cv::imwrite(oriPath + "_original.jpg", showImage);
     }
     case DRAW_TYPE::DRAW_BBOX: {
       utils::drawRetBox(showImage, bboxes);
@@ -143,11 +150,6 @@ public:
       break;
     }
     }
-    // // 报警框名称操作
-    // auto pos = name.find("_");
-    // alarmBox.first = name.substr(pos + 1).substr(0, name.substr(pos +
-    // 1).find("_"));
-    
     // 输出alarm image
     cv::imwrite(path, showImage);
   }
