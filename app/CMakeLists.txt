@@ -3,7 +3,6 @@ PROJECT(Application)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations -Wno-error=unused-function")
 
 LOAD_OATPP()
-LOAD_FAISS()
 
 INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}
@@ -21,7 +20,6 @@ INCLUDE_DIRECTORIES(
     ${3RDPARTY_ROOT}/eigen
     ${3RDPARTY_DIR}/gflags/include
     ${oatpp_INCLUDE_DIRS}
-    ${FAISS_INCLUDE_DIR}
 )
 
 LINK_DIRECTORIES(
@@ -29,7 +27,6 @@ LINK_DIRECTORIES(
     ${FFMPEG_LIBRARY_DIR}
     ${OPENSSL_LIBRARY_DIR}
     ${oatpp_LIBRARIES_DIRS}
-    ${FAISS_LIBRARY_DIR}
     ${X3_DIRECTORIES}
 )
 IF(TARGET_HARDWARE STREQUAL "x3")
@@ -47,7 +44,6 @@ LINK_LIBRARIES(
     ${FFMPEG_LIBS}
     ${OPENSSL_LIBS}
     ${CURL_LIBRARIES}
-    ${FAISS_LIBRARIES}
     ${CHIPS_DEPAND_LIBS}
     gflags
     oatpp

@@ -17,6 +17,7 @@ INCLUDE_DIRECTORIES(
     ${OpenCV_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIR}
     ${3RDPARTY_ROOT}/eigen
+    ${FAISS_INCLUDE_DIR}
 )
 
 LINK_DIRECTORIES(
@@ -24,6 +25,7 @@ LINK_DIRECTORIES(
     ${FFMPEG_LIBRARY_DIR}
     ${X3_DIRECTORIES}
 )
+
 IF(TARGET_HARDWARE STREQUAL "x3")
     MESSAGE(STATUS "Loading X3 dependent libraries")
     SET(CHIPS_DEPAND_LIBS ${X3_LIBS})
@@ -37,6 +39,7 @@ ENDIF()
 LINK_LIBRARIES(
     ${OpenCV_LIBS}
     ${FFMPEG_LIBS}
+    ${FAISS_LIBRARIES}
     gflags
     pthread
     video

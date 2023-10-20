@@ -274,6 +274,10 @@ MACRO(LOAD_FAISS)
     ELSE()
         MESSAGE(FATAL_ERROR "FAISS_LIBRARIES not found!")
     ENDIF()
+
+    LINK_DIRECTORIES(
+        ${FAISS_LIBRARY_DIR}
+    )
 ENDMACRO()
 
 MACRO(LOAD_Jetson)
@@ -293,6 +297,7 @@ MACRO(LOAD_X3)
     LOAD_OPENCV()
     LOAD_OPENSSL()
     LOAD_CURL()
+    LOAD_FAISS()
 
     # SET(APPSDK_PATH "/root/.horizon/ddk/xj3_aarch64/appsdk/appuser/")
     # # SET(APPSDK_PATH "/usr")
