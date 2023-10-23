@@ -11,10 +11,13 @@ PROJECT(FlowEngine VERSION ${FLOWENGINE_APP_VERSION} LANGUAGES C CXX)
 
 OPTION(BUILD_TESTS "Build with tests" ON)
 OPTION(BUILD_APP "Build with application" ON)
+OPTION(BUILD_SERVER "Build with server" ON)
+
 MESSAGE(INFO "--------------------------------")
 MESSAGE(STATUS "Build FlowEngine: ${FLOWENGINE_APP_VERSION}")
 MESSAGE(STATUS "Build with tests: ${BUILD_TESTS}")
 MESSAGE(STATUS "Build with application: ${BUILD_APP}")
+MESSAGE(STATUS "Build with server: ${BUILD_SERVER}")
 MESSAGE(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 IF(CMAKE_TOOLCHAIN_FILE)
@@ -109,4 +112,9 @@ ENDIF()
 IF(BUILD_APP)
     MESSAGE(INFO "--------------------------------")
     ADD_SUBDIRECTORY(app)
+ENDIF()
+
+IF(BUILD_SERVER)
+    MESSAGE(INFO "--------------------------------")
+    ADD_SUBDIRECTORY(server)
 ENDIF()
