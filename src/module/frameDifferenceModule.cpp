@@ -17,6 +17,10 @@
 #include <cassert>
 #include <opencv2/imgcodecs.hpp>
 
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
 namespace module {
 void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
@@ -84,6 +88,14 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
     alarmUtils.saveAlarmImage(
         buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".jpg", *frame,
         buf.frameType, static_cast<DRAW_TYPE>(config->drawType));
+
+    // 本轮算法结果生成
+    json algoRet;
+    std::string jsonStr;
+    utils::retBoxes2json(bboxes, jsonStr);
+    algoRet[name] = std::move(jsonStr);
+    buf.alarmInfo.algorithmResult = algoRet.dump();
+
     autoSend(buf);
     // 录制报警视频
     if (config->videoDuration > 0) {
