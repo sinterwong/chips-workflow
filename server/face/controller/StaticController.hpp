@@ -5,7 +5,7 @@
 #include "oatpp/core/macro/component.hpp"
 #include "oatpp/parser/json/mapping/ObjectMapper.hpp"
 #include "oatpp/web/server/api/ApiController.hpp"
-
+namespace server::face {
 #include OATPP_CODEGEN_BEGIN(ApiController) //<- Begin Codegen
 
 class StaticController : public oatpp::web::server::api::ApiController {
@@ -38,5 +38,5 @@ public:
 };
 
 #include OATPP_CODEGEN_END(ApiController) //<- End Codegen
-
+} // namespace server::face
 #endif // CRUD_STATICCONTROLLER_HPP

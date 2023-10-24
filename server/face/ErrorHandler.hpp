@@ -1,10 +1,10 @@
 #ifndef CRUD_ERRORHANDLER_HPP
 #define CRUD_ERRORHANDLER_HPP
 
+#include "StatusDto.hpp"
 #include "oatpp/web/protocol/http/outgoing/ResponseFactory.hpp"
 #include "oatpp/web/server/handler/ErrorHandler.hpp"
-#include "StatusDto.hpp"
-
+namespace server::face {
 class ErrorHandler : public oatpp::web::server::handler::ErrorHandler {
 private:
   using OutgoingResponse = oatpp::web::protocol::http::outgoing::Response;
@@ -37,5 +37,5 @@ public:
     return response;
   }
 };
-
+} // namespace server::face
 #endif // CRUD_ERRORHANDLER_HPP

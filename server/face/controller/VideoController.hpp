@@ -1,5 +1,5 @@
 /**
- * @file FaceController.hpp
+ * @file VideoController.hpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2023
  *
  */
-#include "FaceService.hpp"
 #include "StatusDto.hpp"
+#include "VideoService.hpp"
 #include <memory>
 #include <oatpp/core/macro/codegen.hpp>
 #include <oatpp/parser/json/mapping/ObjectMapper.hpp>
@@ -17,19 +17,20 @@
 
 #ifndef __CRUD_FACE_CONTROLLER_HPP_
 #define __CRUD_FACE_CONTROLLER_HPP_
+
 namespace server::face {
 #include OATPP_CODEGEN_BEGIN(ApiController) //<- Begin Codegen
-class FaceController : public oatpp::web::server::api::ApiController {
+class VideoController : public oatpp::web::server::api::ApiController {
 public:
-  FaceController(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
+  VideoController(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper))
       : oatpp::web::server::api::ApiController(objectMapper) {}
 
 private:
-  FaceService m_faceService; // Create face service
+  VideoService m_faceService; // Create face service
 public:
-  static std::shared_ptr<FaceController>
+  static std::shared_ptr<VideoController>
   createShared(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper)) {
-    return std::make_shared<FaceController>(objectMapper);
+    return std::make_shared<VideoController>(objectMapper);
   }
 
   ENDPOINT_INFO(createUser) {
@@ -90,4 +91,5 @@ public:
 
 #include OATPP_CODEGEN_END(ApiController) //<- End Codegen
 } // namespace server::face
+
 #endif

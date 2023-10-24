@@ -14,7 +14,7 @@
 
 #ifndef __CRUD_FACE_SERVICE_HPP_
 #define __CRUD_FACE_SERVICE_HPP_
-
+namespace server::face {
 class FaceService {
 private:
   using Status = oatpp::web::protocol::http::Status;
@@ -28,6 +28,7 @@ public:
     status->message = "User was successfully created";
     return status;
   }
+
   oatpp::Object<StatusDto> updateUser(oatpp::Int32 const &id,
                                       oatpp::String const &url) {
     auto status = StatusDto::createShared();
@@ -44,6 +45,7 @@ public:
     status->message = "User was successfully deleted";
     return status;
   }
+
   oatpp::Object<StatusDto> searchUser(oatpp::String const &url) {
     auto status = StatusDto::createShared();
     status->status = "OK";
@@ -52,5 +54,5 @@ public:
     return status;
   }
 };
-
+} // namespace server::face
 #endif

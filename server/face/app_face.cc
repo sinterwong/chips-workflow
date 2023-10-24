@@ -10,18 +10,19 @@
  */
 #include <iostream>
 #include <memory>
+#include <oatpp-swagger/Controller.hpp>
 #include <oatpp/core/Types.hpp>
 #include <oatpp/core/macro/codegen.hpp>
 #include <oatpp/network/Server.hpp>
 #include <oatpp/parser/json/mapping/ObjectMapper.hpp>
 #include <oatpp/web/server/HttpConnectionHandler.hpp>
 #include <oatpp/web/server/HttpRouter.hpp>
-#include <oatpp-swagger/Controller.hpp>
 
 #include "AppComponent.hpp"
 #include "FaceController.hpp"
 #include "StaticController.hpp"
 
+namespace server::face {
 void run() {
   AppComponent components;
 
@@ -30,29 +31,34 @@ void run() {
 
   oatpp::web::server::api::Endpoints docEndpoints;
 
-  docEndpoints.append(router->addController(FaceController::createShared())->getEndpoints());
+  docEndpoints.append(
+      router->addController(FaceController::createShared())->getEndpoints());
 
   router->addController(oatpp::swagger::Controller::createShared(docEndpoints));
   router->addController(StaticController::createShared());
 
   // Get connection handler component
-  OATPP_COMPONENT(std::shared_ptr<oatpp::network::ConnectionHandler>, connectionHandler);
+  OATPP_COMPONENT(std::shared_ptr<oatpp::network::ConnectionHandler>,
+                  connectionHandler);
 
   // Get connection provider component
-  OATPP_COMPONENT(std::shared_ptr<oatpp::network::ServerConnectionProvider>, connectionProvider);
+  OATPP_COMPONENT(std::shared_ptr<oatpp::network::ServerConnectionProvider>,
+                  connectionProvider);
 
   // create server
   oatpp::network::Server server(connectionProvider, connectionHandler);
 
-  OATPP_LOGD("Server", "Running on port %s...", connectionProvider->getProperty("port").toString()->c_str());
+  OATPP_LOGD("Server", "Running on port %s...",
+             connectionProvider->getProperty("port").toString()->c_str());
   server.run();
 }
+} // namespace server::face
 
 int main(int argc, const char *argv[]) {
 
   oatpp::base::Environment::init();
 
-  run();
+  server::face::run();
 
   /* Print how many objects were created during app running, and what have
    * left-probably leaked */

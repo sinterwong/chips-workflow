@@ -7,12 +7,20 @@ FILE(MAKE_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/app)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/app)
 
 ADD_EXECUTABLE(face_server ${CMAKE_CURRENT_SOURCE_DIR}/app_face.cc)
+
+LINK_DIRECTORIES(
+  ${OpenCV_LIBRARY_DIR}
+)
+
 TARGET_INCLUDE_DIRECTORIES(face_server PRIVATE
     ${PROJECT_INCLUDE_DIR}
-    ${PROJECT_INCLUDE_DIR}/server/face
+    ${PROJECT_INCLUDE_DIR}/core
+    ${PROJECT_INCLUDE_DIR}/video
     ${PROJECT_INCLUDE_DIR}/infer
+    ${PROJECT_INCLUDE_DIR}/server/face
+    ${OpenCV_INCLUDE_DIRS}
 )
-TARGET_LINK_LIBRARIES(face_server infer module_logger ${CURL_LIBRARIES})
+TARGET_LINK_LIBRARIES(face_server infer video core module_logger ${OpenCV_LIBS} ${CURL_LIBRARIES})
 
 # transfer all headers to the include directory
 FILE(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR}/server/face)

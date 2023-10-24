@@ -4,7 +4,7 @@
 #include <oatpp-swagger/Model.hpp>
 #include <oatpp-swagger/Resources.hpp>
 #include <oatpp/core/macro/component.hpp>
-
+namespace server::face {
 /**
  *  Swagger ui is served at
  *  http://host:port/swagger/ui
@@ -28,7 +28,7 @@ public:
         .setLicenseName("Apache License, Version 2.0")
         .setLicenseUrl("http://www.apache.org/licenses/LICENSE-2.0")
 
-        .addServer("http://localhost:8000", "server on localhost");
+        .addServer("http://localhost:9797", "server on localhost");
 
     return builder.build();
   }());
@@ -40,8 +40,9 @@ public:
                          swaggerResources)
   ([] {
     // Make sure to specify correct full path to oatpp-swagger/res folder !!!
-    return oatpp::swagger::Resources::loadResources("/root/workspace/projects/oatpp-swagger/res");
+    return oatpp::swagger::Resources::loadResources(
+        "/root/workspace/projects/oatpp-swagger/res");
   }());
 };
-
+} // namespace server::face
 #endif /* SwaggerComponent_hpp */
