@@ -16,6 +16,8 @@
 #include <faiss/index_io.h>
 #include <iostream>
 #include <memory>
+#include <mutex>
+#include <shared_mutex>
 #include <vector>
 
 #ifndef __INFER_FACE_LIBRARY_H_
@@ -27,6 +29,7 @@ private:
   int d; // dimensionality of the vectors
   std::unique_ptr<faiss::IndexFlatIP> flatIndex;
   std::unique_ptr<faiss::IndexIDMap2> index;
+  std::shared_mutex m;
 
 public:
   FaceLibrary(int dim) : d(dim) {
@@ -35,36 +38,42 @@ public:
   }
 
   void addVector(float *vec, long id) {
-    // normalize_L2(vec);
+    std::lock_guard lk(m);
     index->add_with_ids(1, vec, &id);
   }
 
   void addVectors(float *vecs, std::vector<long> ids) {
-    // normalize_L2(vec);
+    std::lock_guard lk(m);
     index->add_with_ids(ids.size(), vecs, ids.data());
   }
 
   void deleteVector(long id) {
     faiss::IDSelectorArray selector{1, &id};
+    std::lock_guard lk(m);
     index->remove_ids(selector);
   }
 
   void deleteVectors(std::vector<long> &ids) {
     faiss::IDSelectorArray selector{ids.size(), ids.data()};
+    std::lock_guard lk(m);
     index->remove_ids(selector);
   }
 
   void updateVector(faiss::idx_t id, float *new_vec) {
-    deleteVector(id);
-    addVector(new_vec, id);
+    faiss::IDSelectorArray selector{1, &id};
+    std::lock_guard lk(m);
+    index->remove_ids(selector);
+    index->add_with_ids(1, new_vec, &id);
   }
 
   std::vector<std::pair<faiss::idx_t, float>> search(float *query_vec, int k) {
-    // normalize_L2(query_vec);
     float *distances = new float[k];
     int64_t *indices = new int64_t[k];
 
-    index->search(1, query_vec, k, distances, indices);
+    {
+      std::shared_lock lk(m);
+      index->search(1, query_vec, k, distances, indices);
+    }
 
     std::vector<std::pair<faiss::idx_t, float>> results;
     for (int i = 0; i < k; i++) {
@@ -79,12 +88,14 @@ public:
 
   // Save the index to a file
   void saveToFile(std::string const &filename) {
+    std::shared_lock lk(m);
     // Using Faiss's write_index function
     faiss::write_index(index.get(), filename.c_str());
   }
 
   // Load the index from a file
   bool loadFromFile(std::string const &filename) {
+    std::lock_guard lk(m);
     // Release the current index memory
     index.reset(nullptr);
 
@@ -103,6 +114,7 @@ public:
   void printVectors() {
     std::vector<float> vec(d); // temporary buffer for storing vector components
 
+    std::shared_lock lk(m);
     for (int i = 0; i < index->ntotal; i++) {
       faiss::idx_t id = index->id_map.at(i);
 

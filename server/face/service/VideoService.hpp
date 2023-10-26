@@ -20,7 +20,7 @@ private:
   using Status = oatpp::web::protocol::http::Status;
 
 public:
-  oatpp::Object<StatusDto> createStream(oatpp::Int32 const &id,
+  oatpp::Object<StatusDto> startVideo(oatpp::String const &name,
                                         oatpp::String const &url) {
     auto status = StatusDto::createShared();
     status->status = "OK";
@@ -29,8 +29,7 @@ public:
     return status;
   }
 
-  oatpp::Object<StatusDto> stopVideo(oatpp::Int32 const &id,
-                                     oatpp::String const &url) {
+  oatpp::Object<StatusDto> stopVideo(oatpp::String const &name) {
     auto status = StatusDto::createShared();
     status->status = "OK";
     status->code = 200;

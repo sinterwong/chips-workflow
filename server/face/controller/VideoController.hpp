@@ -26,66 +26,39 @@ public:
       : oatpp::web::server::api::ApiController(objectMapper) {}
 
 private:
-  VideoService m_faceService; // Create face service
+  VideoService m_videoService; // Create face service
 public:
   static std::shared_ptr<VideoController>
   createShared(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper)) {
     return std::make_shared<VideoController>(objectMapper);
   }
 
-  ENDPOINT_INFO(createUser) {
-    info->summary = "Create new User";
+  ENDPOINT_INFO(startVideo) {
+    info->summary = "Create a new stream";
     info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
 
-    info->pathParams["userId"].description = "User Identifier";
-    info->pathParams["url"].description = "Url of user's picture";
+    info->pathParams["name"].description = "Video stream's Identifier";
+    info->pathParams["url"].description = "Url of the stream";
   }
-  ENDPOINT("GET", "users/create?userId={userId}&url={url}", createUser,
-           PATH(Int32, userId), PATH(String, url)) {
+  ENDPOINT("GET", "users/startVideo?name={name}&url={url}", startVideo,
+           PATH(String, name), PATH(String, url)) {
     return createDtoResponse(Status::CODE_200,
-                             m_faceService.createUser(userId, url));
+                             m_videoService.startVideo(name, url));
   }
 
-  ENDPOINT_INFO(updateUser) {
-    info->summary = "Update User by userId and url";
+  ENDPOINT_INFO(stopVideo) {
+    info->summary = "Stop the stream by a name";
     info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
 
-    info->pathParams["userId"].description = "User Identifier";
-    info->pathParams["url"].description = "Url of user's picture";
+    info->pathParams["name"].description = "Video stream's Identifier";
   }
-  ENDPOINT("GET", "users/update?userId={userId}&url={url}", updateUser,
-           PATH(Int32, userId), PATH(String, url)) {
-    return createDtoResponse(Status::CODE_200,
-                             m_faceService.updateUser(userId, url));
-  }
-
-  ENDPOINT_INFO(deleteUser) {
-    info->summary = "Delete User by userId";
-    info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
-    info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
-    info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
-
-    info->pathParams["userId"].description = "User Identifier";
-  }
-  ENDPOINT("DELETE", "users/{userId}", deleteUser, PATH(Int32, userId)) {
-    return createDtoResponse(Status::CODE_200,
-                             m_faceService.deleteUser(userId));
-  }
-
-  ENDPOINT_INFO(searchUser) {
-    info->summary = "Search User by url of user's picture";
-    info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
-    info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
-    info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
-
-    info->pathParams["url"].description = "Url of user's picture";
-  }
-  ENDPOINT("GET", "users/search?url={url}", searchUser, PATH(String, url)) {
-    return createDtoResponse(Status::CODE_200, m_faceService.searchUser(url));
+  ENDPOINT("GET", "users/stopVideo?name={name}", stopVideo,
+           PATH(String, name)) {
+    return createDtoResponse(Status::CODE_200, m_videoService.stopVideo(name));
   }
 };
 

@@ -298,7 +298,6 @@ MACRO(LOAD_X3)
     LOAD_OPENCV()
     LOAD_OPENSSL()
     LOAD_CURL()
-    LOAD_FAISS()
 
     # SET(APPSDK_PATH "/root/.horizon/ddk/xj3_aarch64/appsdk/appuser/")
     # # SET(APPSDK_PATH "/usr")

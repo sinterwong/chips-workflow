@@ -15,10 +15,10 @@
 
 #include "thread_pool.h"
 #include "video/videoDecode.hpp"
+#include "resultProcessor.hpp"
+#include <cstdint>
 #include <future>
 #include <memory>
-#include <opencv2/core/mat.hpp>
-#include <opencv2/imgcodecs.hpp>
 #include <shared_mutex>
 #include <thread>
 #include <unordered_map>
@@ -32,11 +32,6 @@ using namespace std::chrono_literals;
 
 namespace server::face::core {
 
-struct StreamPackage {
-  std::string name;
-  std::shared_ptr<cv::Mat> frame;
-};
-
 class StreamManager {
 public:
   // 获取StreamManager的唯一实例
@@ -47,8 +42,8 @@ public:
   }
 
   // 禁止拷贝构造函数和拷贝赋值操作符
-  StreamManager(const StreamManager &) = delete;
-  StreamManager &operator=(const StreamManager &) = delete;
+  StreamManager(StreamManager const &) = delete;
+  StreamManager &operator=(StreamManager const &) = delete;
 
   bool registered(std::string const &name, std::string const &uri) {
     // 检查已使用线程的数量
@@ -83,18 +78,24 @@ public:
           return;
         }
         FLOWENGINE_LOGGER_INFO("Video manager is running!");
-
+        uint32_t count = 0;
         while (name2stream.at(name)->isRunning()) {
           auto image = name2stream.at(name)->getcvImage();
           if (!image) {
             FLOWENGINE_LOGGER_ERROR("get image failed!");
             continue;
           }
-          // TODO 输出帧提供给结果处理器
-          cv::imwrite("test_stream_manager.jpg", *image);
+          // 抽帧处理
+          if (count++ % 5 == 0) {
+            continue;
+          }
+          // 输出帧提供给结果处理器，结果处理器中负责任务的调度和结果分析
+          // cv::imwrite("test_stream_manager.jpg", *image);
+          FramePackage frame{name, image};
+          ResultProcessor::getInstance().onFrameReceived(std::move(frame));
         }
         name2stream.at(name)->stop();
-        std::this_thread::sleep_for(100ms);
+        std::this_thread::sleep_for(500ms);
       }
     });
     futures.emplace_back(std::move(f));
