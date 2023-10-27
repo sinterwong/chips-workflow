@@ -20,6 +20,7 @@
 
 #include "AppComponent.hpp"
 #include "FaceController.hpp"
+#include "VideoController.hpp"
 #include "StaticController.hpp"
 
 namespace server::face {
@@ -33,6 +34,9 @@ void run() {
 
   docEndpoints.append(
       router->addController(FaceController::createShared())->getEndpoints());
+
+  docEndpoints.append(
+      router->addController(VideoController::createShared())->getEndpoints());
 
   router->addController(oatpp::swagger::Controller::createShared(docEndpoints));
   router->addController(StaticController::createShared());

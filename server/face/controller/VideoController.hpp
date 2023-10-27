@@ -15,8 +15,8 @@
 #include <oatpp/parser/json/mapping/ObjectMapper.hpp>
 #include <oatpp/web/server/api/ApiController.hpp>
 
-#ifndef __CRUD_FACE_CONTROLLER_HPP_
-#define __CRUD_FACE_CONTROLLER_HPP_
+#ifndef __CRUD_VIDEO_CONTROLLER_HPP_
+#define __CRUD_VIDEO_CONTROLLER_HPP_
 
 namespace server::face {
 #include OATPP_CODEGEN_BEGIN(ApiController) //<- Begin Codegen
@@ -26,7 +26,7 @@ public:
       : oatpp::web::server::api::ApiController(objectMapper) {}
 
 private:
-  VideoService m_videoService; // Create face service
+  VideoService m_videoService; // Create video service
 public:
   static std::shared_ptr<VideoController>
   createShared(OATPP_COMPONENT(std::shared_ptr<ObjectMapper>, objectMapper)) {

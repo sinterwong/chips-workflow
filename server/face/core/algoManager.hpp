@@ -15,6 +15,8 @@
 #include <condition_variable>
 #include <future>
 #include <mutex>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/imgcodecs.hpp>
 #include <queue>
 #include <thread>
 #include <vector>
@@ -48,12 +50,28 @@ public:
     auto task = std::packaged_task<bool()>([&] {
       // 等待获取可用算法资源
       algo_ptr algo = getAvailableAlgo();
-      if (!algo) {
-        return false; // 如果没有可用的算法资源，返回false
-      }
 
       // 使用算法资源进行推理
       bool ret = algo->forward(*framePackage.frame, feature);
+
+      // 推理完成后标记算法为可用
+      releaseAlgo(algo);
+      return ret;
+    });
+
+    std::future<bool> ret = task.get_future();
+
+    return ret; // 移交调用者等待算法结果
+  }
+
+  std::future<bool> infer(std::string const &url, std::vector<float> &feature) {
+    auto task = std::packaged_task<bool()>([&] {
+      // 等待获取可用算法资源
+      algo_ptr algo = getAvailableAlgo();
+    
+      // TODO 使用算法资源进行推理
+      cv::Mat image = cv::imread(url);
+      bool ret = algo->forward(image, feature);
 
       // 推理完成后标记算法为可用
       releaseAlgo(algo);
