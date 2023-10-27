@@ -11,6 +11,7 @@
  *
  */
 
+#include "algoManager.hpp"
 #include "curlUtils.hpp"
 #include "faceLibManager.hpp"
 #include "faceRecognition.hpp"
@@ -28,13 +29,6 @@
 #define __SERVER_FACE_CORE_RESULT_PROCESSOR_HPP_
 
 namespace server::face::core {
-
-using algo_ptr = std::shared_ptr<FaceRecognition>;
-
-struct FramePackage {
-  std::string cameraName;
-  std::shared_ptr<cv::Mat> frame;
-};
 
 struct PostInfo {
   std::string cameraName;
@@ -62,11 +56,6 @@ private:
   ResultProcessor() {
     tpool = std::make_unique<thread_pool>();
     tpool->start(4);
-
-    for (size_t i = 0; i < algos.size(); ++i) {
-      // 初始化算法资源
-      algos[i] = std::make_shared<FaceRecognition>();
-    }
   }
   ~ResultProcessor() {}
   static std::unique_ptr<ResultProcessor> instance;
@@ -75,9 +64,6 @@ private:
   // 执行一次算法任务
   std::unique_ptr<thread_pool> tpool;
 
-  // 算法包，启动多个算法供调度
-  std::vector<algo_ptr> algos{2};
-
   // 后端请求接口
   std::string postUrl = "http://localhost:19797";
 
@@ -85,17 +71,9 @@ private:
   void oneProcess(FramePackage &&framePackage) {
     // 单个任务的函数
     // * 1. 根据帧包中的图片，送入人脸识别算法
-    algo_ptr algo = nullptr;
-    // 获取空闲算法
-    for (auto a : algos) {
-      if (!algo->isUsing()) {
-        algo = a;
-        break;
-      }
-    }
     std::vector<float> feature;
-    if (!algo->forward(*framePackage.frame, feature)) {
-      FLOWENGINE_LOGGER_ERROR("Algorithm inference was failed!");
+    auto f = AlgoManager::getInstance().infer(framePackage, feature);
+    if (!f.get()) {
       return;
     }
 
@@ -104,7 +82,7 @@ private:
     if (idx < 0) { // 没有匹配到人脸
       return;
     }
-    
+
     // * 3. 根据人脸库返回的结果决定是否发送消息到后端服务
     PostInfo postInfo{framePackage.cameraName, idx};
     MY_CURL_POST(postUrl, {

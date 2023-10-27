@@ -21,14 +21,10 @@ public:
   FaceRecognition() {}
   ~FaceRecognition() {}
 
-  bool isUsing() { return status.load(); }
-
   bool forward(cv::Mat &image, std::vector<float> &feature) {
-    status.store(true);
 
     // to do something
 
-    status.store(false);
     return true;
   }
 
