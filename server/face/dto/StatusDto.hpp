@@ -18,6 +18,16 @@ class StatusDto : public oatpp::DTO {
 
   DTO_FIELD_INFO(message) { info->description = "Verbose message"; }
   DTO_FIELD(String, message);
+
+public:
+  std::string toString() const {
+    auto str = "StatusDto(\n"
+               "  status: " +
+               (status ? *status : "null") + ",\n" +
+               "  code: " + std::to_string(*code) + ",\n" +
+               "  message: " + (message ? *message : "null") + "\n" + ")";
+    return str;
+  }
 };
 
 #include OATPP_CODEGEN_END(DTO)

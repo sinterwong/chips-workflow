@@ -23,7 +23,7 @@ class FaceLibraryManager {
 public:
   static FaceLibraryManager &getInstance() {
     static std::once_flag onceFlag;
-    std::call_once(onceFlag, [] { instance.reset(new FaceLibraryManager()); });
+    std::call_once(onceFlag, [] { instance = new FaceLibraryManager(); });
     return *instance;
   }
   FaceLibraryManager(FaceLibraryManager const &) = delete;
@@ -32,16 +32,19 @@ public:
 public:
   bool createOne(long id, float *vec) {
     facelib->addVector(vec, id);
+    facelib->saveToFile(outputPath);
     return true;
   }
 
   bool updateOne(long id, float *vec) {
     facelib->updateVector(id, vec);
+    facelib->saveToFile(outputPath);
     return true;
   }
 
   bool deleteOne(long id) {
     facelib->deleteVector(id);
+    facelib->saveToFile(outputPath);
     return true;
   }
 
@@ -54,23 +57,30 @@ public:
     return -1;
   }
 
+  void printLibrary() { facelib->printVectors(); }
+
 private:
   FaceLibraryManager() {
+    facelib = std::make_unique<FaceLibrary>(128);
+
     if (std::filesystem::exists(outputPath)) {
       facelib->loadFromFile(outputPath);
     } else {
       std::filesystem::create_directories(
           outputPath.substr(0, outputPath.find_last_of("/")));
-      facelib = std::make_unique<FaceLibrary>(128);
     }
   }
-  ~FaceLibraryManager() { facelib->saveToFile(outputPath); }
-  static std::unique_ptr<FaceLibraryManager> instance;
+  ~FaceLibraryManager() {
+    facelib->saveToFile(outputPath);
+    delete instance;
+    instance = nullptr;
+  }
+  static FaceLibraryManager *instance;
 
 private:
   std::string outputPath = "/public/face/feacelib.bin";
   std::unique_ptr<FaceLibrary> facelib;
 };
-std::unique_ptr<FaceLibraryManager> FaceLibraryManager::instance = nullptr;
+FaceLibraryManager *FaceLibraryManager::instance = nullptr;
 } // namespace server::face::core
 #endif

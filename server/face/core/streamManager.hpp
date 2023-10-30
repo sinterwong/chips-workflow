@@ -13,9 +13,9 @@
 #ifndef __SERVER_FACE_CORE_STREAM_MANAGER_HPP_
 #define __SERVER_FACE_CORE_STREAM_MANAGER_HPP_
 
+#include "resultProcessor.hpp"
 #include "thread_pool.h"
 #include "video/videoDecode.hpp"
-#include "resultProcessor.hpp"
 #include <cstdint>
 #include <future>
 #include <memory>
@@ -37,7 +37,7 @@ public:
   // 获取StreamManager的唯一实例
   static StreamManager &getInstance() {
     static std::once_flag onceFlag; // 确保安全的初始化
-    std::call_once(onceFlag, [] { instance.reset(new StreamManager()); });
+    std::call_once(onceFlag, [] { instance = new StreamManager(); });
     return *instance;
   }
 
@@ -120,7 +120,10 @@ private:
     tpool->start(DECODER_POOL_SIZE);
   }
 
-  ~StreamManager() = default;
+  ~StreamManager() {
+    delete instance;
+    instance = nullptr;
+  };
 
   void checkCompletedFutures() {
     std::lock_guard lock(m);
@@ -136,7 +139,7 @@ private:
   }
 
 private:
-  static std::unique_ptr<StreamManager> instance;
+  static StreamManager *instance;
 
   // 初始化解码线程池
   std::unique_ptr<thread_pool> tpool;
@@ -147,7 +150,7 @@ private:
 
   std::shared_mutex m;
 };
-std::unique_ptr<StreamManager> StreamManager::instance = nullptr;
+StreamManager *StreamManager::instance = nullptr;
 } // namespace server::face::core
 
 #endif

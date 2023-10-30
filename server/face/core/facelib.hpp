@@ -88,7 +88,7 @@ public:
 
   // Save the index to a file
   void saveToFile(std::string const &filename) {
-    std::shared_lock lk(m);
+    std::lock_guard lk(m);
     // Using Faiss's write_index function
     faiss::write_index(index.get(), filename.c_str());
   }

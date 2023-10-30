@@ -41,8 +41,8 @@ public:
     info->pathParams["userId"].description = "User Identifier";
     info->pathParams["url"].description = "Url of user's picture";
   }
-  ENDPOINT("GET", "users/create?userId={userId}&url={url}", createUser,
-           PATH(Int32, userId), PATH(String, url)) {
+  ENDPOINT("GET", "users/create", createUser, QUERY(Int32, userId),
+           QUERY(String, url)) {
     return createDtoResponse(Status::CODE_200,
                              m_faceService.createUser(userId, url));
   }
@@ -56,8 +56,8 @@ public:
     info->pathParams["userId"].description = "User Identifier";
     info->pathParams["url"].description = "Url of user's picture";
   }
-  ENDPOINT("GET", "users/update?userId={userId}&url={url}", updateUser,
-           PATH(Int32, userId), PATH(String, url)) {
+  ENDPOINT("GET", "users/update", updateUser, QUERY(Int32, userId),
+           QUERY(String, url)) {
     return createDtoResponse(Status::CODE_200,
                              m_faceService.updateUser(userId, url));
   }
@@ -83,7 +83,7 @@ public:
 
     info->pathParams["url"].description = "Url of user's picture";
   }
-  ENDPOINT("GET", "users/search?url={url}", searchUser, PATH(String, url)) {
+  ENDPOINT("GET", "users/search", searchUser, QUERY(String, url)) {
     return createDtoResponse(Status::CODE_200, m_faceService.searchUser(url));
   }
 };

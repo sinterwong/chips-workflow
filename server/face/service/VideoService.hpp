@@ -10,6 +10,7 @@
  */
 #include "AppComponent.hpp"
 #include "StatusDto.hpp"
+#include "streamManager.hpp"
 #include <oatpp/web/protocol/http/Http.hpp>
 
 #ifndef __CRUD_VIDEO_SERVICE_HPP_
@@ -21,8 +22,14 @@ private:
 
 public:
   oatpp::Object<StatusDto> startVideo(oatpp::String const &name,
-                                        oatpp::String const &url) {
+                                      oatpp::String const &url) {
     auto status = StatusDto::createShared();
+    auto ret = core::StreamManager::getInstance().registered(name, url);
+    if (!ret) {
+      status->status = "Service Unavailable";
+      status->code = 503;
+      status->message = "Video startup failed";
+    }
     status->status = "OK";
     status->code = 200;
     status->message = "Video was successfully starting";
@@ -30,7 +37,16 @@ public:
   }
 
   oatpp::Object<StatusDto> stopVideo(oatpp::String const &name) {
+
     auto status = StatusDto::createShared();
+
+    auto ret = core::StreamManager::getInstance().unregistered(name);
+    if (!ret) {
+      status->status = "Service Unavailable";
+      status->code = 503;
+      status->message = "Video stop failed";
+    }
+
     status->status = "OK";
     status->code = 200;
     status->message = "Video was successfully stopped";

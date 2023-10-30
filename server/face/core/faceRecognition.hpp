@@ -9,6 +9,7 @@
  *
  */
 
+#include "preprocess.hpp"
 #include <atomic>
 #include <opencv2/core/mat.hpp>
 
@@ -25,10 +26,16 @@ public:
 
     // to do something
 
+    // TODO 模拟特征生成
+    for (int i = 0; i < ndim; ++i) {
+      feature.push_back(rand() % 1000);
+    }
+    infer::utils::normalize_L2(feature.data(), ndim);
     return true;
   }
 
 private:
+  int ndim = 512;
   std::atomic_bool status = false;
 };
 } // namespace server::face::core

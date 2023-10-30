@@ -39,7 +39,7 @@ class ResultProcessor {
 public:
   static ResultProcessor &getInstance() {
     static std::once_flag onceFlag;
-    std::call_once(onceFlag, [] { instance.reset(new ResultProcessor()); });
+    std::call_once(onceFlag, [] { instance = new ResultProcessor(); });
     return *instance;
   }
   ResultProcessor(ResultProcessor const &) = delete;
@@ -57,8 +57,11 @@ private:
     tpool = std::make_unique<thread_pool>();
     tpool->start(4);
   }
-  ~ResultProcessor() {}
-  static std::unique_ptr<ResultProcessor> instance;
+  ~ResultProcessor() {
+    delete instance;
+    instance = nullptr;
+  }
+  static ResultProcessor *instance;
 
 private:
   // 执行一次算法任务
@@ -91,6 +94,7 @@ private:
     });
   }
 };
+ResultProcessor *ResultProcessor::instance = nullptr;
 } // namespace server::face::core
 
 #endif

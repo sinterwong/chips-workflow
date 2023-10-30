@@ -42,7 +42,7 @@ public:
     info->pathParams["name"].description = "Video stream's Identifier";
     info->pathParams["url"].description = "Url of the stream";
   }
-  ENDPOINT("GET", "users/startVideo?name={name}&url={url}", startVideo,
+  ENDPOINT("GET", "stream/startVideo?name={name}&url={url}", startVideo,
            PATH(String, name), PATH(String, url)) {
     return createDtoResponse(Status::CODE_200,
                              m_videoService.startVideo(name, url));
@@ -56,7 +56,7 @@ public:
 
     info->pathParams["name"].description = "Video stream's Identifier";
   }
-  ENDPOINT("GET", "users/stopVideo?name={name}", stopVideo,
+  ENDPOINT("GET", "stream/stopVideo?name={name}", stopVideo,
            PATH(String, name)) {
     return createDtoResponse(Status::CODE_200, m_videoService.stopVideo(name));
   }

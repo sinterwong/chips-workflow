@@ -38,7 +38,7 @@ class AlgoManager {
 public:
   static AlgoManager &getInstance() {
     static std::once_flag onceFlag;
-    std::call_once(onceFlag, [] { instance.reset(new AlgoManager()); });
+    std::call_once(onceFlag, [] { instance = new AlgoManager(); });
     return *instance;
   }
   AlgoManager(AlgoManager const &) = delete;
@@ -61,6 +61,9 @@ public:
 
     std::future<bool> ret = task.get_future();
 
+    // 在单独的线程上运行任务
+    task();
+
     return ret; // 移交调用者等待算法结果
   }
 
@@ -68,15 +71,19 @@ public:
     auto task = std::packaged_task<bool()>([&] {
       // 等待获取可用算法资源
       algo_ptr algo = getAvailableAlgo();
-    
+
       // TODO 使用算法资源进行推理
-      cv::Mat image = cv::imread(url);
+      // cv::Mat image = cv::imread(url);
+      cv::Mat image;
       bool ret = algo->forward(image, feature);
 
       // 推理完成后标记算法为可用
       releaseAlgo(algo);
       return ret;
     });
+
+    // 在单独的线程上运行任务
+    task();
 
     std::future<bool> ret = task.get_future();
 
@@ -91,8 +98,11 @@ private:
       availableAlgos.push(algos[i]);
     }
   }
-  ~AlgoManager() {}
-  static std::unique_ptr<AlgoManager> instance;
+  ~AlgoManager() {
+    delete instance;
+    instance = nullptr;
+  }
+  static AlgoManager *instance;
 
 private:
   // 算法资源，启动多个算法供调度，TODO 可能需要一个生产消费者模型
@@ -116,6 +126,6 @@ private:
     cv.notify_one();
   }
 };
-
+AlgoManager *AlgoManager::instance = nullptr;
 } // namespace server::face::core
 #endif

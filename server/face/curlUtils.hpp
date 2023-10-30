@@ -12,7 +12,7 @@
 #define __SERVER_MACRO_UTILS_HPP_
 
 #include <string>
-constexpr size_t curl_callback(void *ptr, size_t size, size_t nmemb,
+size_t curl_callback(void *ptr, size_t size, size_t nmemb,
                                std::string *data) {
   data->append((char *)ptr, size * nmemb);
   return size * nmemb;
