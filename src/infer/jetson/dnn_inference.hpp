@@ -59,7 +59,8 @@ public:
   //! \brief Runs the inference engine
   //!
   virtual bool infer(FrameInfo &, void **) override;
-  // virtual bool infer(cv::Mat const&, Result &) override;
+
+  virtual bool infer(cv::Mat const &, void **) override;
 
   //!
   //! \brief Reads the input and mean data, preprocesses, and stores the result

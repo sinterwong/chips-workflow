@@ -120,6 +120,35 @@ bool AlgoInference::infer(FrameInfo &inputs, void **outputs) {
   return true;
 }
 
+bool AlgoInference::infer(cv::Mat const &input, void **outputs) {
+  size_t resized_size = input.cols * input.rows;
+  // explicit batch
+  float *deviceInputBuffer =
+      static_cast<float *>(buffers->getDeviceBuffer(mParams.inputNames[0]));
+  CHECK(cudaMemcpyAsync(imageDevice, input.data, resized_size,
+                        cudaMemcpyHostToDevice, processStream));
+  strandard_image(imageDevice, deviceInputBuffer, resized_size, mParams.alpha,
+                  mParams.beta, processStream);
+
+  // buffers.copyInputToDevice();  // 以下的预处理直接将输入放进了device中
+  // Memcpy from host input buffers to device input buffers
+  bool status = context->executeV2(buffers->getDeviceBindings().data());
+  if (!status) {
+    FLOWENGINE_LOGGER_ERROR("execute error!");
+    return false;
+  }
+
+  // Memcpy from device output buffers to host output buffers
+  buffers->copyOutputToHost();
+
+  float **output = reinterpret_cast<float **>(*outputs);
+  for (int i = 0; i < mParams.outputNames.size(); ++i) {
+    output[i] =
+        static_cast<float *>(buffers->getHostBuffer(mParams.outputNames[i]));
+  }
+  return true;
+}
+
 bool AlgoInference::processInput(void *inputs) {
   float *deviceInputBuffer = static_cast<float *>(
       buffers->getDeviceBuffer(mParams.inputNames[0])); // explicit batch
