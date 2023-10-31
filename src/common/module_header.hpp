@@ -101,7 +101,7 @@ struct LogicBase : public ModuleBase {
   std::string page;              // unknow，需要原路返回给后端
   std::string outputDir;         // 报警内容存储路径
   int videoDuration;             // 报警视频录制时长
-  bool isDraw;                   // 报警图像是否需要标记报警信息
+  uint8_t drawType;              // 报警图像是否需要标记报警信息
 };
 
 /**

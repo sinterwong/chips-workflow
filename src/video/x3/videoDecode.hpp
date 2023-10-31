@@ -15,6 +15,7 @@
 #include "joining_thread.h"
 #include "logger/logger.hpp"
 #include <memory>
+#include <mutex>
 #include <opencv2/core/mat.hpp>
 #include <thread>
 
@@ -93,6 +94,7 @@ public:
   }
 
   ~VideoDecode() noexcept {
+    std::lock_guard lk(frame_m);
     // 手动析构解码器，确保析构完成后再释放channel
     stream.reset();
     // 释放channel

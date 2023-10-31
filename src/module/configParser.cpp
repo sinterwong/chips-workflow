@@ -258,7 +258,7 @@ bool ConfigParser::parseConfig(std::string const &path,
         EXTRACT_JSON_VALUE(p, "page", lBase.page);
         EXTRACT_JSON_VALUE(p, "alarm_output_dir", lBase.outputDir);
         EXTRACT_JSON_VALUE(p, "video_duration", lBase.videoDuration);
-        lBase.isDraw = true;
+        lBase.drawType = 0;
 
         auto func = moduleMapping.at(info.className);
         switch (func) {

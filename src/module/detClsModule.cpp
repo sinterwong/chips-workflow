@@ -85,13 +85,8 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
                 continue;
               }
             }
-            RetBox b{ap.first,
-                     region.x,
-                     region.y,
-                     region.width,
-                     region.height,
-                     cls->second,
-                     cls->first};
+            RetBox b{ap.first,      region.x,    region.y,  region.width,
+                     region.height, cls->second, cls->first};
             algoRegions[ap.first].emplace_back(std::move(b));
             break;
           }
@@ -161,10 +156,10 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
       // 生成报警信息
       alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在报警行为",
                                    config.get());
-      // 生成报警图片
+      // 生成报警图片，带框和不带框共两张
       alarmUtils.saveAlarmImage(
           buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".jpg",
-          *image, buf.frameType, config->isDraw, {alarmBox});
+          *image, buf.frameType, static_cast<DRAW_TYPE>(2), {alarmBox});
 
       // 本轮算法结果生成
       json algoRet;

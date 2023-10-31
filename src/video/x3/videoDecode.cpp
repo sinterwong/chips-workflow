@@ -107,6 +107,9 @@ void VideoDecode::consumeFrame() {
     // 每隔一段时间消耗一帧，防止长时间静止造成 ffmpeg 连接失效
     {
       std::lock_guard lk(frame_m);
+      if (!isRunning()) {
+        break;
+      }
       bool ret = stream->Capture(&frame, 1000);
       if (!ret) {
         FLOWENGINE_LOGGER_WARN("Getframe is failed!");

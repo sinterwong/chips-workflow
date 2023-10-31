@@ -248,6 +248,39 @@ MACRO(LOAD_TENGINE)
     ENDIF()
 ENDMACRO()
 
+MACRO(LOAD_OATPP)
+    SET(OATPP_LIB_ROOT ${3RDPARTY_DIR}/oatpp)
+    LIST(APPEND CMAKE_PREFIX_PATH ${OATPP_LIB_ROOT}/lib/cmake)
+    FIND_PACKAGE(oatpp          1.3.0 REQUIRED)
+    FIND_PACKAGE(oatpp-swagger  1.3.0 REQUIRED)
+    # IF(oatpp_INCLUDE_DIRS)
+    #     MESSAGE(STATUS "oatpp_INCLUDE_DIRS : ${oatpp_INCLUDE_DIRS}")
+    #     MESSAGE(STATUS "oatpp_LIBRARIES_DIRS : ${oatpp_LIBRARIES_DIRS}")
+    #     MESSAGE(STATUS "oatpp_LIBRARIES : ${oatpp_LIBRARIES}")
+    # ELSE()
+    #     MESSAGE(FATAL_ERROR "OATPP_LIBRARIES not found!")
+    # ENDIF()
+ENDMACRO()
+
+MACRO(LOAD_FAISS)
+    FIND_FILE(FAISS_INCLUDE_DIR include ${3RDPARTY_DIR}/faiss NO_DEFAULT_PATH)
+    FIND_FILE(FAISS_LIBRARY_DIR lib ${3RDPARTY_DIR}/faiss NO_DEFAULT_PATH)
+    SET(FAISS_LIBRARIES
+        faiss
+    )
+    IF(FAISS_INCLUDE_DIR)
+        MESSAGE(STATUS "FAISS_INCLUDE_DIR : ${FAISS_INCLUDE_DIR}")
+        MESSAGE(STATUS "FAISS_LIBRARY_DIR : ${FAISS_LIBRARY_DIR}")
+        MESSAGE(STATUS "FAISS_LIBRARIES : ${faiss_LIBRARIES}")
+    ELSE()
+        MESSAGE(FATAL_ERROR "FAISS_LIBRARIES not found!")
+    ENDIF()
+
+    LINK_DIRECTORIES(
+        ${FAISS_LIBRARY_DIR}
+    )
+ENDMACRO()
+
 MACRO(LOAD_Jetson)
     LOAD_SPDLOG()
     LOAD_GFLAGS()
@@ -287,6 +320,9 @@ MACRO(LOAD_X3)
         spcdev
         rt
         dl
+        gomp
+        blas
+        lapack
     )
     INCLUDE_DIRECTORIES(
         ${X3_INCLUDE}

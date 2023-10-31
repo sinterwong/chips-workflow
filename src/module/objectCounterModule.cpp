@@ -139,9 +139,9 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
       alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "达到计数要求",
                                    config.get());
       // 生成报警图片，此处相当于截了个图
-      alarmUtils.saveAlarmImage(buf.alarmInfo.alarmFile + "/" +
-                                    buf.alarmInfo.alarmId + ".jpg",
-                                *image, buf.frameType, config->isDraw);
+      alarmUtils.saveAlarmImage(
+          buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".jpg",
+          *image, buf.frameType, static_cast<DRAW_TYPE>(config->drawType));
       autoSend(buf);
       counter.insert(counter.size() * 200);
       break;

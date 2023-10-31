@@ -45,6 +45,17 @@ inline void hwc_to_chw(T *chw_data, T *hwc_data, int channel, int height,
   }
 }
 
+inline void normalize_L2(float *x, int d) {
+  float sum = 0;
+  for (int i = 0; i < d; i++) {
+    sum += x[i] * x[i];
+  }
+  sum = std::sqrt(sum);
+  for (int i = 0; i < d; i++) {
+    x[i] /= sum;
+  }
+}
+
 bool resizeInput(cv::Mat &image, bool isScale, std::array<int, 2> &dstShape);
 
 void BGR2YUV(const cv::Mat bgrImg, cv::Mat &y, cv::Mat &u, cv::Mat &v);

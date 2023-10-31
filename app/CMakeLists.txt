@@ -1,6 +1,9 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 PROJECT(Application)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations -Wno-error=unused-function")
+
+LOAD_OATPP()
+
 INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}
     ${PROJECT_INCLUDE_DIR}/core
@@ -16,12 +19,14 @@ INCLUDE_DIRECTORIES(
     ${CUDA_INCLUDE_DIRS}
     ${3RDPARTY_ROOT}/eigen
     ${3RDPARTY_DIR}/gflags/include
+    ${oatpp_INCLUDE_DIRS}
 )
 
 LINK_DIRECTORIES(
     ${OpenCV_LIBRARY_DIR}
     ${FFMPEG_LIBRARY_DIR}
     ${OPENSSL_LIBRARY_DIR}
+    ${oatpp_LIBRARIES_DIRS}
     ${X3_DIRECTORIES}
 )
 IF(TARGET_HARDWARE STREQUAL "x3")
@@ -41,6 +46,7 @@ LINK_LIBRARIES(
     ${CURL_LIBRARIES}
     ${CHIPS_DEPAND_LIBS}
     gflags
+    oatpp
     pthread
     module 
     video 

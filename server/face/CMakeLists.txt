@@ -1,0 +1,45 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
+PROJECT(FaceService LANGUAGES C CXX)
+
+LOAD_FAISS()
+
+FILE(GLOB_RECURSE FACE_SERVER_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+
+LINK_DIRECTORIES(
+  ${OpenCV_LIBRARY_DIR}
+)
+
+# transfer all headers to the include directory
+FILE(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR}/server/face)
+FOREACH(include ${FACE_SERVER_LIB_HEAD})
+  MESSAGE("-- Copying ${include}")
+  CONFIGURE_FILE(${include} ${PROJECT_INCLUDE_DIR}/server/face COPYONLY)
+ENDFOREACH()
+
+FILE(MAKE_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/app)
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/app)
+FILE(GLOB APP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
+MESSAGE(STATUS "APP SOURCES: ${APP_SOURCES}")
+FOREACH(sourcefile ${APP_SOURCES})
+    STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
+    STRING(REPLACE ".cc" "" testname ${sourcefilewithoutpath})
+    ADD_EXECUTABLE( ${testname} ${sourcefile})
+
+    TARGET_INCLUDE_DIRECTORIES(${testname} PRIVATE
+      ${PROJECT_INCLUDE_DIR}
+      ${PROJECT_INCLUDE_DIR}/core
+      ${PROJECT_INCLUDE_DIR}/video
+      ${PROJECT_INCLUDE_DIR}/infer
+      ${PROJECT_INCLUDE_DIR}/server/face
+      ${OpenCV_INCLUDE_DIRS}
+      ${FAISS_INCLUDE_DIR}
+      ${CURL_INCLUDE_DIR}
+    )
+
+    TARGET_LINK_LIBRARIES(${testname} infer video core module_logger stdc++fs ${FAISS_LIBRARIES} ${OpenCV_LIBS} ${CURL_LIBRARIES})
+
+    INSTALL(TARGETS ${testname}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin)
+ENDFOREACH(sourcefile ${APP_SOURCES})

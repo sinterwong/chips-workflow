@@ -15,6 +15,10 @@
 
 #include <cassert>
 
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
 namespace module {
 
 /**
@@ -107,10 +111,18 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
       alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "数量达标",
                                    config.get());
       // 生成报警图片并画框
-      alarmUtils.saveAlarmImage(buf.alarmInfo.alarmFile + "/" +
-                                    buf.alarmInfo.alarmId + ".jpg",
-                                *image, buf.frameType, config->isDraw, rbboxes);
+      alarmUtils.saveAlarmImage(
+          buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".jpg",
+          *image, buf.frameType, static_cast<DRAW_TYPE>(2), rbboxes);
+
+      // 本轮算法结果生成
+      json algoRet;
+      std::string jsonStr;
+      utils::retBoxes2json(rbboxes, jsonStr);
+      algoRet[detNet.first] = std::move(jsonStr);
+      buf.alarmInfo.algorithmResult = algoRet.dump();
       autoSend(buf);
+
       // 录制报警视频
       if (config->videoDuration > 0) {
         bool ret = video::utils::videoRecordWithFFmpeg(
