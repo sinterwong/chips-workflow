@@ -10,6 +10,7 @@
  */
 #include "AppComponent.hpp"
 #include "StatusDto.hpp"
+#include "StreamDto.hpp"
 #include "streamManager.hpp"
 #include <oatpp/web/protocol/http/Http.hpp>
 
@@ -21,10 +22,11 @@ private:
   using Status = oatpp::web::protocol::http::Status;
 
 public:
-  oatpp::Object<StatusDto> startVideo(oatpp::String const &name,
-                                      oatpp::String const &url) {
+  oatpp::Object<StatusDto>
+  startVideo(oatpp::Object<StreamDto> const streamDto) {
     auto status = StatusDto::createShared();
-    auto ret = core::StreamManager::getInstance().registered(name, url);
+    auto ret = core::StreamManager::getInstance().registered(streamDto->name,
+                                                             streamDto->url);
     if (!ret) {
       status->status = "Service Unavailable";
       status->code = 503;

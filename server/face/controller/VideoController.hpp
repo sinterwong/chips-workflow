@@ -9,6 +9,7 @@
  *
  */
 #include "StatusDto.hpp"
+#include "StreamDto.hpp"
 #include "VideoService.hpp"
 #include <memory>
 #include <oatpp/core/macro/codegen.hpp>
@@ -42,10 +43,10 @@ public:
     info->pathParams["name"].description = "Video stream's Identifier";
     info->pathParams["url"].description = "Url of the stream";
   }
-  ENDPOINT("GET", "stream/startVideo?name={name}&url={url}", startVideo,
-           PATH(String, name), PATH(String, url)) {
+  ENDPOINT("POST", "stream/startVideo", startVideo,
+           BODY_DTO(Object<StreamDto>, streamDto)) {
     return createDtoResponse(Status::CODE_200,
-                             m_videoService.startVideo(name, url));
+                             m_videoService.startVideo(streamDto));
   }
 
   ENDPOINT_INFO(stopVideo) {
@@ -56,8 +57,7 @@ public:
 
     info->pathParams["name"].description = "Video stream's Identifier";
   }
-  ENDPOINT("GET", "stream/stopVideo?name={name}", stopVideo,
-           PATH(String, name)) {
+  ENDPOINT("GET", "stream/stopVideo", stopVideo, QUERY(String, name)) {
     return createDtoResponse(Status::CODE_200, m_videoService.stopVideo(name));
   }
 };

@@ -20,10 +20,15 @@
 
 #include "AppComponent.hpp"
 #include "FaceController.hpp"
-#include "VideoController.hpp"
 #include "StaticController.hpp"
+#include "VideoController.hpp"
 
 namespace server::face {
+const auto initLogger = []() -> decltype(auto) {
+  FlowEngineLoggerInit(true, true, true, true);
+  return true;
+}();
+
 void run() {
   AppComponent components;
 
@@ -59,6 +64,8 @@ void run() {
 } // namespace server::face
 
 int main(int argc, const char *argv[]) {
+
+  FlowEngineLoggerSetLevel(2);
 
   oatpp::base::Environment::init();
 

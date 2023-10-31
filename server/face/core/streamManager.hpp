@@ -143,7 +143,7 @@ private:
 
   // 初始化解码线程池
   std::unique_ptr<thread_pool> tpool;
-  std::vector<std::future<void>> futures{DECODER_POOL_SIZE};
+  std::vector<std::future<void>> futures;
 
   // 流对应表
   std::unordered_map<std::string, video_ptr> name2stream;

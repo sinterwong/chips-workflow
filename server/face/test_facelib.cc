@@ -11,8 +11,6 @@
 #include "algoManager.hpp"
 #include "faceLibManager.hpp"
 #include "logger/logger.hpp"
-#include "resultProcessor.hpp"
-#include "streamManager.hpp"
 
 using namespace server::face;
 
@@ -22,6 +20,9 @@ const auto initLogger = []() -> decltype(auto) {
 }();
 
 int main(int argc, char **argv) {
+
+  FlowEngineLoggerSetLevel(1);
+
   bool ok;
   // 1. 新增人脸
   std::vector<float> feature1;

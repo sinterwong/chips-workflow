@@ -47,7 +47,7 @@ public:
 
 public:
   void onFrameReceived(FramePackage &&framePackage) {
-    FLOWENGINE_LOGGER_INFO("Frame received and processed.");
+    FLOWENGINE_LOGGER_DEBUG("Frame received and processed.");
     tpool->submit(
         [this, &framePackage]() { this->oneProcess(std::move(framePackage)); });
   }
