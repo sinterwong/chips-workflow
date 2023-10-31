@@ -15,10 +15,9 @@
 #include "inference.h"
 #include "logger/logger.hpp"
 
-
+#include <memory>
 #include <opencv2/core/mat.hpp>
 #include <sp_bpu.h>
-#include <memory>
 
 #define HB_CHECK_SUCCESS(value, errmsg)                                        \
   do {                                                                         \
@@ -56,6 +55,8 @@ public:
   //! \brief Runs the inference engine
   //!
   virtual bool infer(FrameInfo &, void **) override;
+
+  virtual bool infer(cv::Mat const &, void **) override;
 
   //!
   //! \brief ProcessInput that the input is correct for infer
@@ -95,6 +96,6 @@ private:
   // input data
   cv::Mat input_data;
 };
-} // namespace x3
+} // namespace dnn
 } // namespace infer
 #endif

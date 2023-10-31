@@ -12,6 +12,7 @@
 #define __INFERENCE_H_
 #include "infer_common.hpp"
 #include <array>
+#include <opencv2/core/mat.hpp>
 
 using common::FrameInfo;
 
@@ -29,6 +30,8 @@ public:
   //! \brief Runs the inference engine with input of void*
   //!
   virtual bool infer(FrameInfo &, void **) = 0;
+
+  virtual bool infer(cv::Mat const &, void **) = 0;
 
   //!
   //! \brief ProcessInput that the input is correct for infer

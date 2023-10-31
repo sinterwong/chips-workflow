@@ -9,9 +9,9 @@ INCLUDE(cmake/utils.cmake)
 FLOWENGINE_APP_EXTRACT_VERSION()
 PROJECT(FlowEngine VERSION ${FLOWENGINE_APP_VERSION} LANGUAGES C CXX)
 
-OPTION(BUILD_TESTS "Build with tests" OFF)
+OPTION(BUILD_TESTS "Build with tests" ON)
 OPTION(BUILD_APP "Build with application" OFF)
-OPTION(BUILD_SERVER "Build with server" ON)
+OPTION(BUILD_SERVER "Build with server" OFF)
 
 MESSAGE(INFO "--------------------------------")
 MESSAGE(STATUS "Build FlowEngine: ${FLOWENGINE_APP_VERSION}")

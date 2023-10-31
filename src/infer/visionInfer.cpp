@@ -60,17 +60,20 @@ bool VisionInfer::infer(FrameInfo &frame, const InferParams &params,
   void *outputs[modelInfo.output_count];
   void *output = reinterpret_cast<void *>(outputs);
   ret.shape = frame.shape;
+  /*
+   * 前处理并发性优化：在vision中实现CPU版本前处理，提高并发性
+   */
+  cv::Mat inputImage;
+  vision->processInput(frame, inputImage);
   {
-    /*
-     * TODO: 前处理并发性优化
-     * 问题：之前考虑各个平台有相应的图像处理加速模块所以将前处理包含在infer中，但是目前有部分芯片的前处理依然使用cpu完成，
-     * 所以此处前处理的并发性有优化空间。
-     * 思路：后续考虑在vision中实现CPU版本前处理，再配合配置参数决定是否使用vision中的前处理，从而提高并发性
-     */
     std::lock_guard lk(m);
 
     auto infer_start = std::chrono::high_resolution_clock::now();
-    if (!instance->infer(frame, &output)) {
+    // if (!instance->infer(frame, &output)) {
+    //   FLOWENGINE_LOGGER_ERROR("VisionInfer infer: failed to infer!");
+    //   return false;
+    // }
+    if (!instance->infer(inputImage, &output)) {
       FLOWENGINE_LOGGER_ERROR("VisionInfer infer: failed to infer!");
       return false;
     }

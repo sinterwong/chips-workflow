@@ -259,7 +259,8 @@ struct FeatureAlgo : public AlgoBase {
 class AlgoConfig {
 public:
   // 参数中心
-  using Params = std::variant<DetAlgo, ClassAlgo, FeatureAlgo, PointsDetAlgo>;
+  using Params =
+      std::variant<AlgoBase, DetAlgo, ClassAlgo, FeatureAlgo, PointsDetAlgo>;
 
   // 设置参数
   template <typename T> void setParams(T params) {
@@ -277,6 +278,19 @@ public:
 
   // 获取copy参数
   template <typename T> T getCopyParams() { return std::get<T>(params_); }
+
+  AlgoBase *getBaseParams() {
+    return std::visit(
+        [](auto &&arg) -> AlgoBase * {
+          using T = std::decay_t<decltype(arg)>;
+          if constexpr (std::is_base_of_v<AlgoBase, T>) {
+            return &arg;
+          } else {
+            return nullptr;
+          }
+        },
+        params_);
+  }
 
 private:
   Params params_;
