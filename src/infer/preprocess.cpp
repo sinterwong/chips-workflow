@@ -196,7 +196,20 @@ void YUV2BGR(const cv::Mat y, const cv::Mat u, const cv::Mat v,
 void YU122NV12(cv::Mat const &input, cv::Mat &output) {
   int y_rows = input.rows * 2 / 3;
   cv::Mat y = input.rowRange(0, y_rows).colRange(0, input.cols);
+  // uv 不可以为奇数
   cv::Mat uv = input.rowRange(y_rows, input.rows).colRange(0, input.cols);
+
+  // 对uv进行矫正
+  cv::Rect rect = {0, 0, uv.cols, uv.rows};
+  if (rect.height % 2) {
+    rect.height -= 1;
+    uv = uv(rect);
+    if ((uv.rows + y.rows) % 3 != 0) {
+      y_rows -= (uv.rows + y.rows) % 3;
+      rect = {0, 0, y.cols, y_rows};
+      y = y(rect);
+    }
+  }
   cv::Mat u = uv.rowRange(0, uv.rows / 2).colRange(0, uv.cols / 2);
   cv::Mat v = uv.rowRange(uv.rows / 2, uv.rows).colRange(0, uv.cols / 2);
   // 单个的一轮uv

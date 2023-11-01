@@ -64,7 +64,15 @@ bool VisionInfer::infer(FrameInfo &frame, const InferParams &params,
    * 前处理并发性优化：在vision中实现CPU版本前处理，提高并发性
    */
   cv::Mat inputImage;
+  auto preprocess_start = std::chrono::high_resolution_clock::now();
   vision->processInput(frame, inputImage);
+  auto preprocess_stop = std::chrono::high_resolution_clock::now();
+  auto preprocess_duration =
+      std::chrono::duration_cast<std::chrono::microseconds>(preprocess_stop -
+                                                            preprocess_start);
+  auto preprocess_cost =
+      static_cast<double>(preprocess_duration.count()) / 1000;
+
   {
     std::lock_guard lk(m);
 
@@ -86,7 +94,7 @@ bool VisionInfer::infer(FrameInfo &frame, const InferParams &params,
      * TODO: 后处理并发性优化
      * 问题：因为平台api相关问题，output指向的buffer管理在inference类中，因此此处数据不安全，需要加锁。
      * 受限于这个问题，后处理的无法并发完成。（ps:
-     * 通常后处理的速度往往慢于内存开辟和拷贝速度。）
+     * 通常后处理的速度往往慢于内存开辟和拷贝速度。但基本上后处理就一两毫秒也不至于。）
      * 思路：后续考虑不在通过inference管理output的内存。output在这里开辟空间，infer时拷贝结果进去，
      * 处理完成后在此处释放（反正后处理都是在CPU上完成）从而提高并发性
      */
@@ -100,8 +108,9 @@ bool VisionInfer::infer(FrameInfo &frame, const InferParams &params,
         post_stop - post_start);
     auto post_cost = static_cast<double>(post_duration.count()) / 1000;
 
-    FLOWENGINE_LOGGER_DEBUG("{} infer time: {} ms, post process time: {} ms",
-                            serialName, infer_cost, post_cost);
+    FLOWENGINE_LOGGER_DEBUG("{} preprocess time: {} ms, infer time: {} ms, "
+                            "post process time: {} ms",
+                            serialName, preprocess_cost, infer_cost, post_cost);
   }
 
   return true;
