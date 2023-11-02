@@ -17,6 +17,7 @@
 #include <mutex>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 #include <queue>
 #include <thread>
 #include <vector>
@@ -33,7 +34,7 @@ struct FramePackage {
   std::shared_ptr<cv::Mat> frame;
 };
 
-using algo_ptr = std::shared_ptr<FaceRecognition>;
+using face_algo_ptr = std::shared_ptr<FaceRecognition>;
 class AlgoManager {
 public:
   static AlgoManager &getInstance() {
@@ -49,7 +50,7 @@ public:
                           std::vector<float> &feature) {
     auto task = std::packaged_task<bool()>([&] {
       // 等待获取可用算法资源
-      algo_ptr algo = getAvailableAlgo();
+      face_algo_ptr algo = getAvailableAlgo();
 
       // 使用算法资源进行推理
       bool ret = algo->forward(*framePackage.frame, feature);
@@ -70,11 +71,11 @@ public:
   std::future<bool> infer(std::string const &url, std::vector<float> &feature) {
     auto task = std::packaged_task<bool()>([&] {
       // 等待获取可用算法资源
-      algo_ptr algo = getAvailableAlgo();
+      face_algo_ptr algo = getAvailableAlgo();
 
       // TODO 使用算法资源进行推理
-      // cv::Mat image = cv::imread(url);
-      cv::Mat image;
+      cv::Mat image = cv::imread(url);
+      cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
       bool ret = algo->forward(image, feature);
 
       // 推理完成后标记算法为可用
@@ -106,21 +107,21 @@ private:
 
 private:
   // 算法资源，启动多个算法供调度，TODO 可能需要一个生产消费者模型
-  std::vector<algo_ptr> algos{ALGO_NUM};
-  std::queue<algo_ptr> availableAlgos;
+  std::vector<face_algo_ptr> algos{ALGO_NUM};
+  std::queue<face_algo_ptr> availableAlgos;
 
   std::mutex m;
   std::condition_variable cv;
 
-  algo_ptr getAvailableAlgo() {
+  face_algo_ptr getAvailableAlgo() {
     std::unique_lock<std::mutex> lock(m);
     cv.wait(lock, [&]() { return !availableAlgos.empty(); });
-    algo_ptr algo = availableAlgos.front();
+    face_algo_ptr algo = availableAlgos.front();
     availableAlgos.pop();
     return algo;
   }
 
-  void releaseAlgo(algo_ptr algo) {
+  void releaseAlgo(face_algo_ptr algo) {
     std::lock_guard<std::mutex> lock(m);
     availableAlgos.push(algo);
     cv.notify_one();

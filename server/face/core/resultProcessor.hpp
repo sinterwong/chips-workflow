@@ -81,7 +81,7 @@ private:
     }
 
     // * 2. 人脸识别结果匹配人脸库
-    auto idx = FaceLibraryManager::getInstance().match(feature.data(), 0.8);
+    auto idx = FaceLibraryManager::getInstance().match(feature.data(), 0.4);
     if (idx < 0) { // 没有匹配到人脸
       return;
     }

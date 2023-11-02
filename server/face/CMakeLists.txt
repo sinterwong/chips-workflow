@@ -30,6 +30,8 @@ FOREACH(sourcefile ${APP_SOURCES})
       ${PROJECT_INCLUDE_DIR}/core
       ${PROJECT_INCLUDE_DIR}/video
       ${PROJECT_INCLUDE_DIR}/infer
+      ${PROJECT_INCLUDE_DIR}/infer/jetson
+      ${PROJECT_INCLUDE_DIR}/infer/x3
       ${PROJECT_INCLUDE_DIR}/server/face
       ${OpenCV_INCLUDE_DIRS}
       ${FAISS_INCLUDE_DIR}

@@ -185,7 +185,6 @@ int main(int argc, char **argv) {
     }
 
     // TODO 基于5个点的人脸关键点矫正
-    // RGB to NV12
     std::string prefix = std::to_string(rand() % 1000);
     utils::NV12toRGB(ori_face_nv12, ori_face_rgb);
     cv::imwrite(prefix + "_ori_face.jpg", ori_face_rgb);

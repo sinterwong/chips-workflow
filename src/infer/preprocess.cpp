@@ -306,7 +306,12 @@ void RGB2NV12(cv::Mat const &input, cv::Mat &output, bool is_parallel) {
 }
 
 void NV12toRGB(cv::Mat const &nv12, cv::Mat &output) {
-  cv::cvtColor(nv12, output, CV_YUV2RGB_NV12);
+  cv::Rect rect{0, 0, nv12.cols, nv12.rows};
+  // width % 2 == 0 and height % 3 == 0
+  rect.width -= rect.width % 2;
+  rect.height -= rect.height % 3;
+  cv::Mat temp = nv12(rect);
+  cv::cvtColor(temp, output, CV_YUV2RGB_NV12);
 }
 
 template <ColorType format>
