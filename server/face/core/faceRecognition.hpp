@@ -14,6 +14,7 @@
 #include <atomic>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core/mat.hpp>
+#include <opencv2/core/types.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <vector>
 
@@ -25,6 +26,7 @@ using namespace infer;
 using namespace common;
 
 using algo_ptr = std::shared_ptr<AlgoInfer>;
+
 class FaceRecognition {
 public:
   FaceRecognition() {
@@ -68,60 +70,39 @@ public:
   }
   ~FaceRecognition() {}
 
-  bool forward(cv::Mat &image, std::vector<float> &feature) {
-    // // TODO 模拟特征生成
-    // for (int i = 0; i < ndim; ++i) {
-    //   feature.push_back(rand() % 1000);
-    // }
-    // infer::utils::normalize_L2(feature.data(), ndim);
+  bool forward(FrameInfo &inputData, std::vector<float> &feature) {
 
-    auto ctype = getColorType(image);
-    int imageWidth, imageHeight;
-    imageWidth = image.cols;
-    if (ctype == ColorType::NV12) {
-      imageHeight = image.rows * 2 / 3;
-    } else {
-      imageHeight = image.rows;
-    }
-
+    // 人脸检测
     InferResult faceDetRet;
-    inference(image, faceDetRet, faceDet);
+    inference(inputData, faceDetRet, faceDet);
+
     auto kbboxes = std::get_if<KeypointsBoxes>(&faceDetRet.aRet);
     if (!kbboxes || kbboxes->empty()) {
       FLOWENGINE_LOGGER_INFO("Not a single face was detected!");
       return -1;
     }
 
-    size_t index = findClosestBBoxIndex(*kbboxes, imageWidth, imageHeight);
+    // 获取最靠近中心的人脸
+    size_t index = findClosestBBoxIndex(*kbboxes, inputData.shape.at(0),
+                                        inputData.shape.at(1));
 
     auto kbbox = kbboxes->at(index);
 
-    cv::Mat faceInput;
-    cv::Rect2i rect{static_cast<int>(kbbox.bbox.bbox[0]),
-                    static_cast<int>(kbbox.bbox.bbox[1]),
-                    static_cast<int>(kbbox.bbox.bbox[2] - kbbox.bbox.bbox[0]),
-                    static_cast<int>(kbbox.bbox.bbox[3] - kbbox.bbox.bbox[1])};
-    // 可视化人脸检测结果：人脸框和5个关键点
-    infer::utils::cropImage(image, faceInput, rect, ctype);
-    std::vector<cv::Point2f> points;
-    for (auto &p : kbbox.points) {
-      points.push_back(cv::Point2f{p.x, p.y});
-    }
-    // 关键点矫正
-    if (ctype == ColorType::NV12) {
-      cv::Mat temp;
-      utils::NV12toRGB(image, temp);
-      faceInput = normCrop(temp, points, 112);
-      utils::RGB2NV12(temp, faceInput);
-    } else {
-      faceInput = normCrop(image, points, 112);
-    }
+    // 构造输入图像
+    cv::Mat image{inputData.inputShape.at(1), inputData.inputShape.at(0),
+                  inputData.inputShape.at(2) == 1 ? CV_8UC1 : CV_8UC3,
+                  reinterpret_cast<char *>(*inputData.data)};
+
+    // 获取人脸识别输入图像
+    FrameInfo faceInput;
+    cv::Mat faceImage;
+    getFaceInput(image, faceImage, faceInput, kbbox.points, inputData.type);
 
     // 人脸特征提取
     InferResult faceRecRet;
     inference(faceInput, faceRecRet, faceRec);
     feature = std::move(std::get<std::vector<float>>(faceRecRet.aRet));
-    utils::normalize_L2(feature.data(), 512);
+    utils::normalize_L2(feature.data(), feature.size());
     return true;
   }
 
@@ -142,44 +123,15 @@ private:
     return vision;
   }
 
-  void inference(cv::Mat &image, InferResult &ret, algo_ptr vision) {
-    ColorType ctype = getColorType(image);
-    if (ctype != ColorType::NV12) {
-      // 默认是RGB（垃圾代码，不要在意）
-      utils::RGB2NV12(image, image);
-    }
-    RetBox region{"xxx"};
-
+  void inference(FrameInfo &frame, InferResult &ret, algo_ptr vision) {
     InferParams params{std::string("xxx"),
-                       ColorType::NV12,
+                       frame.type,
                        0.0,
-                       region,
-                       {image.cols, image.rows, image.channels()}};
+                       {"xxx"},
+                       {frame.inputShape.at(0), frame.inputShape.at(1),
+                        frame.inputShape.at(2)}};
 
-    // 制作输入数据
-    FrameInfo frame;
-    switch (params.frameType) {
-    case common::ColorType::None:
-    case common::ColorType::RGB888:
-    case common::ColorType::BGR888:
-      frame.shape = {image.cols, image.rows, 3};
-      break;
-    case common::ColorType::NV12:
-      frame.shape = {image.cols, image.rows * 2 / 3, 3};
-      break;
-    }
-    frame.shape = {image.cols, image.rows * 2 / 3, 3};
-    frame.type = params.frameType;
-    frame.data = reinterpret_cast<void **>(&image.data);
     vision->infer(frame, params, ret);
-  }
-
-  ColorType getColorType(cv::Mat &image) {
-    if (image.channels() == 1) {
-      return ColorType::NV12;
-    } else {
-      return ColorType::RGB888;
-    }
   }
 
   cv::Mat estimateNorm(const std::vector<cv::Point2f> &landmarks,
@@ -221,6 +173,29 @@ private:
     cv::warpAffine(img, warped, M, cv::Size(imageSize, imageSize),
                    cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar(0));
     return warped;
+  }
+
+  void getFaceInput(cv::Mat const &input, cv::Mat &output, FrameInfo &frame,
+                    Points2f const &points, ColorType const &type) {
+    // 关键点矫正
+    std::vector<cv::Point2f> cvPoints;
+    for (auto &p : points) {
+      cvPoints.push_back(cv::Point2f{p.x, p.y});
+    }
+    if (type == ColorType::NV12) {
+      cv::Mat temp;
+      utils::NV12toRGB(input, temp);
+      output = normCrop(temp, cvPoints, 112);
+      utils::RGB2NV12(temp, output);
+      frame.shape = {temp.cols, temp.rows, output.channels()};
+    } else {
+      output = normCrop(input, cvPoints, 112);
+      frame.shape = {output.cols, output.rows, output.channels()};
+    }
+    frame.inputShape = {output.cols, output.rows, output.channels()};
+    frame.type = type;
+    frame.data = reinterpret_cast<void **>(&output.data);
+    ;
   }
 
   size_t findClosestBBoxIndex(KeypointsBoxes const &kbboxes, float w, float h) {

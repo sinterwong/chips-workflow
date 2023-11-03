@@ -16,7 +16,6 @@
 #define __SERVER_FACE_CORE_FACE_LIBRARY_MANAGER_HPP_
 
 namespace server::face::core {
-using infer::solution::FaceLibrary;
 
 class FaceLibraryManager {
 

@@ -305,13 +305,31 @@ void RGB2NV12(cv::Mat const &input, cv::Mat &output, bool is_parallel) {
   // YUV444toNV12(temp, output);
 }
 
+void BGR2NV12(cv::Mat const &input, cv::Mat &output, bool is_parallel) {
+  // 这里图片的宽高必须是偶数，否则直接卡死这里
+  cv::Rect rect{0, 0, input.cols, input.rows};
+  rect.width -= rect.width % 2;
+  rect.height -= rect.height % 2;
+  cv::Mat in_temp = input(rect);
+  cv::Mat temp;
+  cv::cvtColor(in_temp, temp, cv::COLOR_BGR2YUV_I420);
+  if (is_parallel) {
+    YU122NV12_parallel(temp, output);
+  } else {
+    YU122NV12(temp, output);
+  }
+
+  // cv::cvtColor(input, temp, cv::COLOR_RGB2YUV);
+  // YUV444toNV12(temp, output);
+}
+
 void NV12toRGB(cv::Mat const &nv12, cv::Mat &output) {
   cv::Rect rect{0, 0, nv12.cols, nv12.rows};
   // width % 2 == 0 and height % 3 == 0
   rect.width -= rect.width % 2;
   rect.height -= rect.height % 3;
   cv::Mat temp = nv12(rect);
-  cv::cvtColor(temp, output, CV_YUV2RGB_NV12);
+  cv::cvtColor(temp, output, cv::COLOR_YUV2RGB_NV12);
 }
 
 template <ColorType format>

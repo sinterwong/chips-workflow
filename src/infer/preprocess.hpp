@@ -69,6 +69,8 @@ void YV12toNV12(const cv::Mat &input, cv::Mat &output);
 
 void RGB2NV12(cv::Mat const &input, cv::Mat &output, bool is_parallel = false);
 
+void BGR2NV12(cv::Mat const &input, cv::Mat &output, bool is_parallel = false);
+
 bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
                common::ColorType type, float sr = 0.0);
 

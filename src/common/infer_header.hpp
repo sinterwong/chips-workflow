@@ -58,7 +58,8 @@ using Shape = std::array<int, 3>;
  *
  */
 struct FrameInfo {
-  Shape shape;
+  Shape shape;  // 图片分辨率
+  Shape inputShape;  // 图片输入算法时的维度（eg:NV12的话维度为{w, h * 1.5, c};
   ColorType type;
   void **data;
 };

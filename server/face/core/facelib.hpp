@@ -9,6 +9,7 @@
  *
  */
 #include "logger/logger.hpp"
+#include "preprocess.hpp"
 #include <cmath>
 #include <cstdlib>
 #include <faiss/IndexFlat.h>
@@ -23,7 +24,7 @@
 #ifndef __INFER_FACE_LIBRARY_H_
 #define __INFER_FACE_LIBRARY_H_
 
-namespace infer::solution {
+namespace server::face::core {
 class FaceLibrary {
 private:
   int d; // dimensionality of the vectors
@@ -136,6 +137,6 @@ public:
     std::cout << "******************************************" << std::endl;
   }
 };
-} // namespace infer::solution
+} // namespace server::face::core
 
 #endif
