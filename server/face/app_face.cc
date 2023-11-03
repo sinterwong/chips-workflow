@@ -30,6 +30,8 @@ const auto initLogger = []() -> decltype(auto) {
 }();
 
 void run() {
+  FlowEngineLoggerSetLevel(1);
+
   AppComponent components;
 
   // Get router component

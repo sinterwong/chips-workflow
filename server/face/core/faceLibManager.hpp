@@ -9,6 +9,7 @@
  *
  */
 #include "facelib.hpp"
+#include "logger/logger.hpp"
 #include <filesystem>
 #include <memory>
 
@@ -30,19 +31,25 @@ public:
 
 public:
   bool createOne(long id, float *vec) {
-    facelib->addVector(vec, id);
+    if (!facelib->addVector(vec, id)) {
+      return false;
+    }
     facelib->saveToFile(outputPath);
     return true;
   }
 
   bool updateOne(long id, float *vec) {
-    facelib->updateVector(id, vec);
+    if (!facelib->updateVector(id, vec)) {
+      return false;
+    }
     facelib->saveToFile(outputPath);
     return true;
   }
 
   bool deleteOne(long id) {
-    facelib->deleteVector(id);
+    if (!facelib->deleteVector(id)) {
+      return false;
+    }
     facelib->saveToFile(outputPath);
     return true;
   }
@@ -50,6 +57,7 @@ public:
   long match(float *vec, float threshold) {
     auto ret = facelib->search(vec, 1).at(0);
     // 阈值
+    FLOWENGINE_LOGGER_DEBUG("ID: {}, Distance: {}", ret.first, ret.second);
     if (ret.second > threshold) {
       return ret.first;
     }
@@ -60,9 +68,10 @@ public:
 
 private:
   FaceLibraryManager() {
-    facelib = std::make_unique<FaceLibrary>(128);
+    facelib = std::make_unique<FaceLibrary>(512);
 
     if (std::filesystem::exists(outputPath)) {
+      FLOWENGINE_LOGGER_INFO("Found the facelib will be loaded.");
       facelib->loadFromFile(outputPath);
     } else {
       std::filesystem::create_directories(
@@ -77,7 +86,7 @@ private:
   static FaceLibraryManager *instance;
 
 private:
-  std::string outputPath = "/public/face/feacelib.bin";
+  std::string outputPath = "/public/face/facelib.bin";
   std::unique_ptr<FaceLibrary> facelib;
 };
 FaceLibraryManager *FaceLibraryManager::instance = nullptr;

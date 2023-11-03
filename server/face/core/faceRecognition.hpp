@@ -79,7 +79,7 @@ public:
     auto kbboxes = std::get_if<KeypointsBoxes>(&faceDetRet.aRet);
     if (!kbboxes || kbboxes->empty()) {
       FLOWENGINE_LOGGER_INFO("Not a single face was detected!");
-      return -1;
+      return false;
     }
 
     // 获取最靠近中心的人脸
@@ -97,11 +97,11 @@ public:
     FrameInfo faceInput;
     cv::Mat faceImage;
     getFaceInput(image, faceImage, faceInput, kbbox.points, inputData.type);
-
+    // cv::imwrite("output.jpg", faceImage);
     // 人脸特征提取
     InferResult faceRecRet;
     inference(faceInput, faceRecRet, faceRec);
-    feature = std::move(std::get<std::vector<float>>(faceRecRet.aRet));
+    feature = *std::get_if<std::vector<float>>(&faceRecRet.aRet);
     utils::normalize_L2(feature.data(), feature.size());
     return true;
   }
@@ -185,7 +185,7 @@ private:
     if (type == ColorType::NV12) {
       cv::Mat temp;
       utils::NV12toRGB(input, temp);
-      output = normCrop(temp, cvPoints, 112);
+      temp = normCrop(temp, cvPoints, 112);
       utils::RGB2NV12(temp, output);
       frame.shape = {temp.cols, temp.rows, output.channels()};
     } else {
@@ -195,7 +195,6 @@ private:
     frame.inputShape = {output.cols, output.rows, output.channels()};
     frame.type = type;
     frame.data = reinterpret_cast<void **>(&output.data);
-    ;
   }
 
   size_t findClosestBBoxIndex(KeypointsBoxes const &kbboxes, float w, float h) {

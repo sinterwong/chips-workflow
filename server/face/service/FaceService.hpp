@@ -43,7 +43,7 @@ public:
     if (!ok) {
       status->status = "Service Unavailable";
       status->code = 503;
-      status->message = "User failed to enter database.";
+      status->message = "User failed to create.";
     } else {
       status->status = "OK";
       status->code = 200;
@@ -111,7 +111,7 @@ public:
       return status;
     }
     auto idx =
-        core::FaceLibraryManager::getInstance().match(feature.data(), 0.2);
+        core::FaceLibraryManager::getInstance().match(feature.data(), 0.33);
     if (idx < 0) {
       status->status = "No Content";
       status->code = 204;

@@ -54,8 +54,12 @@ int main(int argc, char **argv) {
 
   std::vector<float> f1, f2;
 
-  faceRec.forward(frame1, f1);
-  faceRec.forward(frame2, f2);
+  if (!faceRec.forward(frame1, f1)) {
+    return -1;
+  }
+  if (!faceRec.forward(frame2, f2)) {
+    return -1;
+  }
 
   facelib.addVector(f1.data(), 1);
 
