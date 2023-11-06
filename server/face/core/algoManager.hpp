@@ -14,7 +14,9 @@
 #include "networkUtils.hpp"
 #include "thread_pool.h"
 #include <condition_variable>
+#include <filesystem>
 #include <future>
+#include <memory>
 #include <mutex>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -29,6 +31,13 @@
 namespace server::face::core {
 
 constexpr int ALGO_NUM = 2;
+
+inline std::future<bool> make_false_future() {
+  std::promise<bool> prom;
+  auto fut = prom.get_future();
+  prom.set_value(false); // Set the value to false.
+  return fut;
+}
 
 struct FramePackage {
   std::string cameraName;
@@ -85,15 +94,22 @@ public:
 
       // 使用算法资源进行推理
       // 检查url的类型是本地路径还是http
-      cv::Mat image_bgr;
+      std::shared_ptr<cv::Mat> image_bgr = nullptr;
       if (isFileSystemPath(url)) {
-        image_bgr = cv::imread(url);
+        // 判断路径是否存在
+        if (std::filesystem::exists(url)) {
+          image_bgr = std::make_shared<cv::Mat>(cv::imread(url));
+        }
       } else {
         image_bgr = getImageFromURL(url.c_str());
       }
+      if (!image_bgr) { // 图片读取失败
+        FLOWENGINE_LOGGER_ERROR("{} image reading failed!", url);
+        return false;
+      }
       // TODO: 暂时写死NV12格式推理
       cv::Mat input;
-      infer::utils::BGR2NV12(image_bgr, input);
+      infer::utils::BGR2NV12(*image_bgr, input);
       FrameInfo frame;
       frame.data = reinterpret_cast<void **>(&input.data);
       frame.inputShape = {input.cols, input.rows, input.channels()};

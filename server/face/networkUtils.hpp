@@ -12,6 +12,7 @@
 #define __SERVER_NETWORK_UTILS_HPP_
 
 #include <curl/curl.h>
+#include <memory>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <string>
@@ -52,7 +53,7 @@ inline size_t curl_callback(void *ptr, size_t size, size_t nmemb,
   } while (0)
 
 // 使用cURL从HTTP获取图片
-inline cv::Mat getImageFromURL(const char *url) {
+inline std::shared_ptr<cv::Mat> getImageFromURL(const char *url) {
   CURL *curl;
   CURLcode res;
   std::string response_string;
@@ -74,11 +75,12 @@ inline cv::Mat getImageFromURL(const char *url) {
     }
     // 清理
     curl_easy_cleanup(curl);
+    return nullptr;
   }
 
   std::vector<uchar> data(response_string.begin(), response_string.end());
   cv::Mat image = cv::imdecode(data, cv::IMREAD_COLOR);
-  return image;
+  return std::make_shared<cv::Mat>(image);
 }
 
 // 辅助函数来检查字符串是否以指定前缀开始
