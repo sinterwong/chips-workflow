@@ -11,6 +11,7 @@
 
 #include "faceRecognition.hpp"
 #include "logger/logger.hpp"
+#include "networkUtils.hpp"
 #include "thread_pool.h"
 #include <condition_variable>
 #include <future>
@@ -83,7 +84,13 @@ public:
       face_algo_ptr algo = getAvailableAlgo();
 
       // 使用算法资源进行推理
-      cv::Mat image_bgr = cv::imread(url);
+      // 检查url的类型是本地路径还是http
+      cv::Mat image_bgr;
+      if (isFileSystemPath(url)) {
+        image_bgr = cv::imread(url);
+      } else {
+        image_bgr = getImageFromURL(url.c_str());
+      }
       // TODO: 暂时写死NV12格式推理
       cv::Mat input;
       infer::utils::BGR2NV12(image_bgr, input);

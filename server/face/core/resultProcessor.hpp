@@ -12,10 +12,10 @@
  */
 
 #include "algoManager.hpp"
-#include "curlUtils.hpp"
 #include "faceLibManager.hpp"
 #include "faceRecognition.hpp"
 #include "logger/logger.hpp"
+#include "networkUtils.hpp"
 #include "thread_pool.h"
 #include <cstddef>
 #include <curl/curl.h>
