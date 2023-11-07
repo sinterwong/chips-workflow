@@ -105,6 +105,8 @@ public:
       }
       if (!image_bgr) { // 图片读取失败
         FLOWENGINE_LOGGER_ERROR("{} image reading failed!", url);
+        // 推理完成后标记算法为可用
+        releaseAlgo(algo);
         return false;
       }
       // TODO: 暂时写死NV12格式推理
@@ -124,10 +126,10 @@ public:
       return ret;
     });
 
+    std::future<bool> ret = task.get_future();
+
     // 在单独的线程上运行任务
     task();
-
-    std::future<bool> ret = task.get_future();
 
     return ret; // 移交调用者等待算法结果
   }

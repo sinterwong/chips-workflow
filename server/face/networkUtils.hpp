@@ -72,10 +72,10 @@ inline std::shared_ptr<cv::Mat> getImageFromURL(const char *url) {
     if (res != CURLE_OK) {
       fprintf(stderr, "curl_easy_perform() failed: %s\n",
               curl_easy_strerror(res));
+      return nullptr;
     }
     // 清理
     curl_easy_cleanup(curl);
-    return nullptr;
   }
 
   std::vector<uchar> data(response_string.begin(), response_string.end());

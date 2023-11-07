@@ -73,6 +73,7 @@ bool VisionInfer::infer(FrameInfo &frame, const InferParams &params,
   auto preprocess_cost =
       static_cast<double>(preprocess_duration.count()) / 1000;
 
+  // auto preprocess_cost = 0.0;
   {
     std::lock_guard lk(m);
 
@@ -81,6 +82,7 @@ bool VisionInfer::infer(FrameInfo &frame, const InferParams &params,
     //   FLOWENGINE_LOGGER_ERROR("VisionInfer infer: failed to infer!");
     //   return false;
     // }
+    // 不包含前处理的版本
     if (!instance->infer(inputImage, &output)) {
       FLOWENGINE_LOGGER_ERROR("VisionInfer infer: failed to infer!");
       return false;

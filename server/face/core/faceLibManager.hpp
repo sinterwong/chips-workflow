@@ -12,6 +12,7 @@
 #include "logger/logger.hpp"
 #include <filesystem>
 #include <memory>
+#include <unordered_map>
 
 #ifndef __SERVER_FACE_CORE_FACE_LIBRARY_MANAGER_HPP_
 #define __SERVER_FACE_CORE_FACE_LIBRARY_MANAGER_HPP_
@@ -86,6 +87,9 @@ private:
   static FaceLibraryManager *instance;
 
 private:
+  // TODO:人脸库映射表用来分治人脸库，目前只管理了一个人脸库
+  std::unordered_map<std::string, std::unique_ptr<FaceLibrary>> facelibs;
+
   std::string outputPath = "/public/face/facelib.bin";
   std::unique_ptr<FaceLibrary> facelib;
 };
