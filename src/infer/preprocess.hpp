@@ -56,6 +56,15 @@ inline void normalize_L2(float *x, int d) {
   }
 }
 
+inline float dot(std::vector<float> &f1, std::vector<float> &f2) {
+  // 归一化后的特征向量，计算点积
+  float ret = 0.0;
+  for (size_t i = 0; i < f1.size(); ++i) {
+    ret += f1.at(i) * f2.at(i);
+  }
+  return ret;
+}
+
 bool resizeInput(cv::Mat &image, bool isScale, std::array<int, 2> &dstShape);
 
 void BGR2YUV(const cv::Mat bgrImg, cv::Mat &y, cv::Mat &u, cv::Mat &v);

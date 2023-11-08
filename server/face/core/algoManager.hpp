@@ -88,11 +88,9 @@ public:
   }
 
   std::future<bool> infer(std::string const &url, std::vector<float> &feature) {
-    auto task = std::packaged_task<bool()>([&] {
-      // 等待获取可用算法资源
-      face_algo_ptr algo = getAvailableAlgo();
 
-      // 使用算法资源进行推理
+    // 推理任务定义
+    auto task = std::packaged_task<bool()>([&] {
       // 检查url的类型是本地路径还是http
       std::shared_ptr<cv::Mat> image_bgr = nullptr;
       if (isFileSystemPath(url)) {
@@ -106,7 +104,6 @@ public:
       if (!image_bgr) { // 图片读取失败
         FLOWENGINE_LOGGER_ERROR("{} image reading failed!", url);
         // 推理完成后标记算法为可用
-        releaseAlgo(algo);
         return false;
       }
       // TODO: 暂时写死NV12格式推理
@@ -119,6 +116,9 @@ public:
       // 暂时写死NV12格式，这里应该有一个宏来确定是什么推理数据
       frame.shape = {input.cols, input.rows * 2 / 3, input.channels()};
       frame.type = ColorType::NV12;
+
+      // 前处理完成后再等待获取可用算法资源，提高并发度
+      face_algo_ptr algo = getAvailableAlgo();
       bool ret = algo->forward(frame, feature);
 
       // 推理完成后标记算法为可用
