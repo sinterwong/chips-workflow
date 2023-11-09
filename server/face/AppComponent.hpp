@@ -21,11 +21,6 @@ namespace server::face {
  */
 class AppComponent {
 public:
-  // /**
-  //  *  Swagger component
-  //  */
-  // SwaggerComponent swaggerComponent;
-
   /**
    * Create ObjectMapper component to serialize/deserialize DTOs in Controller's
    * API

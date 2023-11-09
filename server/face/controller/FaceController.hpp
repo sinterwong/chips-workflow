@@ -42,8 +42,8 @@ public:
     info->pathParams["userId"].description = "User Identifier";
     info->pathParams["url"].description = "Url of user's picture";
   }
-  ENDPOINT("GET", "facelib/v0/createOne", createOneUser, QUERY(Int32, userId),
-           QUERY(String, url)) {
+  ENDPOINT("GET", "face/v0/facelib/createOne", createOneUser,
+           QUERY(Int32, userId), QUERY(String, url)) {
     return createDtoResponse(Status::CODE_200,
                              m_faceService.createUser(userId, url));
   }
@@ -57,7 +57,7 @@ public:
     info->pathParams["userId"].description = "User Identifier";
     info->pathParams["url"].description = "Url of user's picture";
   }
-  ENDPOINT("GET", "facelib/v0/update", updateOneUser, QUERY(Int32, userId),
+  ENDPOINT("GET", "face/v0/facelib/update", updateOneUser, QUERY(Int32, userId),
            QUERY(String, url)) {
     return createDtoResponse(Status::CODE_200,
                              m_faceService.updateUser(userId, url));
@@ -71,7 +71,8 @@ public:
 
     info->pathParams["userId"].description = "User Identifier";
   }
-  ENDPOINT("DELETE", "facelib/v0/{userId}", deleteOneUser, PATH(Int32, userId)) {
+  ENDPOINT("DELETE", "face/v0/facelib/{userId}", deleteOneUser,
+           PATH(Int32, userId)) {
     return createDtoResponse(Status::CODE_200,
                              m_faceService.deleteUser(userId));
   }
@@ -85,7 +86,7 @@ public:
 
     info->pathParams["url"].description = "Url of user's picture";
   }
-  ENDPOINT("GET", "facelib/v0/search", searchUser, QUERY(String, url)) {
+  ENDPOINT("GET", "face/v0/facelib/search", searchUser, QUERY(String, url)) {
     return createDtoResponse(Status::CODE_200, m_faceService.searchUser(url));
   }
 
@@ -96,8 +97,14 @@ public:
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
   }
-  ENDPOINT("POST", "facelib/v0/createBatch", createBatchUsers,
+  ENDPOINT("POST", "face/v0/facelib/createBatch", createBatchUsers,
            BODY_DTO(Object<FacelibDto>, users)) {
+    /** user请求时json格式示例：
+      {
+        "ids": [1, 2, 3],
+        "urls": ["http://xxx", "http://xxx", "http://xxx"]
+      }
+    */
     return createDtoResponse(Status::CODE_200,
                              m_faceService.createBatch(users));
   }
@@ -109,7 +116,7 @@ public:
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
   }
-  ENDPOINT("POST", "facelib/v0/updateBatch", updateBatchUsers,
+  ENDPOINT("POST", "face/v0/facelib/updateBatch", updateBatchUsers,
            BODY_DTO(Object<FacelibDto>, users)) {
     return createDtoResponse(Status::CODE_200,
                              m_faceService.updateBatch(users));
@@ -122,7 +129,7 @@ public:
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
   }
-  ENDPOINT("POST", "facelib/v0/deleteBatch", deleteBatchUsers,
+  ENDPOINT("POST", "face/v0/facelib/deleteBatch", deleteBatchUsers,
            BODY_DTO(Object<FacelibDto>, users)) {
     return createDtoResponse(Status::CODE_200,
                              m_faceService.deleteBatch(users));
@@ -134,7 +141,7 @@ public:
     info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
   }
-  ENDPOINT("GET", "facelib/v0/compare", compareTwoPictures,
+  ENDPOINT("GET", "face/v0/facelib/compare", compareTwoPictures,
            QUERY(String, url1), QUERY(String, url2)) {
     return createDtoResponse(Status::CODE_200,
                              m_faceService.compareTwoPictures(url1, url2));
