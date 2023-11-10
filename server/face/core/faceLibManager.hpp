@@ -18,6 +18,8 @@
 #ifndef __SERVER_FACE_CORE_FACE_LIBRARY_MANAGER_HPP_
 #define __SERVER_FACE_CORE_FACE_LIBRARY_MANAGER_HPP_
 
+#define FACELIB_DIM 512
+
 namespace server::face::core {
 
 class FaceLibraryManager {
@@ -32,99 +34,31 @@ public:
   FaceLibraryManager &operator=(FaceLibraryManager const &) = delete;
 
 public:
-  bool createOne(long id, float *vec, bool isSave = true) {
-    if (!facelib->addVector(vec, id)) {
-      FLOWENGINE_LOGGER_WARN("Face library create {} failed.", id);
-      return false;
-    }
+  bool registerFacelib(std::string name, std::string path);
 
-    if (isSave) {
-      facelib->saveToFile(outputPath);
-    }
-    return true;
-  }
+  bool unregisterFacelib(std::string name);
+
+  bool createOne(long id, float *vec, bool isSave = true);
 
   void createBatch(std::vector<long> &ids, float **vecs,
-                   std::vector<long> &err_ids) {
+                   std::vector<long> &err_ids);
 
-    // TODO:暂时先调用createOne，这样比较省事。后续开发真正的批量新增
-    for (size_t i = 0; i < ids.size(); ++i) {
-      if (!createOne(ids.at(i), vecs[i], false)) {
-        err_ids.push_back(ids.at(i));
-      }
-    }
-    if (ids.size() > err_ids.size()) {
-      // 存在成功更新的内容
-      facelib->saveToFile(outputPath);
-    }
-  }
-
-  bool updateOne(long id, float *vec, bool isSave = true) {
-    if (!facelib->updateVector(id, vec)) {
-      FLOWENGINE_LOGGER_WARN("Face library update {} failed.", id);
-      return false;
-    }
-    if (isSave) {
-      facelib->saveToFile(outputPath);
-    }
-    return true;
-  }
+  bool updateOne(long id, float *vec, bool isSave = true);
 
   void updateBatch(std::vector<long> &ids, float **vecs,
-                   std::vector<long> &err_ids) {
+                   std::vector<long> &err_ids);
 
-    // TODO:暂时先调用updateOne，这样比较省事。后续开发真正的批量操作
-    for (size_t i = 0; i < ids.size(); ++i) {
-      if (!updateOne(ids.at(i), vecs[i], false)) {
-        err_ids.push_back(ids.at(i));
-      }
-    }
-    if (ids.size() > err_ids.size()) {
-      // 存在成功更新的内容
-      facelib->saveToFile(outputPath);
-    }
-  }
+  bool deleteOne(long id, bool isFave = true);
 
-  bool deleteOne(long id, bool isFave = true) {
-    if (!facelib->deleteVector(id)) {
-      FLOWENGINE_LOGGER_WARN("Face library delete {} failed.", id);
-      return false;
-    }
-    if (isFave) {
-      facelib->saveToFile(outputPath);
-    }
-    return true;
-  }
+  void deleteBatch(std::vector<long> &ids, std::vector<long> &err_ids);
 
-  void deleteBatch(std::vector<long> &ids, std::vector<long> &err_ids) {
-
-    // TODO:暂时先调用deleteOne，这样比较省事。后续开发真正的批量操作
-    for (size_t i = 0; i < ids.size(); ++i) {
-      if (!deleteOne(ids.at(i), false)) {
-        err_ids.push_back(ids.at(i));
-      }
-    }
-    if (ids.size() > err_ids.size()) {
-      // 存在成功更新的内容
-      facelib->saveToFile(outputPath);
-    }
-  }
-
-  long match(float *vec, float threshold) {
-    auto ret = facelib->search(vec, 1).at(0);
-    // 阈值
-    FLOWENGINE_LOGGER_DEBUG("ID: {}, Distance: {}", ret.first, ret.second);
-    if (ret.second > threshold) {
-      return ret.first;
-    }
-    return -1;
-  }
+  long match(float *vec, float threshold);
 
   void printLibrary() { facelib->printVectors(); }
 
 private:
   FaceLibraryManager() {
-    facelib = std::make_unique<FaceLibrary>(512);
+    facelib = std::make_unique<FaceLibrary>(FACELIB_DIM);
 
     if (std::filesystem::exists(outputPath)) {
       FLOWENGINE_LOGGER_INFO("Found the facelib will be loaded.");
@@ -148,6 +82,5 @@ private:
   std::string outputPath = "/public/face/facelib.bin";
   std::unique_ptr<FaceLibrary> facelib;
 };
-FaceLibraryManager *FaceLibraryManager::instance = nullptr;
 } // namespace server::face::core
 #endif
