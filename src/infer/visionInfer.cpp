@@ -24,7 +24,6 @@
 
 namespace infer {
 using common::InferResult;
-using common::RetBox;
 using common::RetPoly;
 
 bool VisionInfer::init() {

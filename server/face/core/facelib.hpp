@@ -30,7 +30,6 @@ private:
   int d; // dimensionality of the vectors
   std::unique_ptr<faiss::IndexFlatIP> flatIndex;
   std::unique_ptr<faiss::IndexIDMap2> index;
-  std::unordered_set<faiss::idx_t> existing_ids; // 跟踪已添加的向量
   std::shared_mutex m;
 
 public:
@@ -41,53 +40,36 @@ public:
 
   bool addVector(float *vec, long id) {
     std::lock_guard lk(m);
-    if (existing_ids.find(id) == existing_ids.end()) {
-      // id 不存在，执行新增操作
-      index->add_with_ids(1, vec, &id);
-      existing_ids.insert(id);
-    } else {
-      FLOWENGINE_LOGGER_ERROR("ID {} reuse.", id);
-      return false;
-    }
+    // id 不存在，执行新增操作
+    index->add_with_ids(1, vec, &id);
     return true;
   }
 
-  // void addVectors(float *vecs, std::vector<long> ids) {
-  //   std::lock_guard lk(m);
-  //   index->add_with_ids(ids.size(), vecs, ids.data());
-  // }
+  void addVectors(float *vecs, std::vector<long> ids) {
+    std::lock_guard lk(m);
+    index->add_with_ids(ids.size(), vecs, ids.data());
+  }
 
   bool deleteVector(long id) {
     faiss::IDSelectorArray selector{1, &id};
     std::lock_guard lk(m);
-    if (existing_ids.find(id) != existing_ids.end()) {
-      // id 存在，执行后面操作即可
-      index->remove_ids(selector);
-      existing_ids.erase(id);
-    } else {
-      FLOWENGINE_LOGGER_ERROR("ID {} does not exist.", id);
-      return false;
-    }
+    // id 存在，执行后面操作即可
+    index->remove_ids(selector);
     return true;
   }
 
-  // void deleteVectors(std::vector<long> &ids) {
-  //   faiss::IDSelectorArray selector{ids.size(), ids.data()};
-  //   std::lock_guard lk(m);
-  //   index->remove_ids(selector);
-  // }
+  void deleteVectors(std::vector<long> &ids) {
+    faiss::IDSelectorArray selector{ids.size(), ids.data()};
+    std::lock_guard lk(m);
+    index->remove_ids(selector);
+  }
 
   bool updateVector(faiss::idx_t id, float *new_vec) {
     faiss::IDSelectorArray selector{1, &id};
     std::lock_guard lk(m);
-    if (existing_ids.find(id) != existing_ids.end()) {
-      // id 存在，执行后面操作即可
-      index->remove_ids(selector);
-      index->add_with_ids(1, new_vec, &id);
-    } else {
-      FLOWENGINE_LOGGER_ERROR("ID {} does not exist.", id);
-      return false;
-    }
+    // id 存在，执行后面操作即可
+    index->remove_ids(selector);
+    index->add_with_ids(1, new_vec, &id);
     return true;
   }
 
@@ -130,11 +112,8 @@ public:
     if (loadedIndex) {
       index.reset(loadedIndex);
       // 直接访问 id_map 字段以获取所有的 ID
-      const auto &id_map = index->id_map;
+      // const auto &id_map = index->id_map;
       // 遍历 id_map，恢复索引表
-      for (size_t i = 0; i < id_map.size(); ++i) {
-        existing_ids.insert(id_map[i]);
-      }
     } else {
       FLOWENGINE_LOGGER_ERROR("FaceLibrary: failed to load the facelib file{}",
                               filename);

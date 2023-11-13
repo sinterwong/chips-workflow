@@ -24,14 +24,14 @@ namespace server::face {
 
 class UserDb : public oatpp::orm::DbClient {
 public:
-  UserDb(std::shared_ptr<oatpp::orm::Executor> &executor)
+  UserDb(std::shared_ptr<oatpp::orm::Executor> const &executor)
       : oatpp::orm::DbClient(executor) {
+
     oatpp::orm::SchemaMigration migration(executor);
     migration.addFile(1 /* start from version 1 */,
                       "/opt/deploy/sql/001_init.sql");
-
-    // TODO: add more migrations here.
-    migration.migrate();
+    // TODO - Add more migrations here.
+    migration.migrate(); // <-- run migrations. This guy will throw on error.
 
     auto version = executor->getSchemaVersion();
     OATPP_LOGD("UserDb", "Migration - OK. Version=%ld.", version);
@@ -46,8 +46,13 @@ public:
   QUERY(getUserById, "SELECT * FROM AppUser WHERE id=:id;",
         PARAM(oatpp::Int32, id))
 
-  QUERY(getUserByIdNumber, "SELECT * FROM AppUser WHERE idNumber=:idNumber;",
+  QUERY(getIdByIdNumber, "SELECT id FROM AppUser WHERE idNumber=:idNumber;",
         PARAM(oatpp::String, idNumber))
+
+  QUERY(getUserIdNumberById, "SELECT idNumber FROM AppUser WHERE id=:id;",
+        PARAM(oatpp::Int32, id))
+
+  QUERY(getAllUsers, "SELECT * FROM AppUser;")
 
   QUERY(updateUserById,
         "UPDATE AppUser SET idNumber=:user.idNumber, feature=:user.feature "
@@ -68,6 +73,8 @@ public:
   QUERY(getFeaturesOfAllUsers,
         "SELECT id, feature FROM AppUser WHERE feature IS NOT NULL;")
 };
+
+#include OATPP_CODEGEN_END(DbClient) //<- End Codegen
 } // namespace server::face
 
 #endif

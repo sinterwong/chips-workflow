@@ -9,8 +9,26 @@
  *
  */
 #include "faceLibManager.hpp"
+#include <vector>
 
 namespace server::face::core {
+
+std::vector<float>
+Flatten(std::vector<std::vector<float>> const &nestedVector) {
+  size_t totalSize = 0;
+  for (const auto &subVector : nestedVector) {
+    totalSize += subVector.size();
+  }
+
+  std::vector<float> flatVector;
+  flatVector.reserve(totalSize);
+
+  for (const auto &subVector : nestedVector) {
+    flatVector.insert(flatVector.end(), subVector.begin(), subVector.end());
+  }
+  // 这里的返回值编译器会有RVO/NRVO优化，不会有额外的拷贝开销
+  return flatVector;
+}
 
 FaceLibraryManager *FaceLibraryManager::instance = nullptr;
 bool FaceLibraryManager::registerFacelib(std::string name, std::string path) {
@@ -31,83 +49,43 @@ bool FaceLibraryManager::unregisterFacelib(std::string name) {
   return true;
 }
 
-bool FaceLibraryManager::createOne(long id, float *vec, bool isSave) {
+bool FaceLibraryManager::createOne(long id, float *vec) {
   if (!facelib->addVector(vec, id)) {
     FLOWENGINE_LOGGER_WARN("Face library create {} failed.", id);
     return false;
   }
-
-  if (isSave) {
-    facelib->saveToFile(outputPath);
-  }
   return true;
 }
 
-void FaceLibraryManager::createBatch(std::vector<long> &ids, float **vecs,
-                                     std::vector<long> &err_ids) {
-
-  // TODO:暂时先调用createOne，这样比较省事。后续开发真正的批量新增
-  for (size_t i = 0; i < ids.size(); ++i) {
-    if (!createOne(ids.at(i), vecs[i], false)) {
-      err_ids.push_back(ids.at(i));
-    }
-  }
-  if (ids.size() > err_ids.size()) {
-    // 存在成功更新的内容
-    facelib->saveToFile(outputPath);
-  }
+void FaceLibraryManager::createBatch(std::vector<long> &ids, float **vecs) {
+  facelib->addVectors(*vecs, ids);
 }
 
-bool FaceLibraryManager::updateOne(long id, float *vec, bool isSave) {
+bool FaceLibraryManager::updateOne(long id, float *vec) {
   if (!facelib->updateVector(id, vec)) {
     FLOWENGINE_LOGGER_WARN("Face library update {} failed.", id);
     return false;
   }
-  if (isSave) {
-    facelib->saveToFile(outputPath);
-  }
   return true;
 }
 
-void FaceLibraryManager::updateBatch(std::vector<long> &ids, float **vecs,
-                                     std::vector<long> &err_ids) {
-
+void FaceLibraryManager::updateBatch(std::vector<long> &ids, float **vecs) {
   // TODO:暂时先调用updateOne，这样比较省事。后续开发真正的批量操作
   for (size_t i = 0; i < ids.size(); ++i) {
-    if (!updateOne(ids.at(i), vecs[i], false)) {
-      err_ids.push_back(ids.at(i));
-    }
-  }
-  if (ids.size() > err_ids.size()) {
-    // 存在成功更新的内容
-    facelib->saveToFile(outputPath);
+    updateOne(ids.at(i), vecs[i]);
   }
 }
 
-bool FaceLibraryManager::deleteOne(long id, bool isFave) {
+bool FaceLibraryManager::deleteOne(long id) {
   if (!facelib->deleteVector(id)) {
     FLOWENGINE_LOGGER_WARN("Face library delete {} failed.", id);
     return false;
   }
-  if (isFave) {
-    facelib->saveToFile(outputPath);
-  }
   return true;
 }
 
-void FaceLibraryManager::deleteBatch(std::vector<long> &ids,
-                                     std::vector<long> &err_ids) {
-
-  // TODO:暂时先调用deleteOne，这样比较省事。后续开发真正的批量操作
-  for (size_t i = 0; i < ids.size(); ++i) {
-    if (!deleteOne(ids.at(i), false)) {
-      err_ids.push_back(ids.at(i));
-    }
-  }
-  if (ids.size() > err_ids.size()) {
-    // 存在成功更新的内容
-    facelib->saveToFile(outputPath);
-  }
+void FaceLibraryManager::deleteBatch(std::vector<long> &ids) {
+  facelib->deleteVectors(ids);
 }
 
 long FaceLibraryManager::match(float *vec, float threshold) {
@@ -119,4 +97,14 @@ long FaceLibraryManager::match(float *vec, float threshold) {
   }
   return -1;
 }
+
+bool FaceLibraryManager::loadFacelib(
+    std::vector<long> const &ids,
+    std::vector<std::vector<float>> const &features) {
+  // 加载特征到人脸库
+  auto ret = Flatten(features);
+  facelib->addVectors(ret.data(), ids);
+  return true;
+}
+
 } // namespace server::face::core

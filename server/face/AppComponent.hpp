@@ -13,6 +13,8 @@
 
 #include "oatpp/core/macro/component.hpp"
 
+#include "DatabaseComponent.hpp"
+
 namespace server::face {
 /**
  *  Class which creates and holds Application components and registers
@@ -21,6 +23,11 @@ namespace server::face {
  */
 class AppComponent {
 public:
+  /**
+   * Database component
+   */
+  DatabaseComponent databaseComponent;
+
   /**
    * Create ObjectMapper component to serialize/deserialize DTOs in Controller's
    * API

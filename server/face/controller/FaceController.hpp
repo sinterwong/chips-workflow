@@ -43,7 +43,7 @@ public:
     info->pathParams["url"].description = "Url of user's picture";
   }
   ENDPOINT("GET", "face/v0/facelib/createOne", createOneUser,
-           QUERY(Int32, userId), QUERY(String, url)) {
+           QUERY(String, userId), QUERY(String, url)) {
     return createDtoResponse(Status::CODE_200,
                              m_faceService.createUser(userId, url));
   }
@@ -57,8 +57,8 @@ public:
     info->pathParams["userId"].description = "User Identifier";
     info->pathParams["url"].description = "Url of user's picture";
   }
-  ENDPOINT("GET", "face/v0/facelib/update", updateOneUser, QUERY(Int32, userId),
-           QUERY(String, url)) {
+  ENDPOINT("GET", "face/v0/facelib/updateOne", updateOneUser,
+           QUERY(String, userId), QUERY(String, url)) {
     return createDtoResponse(Status::CODE_200,
                              m_faceService.updateUser(userId, url));
   }
@@ -72,7 +72,7 @@ public:
     info->pathParams["userId"].description = "User Identifier";
   }
   ENDPOINT("DELETE", "face/v0/facelib/{userId}", deleteOneUser,
-           PATH(Int32, userId)) {
+           PATH(String, userId)) {
     return createDtoResponse(Status::CODE_200,
                              m_faceService.deleteUser(userId));
   }
@@ -90,6 +90,8 @@ public:
     return createDtoResponse(Status::CODE_200, m_faceService.searchUser(url));
   }
 
+  /*
+
   // 批量新增
   ENDPOINT_INFO(createBatchUsers) {
     info->summary = "Create batch users";
@@ -99,12 +101,11 @@ public:
   }
   ENDPOINT("POST", "face/v0/facelib/createBatch", createBatchUsers,
            BODY_DTO(Object<FacelibDto>, users)) {
-    /** user请求时json格式示例：
-      {
-        "ids": [1, 2, 3],
-        "urls": ["http://xxx", "http://xxx", "http://xxx"]
-      }
-    */
+    // user请求时json格式示例：
+    // {
+    //   "ids": [1, 2, 3],
+    //   "urls": ["http://xxx", "http://xxx", "http://xxx"]
+    // }
     return createDtoResponse(Status::CODE_200,
                              m_faceService.createBatch(users));
   }
@@ -146,6 +147,7 @@ public:
     return createDtoResponse(Status::CODE_200,
                              m_faceService.compareTwoPictures(url1, url2));
   }
+  */
 };
 
 #include OATPP_CODEGEN_END(ApiController) //<- End Codegen

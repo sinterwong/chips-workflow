@@ -10,9 +10,11 @@
  */
 #include "facelib.hpp"
 #include "logger/logger.hpp"
+#include <cstdint>
 #include <filesystem>
 #include <memory>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #ifndef __SERVER_FACE_CORE_FACE_LIBRARY_MANAGER_HPP_
@@ -38,19 +40,21 @@ public:
 
   bool unregisterFacelib(std::string name);
 
-  bool createOne(long id, float *vec, bool isSave = true);
+  // 从数据库中获取人脸特征，然后装载到人脸库中
+  bool loadFacelib(std::vector<long> const &ids,
+                   std::vector<std::vector<float>> const &features);
 
-  void createBatch(std::vector<long> &ids, float **vecs,
-                   std::vector<long> &err_ids);
+  bool createOne(long id, float *vec);
 
-  bool updateOne(long id, float *vec, bool isSave = true);
+  void createBatch(std::vector<long> &ids, float **vecs);
 
-  void updateBatch(std::vector<long> &ids, float **vecs,
-                   std::vector<long> &err_ids);
+  bool updateOne(long id, float *vec);
 
-  bool deleteOne(long id, bool isFave = true);
+  void updateBatch(std::vector<long> &ids, float **vecs);
 
-  void deleteBatch(std::vector<long> &ids, std::vector<long> &err_ids);
+  bool deleteOne(long id);
+
+  void deleteBatch(std::vector<long> &ids);
 
   long match(float *vec, float threshold);
 
@@ -60,13 +64,13 @@ private:
   FaceLibraryManager() {
     facelib = std::make_unique<FaceLibrary>(FACELIB_DIM);
 
-    if (std::filesystem::exists(outputPath)) {
-      FLOWENGINE_LOGGER_INFO("Found the facelib will be loaded.");
-      facelib->loadFromFile(outputPath);
-    } else {
-      std::filesystem::create_directories(
-          outputPath.substr(0, outputPath.find_last_of("/")));
-    }
+    // if (std::filesystem::exists(outputPath)) {
+    //   FLOWENGINE_LOGGER_INFO("Found the facelib will be loaded.");
+    //   facelib->loadFromFile(outputPath);
+    // } else {
+    //   std::filesystem::create_directories(
+    //       outputPath.substr(0, outputPath.find_last_of("/")));
+    // }
   }
   ~FaceLibraryManager() {
     facelib->saveToFile(outputPath);

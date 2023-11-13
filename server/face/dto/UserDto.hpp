@@ -33,7 +33,7 @@ public:
            "\n)";
   }
 };
-#
+#include OATPP_CODEGEN_END(DTO) ///< End DTO codegen section
 } // namespace server::face
 
 #endif

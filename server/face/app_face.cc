@@ -57,6 +57,12 @@ void run() {
   OATPP_LOGD("Server", "Running on port %s...",
              connectionProvider->getProperty("port").toString()->c_str());
   server.run();
+
+  /* stop db connection pool */
+  OATPP_COMPONENT(
+      std::shared_ptr<oatpp::provider::Provider<oatpp::sqlite::Connection>>,
+      dbConnectionProvider);
+  dbConnectionProvider->stop();
 }
 } // namespace server::face
 

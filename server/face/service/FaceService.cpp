@@ -2,6 +2,8 @@
  * @file FaceService.cpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
+ * 人脸服务，提供人脸增删改查的接口。通过特征向量查询会在人脸特征库（内存中）查询，不会访问数据库。数据库的作
+ * 用是持久化数据，人脸库的作用是加速查询。程序启动时会从数据库中读取数据，构建人脸库。
  * @version 0.1
  * @date 2023-11-10
  *
@@ -10,10 +12,42 @@
  */
 
 #include "FaceService.hpp"
+#include "UserDb.hpp"
+#include "UserDto.hpp"
+#include "networkUtils.hpp"
+#include <cstdint>
+#include <vector>
 
 namespace server::face {
-constexpr float THRESHOLD = 0.33;
+constexpr float THRESHOLD = 0.35;
 
+FaceService::FaceService() {
+  // 从数据库中读取数据，构建人脸库
+  auto results = getAllUsers();
+  std::vector<long> ids;
+  std::vector<std::vector<float>> features;
+  for (auto &user : *results) {
+    auto id = user->id;
+    auto feature = user->feature;
+    std::string decodedString;
+    base64_decode(feature->c_str(), decodedString);
+    // 将特征向量转换为float数组
+    // 确保解码后的字符串大小是浮点数大小的整数倍
+    if (decodedString.size() % sizeof(float) != 0) {
+      throw std::runtime_error(
+          "Decoded string size is not a multiple of the float size.");
+    }
+
+    std::vector<float> floatVector(decodedString.size() / sizeof(float));
+    std::memcpy(floatVector.data(), decodedString.data(), decodedString.size());
+    ids.push_back(id);
+    features.push_back(std::move(floatVector));
+  }
+  if (!ids.empty()) {
+    // 从数据库中读取到数据，才会构建人脸库
+    core::FaceLibraryManager::getInstance().loadFacelib(ids, features);
+  }
+}
 
 // 辅助函数，处理批处理操作中的失败和错误ID，减少重复代码
 void FaceService::handleBatchErrors(const std::vector<long> &failed_ids,
@@ -61,23 +95,33 @@ void FaceService::batchInfer(const std::vector<std::string> &urls,
   }
 }
 
-oatpp::Object<StatusDto> FaceService::createUser(oatpp::Int32 const &id,
+oatpp::Object<StatusDto> FaceService::createUser(oatpp::String const &idNumber,
                                                  oatpp::String const &url) {
   auto status = StatusDto::createShared();
   std::vector<float> feature;
   auto ret = core::AlgoManager::getInstance().infer(url, feature);
 
-  if (!ret.get()) {
-    status->status = "Service Unavailable";
-    status->code = 503;
-    status->message = "Face feature extraction failed.";
-    return status;
-  }
+  OATPP_ASSERT_HTTP(ret.get(), Status::CODE_500,
+                    "Face feature extraction failed.");
+
+  // feature to base64
+  uchar *temp = reinterpret_cast<uchar *>(feature.data());
+  std::string base64;
+  base64_encode(temp, feature.size() * sizeof(float), base64);
+
+  auto user = UserDto::createShared();
+  user->idNumber = idNumber;
+  user->feature = base64;
+
+  auto dbResult = m_database->createUser(user);
+  OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
+                    dbResult->getErrorMessage());
+
+  auto id = oatpp::sqlite::Utils::getLastInsertRowId(dbResult->getConnection());
 
   // 提取特征成功，接下来特征入库
   bool ok =
       core::FaceLibraryManager::getInstance().createOne(id, feature.data());
-
   if (!ok) {
     status->status = "Service Unavailable";
     status->code = 503;
@@ -91,18 +135,26 @@ oatpp::Object<StatusDto> FaceService::createUser(oatpp::Int32 const &id,
   return status;
 }
 
-oatpp::Object<StatusDto> FaceService::updateUser(oatpp::Int32 const &id,
+oatpp::Object<StatusDto> FaceService::updateUser(oatpp::String const &idNumber,
                                                  oatpp::String const &url) {
   auto status = StatusDto::createShared();
   std::vector<float> feature;
   auto ret = core::AlgoManager::getInstance().infer(url, feature);
 
-  if (!ret.get()) {
-    status->status = "Service Unavailable";
-    status->code = 503;
-    status->message = "Face feature extraction failed.";
-    return status;
-  }
+  OATPP_ASSERT_HTTP(ret.get(), Status::CODE_500,
+                    "Face feature extraction failed.");
+
+  // feature to base64
+  uchar *temp = reinterpret_cast<uchar *>(feature.data());
+  std::string base64;
+  base64_encode(temp, feature.size() * sizeof(float), base64);
+
+  // 获取id
+  auto id = getIdByIdNumber(idNumber);
+  auto user = UserDto::createShared();
+  user->idNumber = idNumber;
+  user->feature = base64;
+  m_database->updateUserById(id, user);
 
   // 提取特征成功，接下来特征入库
   bool ok =
@@ -116,13 +168,19 @@ oatpp::Object<StatusDto> FaceService::updateUser(oatpp::Int32 const &id,
     status->code = 200;
     status->message = "User was successfully updated.";
   }
-
   return status;
 }
 
-oatpp::Object<StatusDto> FaceService::deleteUser(oatpp::Int32 const &id) {
+oatpp::Object<StatusDto>
+FaceService::deleteUser(oatpp::String const &idNumber) {
 
   auto status = StatusDto::createShared();
+
+  // 根据idNumber删除数据库中的数据
+  auto id = getIdByIdNumber(idNumber);
+  auto dbResult = m_database->deleteUserById(id);
+  OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
+                    dbResult->getErrorMessage());
 
   auto ret = core::FaceLibraryManager::getInstance().deleteOne(id);
   if (!ret) {
@@ -137,14 +195,45 @@ oatpp::Object<StatusDto> FaceService::deleteUser(oatpp::Int32 const &id) {
   return status;
 }
 
+oatpp::Int32 FaceService::getIdByIdNumber(
+    oatpp::String const &idNumber,
+    const oatpp::provider::ResourceHandle<oatpp::orm::Connection> &connection) {
+
+  auto dbResult = m_database->getIdByIdNumber(idNumber, connection);
+  OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
+                    dbResult->getErrorMessage());
+  OATPP_ASSERT_HTTP(dbResult->hasMoreToFetch(), Status::CODE_404,
+                    "User not found");
+
+  // 修改这里：使用 Vector 作为返回类型
+  auto result = dbResult->fetch<oatpp::Vector<oatpp::Object<UserDto>>>();
+  OATPP_ASSERT_HTTP(result && result->size() == 1, Status::CODE_500,
+                    "Unknown error");
+
+  // 获取 Vector 中的第一个元素，并提取 Int32 值
+  return result[0]->id;
+}
+
+oatpp::Vector<oatpp::Object<UserDto>> FaceService::getAllUsers(
+    const oatpp::provider::ResourceHandle<oatpp::orm::Connection> &connection) {
+
+  auto dbResult = m_database->getAllUsers(connection);
+  OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
+                    dbResult->getErrorMessage());
+
+  auto result = dbResult->fetch<oatpp::Vector<oatpp::Object<UserDto>>>();
+  return result;
+}
+
 oatpp::Object<StatusDto> FaceService::searchUser(oatpp::String const &url) {
+  // 不涉及数据库操作，从人脸特征库中查询
   auto status = StatusDto::createShared();
   std::vector<float> feature;
   auto ret = core::AlgoManager::getInstance().infer(url, feature);
 
   if (!ret.get()) {
     status->status = "Service Unavailable";
-    status->code = 503;
+    status->code = 500;
     status->message = "Face feature extraction failed.";
     return status;
   }
@@ -192,6 +281,7 @@ FaceService::compareTwoPictures(oatpp::String const &url1,
   return status;
 }
 
+/* 人脸逻辑改变较大，暂时不实现批处理
 // 批量新增
 oatpp::Object<StatusDto>
 FaceService::createBatch(const oatpp::Object<FacelibDto> &users) {
@@ -303,4 +393,5 @@ FaceService::deleteBatch(oatpp::Object<FacelibDto> const &users) {
   handleBatchErrors({}, err_ids, status);
   return status;
 }
+*/
 } // namespace server::face

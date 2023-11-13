@@ -11,11 +11,13 @@
 #include "AppComponent.hpp"
 #include "FacelibDto.hpp"
 #include "StatusDto.hpp"
+#include "UserDb.hpp"
 #include "algoManager.hpp"
 #include "faceLibManager.hpp"
 #include "logger/logger.hpp"
 #include "preprocess.hpp"
 #include <cstddef>
+#include <memory>
 #include <oatpp/web/protocol/http/Http.hpp>
 #include <string>
 #include <vector>
@@ -40,6 +42,10 @@ class FaceService {
 private:
   using Status = oatpp::web::protocol::http::Status;
 
+private:
+  OATPP_COMPONENT(std::shared_ptr<UserDb>, m_database);
+
+private:
   // 辅助函数，处理批处理操作中的失败和错误ID，减少重复代码
   void handleBatchErrors(const std::vector<long> &failed_ids,
                          const std::vector<long> &err_ids,
@@ -52,31 +58,48 @@ private:
                   std::vector<long> &failed_ids);
 
 public:
+  // 构造函数
+  FaceService();
+
   // 新增单个人脸
-  oatpp::Object<StatusDto> createUser(oatpp::Int32 const &id,
+  oatpp::Object<StatusDto> createUser(oatpp::String const &idNumber,
                                       oatpp::String const &url);
   // 更新
-  oatpp::Object<StatusDto> updateUser(oatpp::Int32 const &id,
+  oatpp::Object<StatusDto> updateUser(oatpp::String const &idNumber,
                                       oatpp::String const &url);
 
   // 删除
-  oatpp::Object<StatusDto> deleteUser(oatpp::Int32 const &id);
+  oatpp::Object<StatusDto> deleteUser(oatpp::String const &idNumber);
 
-  // 通过ID查询
+  // 获取所有人脸
+  oatpp::Vector<oatpp::Object<UserDto>>
+  getAllUsers(oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
+                  &connection = nullptr);
+
+  // 通过身份证号查询
+  oatpp::Int32
+  getIdByIdNumber(oatpp::String const &idNumber,
+                  oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
+                      &connection = nullptr);
+
+  // 通过图片查询
   oatpp::Object<StatusDto> searchUser(oatpp::String const &url);
 
   // 两图比对
   oatpp::Object<StatusDto> compareTwoPictures(oatpp::String const &url1,
                                               oatpp::String const &url2);
 
-  // 批量新增
-  oatpp::Object<StatusDto> createBatch(const oatpp::Object<FacelibDto> &users);
+  // // 批量新增
+  // oatpp::Object<StatusDto> createBatch(oatpp::Object<FacelibDto> const
+  // &users);
 
-  // 批量更新
-  oatpp::Object<StatusDto> updateBatch(oatpp::Object<FacelibDto> const &users);
+  // // 批量更新
+  // oatpp::Object<StatusDto> updateBatch(oatpp::Object<FacelibDto> const
+  // &users);
 
-  // 批量删除
-  oatpp::Object<StatusDto> deleteBatch(oatpp::Object<FacelibDto> const &users);
+  // // 批量删除
+  // oatpp::Object<StatusDto> deleteBatch(oatpp::Object<FacelibDto> const
+  // &users);
 };
 } // namespace server::face
 #endif

@@ -126,10 +126,8 @@ inline ImageInputType getImageInputType(const std::string &uri) {
 static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                         "abcdefghijklmnopqrstuvwxyz"
                                         "0123456789+/";
-inline std::string base64_encode(uchar const *bytes_to_encode,
-                                 unsigned int in_len) {
-  std::string ret;
-
+inline void base64_encode(uchar const *bytes_to_encode, unsigned int in_len,
+                          std::string &ret) {
   int i = 0;
   int j = 0;
   unsigned char char_array_3[3];
@@ -172,21 +170,18 @@ inline std::string base64_encode(uchar const *bytes_to_encode,
       ret += '=';
     }
   }
-
-  return ret;
 }
 
 constexpr static bool is_base64(unsigned char c) {
   return (isalnum(c) || (c == '+') || (c == '/'));
 }
 
-inline std::string base64_decode(std::string const &encoded_string) {
+inline void base64_decode(std::string const &encoded_string, std::string &ret) {
   int in_len = encoded_string.size();
   int i = 0;
   int j = 0;
   int in_ = 0;
   unsigned char char_array_4[4], char_array_3[3];
-  std::string ret;
 
   while (in_len-- && (encoded_string[in_] != '=') &&
          is_base64(encoded_string[in_])) {
@@ -230,8 +225,6 @@ inline std::string base64_decode(std::string const &encoded_string) {
       ret += char_array_3[j];
     }
   }
-
-  return ret;
 }
 
 inline std::string mat2str(cv::Mat const &m) {
@@ -242,13 +235,15 @@ inline std::string mat2str(cv::Mat const &m) {
   std::vector<uchar> buf;
   cv::imencode(".jpg", m, buf, std::vector<int>(params, params + 2));
   uchar *result = reinterpret_cast<uchar *>(&buf[0]);
-
-  return base64_encode(result, buf.size());
+  std::string ret;
+  base64_encode(result, buf.size(), ret);
+  return ret;
 }
 
 inline std::shared_ptr<cv::Mat> str2mat(const std::string &s) {
   // Decode data
-  std::string decoded_string = base64_decode(s);
+  std::string decoded_string;
+  base64_decode(s, decoded_string);
   std::vector<uchar> data(decoded_string.begin(), decoded_string.end());
 
   cv::Mat img = imdecode(data, cv::IMREAD_UNCHANGED);
