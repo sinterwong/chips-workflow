@@ -82,6 +82,12 @@ public:
                   oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
                       &connection = nullptr);
 
+  // 通过id查询idNumber
+  oatpp::String
+  getIdNumberById(oatpp::Int32 const &id,
+                  oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
+                      &connection = nullptr);
+
   // 通过图片查询
   oatpp::Object<StatusDto> searchUser(oatpp::String const &url);
 

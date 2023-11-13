@@ -49,6 +49,9 @@ public:
   QUERY(getIdByIdNumber, "SELECT id FROM AppUser WHERE idNumber=:idNumber;",
         PARAM(oatpp::String, idNumber))
 
+  QUERY(getIdNumberById, "SELECT idNumber FROM AppUser WHERE id=:id;",
+        PARAM(oatpp::Int32, id))
+
   QUERY(getUserIdNumberById, "SELECT idNumber FROM AppUser WHERE id=:id;",
         PARAM(oatpp::Int32, id))
 

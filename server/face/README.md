@@ -16,7 +16,7 @@ http://your_ip:9797
 
 #### 请求
 
-GET /users/create?userId={user_id}&url={url}
+GET /face/v0/facelib/createOne?userId={user_id}&url={url}
 
 #### 参数
 
@@ -37,7 +37,7 @@ GET /users/create?userId={user_id}&url={url}
 更新现有用户的人脸数据。
 
 #### 请求
-GET /users/update?userId={user_id}&url={url}
+GET /face/v0/facelib/updateOne?userId={user_id}&url={url}
 
 #### 参数
 - `userId` (必须): 用户的唯一标识符。
@@ -56,7 +56,7 @@ GET /users/update?userId={user_id}&url={url}
 从人脸库中删除一个用户。
 
 #### 请求
-DELETE /users/{user_id}
+DELETE /face/v0/facelib/{user_id}
 
 #### 参数
 - `userId` (必须): 用户的唯一标识符。
@@ -74,7 +74,7 @@ DELETE /users/{user_id}
 在人脸库中搜索匹配的用户。
 
 #### 请求
-GET /users/search?url={url}
+GET /face/v0/facelib/search?url={url}
 
 #### 参数
 - `url` (必须): 包含用户人脸图片的路径（支持http和本地图片路径）。
@@ -84,7 +84,7 @@ GET /users/search?url={url}
 {
     'status': 'OK', 
     'code': 200, 
-    'message': '2'  # the user's id.
+    'message': '2'  # the user's ID number.
 }
 ```
 
@@ -129,27 +129,27 @@ GET /stream/stopVideo
 #### 重复创建id
 ```json
 {
-    'status': 'Service Unavailable', 
-    'code': 503, 
-    'message': 'User failed to create.'
+    'status': 'ERROR', 
+    'code': 500, 
+    'message': 'UNIQUE constraint failed: AppUser.idNumber'
 }
 ```
 
 #### 修改无效id
 ```json
 {
-    'status': 'Service Unavailable', 
-    'code': 503, 
-    'message': 'User failed to update'
+    'status': 'ERROR', 
+    'code': 404, 
+    'message': 'User not found'
 }
 ```
 
 #### 删除无效id
 ```json
 {
-    'status': 'Service Unavailable', 
-    'code': 503, 
-    'message': 'Failed to delete the user.'
+    'status': 'ERROR', 
+    'code': 404, 
+    'message': 'User not found'
 }
 ```
 
@@ -187,25 +187,26 @@ GET /stream/stopVideo
 
 ```python
 import requests
+import json
 import time
 
-BASE_URL = "http://your_ip:9797"
+BASE_URL = "http://localhost:9797"  # Change this to your server's URL and port
 
 def create_user(user_id, url):
-    response = requests.get(f"{BASE_URL}/users/create?userId={user_id}&url={url}")
-    return response.json()
+    response = requests.get(f"{BASE_URL}/face/v0/facelib/createOne?userId={user_id}&url={url}")
+    print("Create User:", response.json())
 
 def update_user(user_id, url):
-    response = requests.get(f"{BASE_URL}/users/update?userId={user_id}&url={url}")
-    return response.json()
+    response = requests.get(f"{BASE_URL}/face/v0/facelib/updateOne?userId={user_id}&url={url}")
+    print("Update User:", response.json())
 
 def delete_user(user_id):
-    response = requests.delete(f"{BASE_URL}/users/{user_id}")
-    return response.json()
+    response = requests.delete(f"{BASE_URL}/face/v0/facelib/{user_id}")
+    print("Delete User:", response.json())
 
 def search_user(url):
-    response = requests.get(f"{BASE_URL}/users/search?url={url}")
-    return response.json()
+    response = requests.get(f"{BASE_URL}/face/v0/facelib/search?url={url}")
+    print("Search User:", response.json())
 
 def start_video(post_data):
     headers = {'Content-Type': 'application/json'}
@@ -216,18 +217,19 @@ def stop_video(name):
     response = requests.get(f"{BASE_URL}/stream/stopVideo?name={name}")
     print("Stop video:", response.json())
 
-
 if __name__ == "__main__":
-    create_user(1, "/path/image.jpg")
+    create_user("123123123123", "/path/image.jpg")
     search_user("/path/image.jpg")
-    update_user(1, "/path/image.jpg")
-    delete_user(1)
-
-    start_video({
-        "name": "video1", 
-        "url": "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101"
-    })
+    update_user("123123123123", "/path/image.jpg")
+    delete_user("123123123123")
+    
+    start_video({"name": "video1", "url": "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101"})
     time.sleep(10)  # 10s
     stop_video("video1")
 
+
 ```
+
+## TODO
+- [x] 单张人脸库增删改接口
+- [ ] 批量增删改接口

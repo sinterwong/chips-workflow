@@ -30,7 +30,7 @@
 
 namespace server::face::core {
 
-constexpr int ALGO_NUM = 2;
+constexpr int ALGO_NUM = 4;
 
 inline std::future<bool> make_false_future() {
   std::promise<bool> prom;

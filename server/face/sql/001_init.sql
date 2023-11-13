@@ -1,12 +1,12 @@
 CREATE TABLE AppUser (
   id INTEGER PRIMARY KEY,
-  id_number VARCHAR UNIQUE,
-  feature_base64 VARCHAR
+  idNumber VARCHAR UNIQUE,
+  feature VARCHAR
 );
 
 -- Path: server/face/sql/002_insert.sql
 -- INSERT INTO
---   AppUser (id_number, feature_base64)
+--   AppUser (idNumber, feature)
 -- VALUES
 --   (
 --     '1427011xxxxxxxxxxx',

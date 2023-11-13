@@ -214,6 +214,26 @@ oatpp::Int32 FaceService::getIdByIdNumber(
   return result[0]->id;
 }
 
+oatpp::String FaceService::getIdNumberById(oatpp::Int32 const &id,
+                                           const oatpp::provider::ResourceHandle<
+                                               oatpp::orm::Connection>
+                                               &connection) {
+
+  auto dbResult = m_database->getIdNumberById(id, connection);
+  OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
+                    dbResult->getErrorMessage());
+  OATPP_ASSERT_HTTP(dbResult->hasMoreToFetch(), Status::CODE_404,
+                    "User not found");
+
+  // 修改这里：使用 Vector 作为返回类型
+  auto result = dbResult->fetch<oatpp::Vector<oatpp::Object<UserDto>>>();
+  OATPP_ASSERT_HTTP(result && result->size() == 1, Status::CODE_500,
+                    "Unknown error");
+
+  // 获取 Vector 中的第一个元素，并提取 String 值
+  return result[0]->idNumber;
+}
+
 oatpp::Vector<oatpp::Object<UserDto>> FaceService::getAllUsers(
     const oatpp::provider::ResourceHandle<oatpp::orm::Connection> &connection) {
 
@@ -244,9 +264,11 @@ oatpp::Object<StatusDto> FaceService::searchUser(oatpp::String const &url) {
     status->code = 204;
     status->message = "No face found";
   } else {
+    // 根据id查询idNumber
+    auto idNumber = getIdNumberById(idx);
     status->status = "OK";
     status->code = 200;
-    status->message = std::to_string(idx);
+    status->message = idNumber;
   }
   return status;
 }
