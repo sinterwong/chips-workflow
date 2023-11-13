@@ -39,11 +39,8 @@ public:
     info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
-
-    info->pathParams["name"].description = "Video stream's Identifier";
-    info->pathParams["url"].description = "Url of the stream";
   }
-  ENDPOINT("POST", "stream/startVideo", startVideo,
+  ENDPOINT("POST", "face/v0/stream/startVideo", startVideo,
            BODY_DTO(Object<StreamDto>, streamDto)) {
     return createDtoResponse(Status::CODE_200,
                              m_videoService.startVideo(streamDto));
@@ -57,7 +54,7 @@ public:
 
     info->pathParams["name"].description = "Video stream's Identifier";
   }
-  ENDPOINT("GET", "stream/stopVideo", stopVideo, QUERY(String, name)) {
+  ENDPOINT("GET", "face/v0/stream/stopVideo", stopVideo, QUERY(String, name)) {
     return createDtoResponse(Status::CODE_200, m_videoService.stopVideo(name));
   }
 };

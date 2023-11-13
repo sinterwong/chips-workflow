@@ -1,7 +1,7 @@
 #ifndef AppComponent_hpp
 #define AppComponent_hpp
 
-#include "SwaggerComponent.hpp"
+// #include "SwaggerComponent.hpp"
 
 #include "ErrorHandler.hpp"
 
@@ -13,6 +13,8 @@
 
 #include "oatpp/core/macro/component.hpp"
 
+#include "DatabaseComponent.hpp"
+
 namespace server::face {
 /**
  *  Class which creates and holds Application components and registers
@@ -22,9 +24,9 @@ namespace server::face {
 class AppComponent {
 public:
   /**
-   *  Swagger component
+   * Database component
    */
-  SwaggerComponent swaggerComponent;
+  DatabaseComponent databaseComponent;
 
   /**
    * Create ObjectMapper component to serialize/deserialize DTOs in Controller's

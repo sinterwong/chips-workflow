@@ -9,14 +9,20 @@
  *
  */
 #include "facelib.hpp"
+#include "logger/logger.hpp"
+#include <cstdint>
 #include <filesystem>
 #include <memory>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #ifndef __SERVER_FACE_CORE_FACE_LIBRARY_MANAGER_HPP_
 #define __SERVER_FACE_CORE_FACE_LIBRARY_MANAGER_HPP_
 
+#define FACELIB_DIM 512
+
 namespace server::face::core {
-using infer::solution::FaceLibrary;
 
 class FaceLibraryManager {
 
@@ -30,45 +36,41 @@ public:
   FaceLibraryManager &operator=(FaceLibraryManager const &) = delete;
 
 public:
-  bool createOne(long id, float *vec) {
-    facelib->addVector(vec, id);
-    facelib->saveToFile(outputPath);
-    return true;
-  }
+  bool registerFacelib(std::string name, std::string path);
 
-  bool updateOne(long id, float *vec) {
-    facelib->updateVector(id, vec);
-    facelib->saveToFile(outputPath);
-    return true;
-  }
+  bool unregisterFacelib(std::string name);
 
-  bool deleteOne(long id) {
-    facelib->deleteVector(id);
-    facelib->saveToFile(outputPath);
-    return true;
-  }
+  // 从数据库中获取人脸特征，然后装载到人脸库中
+  bool loadFacelib(std::vector<long> const &ids,
+                   std::vector<std::vector<float>> const &features);
 
-  long match(float *vec, float threshold) {
-    auto ret = facelib->search(vec, 1).at(0);
-    // 阈值
-    if (ret.second > threshold) {
-      return ret.first;
-    }
-    return -1;
-  }
+  bool createOne(long id, float *vec);
+
+  void createBatch(std::vector<long> &ids, float **vecs);
+
+  bool updateOne(long id, float *vec);
+
+  void updateBatch(std::vector<long> &ids, float **vecs);
+
+  bool deleteOne(long id);
+
+  void deleteBatch(std::vector<long> &ids);
+
+  long match(float *vec, float threshold);
 
   void printLibrary() { facelib->printVectors(); }
 
 private:
   FaceLibraryManager() {
-    facelib = std::make_unique<FaceLibrary>(128);
+    facelib = std::make_unique<FaceLibrary>(FACELIB_DIM);
 
-    if (std::filesystem::exists(outputPath)) {
-      facelib->loadFromFile(outputPath);
-    } else {
-      std::filesystem::create_directories(
-          outputPath.substr(0, outputPath.find_last_of("/")));
-    }
+    // if (std::filesystem::exists(outputPath)) {
+    //   FLOWENGINE_LOGGER_INFO("Found the facelib will be loaded.");
+    //   facelib->loadFromFile(outputPath);
+    // } else {
+    //   std::filesystem::create_directories(
+    //       outputPath.substr(0, outputPath.find_last_of("/")));
+    // }
   }
   ~FaceLibraryManager() {
     facelib->saveToFile(outputPath);
@@ -78,9 +80,11 @@ private:
   static FaceLibraryManager *instance;
 
 private:
-  std::string outputPath = "/public/face/feacelib.bin";
+  // TODO:人脸库映射表用来分治人脸库，目前只管理了一个人脸库
+  std::unordered_map<std::string, std::unique_ptr<FaceLibrary>> facelibs;
+
+  std::string outputPath = "/public/face/facelib.bin";
   std::unique_ptr<FaceLibrary> facelib;
 };
-FaceLibraryManager *FaceLibraryManager::instance = nullptr;
 } // namespace server::face::core
 #endif

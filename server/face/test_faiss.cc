@@ -1,16 +1,18 @@
 /**
- * @file app_face.cpp
+ * @file test_faiss.cc
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
- * @date 2023-10-13
+ * @date 2023-11-06
  *
  * @copyright Copyright (c) 2023
  *
  */
 
 #include <cassert>
+#include <chrono>
 #include <cmath>
+#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <faiss/IndexFlat.h>
@@ -35,8 +37,8 @@ int main() {
   srand(123);
 
   // Number of vectors and vector dimensionality
-  int nb = 5;
-  int d = 8;
+  int nb = 100000;
+  int d = 512;
 
   // Randomly generate vecotors and normalize them
   float *xb = new float[d * nb];
@@ -60,66 +62,30 @@ int main() {
   faiss::IndexFlatIP flatIndex(d);
   faiss::IndexIDMap2 index(&flatIndex);
 
-  // index.add(nb, xb);  // IDMap不能用，暂时不清楚原因
-
-  faiss::idx_t ids_to_add[] = {0, 1, 4, 6, 8};
-  index.add_with_ids(nb, xb, ids_to_add);
+  // faiss::idx_t ids_to_add[] = {0, 1, 4, 6, 8};
+  std::vector<long> ids_to_add;
+  for (int i = 0; i < nb; ++i) {
+    ids_to_add.push_back(i);
+  }
+  index.add_with_ids(nb, xb, ids_to_add.data());
 
   faiss::idx_t new_id_to_add[] = {50};
   index.add_with_ids(1, xq, new_id_to_add);
-
-  // Print all vectors
-  std::vector<float> tempV1(d);
-  for (int i = 0; i < index.ntotal; i++) {
-    faiss::idx_t id = index.id_map.at(i);
-    // retrieve the vector given its ID
-    index.reconstruct(id, tempV1.data());
-    // print ID
-    std::cout << "Vector ID: " << id << "\n";
-    // print vector components
-    std::cout << "Components: [";
-    for (int j = 0; j < d; j++) {
-      std::cout << tempV1[j];
-      if (j != d - 1)
-        std::cout << ", ";
-    }
-    std::cout << "]\n";
-  }
-  std::cout << "*********************************" << std::endl;
-
-  // Remove the ID from the index
-  faiss::idx_t ids_to_remove[] = {4, 6};
-  size_t ids_length = 2;
-  faiss::IDSelectorArray selector{ids_length, ids_to_remove};
-  index.remove_ids(selector);
-
-  // Print all vectors
-  std::vector<float> tempV2(d);
-  for (int i = 0; i < index.ntotal; i++) {
-    faiss::idx_t id = index.id_map.at(i);
-    // retrieve the vector given its ID
-    index.reconstruct(id, tempV2.data());
-    // print ID
-    std::cout << "Vector ID: " << id << "\n";
-    // print vector components
-    std::cout << "Components: [";
-    for (int j = 0; j < d; j++) {
-      std::cout << tempV2[j];
-      if (j != d - 1)
-        std::cout << ", ";
-    }
-    std::cout << "]\n";
-  }
-  std::cout << "*********************************" << std::endl;
 
   // Search for the top 2 most similar vectors
   int k = 2;
   float *distances = new float[k];
   int64_t *indices = new int64_t[k];
 
+  auto start = std::chrono::high_resolution_clock::now();
   index.search(1, xq, k, distances, indices);
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration =
+      std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+  auto cost = static_cast<double>(duration.count()) / 1000;
 
-  std::cout << "Search results (cosine similarity):" << std::endl;
+  std::cout << "Cost time: " << cost
+            << "ms, Search results (cosine similarity):" << std::endl;
   for (int i = 0; i < k; i++) {
     printf("%2d: [idx: %ld, cosine similarity: %f]\n", i, indices[i],
            distances[i]);

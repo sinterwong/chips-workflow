@@ -13,6 +13,9 @@
 #include "vision.hpp"
 #include <mutex>
 
+#ifndef __FLOWENGINE_INFER_VISIONINFER_HPP_
+#define __FLOWENGINE_INFER_VISIONINFER_HPP_
+
 using namespace infer::dnn;
 
 namespace infer {
@@ -29,7 +32,8 @@ public:
    */
   virtual bool init() override;
 
-  virtual bool infer(FrameInfo &, InferParams const &, InferResult &ret) override;
+  virtual bool infer(FrameInfo &, InferParams const &,
+                     InferResult &ret) override;
 
   virtual bool destory() noexcept override;
 
@@ -37,7 +41,9 @@ public:
 
   virtual AlgoSerial getSerial() const noexcept override { return serial; };
 
-  virtual std::string getSerialName() const noexcept override { return serialName; };
+  virtual std::string getSerialName() const noexcept override {
+    return serialName;
+  };
 
 private:
   std::mutex m;
@@ -53,3 +59,5 @@ private:
   std::string serialName;
 };
 } // namespace infer
+
+#endif
