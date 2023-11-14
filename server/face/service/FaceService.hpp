@@ -9,7 +9,9 @@
  *
  */
 #include "AppComponent.hpp"
+#include "FaceDto.hpp"
 #include "FacelibDto.hpp"
+#include "ImageDto.hpp"
 #include "StatusDto.hpp"
 #include "UserDb.hpp"
 #include "algoManager.hpp"
@@ -57,20 +59,6 @@ private:
                   std::vector<std::vector<float>> &features,
                   std::vector<long> &failed_ids);
 
-public:
-  // 构造函数
-  FaceService();
-
-  // 新增单个人脸
-  oatpp::Object<StatusDto> createUser(oatpp::String const &idNumber,
-                                      oatpp::String const &url);
-  // 更新
-  oatpp::Object<StatusDto> updateUser(oatpp::String const &idNumber,
-                                      oatpp::String const &url);
-
-  // 删除
-  oatpp::Object<StatusDto> deleteUser(oatpp::String const &idNumber);
-
   // 获取所有人脸
   oatpp::Vector<oatpp::Object<UserDto>>
   getAllUsers(oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
@@ -88,12 +76,38 @@ public:
                   oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
                       &connection = nullptr);
 
-  // 通过图片查询
+public:
+  // 构造函数
+  FaceService();
+
+  // Get 新增单个人脸
+  oatpp::Object<StatusDto> createUser(oatpp::String const &idNumber,
+                                      oatpp::String const &url);
+  // Post 新增单个人脸
+  oatpp::Object<StatusDto> createUser(oatpp::Object<FaceDto> const &face);
+
+  // Get 更新
+  oatpp::Object<StatusDto> updateUser(oatpp::String const &idNumber,
+                                      oatpp::String const &url);
+  // Post 更新
+  oatpp::Object<StatusDto> updateUser(oatpp::Object<FaceDto> const &face);
+
+  // 删除
+  oatpp::Object<StatusDto> deleteUser(oatpp::String const &idNumber);
+
+  // Get 通过图片查询
   oatpp::Object<StatusDto> searchUser(oatpp::String const &url);
 
-  // 两图比对
+  // Post 通过图片查询
+  oatpp::Object<StatusDto> searchUser(oatpp::Object<ImageDto> const &images);
+
+  // Get 两图比对
   oatpp::Object<StatusDto> compareTwoPictures(oatpp::String const &url1,
                                               oatpp::String const &url2);
+
+  // Post 两图比对
+  oatpp::Object<StatusDto>
+  compareTwoPictures(oatpp::Vector<oatpp::Object<ImageDto>> const &images);
 
   // // 批量新增
   // oatpp::Object<StatusDto> createBatch(oatpp::Object<FacelibDto> const

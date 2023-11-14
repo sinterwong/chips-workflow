@@ -8,8 +8,10 @@
  * @copyright Copyright (c) 2023
  *
  */
+#include "FaceDto.hpp"
 #include "FaceService.hpp"
 #include "FacelibDto.hpp"
+#include "ImageDto.hpp"
 #include "StatusDto.hpp"
 #include <memory>
 #include <oatpp/core/macro/codegen.hpp>
@@ -33,19 +35,17 @@ public:
     return std::make_shared<FaceController>(objectMapper);
   }
 
+  // RESTful API，GET 请求通常用于获取资源，POST 通常用于创建资源。
+  // 幂等性是指一次和多次请求某一个资源应该具有同样的副作用。GET、DELETE和PUT应该是幂等的，而POST不是。
   ENDPOINT_INFO(createOneUser) {
     info->summary = "Create new User";
     info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
-
-    info->pathParams["userId"].description = "User Identifier";
-    info->pathParams["url"].description = "Url of user's picture";
   }
-  ENDPOINT("GET", "face/v0/facelib/createOne", createOneUser,
-           QUERY(String, userId), QUERY(String, url)) {
-    return createDtoResponse(Status::CODE_200,
-                             m_faceService.createUser(userId, url));
+  ENDPOINT("POST", "face/v0/facelib/createOne", createOneUser,
+           BODY_DTO(Object<FaceDto>, user)) {
+    return createDtoResponse(Status::CODE_200, m_faceService.createUser(user));
   }
 
   ENDPOINT_INFO(updateOneUser) {
@@ -53,14 +53,10 @@ public:
     info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
-
-    info->pathParams["userId"].description = "User Identifier";
-    info->pathParams["url"].description = "Url of user's picture";
   }
-  ENDPOINT("GET", "face/v0/facelib/updateOne", updateOneUser,
-           QUERY(String, userId), QUERY(String, url)) {
-    return createDtoResponse(Status::CODE_200,
-                             m_faceService.updateUser(userId, url));
+  ENDPOINT("POST", "face/v0/facelib/updateOne", updateOneUser,
+           BODY_DTO(Object<FaceDto>, user)) {
+    return createDtoResponse(Status::CODE_200, m_faceService.updateUser(user));
   }
 
   ENDPOINT_INFO(deleteOneUser) {
@@ -77,7 +73,7 @@ public:
                              m_faceService.deleteUser(userId));
   }
 
-  // 以图搜人
+  // 以图搜人 GET
   ENDPOINT_INFO(searchUser) {
     info->summary = "Search User by url of user's picture";
     info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
@@ -88,6 +84,42 @@ public:
   }
   ENDPOINT("GET", "face/v0/facelib/search", searchUser, QUERY(String, url)) {
     return createDtoResponse(Status::CODE_200, m_faceService.searchUser(url));
+  }
+
+  // 以图搜人 POST
+  ENDPOINT_INFO(searchUserPost) {
+    info->summary = "Search User by url of user's picture";
+    info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
+    info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
+    info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
+  }
+  ENDPOINT("POST", "face/v0/facelib/search", searchUserPost,
+           BODY_DTO(Object<ImageDto>, image)) {
+    return createDtoResponse(Status::CODE_200, m_faceService.searchUser(image));
+  }
+
+  // 两图比对
+  ENDPOINT_INFO(compareTwoPictures) {
+    info->summary = "Compare two pictures";
+    info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
+    info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
+  }
+  ENDPOINT("GET", "face/v0/facelib/compare", compareTwoPictures,
+           QUERY(String, url1), QUERY(String, url2)) {
+    return createDtoResponse(Status::CODE_200,
+                             m_faceService.compareTwoPictures(url1, url2));
+  }
+
+  // 两图比对
+  ENDPOINT_INFO(compareTwoPicturesPost) {
+    info->summary = "Compare two pictures";
+    info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
+    info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
+  }
+  ENDPOINT("POST", "face/v0/facelib/compare", compareTwoPicturesPost,
+           BODY_DTO(oatpp::Vector<Object<ImageDto>>, images)) {
+    return createDtoResponse(Status::CODE_200,
+                             m_faceService.compareTwoPictures(images));
   }
 
   /*
@@ -134,18 +166,6 @@ public:
            BODY_DTO(Object<FacelibDto>, users)) {
     return createDtoResponse(Status::CODE_200,
                              m_faceService.deleteBatch(users));
-  }
-
-  // 两图比对
-  ENDPOINT_INFO(compareTwoPictures) {
-    info->summary = "Compare two pictures";
-    info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
-    info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
-  }
-  ENDPOINT("GET", "face/v0/facelib/compare", compareTwoPictures,
-           QUERY(String, url1), QUERY(String, url2)) {
-    return createDtoResponse(Status::CODE_200,
-                             m_faceService.compareTwoPictures(url1, url2));
   }
   */
 };
