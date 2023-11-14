@@ -61,6 +61,14 @@ void FaceLibraryManager::createBatch(std::vector<long> &ids, float **vecs) {
   facelib->addVectors(*vecs, ids);
 }
 
+void FaceLibraryManager::createBatch(
+    std::vector<long> const &ids,
+    std::vector<std::vector<float>> const &features) {
+  // 加载特征到人脸库
+  auto ret = Flatten(features);
+  facelib->addVectors(ret.data(), ids);
+}
+
 bool FaceLibraryManager::updateOne(long id, float *vec) {
   if (!facelib->updateVector(id, vec)) {
     FLOWENGINE_LOGGER_WARN("Face library update {} failed.", id);
@@ -70,10 +78,15 @@ bool FaceLibraryManager::updateOne(long id, float *vec) {
 }
 
 void FaceLibraryManager::updateBatch(std::vector<long> &ids, float **vecs) {
-  // TODO:暂时先调用updateOne，这样比较省事。后续开发真正的批量操作
-  for (size_t i = 0; i < ids.size(); ++i) {
-    updateOne(ids.at(i), vecs[i]);
-  }
+  facelib->updateVectors(*vecs, ids);
+}
+
+void FaceLibraryManager::updateBatch(
+    std::vector<long> const &ids,
+    std::vector<std::vector<float>> const &features) {
+  // 加载特征到人脸库
+  auto ret = Flatten(features);
+  facelib->updateVectors(ret.data(), ids);
 }
 
 bool FaceLibraryManager::deleteOne(long id) {
@@ -96,15 +109,6 @@ long FaceLibraryManager::match(float *vec, float threshold) {
     return ret.first;
   }
   return -1;
-}
-
-bool FaceLibraryManager::loadFacelib(
-    std::vector<long> const &ids,
-    std::vector<std::vector<float>> const &features) {
-  // 加载特征到人脸库
-  auto ret = Flatten(features);
-  facelib->addVectors(ret.data(), ids);
-  return true;
 }
 
 } // namespace server::face::core

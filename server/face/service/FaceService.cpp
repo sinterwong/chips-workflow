@@ -44,37 +44,33 @@ FaceService::FaceService() {
   }
   if (!ids.empty()) {
     // 从数据库中读取到数据，才会构建人脸库
-    core::FaceLibraryManager::getInstance().loadFacelib(ids, features);
+    core::FaceLibraryManager::getInstance().createBatch(ids, features);
   }
 }
 
 // 辅助函数，处理批处理操作中的失败和错误ID，减少重复代码
-void FaceService::handleBatchErrors(const std::vector<long> &failed_ids,
-                                    const std::vector<long> &err_ids,
-                                    const oatpp::Object<StatusDto> &status) {
+void FaceService::handleBatchErrors(
+    const std::vector<std::string> &errIdNumbers,
+    const oatpp::Object<StatusDto> &status) {
   // 合并ID到一个字符串
-  auto failed = joinIds(failed_ids);
-  auto errored = joinIds(err_ids);
+  auto failed = joinIdNumbers(errIdNumbers);
 
   status->status = "Partial Content";
   status->code = 206; // HTTP状态码 206 Partial Content
 
   // 构建一个详细的状态消息
   std::string message = "Some users failed.";
-  if (!failed_ids.empty()) {
-    message += " Algorithm failed IDs: " + failed + ".";
-  }
-  if (!err_ids.empty()) {
-    message += " Facelib failed IDs: " + errored + ".";
+  if (!errIdNumbers.empty()) {
+    message += " Error IDs: " + failed + ".";
   }
   status->message = message;
 }
 
 // 辅助函数，批量算法调用，减少重复代码
-void FaceService::batchInfer(const std::vector<std::string> &urls,
-                             std::vector<float *> &vecs,
+void FaceService::batchInfer(std::vector<std::string> const &urls,
+                             std::vector<std::string> const &idNumbers,
                              std::vector<std::vector<float>> &features,
-                             std::vector<long> &failed_ids) {
+                             std::vector<std::string> &errIdNumbers) {
   std::vector<std::future<bool>> futures;
   futures.reserve(urls.size());
   for (size_t i = 0; i < urls.size(); ++i) {
@@ -85,13 +81,23 @@ void FaceService::batchInfer(const std::vector<std::string> &urls,
   // 等待所有线程完成
   for (size_t i = 0; i < futures.size(); ++i) {
     if (!futures[i].get()) {
-      failed_ids.push_back(i);
-
-    } else {
-      // 将成功的特征向量指针加入vecs
-      vecs.push_back(features[i].data());
+      errIdNumbers.push_back(idNumbers[i]);
     }
   }
+}
+
+// 提取特征向量
+bool FaceService::extractFeature(std::string const &url,
+                                 std::vector<float> &feature) {
+  auto ret = core::AlgoManager::getInstance().infer(url, feature);
+  return ret.get();
+}
+
+// 特征转base64
+std::string FaceService::feature2base64(std::vector<float> &feature) {
+  uchar *temp = reinterpret_cast<uchar *>(feature.data());
+  std::vector<uchar> vec(temp, temp + feature.size() * sizeof(float));
+  return flowengine::core::Base64::encode(vec);
 }
 
 oatpp::Int32 FaceService::getIdByIdNumber(
@@ -143,13 +149,39 @@ oatpp::Vector<oatpp::Object<UserDto>> FaceService::getAllUsers(
   return result;
 }
 
+oatpp::Int32 FaceService::insertUser(
+    std::string const &idNumber, std::string const &feature,
+    oatpp::provider::ResourceHandle<oatpp::orm::Connection> const &connection) {
+  auto user = UserDto::createShared();
+  user->idNumber = idNumber;
+  user->feature = feature;
+  auto dbResult = m_database->createUser(user);
+  OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
+                    dbResult->getErrorMessage());
+
+  return oatpp::sqlite::Utils::getLastInsertRowId(dbResult->getConnection());
+}
+
+oatpp::Int32 FaceService::updateUserByIdNumber(
+    std::string const &idNumber, std::string const &feature,
+    oatpp::provider::ResourceHandle<oatpp::orm::Connection> const &connection) {
+  // 获取id
+  auto id = getIdByIdNumber(idNumber);
+  auto user = UserDto::createShared();
+  user->idNumber = idNumber;
+  user->feature = feature;
+  auto dbResult = m_database->updateUserById(id, user);
+  OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
+                    dbResult->getErrorMessage());
+  return id;
+}
+
 oatpp::Object<StatusDto> FaceService::createUser(oatpp::String const &idNumber,
                                                  oatpp::String const &url) {
   auto status = StatusDto::createShared();
   std::vector<float> feature;
-  auto ret = core::AlgoManager::getInstance().infer(url, feature);
-
-  if (!ret.get()) {
+  // 提取特征向量
+  if (!extractFeature(url, feature)) {
     status->status = "No Content";
     status->code = 204;
     status->message = "Face feature extraction failed.";
@@ -157,19 +189,9 @@ oatpp::Object<StatusDto> FaceService::createUser(oatpp::String const &idNumber,
   }
 
   // feature to base64
-  uchar *temp = reinterpret_cast<uchar *>(feature.data());
-  std::vector<uchar> vec(temp, temp + feature.size() * sizeof(float));
-  std::string base64 = flowengine::core::Base64::encode(vec);
+  std::string base64 = feature2base64(feature);
 
-  auto user = UserDto::createShared();
-  user->idNumber = idNumber;
-  user->feature = base64;
-
-  auto dbResult = m_database->createUser(user);
-  OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
-                    dbResult->getErrorMessage());
-
-  auto id = oatpp::sqlite::Utils::getLastInsertRowId(dbResult->getConnection());
+  auto id = insertUser(idNumber, base64);
 
   // 提取特征成功，接下来特征入库
   bool ok =
@@ -197,9 +219,7 @@ oatpp::Object<StatusDto> FaceService::updateUser(oatpp::String const &idNumber,
                                                  oatpp::String const &url) {
   auto status = StatusDto::createShared();
   std::vector<float> feature;
-  auto ret = core::AlgoManager::getInstance().infer(url, feature);
-
-  if (!ret.get()) {
+  if (!extractFeature(url, feature)) {
     status->status = "No Content";
     status->code = 204;
     status->message = "Face feature extraction failed.";
@@ -207,16 +227,10 @@ oatpp::Object<StatusDto> FaceService::updateUser(oatpp::String const &idNumber,
   }
 
   // feature to base64
-  uchar *temp = reinterpret_cast<uchar *>(feature.data());
-  std::vector<uchar> vec(temp, temp + feature.size() * sizeof(float));
-  std::string base64 = flowengine::core::Base64::encode(vec);
+  std::string base64 = feature2base64(feature);
 
   // 获取id
-  auto id = getIdByIdNumber(idNumber);
-  auto user = UserDto::createShared();
-  user->idNumber = idNumber;
-  user->feature = base64;
-  m_database->updateUserById(id, user);
+  auto id = updateUserByIdNumber(idNumber, base64);
 
   // 提取特征成功，接下来特征入库
   bool ok =
@@ -264,8 +278,7 @@ oatpp::Object<StatusDto> FaceService::searchUser(oatpp::String const &url) {
   // 不涉及数据库操作，从人脸特征库中查询
   auto status = StatusDto::createShared();
   std::vector<float> feature;
-  auto ret = core::AlgoManager::getInstance().infer(url, feature);
-  if (!ret.get()) {
+  if (!extractFeature(url, feature)) {
     status->status = "No Content";
     status->code = 204;
     status->message = "Face feature extraction failed.";
@@ -300,6 +313,7 @@ FaceService::compareTwoPictures(oatpp::String const &url1,
   auto status = StatusDto::createShared();
   std::vector<float> feature1;
   std::vector<float> feature2;
+  // 这里不调用extractFeature函数，是因为需要并发提取特征
   auto ret1 = core::AlgoManager::getInstance().infer(url1, feature1);
   auto ret2 = core::AlgoManager::getInstance().infer(url2, feature2);
 
@@ -334,117 +348,137 @@ oatpp::Object<StatusDto> FaceService::compareTwoPictures(
   return compareTwoPictures(images[0]->url, images[1]->url);
 }
 
-/* 人脸逻辑改变较大，暂时不实现批处理
 // 批量新增
 oatpp::Object<StatusDto>
-FaceService::createBatch(const oatpp::Object<FacelibDto> &users) {
+FaceService::createBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
   auto status = StatusDto::createShared();
-  if (!users || !users->ids || !users->urls ||
-      users->ids->size() != users->urls->size()) {
-    // 返回错误状态，表示输入数据有问题
-    status->status = "Bad Request";
-    status->code = 400;
-    status->message = "Invalid input data.";
-    return status;
+
+  std::vector<std::string> IdNumbers;
+  std::vector<std::string> urls;
+  for (size_t i = 0; i < users->size(); ++i) {
+    IdNumbers.push_back(users[i]->userId);
+    urls.push_back(users[i]->url);
   }
 
-  std::vector<long> ids(users->ids->begin(), users->ids->end());
-  std::vector<std::string> urls(users->urls->begin(), users->urls->end());
+  // 特征向量集合
+  std::vector<std::vector<float>> features(users->size());
+  std::vector<std::string> errIdNumbers;
+  std::vector<std::string> vecsBase64; // 用于存储提取成功的特征向量的base64
+  batchInfer(urls, IdNumbers, features, errIdNumbers);
 
-  std::vector<std::vector<float>> features;
-  // vecs.size() + failed_ids.size() == ids.size()
-  std::vector<float *> vecs;    // 用于存储提取成功的特征向量指针
-  std::vector<long> failed_ids; // 用于存储失败的id
-  // 批量推理
-  batchInfer(urls, vecs, features, failed_ids);
+  // 从IdNumbers中移除失败的id，顺带移除features中的失败特征向量
+  for (size_t i = 0; i < errIdNumbers.size(); ++i) {
+    IdNumbers.erase(
+        std::remove(IdNumbers.begin(), IdNumbers.end(), errIdNumbers[i]),
+        IdNumbers.end());
+    features.erase(features.begin() + i);
+  }
 
-  // 从ids中移除失败的id
-  ids.erase(std::remove_if(ids.begin(), ids.end(),
-                           [&](long id) {
-                             return std::find(failed_ids.begin(),
-                                              failed_ids.end(),
-                                              id) != failed_ids.end();
-                           }),
-            ids.end());
-
-  if (ids.empty()) {
+  // 全部失败的情况
+  if (IdNumbers.empty()) {
     status->status = "Service Unavailable";
     status->code = 503;
     status->message = "All users failed to create.";
     return status;
   }
-  // 此时的ids与vecs一一对应，可以直接传入
-  std::vector<long> err_ids;
-  core::FaceLibraryManager::getInstance().createBatch(ids, vecs.data(),
-                                                      err_ids);
+
+  // 此时的IdNumbers与features一一对应
+  std::vector<long> ids;
+  // 入库
+  for (size_t i = 0; i < IdNumbers.size(); ++i) {
+    auto id = insertUser(IdNumbers[i], feature2base64(features[i]));
+    ids.push_back(id);
+  }
+
+  // 更新人脸库
+  core::FaceLibraryManager::getInstance().createBatch(ids, features);
   // 处理批处理中的错误入库的情况
-  handleBatchErrors(failed_ids, err_ids, status);
+  handleBatchErrors(errIdNumbers, status);
   return status;
 }
 
 // 批量更新
 oatpp::Object<StatusDto>
-FaceService::updateBatch(oatpp::Object<FacelibDto> const &users) {
+FaceService::updateBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
   auto status = StatusDto::createShared();
-  if (!users || !users->ids || !users->urls ||
-      users->ids->size() != users->urls->size()) {
-    // 返回错误状态，表示输入数据有问题
-    status->status = "Bad Request";
-    status->code = 400;
-    status->message = "Invalid input data.";
-    return status;
+
+  std::vector<std::string> IdNumbers;
+  std::vector<std::string> urls;
+  for (size_t i = 0; i < users->size(); ++i) {
+    IdNumbers.push_back(users[i]->userId);
+    urls.push_back(users[i]->url);
   }
-  std::vector<long> ids(users->ids->begin(), users->ids->end());
-  std::vector<std::string> urls(users->urls->begin(), users->urls->end());
 
-  std::vector<std::vector<float>> features;
-  // vecs.size() + failed_ids.size() == ids.size()
-  std::vector<float *> vecs;    // 用于存储提取成功的特征向量指针
-  std::vector<long> failed_ids; // 用于存储失败的id
-  // 批量推理
-  batchInfer(urls, vecs, features, failed_ids);
+  // 特征向量集合
+  std::vector<std::vector<float>> features(users->size());
+  std::vector<std::string> errIdNumbers;
+  std::vector<std::string> vecsBase64; // 用于存储提取成功的特征向量的base64
+  batchInfer(urls, IdNumbers, features, errIdNumbers);
 
-  // 从ids中移除失败的id
-  ids.erase(std::remove_if(ids.begin(), ids.end(),
-                           [&](long id) {
-                             return std::find(failed_ids.begin(),
-                                              failed_ids.end(),
-                                              id) != failed_ids.end();
-                           }),
-            ids.end());
+  // 从IdNumbers中移除失败的id，顺带移除features中的失败特征向量
+  for (size_t i = 0; i < errIdNumbers.size(); ++i) {
+    IdNumbers.erase(
+        std::remove(IdNumbers.begin(), IdNumbers.end(), errIdNumbers[i]),
+        IdNumbers.end());
+    features.erase(features.begin() + i);
+  }
 
-  if (ids.empty()) {
+  // 全部失败的情况
+  if (IdNumbers.empty()) {
     status->status = "Service Unavailable";
     status->code = 503;
     status->message = "All users failed to update.";
     return status;
   }
 
-  std::vector<long> err_ids;
-  core::FaceLibraryManager::getInstance().updateBatch(ids, vecs.data(),
-                                                      err_ids);
+  // 此时的IdNumbers与features一一对应
+  std::vector<long> ids;
+  // 入库
+  for (size_t i = 0; i < IdNumbers.size(); ++i) {
+    auto id = updateUserByIdNumber(IdNumbers[i], feature2base64(features[i]));
+    ids.push_back(id);
+  }
 
-  handleBatchErrors(failed_ids, err_ids, status);
+  // 更新人脸库
+  core::FaceLibraryManager::getInstance().updateBatch(ids, features);
+  // 处理批处理中的错误入库的情况
+  handleBatchErrors(errIdNumbers, status);
   return status;
 }
 
 // 批量删除
 oatpp::Object<StatusDto>
-FaceService::deleteBatch(oatpp::Object<FacelibDto> const &users) {
+FaceService::deleteBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
   auto status = StatusDto::createShared();
-  if (!users || !users->ids) {
-    // 返回错误状态，表示输入数据有问题
-    status->status = "Bad Request";
-    status->code = 400;
-    status->message = "Invalid input data.";
-    return status;
+
+  std::vector<std::string> IdNumbers;
+  for (size_t i = 0; i < users->size(); ++i) {
+    IdNumbers.push_back(users[i]->userId);
   }
 
-  std::vector<long> ids(users->ids->begin(), users->ids->end());
-  std::vector<long> err_ids;
-  core::FaceLibraryManager::getInstance().deleteBatch(ids, err_ids);
-  handleBatchErrors({}, err_ids, status);
+  // 利用IdNumbers查询id
+  oatpp::Vector<oatpp::Int32> idsDB;
+  for (size_t i = 0; i < IdNumbers.size(); ++i) {
+    auto id = getIdByIdNumber(IdNumbers[i]);
+    idsDB->push_back(id);
+  }
+
+  std::vector<long> ids;
+  for (size_t i = 0; i < idsDB->size(); ++i) {
+    ids.push_back(idsDB[i]);
+  }
+
+  // 删除数据库中的数据
+  auto dbResult = m_database->deleteUsersByIds(idsDB);
+  OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
+                    dbResult->getErrorMessage());
+
+  // 删除人脸库中的数据
+  core::FaceLibraryManager::getInstance().deleteBatch(ids);
+
+  status->status = "OK";
+  status->code = 200;
+  status->message = "Users were successfully deleted.";
   return status;
 }
-*/
 } // namespace server::face

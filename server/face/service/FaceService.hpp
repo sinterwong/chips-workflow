@@ -10,7 +10,6 @@
  */
 #include "AppComponent.hpp"
 #include "FaceDto.hpp"
-#include "FacelibDto.hpp"
 #include "ImageDto.hpp"
 #include "StatusDto.hpp"
 #include "UserDb.hpp"
@@ -40,6 +39,18 @@ inline std::string joinIds(const std::vector<long> &ids,
   return stream.str();
 }
 
+inline std::string joinIdNumbers(const std::vector<std::string> &idNumbers,
+                                 const std::string &separator = ", ") {
+  std::ostringstream stream;
+  for (size_t i = 0; i < idNumbers.size(); ++i) {
+    stream << idNumbers[i];
+    if (i < idNumbers.size() - 1) {
+      stream << separator;
+    }
+  }
+  return stream.str();
+}
+
 class FaceService {
 private:
   using Status = oatpp::web::protocol::http::Status;
@@ -49,15 +60,20 @@ private:
 
 private:
   // 辅助函数，处理批处理操作中的失败和错误ID，减少重复代码
-  void handleBatchErrors(const std::vector<long> &failed_ids,
-                         const std::vector<long> &err_ids,
+  void handleBatchErrors(const std::vector<std::string> &errIdNumbers,
                          const oatpp::Object<StatusDto> &status);
 
   // 辅助函数，批量算法调用，减少重复代码
   void batchInfer(const std::vector<std::string> &urls,
-                  std::vector<float *> &vecs,
+                  std::vector<std::string> const &idNumbers,
                   std::vector<std::vector<float>> &features,
-                  std::vector<long> &failed_ids);
+                  std::vector<std::string> &errIdNumbers);
+
+  // 提取特征向量
+  bool extractFeature(std::string const &url, std::vector<float> &feature);
+
+  // 特征转base64
+  std::string feature2base64(std::vector<float> &feature);
 
   // 获取所有人脸
   oatpp::Vector<oatpp::Object<UserDto>>
@@ -76,6 +92,18 @@ private:
                   oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
                       &connection = nullptr);
 
+  // 新增人脸到数据库并返回id
+  oatpp::Int32
+  insertUser(std::string const &idNumber, std::string const &feature,
+             oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
+                 &connection = nullptr);
+
+  // 更新人脸到数据库
+  oatpp::Int32 updateUserByIdNumber(
+      std::string const &idNumber, std::string const &feature,
+      oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
+          &connection = nullptr);
+
 public:
   // 构造函数
   FaceService();
@@ -84,13 +112,13 @@ public:
   oatpp::Object<StatusDto> createUser(oatpp::String const &idNumber,
                                       oatpp::String const &url);
   // Post 新增单个人脸
-  oatpp::Object<StatusDto> createUser(oatpp::Object<FaceDto> const &face);
+  oatpp::Object<StatusDto> createUser(oatpp::Object<FaceDto> const &user);
 
   // Get 更新
   oatpp::Object<StatusDto> updateUser(oatpp::String const &idNumber,
                                       oatpp::String const &url);
   // Post 更新
-  oatpp::Object<StatusDto> updateUser(oatpp::Object<FaceDto> const &face);
+  oatpp::Object<StatusDto> updateUser(oatpp::Object<FaceDto> const &user);
 
   // 删除
   oatpp::Object<StatusDto> deleteUser(oatpp::String const &idNumber);
@@ -109,17 +137,17 @@ public:
   oatpp::Object<StatusDto>
   compareTwoPictures(oatpp::Vector<oatpp::Object<ImageDto>> const &images);
 
-  // // 批量新增
-  // oatpp::Object<StatusDto> createBatch(oatpp::Object<FacelibDto> const
-  // &users);
+  // 批量新增
+  oatpp::Object<StatusDto>
+  createBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users);
 
-  // // 批量更新
-  // oatpp::Object<StatusDto> updateBatch(oatpp::Object<FacelibDto> const
-  // &users);
+  // 批量更新
+  oatpp::Object<StatusDto>
+  updateBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users);
 
-  // // 批量删除
-  // oatpp::Object<StatusDto> deleteBatch(oatpp::Object<FacelibDto> const
-  // &users);
+  // 批量删除
+  oatpp::Object<StatusDto>
+  deleteBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users);
 };
 } // namespace server::face
 #endif

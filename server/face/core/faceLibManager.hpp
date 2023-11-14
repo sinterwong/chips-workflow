@@ -40,17 +40,19 @@ public:
 
   bool unregisterFacelib(std::string name);
 
-  // 从数据库中获取人脸特征，然后装载到人脸库中
-  bool loadFacelib(std::vector<long> const &ids,
-                   std::vector<std::vector<float>> const &features);
-
   bool createOne(long id, float *vec);
 
   void createBatch(std::vector<long> &ids, float **vecs);
 
+  void createBatch(std::vector<long> const &ids,
+                   std::vector<std::vector<float>> const &features);
+
   bool updateOne(long id, float *vec);
 
   void updateBatch(std::vector<long> &ids, float **vecs);
+
+  void updateBatch(std::vector<long> const &ids,
+                   std::vector<std::vector<float>> const &features);
 
   bool deleteOne(long id);
 

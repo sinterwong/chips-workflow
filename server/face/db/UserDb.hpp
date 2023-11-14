@@ -72,6 +72,9 @@ public:
 
   QUERY(deleteUserByIdNumber, "DELETE FROM AppUser WHERE idNumber=:idNumber;",
         PARAM(oatpp::String, idNumber))
+        
+  QUERY(deleteUsersByIds, "DELETE FROM AppUser WHERE id IN (:ids);",
+        PARAM(oatpp::Vector<oatpp::Int32>, ids))
 
   QUERY(getFeaturesOfAllUsers,
         "SELECT id, feature FROM AppUser WHERE feature IS NOT NULL;")
