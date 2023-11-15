@@ -1,8 +1,8 @@
-# 人脸服务API接口文档
+# 人脸库服务API接口文档
 
 ## 概览
 
-此文档描述了人脸服务API的使用方法。通过这些API，您可以在人脸库中创建、更新、删除和搜索用户，以及基于目前的人脸库对视频进行实时监测，返回人脸信息。每个API调用都会返回一个JSON格式的响应。
+此文档描述了人脸库服务API的使用方法。通过这些API，您可以在人脸库中创建、更新、删除和搜索用户。每个API调用都会返回一个JSON格式的响应。
 
 ## 基础URL
 http://your_ip:9797
@@ -85,7 +85,7 @@ DELETE /face/v0/facelib/{user_id}
 {
     "status": "OK", 
     "code": 200, 
-    "message": "2"  # the user"s ID number.
+    "message": "2" # the user's ID number.
 }
 ```
 
@@ -108,40 +108,72 @@ DELETE /face/v0/facelib/{user_id}
 ]
 ```
 
-### 6. 启动视频流
-启动视频流监测，基于当前的人脸库进行人脸识别
+### 6. 批量创建用户
+批量创建用户并将其人脸数据添加到库中。
 
 #### 请求
-POST /stream/startVideo
+POST /face/v0/facelib/createBatch
 
-#### POST 参数
-- `name` (必须): 网络视频流名称。
-- `url` (必须): 网络视频流链接。
+#### POST 参数示例
+```json
+[
+    {"userId": "11111", "url": "http://xxx.com/xxx.jpg"},
+    {"userId": "22222", "url": "http://xxx.com/xxx.jpg"}
+]
+```
 
 #### 响应
 ```json
 {
-    "status": "OK", 
-    "code": 200, 
-    "message": "Video was successfully starting"
+  "status": "OK", 
+  "code": 200, 
+  "message": "Users were successfully created."
 }
 ```
 
-### 7. 停用视频流
-根据name停用视频流
+### 7. 批量更新用户
+批量更新现有用户的人脸数据。
 
 #### 请求
-GET /stream/stopVideo
+POST /face/v0/facelib/updateBatch
 
-#### GET 参数
-- `name` (必须): 网络视频流名称。
+#### POST 参数示例
+```json
+[
+    {"userId": "11111", "url": "http://xxx.com/xxx.jpg"},
+    {"userId": "22222", "url": "http://xxx.com/xxx.jpg"}
+]
+```
 
 #### 响应
 ```json
 {
-    "status": "OK", 
-    "code": 200, 
-    "message": "Video was successfully stopped"
+  "status": "OK", 
+  "code": 200, 
+  "message": "Users were successfully updated."
+}
+```
+
+### 8. 批量删除用户
+从人脸库中批量删除用户。
+
+#### 请求
+POST /face/v0/facelib/deleteBatch
+
+#### POST 参数示例
+```json
+[
+    {"userId": "11111", "url": ""},
+    {"userId": "22222", "url": ""}
+]
+```
+
+#### 响应
+```json
+{
+  "status": "OK", 
+  "code": 200, 
+  "message": "Users were successfully deleted."
 }
 ```
 
@@ -155,7 +187,7 @@ GET /stream/stopVideo
 }
 ```
 
-#### 修改无效id
+#### 使用无效id
 ```json
 {
     "status": "ERROR", 
@@ -164,12 +196,25 @@ GET /stream/stopVideo
 }
 ```
 
-#### 删除无效id
+#### 批量操作部分失败
 ```json
 {
-    "status": "ERROR", 
-    "code": 404, 
-    "message": "User not found"
+    "status": "Partial Content", 
+    "code": 206, 
+    "message": "
+        Some users failed.\n
+        Algorithm failed: 1111, 2222\n
+        Database failed: : 3333, 4444\n
+    "
+}
+```
+
+#### 批量操作全部失败
+```json
+{
+    "status": "Service Unavailable", 
+    "code": 503, 
+    "message": "All users failed to create."
 }
 ```
 
@@ -199,7 +244,6 @@ GET /stream/stopVideo
     "message": "Video stop failed"
 }
 ```
-
 请确保在实际应用中处理这些错误。
 
 ## 代码示例
@@ -213,6 +257,7 @@ import base64
 
 BASE_URL = "http://localhost:9797"  # Change this to your server's URL and port
 headers = {'Content-Type': 'application/json'}
+
 
 def get_base64_of_image(url):
     with open(url, "rb") as image_file:
@@ -229,15 +274,33 @@ def create_user(data):
     print("Create User:", response.json())
 
 
+def create_batch_users(data):
+    response = requests.post(
+        f"{BASE_URL}/face/v0/facelib/createBatch", data=json.dumps(data), headers=headers)
+    print("Create Batch Users:", response.json())
+
+
 def update_user(data):
     response = requests.post(
         f"{BASE_URL}/face/v0/facelib/updateOne", data=json.dumps(data), headers=headers)
     print("Update User:", response.json())
 
 
+def update_batch_users(data):
+    response = requests.post(
+        f"{BASE_URL}/face/v0/facelib/updateBatch", data=json.dumps(data), headers=headers)
+    print("Update Batch Users:", response.json())
+
+
 def delete_user(user_id):
     response = requests.delete(f"{BASE_URL}/face/v0/facelib/{user_id}")
     print("Delete User:", response.json())
+
+
+def delete_batch_users(data):
+    response = requests.post(
+        f"{BASE_URL}/face/v0/facelib/deleteBatch", data=json.dumps(data), headers=headers)
+    print("Delete Batch Users:", response.json())
 
 
 def search_user(url):
@@ -263,42 +326,39 @@ def compare_two_users_post(data):
     print("Compare User:", response.json())
 
 
-def start_video(post_data):
-    response = requests.post(
-        f"{BASE_URL}/stream/startVideo", data=json.dumps(post_data), headers=headers)
-    print("Start video:", response.json())
-
-
-def stop_video(name):
-    response = requests.get(f"{BASE_URL}/stream/stopVideo?name={name}")
-    print("Stop video:", response.json())
-
-
 if __name__ == "__main__":
-    create_user({"userId": "12345", "url": get_base64_of_image("/path/image.png")})
-    update_user({"userId": "12345", "url": get_base64_of_image("/path/image.png")})
+    create_user({"userId": "12345", "url": get_base64_of_image("image1.png")})
+    create_batch_users(([
+        {"userId": "11111", "url": get_base64_of_image("image1.png")},
+        {"userId": "22222", "url": get_base64_of_image("image2.png")}s
+    ]))
 
-    search_user("/path/image.png")
-    search_user_post({"url": get_base64_of_image("/path/image.png")})
+    update_user({"userId": "12345", "url": get_base64_of_image("image2.png")})
+    update_batch_users(([
+        {"userId": "11111", "url": get_base64_of_image("image2.png")},
+        {"userId": "22222", "url": get_base64_of_image("image1.png")}
+    ]))
 
-    compare_two_users("/path/image.png",
-                      "/path/image.png")
+    search_user("/path/image2.png")
+    search_user_post({"url": get_base64_of_image("image2.png")})
+
+    compare_two_users("/path/image1.png",
+                      "/path/image1.png")
 
     compare_two_users_post(([
-        {"url": get_base64_of_image("/path/image.png")},
-        {"url": get_base64_of_image("/path/image.png")}
+        {"url": get_base64_of_image("image1.png")},
+        {"url": get_base64_of_image("image2.png")}
     ]))
 
     delete_user("12345")
-
-    start_video(
-        {"name": "video1", "url": "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101"})
-    time.sleep(10)  # 10s
-    stop_video("video1")
+    delete_batch_users(([
+        {"userId": "11111", "url": ""},
+        {"userId": "22222", "url": ""}
+    ]))
 ```
 
 ## TODO
 - [x] 单张人脸库增删改接口
 - [x] 部分接口Post请求支持
 - [x] 人脸接口支持base64编码
-- [ ] 批量增删改接口
+- [x] 批量增删改接口
