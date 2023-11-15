@@ -227,23 +227,6 @@ POST /face/v0/facelib/deleteBatch
 }
 ```
 
-#### 视频流id重复
-```json
-{
-    "status": "Service Unavailable", 
-    "code": 503, 
-    "message": "Video startup failed."
-}
-```
-
-#### 停用没有启动的视频流
-```json
-{
-    "status": "Service Unavailable", 
-    "code": 503, 
-    "message": "Video stop failed"
-}
-```
 请确保在实际应用中处理这些错误。
 
 ## 代码示例
