@@ -12,10 +12,12 @@
  */
 
 #include "FaceService.hpp"
+#include "StatusDto.hpp"
 #include "UserDb.hpp"
 #include "UserDto.hpp"
 #include "myBase64.hpp"
 #include "networkUtils.hpp"
+#include <cassert>
 #include <cstdint>
 #include <opencv2/core/hal/interface.h>
 #include <vector>
@@ -50,18 +52,32 @@ FaceService::FaceService() {
 
 // 辅助函数，处理批处理操作中的失败和错误ID，减少重复代码
 void FaceService::handleBatchErrors(
-    const std::vector<std::string> &errIdNumbers,
+    std::vector<std::string> const &errIdNumbersAlgo,
+    std::vector<std::string> const &errIdNumbersDB,
     const oatpp::Object<StatusDto> &status) {
-  // 合并ID到一个字符串
-  auto failed = joinIdNumbers(errIdNumbers);
 
+  if (errIdNumbersAlgo.empty() && errIdNumbersDB.empty()) {
+    // 没有错误
+    status->status = "OK";
+    status->code = 200;
+    status->message = "All users were successfully created.";
+    return;
+  }
+  // 合并ID到一个字符串
+  auto algoFailed = joinIdNumbers(errIdNumbersAlgo);
+  auto dbFailed = joinIdNumbers(errIdNumbersDB);
   status->status = "Partial Content";
   status->code = 206; // HTTP状态码 206 Partial Content
 
   // 构建一个详细的状态消息
-  std::string message = "Some users failed.";
-  if (!errIdNumbers.empty()) {
-    message += " Error IDs: " + failed + ".";
+  std::string message = "Some users failed.\n";
+  if (!errIdNumbersAlgo.empty()) {
+    message += "Algorithm failed: ";
+    message += algoFailed + "\n";
+  }
+  if (!errIdNumbersDB.empty()) {
+    message += "Database failed: ";
+    message += dbFailed + "\n";
   }
   status->message = message;
 }
@@ -101,38 +117,77 @@ std::string FaceService::feature2base64(std::vector<float> &feature) {
 }
 
 oatpp::Int32 FaceService::getIdByIdNumber(
-    oatpp::String const &idNumber,
+    oatpp::String const &idNumber, oatpp::Object<StatusDto> &status,
     const oatpp::provider::ResourceHandle<oatpp::orm::Connection> &connection) {
 
   auto dbResult = m_database->getIdByIdNumber(idNumber, connection);
-  OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
-                    dbResult->getErrorMessage());
-  OATPP_ASSERT_HTTP(dbResult->hasMoreToFetch(), Status::CODE_404,
-                    "User not found");
+  // OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
+  //                   dbResult->getErrorMessage());
+  if (!dbResult->isSuccess()) {
+    status->code = 500;
+    status->status = "Internal Server Error";
+    status->message = dbResult->getErrorMessage();
+    return -1;
+  }
+  // OATPP_ASSERT_HTTP(dbResult->hasMoreToFetch(), Status::CODE_404,
+  //                   "User not found");
+  if (!dbResult->hasMoreToFetch()) {
+    status->code = 404;
+    status->status = "Not Found";
+    status->message = "User not found";
+    return -1;
+  }
 
   // 修改这里：使用 Vector 作为返回类型
   auto result = dbResult->fetch<oatpp::Vector<oatpp::Object<UserDto>>>();
-  OATPP_ASSERT_HTTP(result && result->size() == 1, Status::CODE_500,
-                    "Unknown error");
+  // OATPP_ASSERT_HTTP(result && result->size() == 1, Status::CODE_500,
+  //                   "Unknown error");
+  if (!result || result->size() != 1) {
+    status->code = 500;
+    status->status = "Internal Server Error";
+    status->message = "Unknown error";
+    return -1;
+  }
 
   // 获取 Vector 中的第一个元素，并提取 Int32 值
   return result[0]->id;
 }
 
 oatpp::String FaceService::getIdNumberById(
-    oatpp::Int32 const &id,
+    oatpp::Int32 const &id, oatpp::Object<StatusDto> &status,
     const oatpp::provider::ResourceHandle<oatpp::orm::Connection> &connection) {
 
   auto dbResult = m_database->getIdNumberById(id, connection);
-  OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
-                    dbResult->getErrorMessage());
-  OATPP_ASSERT_HTTP(dbResult->hasMoreToFetch(), Status::CODE_404,
-                    "User not found");
+  // OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
+  //                   dbResult->getErrorMessage());
+
+  if (!dbResult->isSuccess()) {
+    status->code = 500;
+    status->status = "Internal Server Error";
+    status->message = dbResult->getErrorMessage();
+    return "";
+  }
+  // OATPP_ASSERT_HTTP(dbResult->hasMoreToFetch(), Status::CODE_404,
+  //                   "User not found");
+
+  if (!dbResult->hasMoreToFetch()) {
+    status->code = 404;
+    status->status = "Not Found";
+    status->message = "User not found";
+    return "";
+  }
 
   // 修改这里：使用 Vector 作为返回类型
   auto result = dbResult->fetch<oatpp::Vector<oatpp::Object<UserDto>>>();
-  OATPP_ASSERT_HTTP(result && result->size() == 1, Status::CODE_500,
-                    "Unknown error");
+  // OATPP_ASSERT_HTTP(result && result->size() == 1, Status::CODE_500,
+  //                   "Unknown error");
+
+  if (!result || result->size() != 1) {
+    status->code = 500;
+    status->status = "Internal Server Error";
+    status->message = "Unknown error";
+    return "";
+  }
 
   // 获取 Vector 中的第一个元素，并提取 String 值
   return result[0]->idNumber;
@@ -151,28 +206,47 @@ oatpp::Vector<oatpp::Object<UserDto>> FaceService::getAllUsers(
 
 oatpp::Int32 FaceService::insertUser(
     std::string const &idNumber, std::string const &feature,
+    oatpp::Object<StatusDto> &status,
     oatpp::provider::ResourceHandle<oatpp::orm::Connection> const &connection) {
   auto user = UserDto::createShared();
   user->idNumber = idNumber;
   user->feature = feature;
   auto dbResult = m_database->createUser(user);
-  OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
-                    dbResult->getErrorMessage());
+  // OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
+  //                   dbResult->getErrorMessage());
+  if (!dbResult->isSuccess()) {
+    status->code = 500;
+    status->status = "Internal Server Error";
+    status->message = dbResult->getErrorMessage();
+    return -1;
+  }
 
   return oatpp::sqlite::Utils::getLastInsertRowId(dbResult->getConnection());
 }
 
 oatpp::Int32 FaceService::updateUserByIdNumber(
     std::string const &idNumber, std::string const &feature,
+    oatpp::Object<StatusDto> &status,
     oatpp::provider::ResourceHandle<oatpp::orm::Connection> const &connection) {
   // 获取id
-  auto id = getIdByIdNumber(idNumber);
+  auto id = getIdByIdNumber(idNumber, status, connection);
+
+  if (id < 0) {
+    return -1;
+  }
+
   auto user = UserDto::createShared();
   user->idNumber = idNumber;
   user->feature = feature;
   auto dbResult = m_database->updateUserById(id, user);
-  OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
-                    dbResult->getErrorMessage());
+  // OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
+  //                   dbResult->getErrorMessage());
+  if (!dbResult->isSuccess()) {
+    status->code = 500;
+    status->status = "Internal Server Error";
+    status->message = dbResult->getErrorMessage();
+    return -1;
+  }
   return id;
 }
 
@@ -191,8 +265,10 @@ oatpp::Object<StatusDto> FaceService::createUser(oatpp::String const &idNumber,
   // feature to base64
   std::string base64 = feature2base64(feature);
 
-  auto id = insertUser(idNumber, base64);
-
+  auto id = insertUser(idNumber, base64, status);
+  if (id < 0) {
+    return status;
+  }
   // 提取特征成功，接下来特征入库
   bool ok =
       core::FaceLibraryManager::getInstance().createOne(id, feature.data());
@@ -230,7 +306,10 @@ oatpp::Object<StatusDto> FaceService::updateUser(oatpp::String const &idNumber,
   std::string base64 = feature2base64(feature);
 
   // 获取id
-  auto id = updateUserByIdNumber(idNumber, base64);
+  auto id = updateUserByIdNumber(idNumber, base64, status);
+  if (id < 0) {
+    return status;
+  }
 
   // 提取特征成功，接下来特征入库
   bool ok =
@@ -260,7 +339,10 @@ FaceService::deleteUser(oatpp::String const &idNumber) {
   auto status = StatusDto::createShared();
 
   // 根据idNumber删除数据库中的数据
-  auto id = getIdByIdNumber(idNumber);
+  auto id = getIdByIdNumber(idNumber, status);
+  if (id < 0) {
+    return status;
+  }
   auto dbResult = m_database->deleteUserById(id);
   OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
                     dbResult->getErrorMessage());
@@ -290,12 +372,14 @@ oatpp::Object<StatusDto> FaceService::searchUser(oatpp::String const &url) {
   if (idx < 0) {
     status->status = "No Content";
     status->code = 204;
-    status->message = "Face feature extraction failed.";
+    status->message = "User not found.";
   } else {
-    // 根据id查询idNumber
-    status->status = "OK";
-    status->code = 200;
-    status->message = getIdNumberById(idx);
+    auto ret = getIdNumberById(idx, status);
+    if (!ret->empty()) {
+      status->status = "OK";
+      status->code = 200;
+      status->message = ret;
+    }
   }
   return status;
 }
@@ -362,17 +446,29 @@ FaceService::createBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
 
   // 特征向量集合
   std::vector<std::vector<float>> features(users->size());
-  std::vector<std::string> errIdNumbers;
-  std::vector<std::string> vecsBase64; // 用于存储提取成功的特征向量的base64
-  batchInfer(urls, IdNumbers, features, errIdNumbers);
+
+  // 算法执行失败的idNumber
+  std::vector<std::string> errIdNumbersAlgo;
+
+  // 用于存储提取成功的特征向量的base64
+  std::vector<std::string> vecsBase64;
+
+  // 批量提取特征向量
+  batchInfer(urls, IdNumbers, features, errIdNumbersAlgo);
 
   // 从IdNumbers中移除失败的id，顺带移除features中的失败特征向量
-  for (size_t i = 0; i < errIdNumbers.size(); ++i) {
-    IdNumbers.erase(
-        std::remove(IdNumbers.begin(), IdNumbers.end(), errIdNumbers[i]),
-        IdNumbers.end());
-    features.erase(features.begin() + i);
+  for (size_t i = 0; i < errIdNumbersAlgo.size(); ++i) {
+    // IdNumbers 和 features
+    // 一一对应，要获取IdNumbers中的索引，再移除features中的特征向量 获取索引
+    auto index = std::distance(
+        IdNumbers.begin(),
+        std::find(IdNumbers.begin(), IdNumbers.end(), errIdNumbersAlgo[i]));
+    IdNumbers.erase(IdNumbers.begin() + index);
+    features.erase(features.begin() + index);
   }
+
+  // 此时的IdNumbers与features一一对应
+  assert(IdNumbers.size() == features.size());
 
   // 全部失败的情况
   if (IdNumbers.empty()) {
@@ -382,18 +478,37 @@ FaceService::createBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
     return status;
   }
 
-  // 此时的IdNumbers与features一一对应
+  // 数据库插入失败的情况
+  std::vector<std::string> errIdNumbersDB;
+
+  // 更新人脸库时成功的id
   std::vector<long> ids;
-  // 入库
+
+  // 插入数据库
   for (size_t i = 0; i < IdNumbers.size(); ++i) {
-    auto id = insertUser(IdNumbers[i], feature2base64(features[i]));
-    ids.push_back(id);
+    auto id = insertUser(IdNumbers[i], feature2base64(features[i]), status);
+    if (id < 0) {
+      // 更新数据库时失败项
+      errIdNumbersDB.push_back(IdNumbers[i]);
+    } else {
+      ids.push_back(id);
+    }
   }
 
-  // 更新人脸库
+  // 插入数据库失败的情况需要同步给features
+  for (size_t i = 0; i < errIdNumbersDB.size(); ++i) {
+    // 从IdNumbers中的索引，再移除features中的特征向量
+    auto index = std::distance(
+        IdNumbers.begin(),
+        std::find(IdNumbers.begin(), IdNumbers.end(), errIdNumbersDB[i]));
+    features.erase(features.begin() + index);
+  }
+
+  // 此时的ids与features一一对应，更新人脸库
+  assert(ids.size() == features.size());
   core::FaceLibraryManager::getInstance().createBatch(ids, features);
   // 处理批处理中的错误入库的情况
-  handleBatchErrors(errIdNumbers, status);
+  handleBatchErrors(errIdNumbersAlgo, errIdNumbersDB, status);
   return status;
 }
 
@@ -411,17 +526,29 @@ FaceService::updateBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
 
   // 特征向量集合
   std::vector<std::vector<float>> features(users->size());
-  std::vector<std::string> errIdNumbers;
-  std::vector<std::string> vecsBase64; // 用于存储提取成功的特征向量的base64
-  batchInfer(urls, IdNumbers, features, errIdNumbers);
+
+  // 算法执行失败的idNumber
+  std::vector<std::string> errIdNumbersAlgo;
+
+  // 用于存储提取成功的特征向量的base64
+  std::vector<std::string> vecsBase64;
+
+  // 批量提取特征向量
+  batchInfer(urls, IdNumbers, features, errIdNumbersAlgo);
 
   // 从IdNumbers中移除失败的id，顺带移除features中的失败特征向量
-  for (size_t i = 0; i < errIdNumbers.size(); ++i) {
-    IdNumbers.erase(
-        std::remove(IdNumbers.begin(), IdNumbers.end(), errIdNumbers[i]),
-        IdNumbers.end());
-    features.erase(features.begin() + i);
+  for (size_t i = 0; i < errIdNumbersAlgo.size(); ++i) {
+    // IdNumbers 和 features
+    // 一一对应，要获取IdNumbers中的索引，再移除features中的特征向量 获取索引
+    auto index = std::distance(
+        IdNumbers.begin(),
+        std::find(IdNumbers.begin(), IdNumbers.end(), errIdNumbersAlgo[i]));
+    IdNumbers.erase(IdNumbers.begin() + index);
+    features.erase(features.begin() + index);
   }
+
+  // 此时的IdNumbers与features一一对应
+  assert(IdNumbers.size() == features.size());
 
   // 全部失败的情况
   if (IdNumbers.empty()) {
@@ -431,18 +558,38 @@ FaceService::updateBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
     return status;
   }
 
-  // 此时的IdNumbers与features一一对应
+  // 数据库更新失败的情况
+  std::vector<std::string> errIdNumbersDB;
+
+  // 更新人脸库时成功的id
   std::vector<long> ids;
-  // 入库
+
+  // 更新数据库
   for (size_t i = 0; i < IdNumbers.size(); ++i) {
-    auto id = updateUserByIdNumber(IdNumbers[i], feature2base64(features[i]));
-    ids.push_back(id);
+    auto id =
+        updateUserByIdNumber(IdNumbers[i], feature2base64(features[i]), status);
+    if (id < 0) {
+      // 更新数据库时失败项
+      errIdNumbersDB.push_back(IdNumbers[i]);
+    } else {
+      ids.push_back(id);
+    }
   }
 
-  // 更新人脸库
+  // 更新数据库失败的情况需要同步给features
+  for (size_t i = 0; i < errIdNumbersDB.size(); ++i) {
+    // 从IdNumbers中的索引，再移除features中的特征向量
+    auto index = std::distance(
+        IdNumbers.begin(),
+        std::find(IdNumbers.begin(), IdNumbers.end(), errIdNumbersDB[i]));
+    features.erase(features.begin() + index);
+  }
+
+  // 此时的ids与features一一对应，更新人脸库
+  assert(ids.size() == features.size());
   core::FaceLibraryManager::getInstance().updateBatch(ids, features);
   // 处理批处理中的错误入库的情况
-  handleBatchErrors(errIdNumbers, status);
+  handleBatchErrors(errIdNumbersAlgo, errIdNumbersDB, status);
   return status;
 }
 
@@ -456,26 +603,48 @@ FaceService::deleteBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
     IdNumbers.push_back(users[i]->userId);
   }
 
+  // 操作失败的idNumber
+  std::vector<std::string> errIdNumbers;
+
   // 利用IdNumbers查询id
-  oatpp::Vector<oatpp::Int32> idsDB;
-  for (size_t i = 0; i < IdNumbers.size(); ++i) {
-    auto id = getIdByIdNumber(IdNumbers[i]);
-    idsDB->push_back(id);
-  }
-
   std::vector<long> ids;
-  for (size_t i = 0; i < idsDB->size(); ++i) {
-    ids.push_back(idsDB[i]);
+  for (size_t i = 0; i < IdNumbers.size(); ++i) {
+    auto id = getIdByIdNumber(IdNumbers[i], status);
+    if (id < 0) {
+      // 查询失败的id
+      errIdNumbers.push_back(IdNumbers[i]);
+    } else {
+      ids.push_back(id);
+    }
   }
 
-  // 删除数据库中的数据
-  auto dbResult = m_database->deleteUsersByIds(idsDB);
+  // 如果没有有效的 ID，则直接返回
+  if (ids.empty()) {
+    status->status = "OK";
+    status->code = 200;
+    status->message = "No users to delete.";
+    return status;
+  }
+
+  // 构建 IN 子句中的参数字符串
+  std::string idsString = "";
+  for (size_t i = 0; i < ids.size(); ++i) {
+    if (i != 0) {
+      idsString += ", ";
+    }
+    idsString += std::to_string(ids[i]); // 确保转换为字符串
+  }
+
+  // 构建完整的 SQL 语句
+  std::string sql = "DELETE FROM AppUser WHERE id IN (" + idsString + ");";
+
+  // 执行 SQL 语句
+  auto dbResult = m_database->executeQuery(sql, {});
   OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
                     dbResult->getErrorMessage());
 
   // 删除人脸库中的数据
   core::FaceLibraryManager::getInstance().deleteBatch(ids);
-
   status->status = "OK";
   status->code = 200;
   status->message = "Users were successfully deleted.";

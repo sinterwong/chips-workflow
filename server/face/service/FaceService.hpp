@@ -60,7 +60,8 @@ private:
 
 private:
   // 辅助函数，处理批处理操作中的失败和错误ID，减少重复代码
-  void handleBatchErrors(const std::vector<std::string> &errIdNumbers,
+  void handleBatchErrors(std::vector<std::string> const &errIdNumbersAlgo,
+                         std::vector<std::string> const &errIdNumbersDB,
                          const oatpp::Object<StatusDto> &status);
 
   // 辅助函数，批量算法调用，减少重复代码
@@ -83,24 +84,27 @@ private:
   // 通过身份证号查询
   oatpp::Int32
   getIdByIdNumber(oatpp::String const &idNumber,
+                  oatpp::Object<StatusDto> &status,
                   oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
                       &connection = nullptr);
 
   // 通过id查询idNumber
   oatpp::String
-  getIdNumberById(oatpp::Int32 const &id,
+  getIdNumberById(oatpp::Int32 const &id, oatpp::Object<StatusDto> &status,
                   oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
                       &connection = nullptr);
 
   // 新增人脸到数据库并返回id
   oatpp::Int32
   insertUser(std::string const &idNumber, std::string const &feature,
+             oatpp::Object<StatusDto> &status,
              oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
                  &connection = nullptr);
 
   // 更新人脸到数据库
   oatpp::Int32 updateUserByIdNumber(
       std::string const &idNumber, std::string const &feature,
+      oatpp::Object<StatusDto> &status,
       oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
           &connection = nullptr);
 
