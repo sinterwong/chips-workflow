@@ -10,6 +10,7 @@
  */
 #include "facelib.hpp"
 #include "logger/logger.hpp"
+#include <cstddef>
 #include <cstdint>
 #include <filesystem>
 #include <memory>
@@ -36,35 +37,59 @@ public:
   FaceLibraryManager &operator=(FaceLibraryManager const &) = delete;
 
 public:
-  bool registerFacelib(std::string name, std::string path);
+  bool registerFacelib(std::string const &tname,
+                       std::vector<long> const &ids = {},
+                       std::vector<std::vector<float>> const &features = {});
 
-  bool unregisterFacelib(std::string name);
+  bool unregisterFacelib(std::string const &tname);
 
-  bool createOne(long id, float *vec);
+  bool createOne(std::string const &tname, long id, float *vec);
 
-  void createBatch(std::vector<long> &ids, float **vecs);
+  bool createBatch(std::string const &tname, std::vector<long> &ids,
+                   float **vecs);
 
-  void createBatch(std::vector<long> const &ids,
+  bool createBatch(std::string const &tname, std::vector<long> const &ids,
                    std::vector<std::vector<float>> const &features);
 
-  bool updateOne(long id, float *vec);
+  bool updateOne(std::string const &tname, long id, float *vec);
 
-  void updateBatch(std::vector<long> &ids, float **vecs);
+  bool updateBatch(std::string const &tname, std::vector<long> &ids,
+                   float **vecs);
 
-  void updateBatch(std::vector<long> const &ids,
+  bool updateBatch(std::string const &tname, std::vector<long> const &ids,
                    std::vector<std::vector<float>> const &features);
 
-  bool deleteOne(long id);
+  bool deleteOne(std::string const &tname, long id);
 
-  void deleteBatch(std::vector<long> &ids);
+  bool deleteBatch(std::string const &tname, std::vector<long> &ids);
 
-  long match(float *vec, float threshold);
+  long match(std::string const &tname, float *vec, float threshold);
 
-  void printLibrary() { facelib->printVectors(); }
+  bool CHECK_FACELIB_EXIST(std::string const &tname) {
+    if (!isFacelibExist(tname)) {
+      FLOWENGINE_LOGGER_WARN("Facelib {} not exists. Please register first.",
+                             tname);
+      return false;
+    }
+    return true;
+  }
+
+  // 当前在线人脸库数量
+  inline size_t getFacelibNum() { return facelibs.size(); }
+
+  void printLibrary(std::string const &tname) {
+    facelibs.at(tname)->printVectors();
+  }
+
+private:
+  // facelib是否已经存在
+  inline bool isFacelibExist(std::string const &tname) {
+    return facelibs.find(tname) != facelibs.end();
+  }
 
 private:
   FaceLibraryManager() {
-    facelib = std::make_unique<FaceLibrary>(FACELIB_DIM);
+    // facelib = std::make_unique<FaceLibrary>(FACELIB_DIM);
 
     // if (std::filesystem::exists(outputPath)) {
     //   FLOWENGINE_LOGGER_INFO("Found the facelib will be loaded.");
@@ -75,7 +100,7 @@ private:
     // }
   }
   ~FaceLibraryManager() {
-    facelib->saveToFile(outputPath);
+    // facelib->saveToFile(outputPath);
     delete instance;
     instance = nullptr;
   }
@@ -84,9 +109,6 @@ private:
 private:
   // TODO:人脸库映射表用来分治人脸库，目前只管理了一个人脸库
   std::unordered_map<std::string, std::unique_ptr<FaceLibrary>> facelibs;
-
-  std::string outputPath = "/public/face/facelib.bin";
-  std::unique_ptr<FaceLibrary> facelib;
 };
 } // namespace server::face::core
 #endif

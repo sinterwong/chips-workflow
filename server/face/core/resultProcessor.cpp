@@ -14,13 +14,16 @@ namespace server::face::core {
 
 ResultProcessor *ResultProcessor::instance = nullptr;
 
-void ResultProcessor::onFrameReceived(FramePackage &&framePackage) {
+void ResultProcessor::onFrameReceived(std::string const &lname,
+                                      FramePackage &&framePackage) {
   FLOWENGINE_LOGGER_DEBUG("Frame received and processed.");
-  tpool->submit(
-      [this, &framePackage]() { this->oneProcess(std::move(framePackage)); });
+  tpool->submit([this, &lname, &framePackage]() {
+    this->oneProcess(lname, std::move(framePackage));
+  });
 }
 
-void ResultProcessor::oneProcess(FramePackage &&framePackage) {
+void ResultProcessor::oneProcess(std::string const &lname,
+                                 FramePackage &&framePackage) {
   // 单个任务的函数
   // * 1. 根据帧包中的图片，送入人脸识别算法
   std::vector<float> feature;
@@ -30,7 +33,8 @@ void ResultProcessor::oneProcess(FramePackage &&framePackage) {
   }
 
   // * 2. 人脸识别结果匹配人脸库
-  auto idx = FaceLibraryManager::getInstance().match(feature.data(), 0.4);
+  auto idx =
+      FaceLibraryManager::getInstance().match(lname, feature.data(), 0.4);
   if (idx < 0) { // 没有匹配到人脸
     return;
   }

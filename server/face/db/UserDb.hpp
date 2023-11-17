@@ -38,10 +38,11 @@ public:
   }
 
   // query是一个宏，用于定义一个函数，函数名为第一个参数，第二个参数为SQL语句，第三个参数为SQL语句中的参数
-  QUERY(createUser,
-        "INSERT INTO AppUser(idNumber, feature) VALUES (:user.idNumber, "
-        ":user.feature);",
-        PARAM(oatpp::Object<UserDto>, user))
+  QUERY(
+      createUser,
+      "INSERT INTO AppUser(idNumber, libName, feature) VALUES (:user.idNumber, "
+      ":user.libName, :user.feature);",
+      PARAM(oatpp::Object<UserDto>, user))
 
   QUERY(getUserById, "SELECT * FROM AppUser WHERE id=:id;",
         PARAM(oatpp::Int32, id))
@@ -57,13 +58,18 @@ public:
 
   QUERY(getAllUsers, "SELECT * FROM AppUser;")
 
+  QUERY(getLibNameByIdNumber,
+        "SELECT libName FROM AppUser WHERE idNumber=:idNumber;",
+        PARAM(oatpp::String, idNumber))
+
   QUERY(updateUserById,
-        "UPDATE AppUser SET idNumber=:user.idNumber, feature=:user.feature "
-        "WHERE id=:id;",
+        "UPDATE AppUser SET idNumber=:user.idNumber, libName=:user.libName, "
+        "feature=:user.feature WHERE id=:id;",
         PARAM(oatpp::Int32, id), PARAM(oatpp::Object<UserDto>, user))
 
   QUERY(updateUserByIdNumber,
-        "UPDATE AppUser SET idNumber=:user.idNumber, feature=:user.feature "
+        "UPDATE AppUser SET idNumber=:user.idNumber, libName=:user.libName, "
+        "feature=:user.feature "
         "WHERE idNumber=:idNumber;",
         PARAM(oatpp::String, idNumber), PARAM(oatpp::Object<UserDto>, user))
 
@@ -75,6 +81,12 @@ public:
 
   QUERY(getFeaturesOfAllUsers,
         "SELECT id, feature FROM AppUser WHERE feature IS NOT NULL;")
+
+  QUERY(getLibNameById, "SELECT libName FROM AppUser WHERE id=:id;",
+        PARAM(oatpp::Int32, id))
+
+  QUERY(getUsersByLibName, "SELECT * FROM AppUser WHERE libName=:libName;",
+        PARAM(oatpp::String, libName))
 };
 
 #include OATPP_CODEGEN_END(DbClient) //<- End Codegen

@@ -21,8 +21,18 @@ namespace server::face {
 class UserDto : public oatpp::DTO {
   DTO_INIT(UserDto, DTO)
 
+  DTO_FIELD_INFO(id) { info->description = "The user's ID number"; }
   DTO_FIELD(Int32, id);
+
+  DTO_FIELD_INFO(idNumber) { info->description = "The user's ID number"; }
   DTO_FIELD(String, idNumber);
+
+  DTO_FIELD_INFO(libName) {
+    info->description = "The library where the user is located";
+  }
+  DTO_FIELD(String, libName);
+
+  DTO_FIELD_INFO(feature) { info->description = "The user's feature"; }
   DTO_FIELD(String, feature);
 
 public:

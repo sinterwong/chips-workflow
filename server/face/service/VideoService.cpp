@@ -16,8 +16,8 @@ namespace server::face {
 oatpp::Object<StatusDto>
 VideoService::startVideo(oatpp::Object<StreamDto> const streamDto) {
   auto status = StatusDto::createShared();
-  auto ret = core::StreamManager::getInstance().registered(streamDto->name,
-                                                           streamDto->url);
+  auto ret = core::StreamManager::getInstance().registered(
+      streamDto->name, streamDto->libName, streamDto->url);
   if (!ret) {
     status->status = "Service Unavailable";
     status->code = 503;

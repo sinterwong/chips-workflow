@@ -80,10 +80,13 @@ public:
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
 
+    info->pathParams["libName"].description = "Name of face library";
     info->pathParams["url"].description = "Url of user's picture";
   }
-  ENDPOINT("GET", "face/v0/facelib/search", searchUser, QUERY(String, url)) {
-    return createDtoResponse(Status::CODE_200, m_faceService.searchUser(url));
+  ENDPOINT("GET", "face/v0/facelib/search", searchUser, QUERY(String, libName),
+           QUERY(String, url)) {
+    return createDtoResponse(Status::CODE_200,
+                             m_faceService.searchUser(libName, url));
   }
 
   // 以图搜人 POST

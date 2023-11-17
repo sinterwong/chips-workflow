@@ -20,7 +20,10 @@ namespace server::face {
 
 class ImageDto : public oatpp::DTO {
   DTO_INIT(ImageDto, DTO)
-  
+
+  DTO_FIELD_INFO(name) { info->description = "Reserved field."; }
+  DTO_FIELD(String, name);
+
   DTO_FIELD_INFO(url) { info->description = "The url of image"; }
   DTO_FIELD(String, url);
 

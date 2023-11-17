@@ -46,7 +46,7 @@ public:
   ResultProcessor &operator=(ResultProcessor const &) = delete;
 
 public:
-  void onFrameReceived(FramePackage &&framePackage);
+  void onFrameReceived(std::string const &lname, FramePackage &&framePackage);
 
 private:
   ResultProcessor() {
@@ -67,7 +67,7 @@ private:
   std::string postUrl = "http://localhost:19797";
 
 private:
-  void oneProcess(FramePackage &&framePackage);
+  void oneProcess(std::string const &lname, FramePackage &&framePackage);
 };
 } // namespace server::face::core
 

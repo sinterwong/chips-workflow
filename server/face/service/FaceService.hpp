@@ -13,6 +13,7 @@
 #include "ImageDto.hpp"
 #include "StatusDto.hpp"
 #include "UserDb.hpp"
+#include "UserDto.hpp"
 #include "algoManager.hpp"
 #include "faceLibManager.hpp"
 #include "logger/logger.hpp"
@@ -96,30 +97,52 @@ private:
 
   // 新增人脸到数据库并返回id
   oatpp::Int32
-  insertUser(std::string const &idNumber, std::string const &feature,
-             oatpp::Object<StatusDto> &status,
+  insertUser(std::string const &idNumber, std::string const &libName,
+             std::string const &feature, oatpp::Object<StatusDto> &status,
              oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
                  &connection = nullptr);
 
   // 更新人脸到数据库
   oatpp::Int32 updateUserByIdNumber(
-      std::string const &idNumber, std::string const &feature,
-      oatpp::Object<StatusDto> &status,
+      std::string const &idNumber, std::string const &libName,
+      std::string const &feature, oatpp::Object<StatusDto> &status,
       oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
           &connection = nullptr);
 
-public:
-  // 构造函数
-  FaceService();
+  oatpp::String
+  getLibNameById(oatpp::Int32 const &id, oatpp::Object<StatusDto> &status,
+                 oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
+                     &connection = nullptr);
 
+  oatpp::Vector<oatpp::Object<UserDto>> getUsersByLibName(
+      oatpp::String const &libName, oatpp::Object<StatusDto> &status,
+      oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
+          &connection = nullptr);
+
+  void getIdsAndFeatures(std::vector<long> &ids,
+                         std::vector<std::vector<float>> &features,
+                         oatpp::Vector<oatpp::Object<UserDto>> const &users);
+
+  oatpp::String getLibNameByIdNumber(
+      oatpp::String const &idNumber, oatpp::Object<StatusDto> &status,
+      oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
+          &connection = nullptr);
+
+  bool restoreFacelib(std::string const &libName,
+                      oatpp::Object<StatusDto> &status,
+                      bool needCreate = false);
+
+public:
   // Get 新增单个人脸
   oatpp::Object<StatusDto> createUser(oatpp::String const &idNumber,
+                                      oatpp::String const &libName,
                                       oatpp::String const &url);
   // Post 新增单个人脸
   oatpp::Object<StatusDto> createUser(oatpp::Object<FaceDto> const &user);
 
   // Get 更新
   oatpp::Object<StatusDto> updateUser(oatpp::String const &idNumber,
+                                      oatpp::String const &libName,
                                       oatpp::String const &url);
   // Post 更新
   oatpp::Object<StatusDto> updateUser(oatpp::Object<FaceDto> const &user);
@@ -128,7 +151,8 @@ public:
   oatpp::Object<StatusDto> deleteUser(oatpp::String const &idNumber);
 
   // Get 通过图片查询
-  oatpp::Object<StatusDto> searchUser(oatpp::String const &url);
+  oatpp::Object<StatusDto> searchUser(oatpp::String const &libName,
+                                      oatpp::String const &url);
 
   // Post 通过图片查询
   oatpp::Object<StatusDto> searchUser(oatpp::Object<ImageDto> const &images);
