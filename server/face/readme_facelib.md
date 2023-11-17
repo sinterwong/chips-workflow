@@ -21,6 +21,7 @@ POST /face/v0/facelib/createOne
 #### POST 参数
 
 - `userId` (必须): 用户的唯一标识符。
+- `libName` (必须): 该操作所在人脸库名称。
 - `url` (必须): 包含用户人脸图片的路径（支持http、本地图片路径和base64编码）。
 
 #### 响应
@@ -41,6 +42,7 @@ POST /face/v0/facelib/updateOne
 
 #### POST 参数
 - `userId` (必须): 用户的唯一标识符。
+- `libName` (必须): 该操作所在人脸库名称。
 - `url` (必须): 包含用户人脸图片的路径（支持http、本地图片路径和base64编码）。
 
 #### 响应
@@ -74,11 +76,12 @@ DELETE /face/v0/facelib/{user_id}
 在人脸库中搜索匹配的用户。
 
 #### 请求
-- GET /face/v0/facelib/search?url={url}
+- GET /face/v0/facelib/search?url={url}&libName={libName}
 - POST /face/v0/facelib/search
 
 #### GET/POST 参数
 - `url` (必须): 包含用户人脸图片的路径（支持http、本地图片路径和base64编码）。
+- `libName` (必须): 待搜索的人脸库名称。
 
 #### 响应
 ```json
@@ -117,8 +120,8 @@ POST /face/v0/facelib/createBatch
 #### POST 参数示例
 ```json
 [
-    {"userId": "11111", "url": "http://xxx.com/xxx.jpg"},
-    {"userId": "22222", "url": "http://xxx.com/xxx.jpg"}
+    {"userId": "11111", "libName": "temp", "url": "http://xxx.com/xxx.jpg"},
+    {"userId": "22222", "libName": "temp", "url": "http://xxx.com/xxx.jpg"}
 ]
 ```
 
@@ -140,8 +143,8 @@ POST /face/v0/facelib/updateBatch
 #### POST 参数示例
 ```json
 [
-    {"userId": "11111", "url": "http://xxx.com/xxx.jpg"},
-    {"userId": "22222", "url": "http://xxx.com/xxx.jpg"}
+    {"userId": "11111", "libName": "temp", "url": "http://xxx.com/xxx.jpg"},
+    {"userId": "22222", "libName": "temp", "url": "http://xxx.com/xxx.jpg"}
 ]
 ```
 
@@ -163,8 +166,8 @@ POST /face/v0/facelib/deleteBatch
 #### POST 参数示例
 ```json
 [
-    {"userId": "11111", "url": ""},
-    {"userId": "22222", "url": ""}
+    {"userId": "11111"},
+    {"userId": "22222"}
 ]
 ```
 
@@ -235,7 +238,6 @@ POST /face/v0/facelib/deleteBatch
 ```python
 import requests
 import json
-import time
 import base64
 
 BASE_URL = "http://localhost:9797"  # Change this to your server's URL and port
@@ -286,8 +288,9 @@ def delete_batch_users(data):
     print("Delete Batch Users:", response.json())
 
 
-def search_user(url):
-    response = requests.get(f"{BASE_URL}/face/v0/facelib/search?url={url}")
+def search_user(lname, url):
+    response = requests.get(
+        f"{BASE_URL}/face/v0/facelib/search?url={url}&libName={lname}")
     print("Search User:", response.json())
 
 
@@ -310,20 +313,30 @@ def compare_two_users_post(data):
 
 
 if __name__ == "__main__":
-    create_user({"userId": "12345", "url": get_base64_of_image("image1.png")})
+    create_user({"userId": "12345", "libName": "temp1",
+                "url": get_base64_of_image("image1.png")})
     create_batch_users(([
-        {"userId": "11111", "url": get_base64_of_image("image1.png")},
-        {"userId": "22222", "url": get_base64_of_image("image2.png")}s
+        {"userId": "11111", "libName": "temp2",
+            "url": get_base64_of_image("image1.png")},
+        {"userId": "22222", "libName": "temp2",
+            "url": get_base64_of_image("image2.png")}
+    ]))
+    
+    # 单个更新允许换库
+    update_user({"userId": "12345", "libName": "temp1",
+                "url": get_base64_of_image("image2.png")})
+
+    # 批量操作暂时不允许“换库”
+    update_batch_users(([  
+        {"userId": "11111", "libName": "temp2",
+            "url": get_base64_of_image("image2.png")},
+        {"userId": "22222", "libName": "temp2",
+            "url": get_base64_of_image("image1.png")}
     ]))
 
-    update_user({"userId": "12345", "url": get_base64_of_image("image2.png")})
-    update_batch_users(([
-        {"userId": "11111", "url": get_base64_of_image("image2.png")},
-        {"userId": "22222", "url": get_base64_of_image("image1.png")}
-    ]))
-
-    search_user("/path/image2.png")
-    search_user_post({"url": get_base64_of_image("image2.png")})
+    search_user("temp1", "/path/image2.png")
+    search_user_post(
+        {"name": "temp2", "url": get_base64_of_image("image2.png")})
 
     compare_two_users("/path/image1.png",
                       "/path/image1.png")
@@ -335,8 +348,8 @@ if __name__ == "__main__":
 
     delete_user("12345")
     delete_batch_users(([
-        {"userId": "11111", "url": ""},
-        {"userId": "22222", "url": ""}
+        {"userId": "11111"},
+        {"userId": "22222"}
     ]))
 ```
 
@@ -345,3 +358,4 @@ if __name__ == "__main__":
 - [x] 部分接口Post请求支持
 - [x] 人脸接口支持base64编码
 - [x] 批量增删改接口
+- [x] 人脸库分库增删改
