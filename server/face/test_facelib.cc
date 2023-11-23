@@ -8,9 +8,9 @@
  * @copyright Copyright (c) 2023
  *
  */
-#include "algoManager.hpp"
 #include "faceLibManager.hpp"
 #include "logger/logger.hpp"
+#include "faceRecognition.hpp"
 
 using namespace server::face;
 
@@ -26,9 +26,9 @@ int main(int argc, char **argv) {
   bool ok;
   // 1. 新增人脸
   std::vector<float> feature1;
-  auto r = core::AlgoManager::getInstance().infer("xxx.jpg", feature1);
+  auto r = core::FaceRecognition::getInstance().extract("xxx.jpg", feature1);
 
-  if (!r.get()) {
+  if (!r) {
     FLOWENGINE_LOGGER_ERROR("Feature extract was failed.");
   }
 
@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 
   // 2. 检索人脸
   std::vector<float> feature2;
-  core::AlgoManager::getInstance().infer("xxx.jpg", feature2);
+  core::FaceRecognition::getInstance().extract("xxx.jpg", feature2);
   // 提取特征成功，接下来特征入库
   long idx = core::FaceLibraryManager::getInstance().match(
       "temp", feature2.data(), 0.5);
@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
 
   // 3. 更新人脸
   std::vector<float> feature3;
-  core::AlgoManager::getInstance().infer("xxx.jpg", feature3);
+  core::FaceRecognition::getInstance().extract("xxx.jpg", feature3);
   // 提取特征成功，接下来特征入库
   ok = core::FaceLibraryManager::getInstance().updateOne("temp", 1,
                                                          feature3.data());

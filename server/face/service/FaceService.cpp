@@ -15,6 +15,7 @@
 #include "StatusDto.hpp"
 #include "UserDb.hpp"
 #include "UserDto.hpp"
+#include "faceRecognition.hpp"
 #include "myBase64.hpp"
 #include "networkUtils.hpp"
 #include <cassert>
@@ -64,16 +65,8 @@ void FaceService::batchInfer(std::vector<std::string> const &urls,
                              std::vector<std::string> const &idNumbers,
                              std::vector<std::vector<float>> &features,
                              std::vector<std::string> &errIdNumbers) {
-  std::vector<std::future<bool>> futures;
-  futures.reserve(urls.size());
   for (size_t i = 0; i < urls.size(); ++i) {
-    futures.push_back(
-        core::AlgoManager::getInstance().infer(urls[i], features[i]));
-  }
-
-  // 等待所有线程完成
-  for (size_t i = 0; i < futures.size(); ++i) {
-    if (!futures[i].get()) {
+    if (!extractFeature(urls[i], features[i])) {
       errIdNumbers.push_back(idNumbers[i]);
     }
   }
@@ -82,8 +75,8 @@ void FaceService::batchInfer(std::vector<std::string> const &urls,
 // 提取特征向量
 bool FaceService::extractFeature(std::string const &url,
                                  std::vector<float> &feature) {
-  auto ret = core::AlgoManager::getInstance().infer(url, feature);
-  return ret.get();
+  auto ret = core::FaceRecognition::getInstance().extract(url, feature);
+  return ret;
 }
 
 // 特征转base64
@@ -535,10 +528,10 @@ FaceService::compareTwoPictures(oatpp::String const &url1,
   std::vector<float> feature1;
   std::vector<float> feature2;
   // 这里不调用extractFeature函数，是因为需要并发提取特征
-  auto ret1 = core::AlgoManager::getInstance().infer(url1, feature1);
-  auto ret2 = core::AlgoManager::getInstance().infer(url2, feature2);
+  auto ret1 = extractFeature(url1, feature1);
+  auto ret2 = extractFeature(url2, feature2);
 
-  if (!ret1.get() || !ret2.get()) {
+  if (!ret1 || !ret2) {
     status->status = "No Content";
     status->code = 204;
     status->message = "Face feature extraction failed.";

@@ -11,7 +11,6 @@
  *
  */
 
-#include "algoManager.hpp"
 #include "faceLibManager.hpp"
 #include "faceRecognition.hpp"
 #include "logger/logger.hpp"

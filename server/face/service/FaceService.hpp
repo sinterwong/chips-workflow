@@ -14,7 +14,6 @@
 #include "StatusDto.hpp"
 #include "UserDb.hpp"
 #include "UserDto.hpp"
-#include "algoManager.hpp"
 #include "faceLibManager.hpp"
 #include "logger/logger.hpp"
 #include "preprocess.hpp"

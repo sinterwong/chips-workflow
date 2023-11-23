@@ -42,22 +42,21 @@ int main(int argc, char **argv) {
 
   core::FaceLibrary facelib(512);
 
-  core::FaceRecognition faceRec;
-  cv::Mat im1 = cv::imread(FLAGS_img1);
-  cv::Mat im2 = cv::imread(FLAGS_img2);
-  cv::Mat im1_input, im2_input;
-  infer::utils::BGR2NV12(im1, im1_input);
-  infer::utils::BGR2NV12(im2, im2_input);
-  FrameInfo frame1, frame2;
-  getFrameInput(im1_input, frame1);
-  getFrameInput(im2_input, frame2);
+  // cv::Mat im1 = cv::imread(FLAGS_img1);
+  // cv::Mat im2 = cv::imread(FLAGS_img2);
+  // cv::Mat im1_input, im2_input;
+  // infer::utils::BGR2NV12(im1, im1_input);
+  // infer::utils::BGR2NV12(im2, im2_input);
+  // FrameInfo frame1, frame2;
+  // getFrameInput(im1_input, frame1);
+  // getFrameInput(im2_input, frame2);
 
   std::vector<float> f1, f2;
 
-  if (!faceRec.forward(frame1, f1)) {
+  if (!core::FaceRecognition::getInstance().extract(FLAGS_img1, f1)) {
     return -1;
   }
-  if (!faceRec.forward(frame2, f2)) {
+  if (!core::FaceRecognition::getInstance().extract(FLAGS_img2, f2)) {
     return -1;
   }
 

@@ -27,8 +27,8 @@ void ResultProcessor::oneProcess(std::string const &lname,
   // 单个任务的函数
   // * 1. 根据帧包中的图片，送入人脸识别算法
   std::vector<float> feature;
-  auto f = AlgoManager::getInstance().infer(framePackage, feature);
-  if (!f.get()) {
+  auto ret = FaceRecognition::getInstance().extract(framePackage, feature);
+  if (ret) {
     return;
   }
 
