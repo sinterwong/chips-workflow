@@ -1,6 +1,7 @@
 CREATE TABLE AppUser (
   id INTEGER PRIMARY KEY,
   idNumber VARCHAR UNIQUE,
+  libName VARCHAR,
   feature VARCHAR
 );
 

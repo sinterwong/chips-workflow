@@ -13,6 +13,7 @@
 
 #include "myBase64.hpp"
 #include <curl/curl.h>
+#include <filesystem>
 #include <memory>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -149,6 +150,23 @@ inline std::shared_ptr<cv::Mat> str2mat(const std::string &s) {
     return nullptr;
   }
   return std::make_shared<cv::Mat>(img);
+}
+
+inline std::shared_ptr<cv::Mat> getImageByUri(const std::string &uri) {
+  // 检查url的类型是本地路径还是http
+  std::shared_ptr<cv::Mat> image_bgr = nullptr;
+  // 解析url类型，根据不同类型的url，获取图片
+  if (isHttpUri(uri)) {
+    image_bgr = getImageFromURL(uri.c_str());
+  } else if (isBase64(uri)) {
+    image_bgr = str2mat(uri);
+  } else {
+    // 不是http或base64，那么就是本地路径
+    if (std::filesystem::exists(uri)) {
+      image_bgr = std::make_shared<cv::Mat>(cv::imread(uri));
+    }
+  }
+  return image_bgr;
 }
 
 #endif

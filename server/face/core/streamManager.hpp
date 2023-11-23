@@ -45,7 +45,8 @@ public:
   StreamManager(StreamManager const &) = delete;
   StreamManager &operator=(StreamManager const &) = delete;
 
-  bool registered(std::string const &name, std::string const &uri);
+  bool registered(std::string const &name, std::string const &lname,
+                  std::string const &uri);
 
   bool unregistered(std::string const &name);
 

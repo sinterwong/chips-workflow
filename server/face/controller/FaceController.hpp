@@ -80,10 +80,13 @@ public:
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
 
+    info->pathParams["libName"].description = "Name of face library";
     info->pathParams["url"].description = "Url of user's picture";
   }
-  ENDPOINT("GET", "face/v0/facelib/search", searchUser, QUERY(String, url)) {
-    return createDtoResponse(Status::CODE_200, m_faceService.searchUser(url));
+  ENDPOINT("GET", "face/v0/facelib/search", searchUser, QUERY(String, libName),
+           QUERY(String, url)) {
+    return createDtoResponse(Status::CODE_200,
+                             m_faceService.searchUser(libName, url));
   }
 
   // 以图搜人 POST
@@ -122,8 +125,6 @@ public:
                              m_faceService.compareTwoPictures(images));
   }
 
-  /*
-
   // 批量新增
   ENDPOINT_INFO(createBatchUsers) {
     info->summary = "Create batch users";
@@ -131,13 +132,9 @@ public:
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
   }
+
   ENDPOINT("POST", "face/v0/facelib/createBatch", createBatchUsers,
-           BODY_DTO(Object<FacelibDto>, users)) {
-    // user请求时json格式示例：
-    // {
-    //   "ids": [1, 2, 3],
-    //   "urls": ["http://xxx", "http://xxx", "http://xxx"]
-    // }
+           BODY_DTO(oatpp::Vector<Object<FaceDto>>, users)) {
     return createDtoResponse(Status::CODE_200,
                              m_faceService.createBatch(users));
   }
@@ -150,7 +147,7 @@ public:
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
   }
   ENDPOINT("POST", "face/v0/facelib/updateBatch", updateBatchUsers,
-           BODY_DTO(Object<FacelibDto>, users)) {
+           BODY_DTO(oatpp::Vector<Object<FaceDto>>, users)) {
     return createDtoResponse(Status::CODE_200,
                              m_faceService.updateBatch(users));
   }
@@ -163,11 +160,10 @@ public:
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
   }
   ENDPOINT("POST", "face/v0/facelib/deleteBatch", deleteBatchUsers,
-           BODY_DTO(Object<FacelibDto>, users)) {
+           BODY_DTO(oatpp::Vector<Object<FaceDto>>, users)) {
     return createDtoResponse(Status::CODE_200,
                              m_faceService.deleteBatch(users));
   }
-  */
 };
 
 #include OATPP_CODEGEN_END(ApiController) //<- End Codegen

@@ -31,65 +31,131 @@ Flatten(std::vector<std::vector<float>> const &nestedVector) {
 }
 
 FaceLibraryManager *FaceLibraryManager::instance = nullptr;
-bool FaceLibraryManager::registerFacelib(std::string name, std::string path) {
+bool FaceLibraryManager::registerFacelib(
+    std::string const &name, std::vector<long> const &ids,
+    std::vector<std::vector<float>> const &features) {
   if (facelibs.find(name) != facelibs.end()) {
     FLOWENGINE_LOGGER_WARN("Facelib {} already exists.", name);
     return false;
   }
+  // 初始化人脸库
   facelibs[name] = std::make_unique<FaceLibrary>(FACELIB_DIM);
+  if (!ids.empty() && !features.empty() && ids.size() == features.size()) {
+    // 加载特征到人脸库
+    try {
+      // 此处的创建要么成功要么异常退出
+      createBatch(name, ids, features);
+    } catch (std::exception &e) {
+      FLOWENGINE_LOGGER_ERROR("Create facelib {} failed: {}", name, e.what());
+      facelibs.erase(name);
+      return false;
+    }
+  }
   return true;
 }
 
-bool FaceLibraryManager::unregisterFacelib(std::string name) {
-  if (facelibs.find(name) == facelibs.end()) {
-    FLOWENGINE_LOGGER_WARN("Facelib {} not exists.", name);
+bool FaceLibraryManager::unregisterFacelib(std::string const &name) {
+  if (!CHECK_FACELIB_EXIST(name)) { // 检查人脸库是否存在
     return false;
   }
   facelibs.erase(name);
   return true;
 }
 
-bool FaceLibraryManager::createOne(long id, float *vec) {
-  if (!facelib->addVector(vec, id)) {
+bool FaceLibraryManager::createOne(std::string const &tname, long id,
+                                   float *vec) {
+
+  if (!CHECK_FACELIB_EXIST(tname)) { // 检查人脸库是否存在
+    return false;
+  }
+
+  if (!facelibs.at(tname)->addVector(vec, id)) {
     FLOWENGINE_LOGGER_WARN("Face library create {} failed.", id);
     return false;
   }
   return true;
 }
 
-void FaceLibraryManager::createBatch(std::vector<long> &ids, float **vecs) {
-  facelib->addVectors(*vecs, ids);
+bool FaceLibraryManager::createBatch(std::string const &tname,
+                                     std::vector<long> &ids, float **vecs) {
+  if (!CHECK_FACELIB_EXIST(tname)) { // 检查人脸库是否存在
+    return false;
+  }
+  facelibs.at(tname)->addVectors(*vecs, ids);
+  return true;
 }
 
-bool FaceLibraryManager::updateOne(long id, float *vec) {
-  if (!facelib->updateVector(id, vec)) {
+bool FaceLibraryManager::createBatch(
+    std::string const &tname, std::vector<long> const &ids,
+    std::vector<std::vector<float>> const &features) {
+  if (!CHECK_FACELIB_EXIST(tname)) { // 检查人脸库是否存在
+    return false;
+  }
+  // 加载特征到人脸库
+  auto ret = Flatten(features);
+  facelibs.at(tname)->addVectors(ret.data(), ids);
+  return true;
+}
+
+bool FaceLibraryManager::updateOne(std::string const &tname, long id,
+                                   float *vec) {
+  if (!CHECK_FACELIB_EXIST(tname)) { // 检查人脸库是否存在
+    return false;
+  }
+  if (!facelibs.at(tname)->updateVector(id, vec)) {
     FLOWENGINE_LOGGER_WARN("Face library update {} failed.", id);
     return false;
   }
   return true;
 }
 
-void FaceLibraryManager::updateBatch(std::vector<long> &ids, float **vecs) {
-  // TODO:暂时先调用updateOne，这样比较省事。后续开发真正的批量操作
-  for (size_t i = 0; i < ids.size(); ++i) {
-    updateOne(ids.at(i), vecs[i]);
+bool FaceLibraryManager::updateBatch(std::string const &tname,
+                                     std::vector<long> &ids, float **vecs) {
+  if (!CHECK_FACELIB_EXIST(tname)) { // 检查人脸库是否存在
+    return false;
   }
+  facelibs.at(tname)->updateVectors(*vecs, ids);
+  return true;
 }
 
-bool FaceLibraryManager::deleteOne(long id) {
-  if (!facelib->deleteVector(id)) {
+bool FaceLibraryManager::updateBatch(
+    std::string const &tname, std::vector<long> const &ids,
+    std::vector<std::vector<float>> const &features) {
+  if (!CHECK_FACELIB_EXIST(tname)) { // 检查人脸库是否存在
+    return false;
+  }
+  // 加载特征到人脸库
+  auto ret = Flatten(features);
+  facelibs.at(tname)->updateVectors(ret.data(), ids);
+  return true;
+}
+
+bool FaceLibraryManager::deleteOne(std::string const &tname, long id) {
+  if (!CHECK_FACELIB_EXIST(tname)) { // 检查人脸库是否存在
+    return false;
+  }
+  if (!facelibs.at(tname)->deleteVector(id)) {
     FLOWENGINE_LOGGER_WARN("Face library delete {} failed.", id);
     return false;
   }
   return true;
 }
 
-void FaceLibraryManager::deleteBatch(std::vector<long> &ids) {
-  facelib->deleteVectors(ids);
+bool FaceLibraryManager::deleteBatch(std::string const &tname,
+                                     std::vector<long> &ids) {
+  if (!CHECK_FACELIB_EXIST(tname)) { // 检查人脸库是否存在
+    return false;
+  }
+  facelibs.at(tname)->deleteVectors(ids);
+  return true;
 }
 
-long FaceLibraryManager::match(float *vec, float threshold) {
-  auto ret = facelib->search(vec, 1).at(0);
+long FaceLibraryManager::match(std::string const &tname, float *vec,
+                               float threshold) {
+  if (!CHECK_FACELIB_EXIST(tname)) { // 检查人脸库是否存在
+    return -2;
+  }
+  auto ret = facelibs.at(tname)->search(vec, 1).at(0);
   // 阈值
   FLOWENGINE_LOGGER_DEBUG("ID: {}, Distance: {}", ret.first, ret.second);
   if (ret.second > threshold) {
@@ -97,14 +163,4 @@ long FaceLibraryManager::match(float *vec, float threshold) {
   }
   return -1;
 }
-
-bool FaceLibraryManager::loadFacelib(
-    std::vector<long> const &ids,
-    std::vector<std::vector<float>> const &features) {
-  // 加载特征到人脸库
-  auto ret = Flatten(features);
-  facelib->addVectors(ret.data(), ids);
-  return true;
-}
-
 } // namespace server::face::core

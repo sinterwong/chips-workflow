@@ -13,6 +13,9 @@ class StreamDto : public oatpp::DTO {
   DTO_FIELD_INFO(name) { info->description = "The name of stream"; }
   DTO_FIELD(String, name);
 
+  DTO_FIELD_INFO(libName) { info->description = "The name of face library"; }
+  DTO_FIELD(String, libName);
+
   DTO_FIELD_INFO(url) { info->description = "The url of stream"; }
   DTO_FIELD(String, url);
 

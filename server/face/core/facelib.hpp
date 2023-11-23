@@ -73,6 +73,13 @@ public:
     return true;
   }
 
+  void updateVectors(float *vecs, std::vector<long> ids) {
+    faiss::IDSelectorArray selector{ids.size(), ids.data()};
+    std::lock_guard lk(m);
+    index->remove_ids(selector);
+    index->add_with_ids(ids.size(), vecs, ids.data());
+  }
+
   std::vector<std::pair<faiss::idx_t, float>> search(float *query_vec, int k) {
     float *distances = new float[k];
     int64_t *indices = new int64_t[k];

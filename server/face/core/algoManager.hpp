@@ -9,28 +9,18 @@
  *
  */
 
-#include "faceRecognition.hpp"
+#include "algoDispatcher.hpp"
 #include "logger/logger.hpp"
-#include "networkUtils.hpp"
-#include "thread_pool.h"
-#include <condition_variable>
-#include <filesystem>
 #include <future>
-#include <memory>
-#include <mutex>
-#include <opencv2/core/mat.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/imgproc.hpp>
-#include <queue>
-#include <thread>
-#include <vector>
+#include <unordered_map>
 
 #ifndef __SERVER_FACE_CORE_ALGO_MANAGER_HPP_
 #define __SERVER_FACE_CORE_ALGO_MANAGER_HPP_
 
 namespace server::face::core {
 
-constexpr int ALGO_NUM = 4;
+constexpr int DET_ALGO_NUM = 4;
+constexpr int REC_ALGO_NUM = 1;
 
 inline std::future<bool> make_false_future() {
   std::promise<bool> prom;
@@ -44,7 +34,6 @@ struct FramePackage {
   std::shared_ptr<cv::Mat> frame;
 };
 
-using face_algo_ptr = std::shared_ptr<FaceRecognition>;
 class AlgoManager {
 public:
   static AlgoManager &getInstance() {
@@ -56,18 +45,15 @@ public:
   AlgoManager &operator=(AlgoManager const &) = delete;
 
 public:
-  std::future<bool> infer(FramePackage const &framePackage,
-                          std::vector<float> &feature); // 推理任务
-
-  std::future<bool> infer(std::string const &url, std::vector<float> &feature);
+  std::future<bool> infer(AlgoType const &, FrameInfo &, InferResult &);
 
 private:
   AlgoManager() {
-    for (size_t i = 0; i < algos.size(); ++i) {
-      // 初始化算法资源
-      algos[i] = std::make_shared<FaceRecognition>();
-      availableAlgos.push(algos[i]);
-    }
+    // 初始化算法调度器
+    algoDispatchers[AlgoType::DET] =
+        std::make_shared<AlgoDispatcher>(AlgoType::DET, DET_ALGO_NUM);
+    algoDispatchers[AlgoType::REC] =
+        std::make_shared<AlgoDispatcher>(AlgoType::REC, REC_ALGO_NUM);
   }
   ~AlgoManager() {
     delete instance;
@@ -76,26 +62,8 @@ private:
   static AlgoManager *instance;
 
 private:
-  // 算法资源，启动多个算法供调度，TODO 可能需要一个生产消费者模型
-  std::vector<face_algo_ptr> algos{ALGO_NUM};
-  std::queue<face_algo_ptr> availableAlgos;
-
-  std::mutex m;
-  std::condition_variable cv;
-
-  inline face_algo_ptr getAvailableAlgo() {
-    std::unique_lock<std::mutex> lock(m);
-    cv.wait(lock, [&]() { return !availableAlgos.empty(); });
-    face_algo_ptr algo = availableAlgos.front();
-    availableAlgos.pop();
-    return algo;
-  }
-
-  inline void releaseAlgo(face_algo_ptr algo) {
-    std::lock_guard<std::mutex> lock(m);
-    availableAlgos.push(algo);
-    cv.notify_one();
-  }
+  // 管理AlgoDispatcher
+  std::unordered_map<AlgoType, std::shared_ptr<AlgoDispatcher>> algoDispatchers;
 };
 } // namespace server::face::core
 #endif
