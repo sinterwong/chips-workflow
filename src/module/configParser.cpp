@@ -134,7 +134,8 @@ bool ConfigParser::parseConfig(std::string const &path,
       algo_config.setParams(std::move(feature_config));
       break;
     }
-    case common::AlgoSerial::YoloPDet: {
+    case common::AlgoSerial::YoloPDet:
+    case common::AlgoSerial::FaceKeyPoints: {
       int numPoints;
       EXTRACT_JSON_VALUE(algo, "num_points", numPoints);
       float nms_thr;
@@ -279,7 +280,8 @@ bool ConfigParser::parseConfig(std::string const &path,
           size_t requireExistence;
           EXTRACT_JSON_VALUE(p, "threshold", thre);
           // EXTRACT_JSON_VALUE(p, "requireExistence", requireExistence);
-          EXTRACT_JSON_VALUE_WITH_DEFAULT(p, "requireExistence", requireExistence, 1);
+          EXTRACT_JSON_VALUE_WITH_DEFAULT(p, "requireExistence",
+                                          requireExistence, 1);
 
           DetClsMonitor config_{std::move(lBase), thre, requireExistence};
           config.setParams(std::move(config_));

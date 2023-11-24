@@ -9,14 +9,14 @@
  *
  */
 
-#ifndef __INFERENCE_VISION_DETECTION_H_
-#define __INFERENCE_VISION_DETECTION_H_
 #include "core/factory.hpp"
 #include "vision.hpp"
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
+#ifndef __INFERENCE_VISION_DETECTION_H_
+#define __INFERENCE_VISION_DETECTION_H_
 namespace infer::vision {
 class Keypoints : public Vision {
   //!
@@ -41,7 +41,9 @@ public:
 protected:
   PointsDetAlgo config;
   virtual void generateKeypointsBoxes(std::unordered_map<int, KeypointsBoxes> &,
-                                      void **) const = 0;
+                                      void **) const {};
+
+  virtual void generateKeypoints(KeypointsRet &, void **) const {};
 };
 } // namespace infer::vision
 

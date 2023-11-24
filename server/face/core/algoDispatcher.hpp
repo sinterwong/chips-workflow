@@ -70,12 +70,11 @@ private:
 
   // 检测算法配置获取
   AlgoConfig getDetConfig() {
-    std::string detModelPath = DET_MODEL_PATH;
     PointsDetAlgo faceDet_config{{
                                      1,
                                      {"input"},
                                      {"output"},
-                                     detModelPath,
+                                     DET_MODEL_PATH,
                                      "YoloPDet",
                                      {640, 640, 3},
                                      false,
@@ -92,12 +91,11 @@ private:
 
   // 识别算法配置获取
   AlgoConfig getRecConfig() {
-    std::string recModelPath = REC_MODEL_PATH;
     FeatureAlgo faceNet_config{{
                                    1,
                                    {"input.1"},
                                    {"516"},
-                                   recModelPath,
+                                   REC_MODEL_PATH,
                                    "FaceNet",
                                    {112, 112, 3},
                                    false,
