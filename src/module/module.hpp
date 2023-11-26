@@ -13,7 +13,9 @@
 #define FLOWCORE_MODULE_HPP
 
 #include <atomic>
+#include <chrono>
 #include <memory>
+#include <thread>
 #include <vector>
 
 #include "backend.h"
@@ -21,6 +23,7 @@
 #include "logger/logger.hpp"
 
 using common::MessageType;
+using common::ModuleBase;
 
 namespace module {
 using forwardMessage = std::tuple<std::string, MessageType, queueMessage>;
@@ -34,6 +37,8 @@ protected:
 
   MessageType type; // 模块类型 {stream, output, logic}
 
+  ModuleBase config; // 模块类型 {stream, output, logic}
+
   std::mutex _m;
 
   std::vector<std::string> recvModule, sendModule;
@@ -41,14 +46,13 @@ protected:
 public:
   std::atomic_bool stopFlag;
 
-  Module(backend_ptr ptr_, std::string const &name_, MessageType const &type_)
-      : ptr(ptr_), name(name_), type(type_) {
+  Module(backend_ptr ptr_, std::string const &name_, MessageType const &type_,
+         ModuleBase config)
+      : ptr(ptr_), name(name_), type(type_), config(config) {
     stopFlag.store(false);
     ptr->message->registered(name);
   }
-  virtual ~Module() {
-    ptr->message->unregistered(name);
-  }
+  virtual ~Module() { ptr->message->unregistered(name); }
 
   virtual bool isRunning() { return !stopFlag.load(); };
 
@@ -60,34 +64,41 @@ public:
 
   virtual void afterForward(){};
 
-  void go() {
+  virtual void go() {
     while (!stopFlag.load()) {
       step();
+      std::this_thread::sleep_for(std::chrono::milliseconds(config.interval));
     }
   }
 
   virtual void step() {
+    beforeGetMessage();
+
+    // 收集目前已经收到的消息，因此需要多次访问recv
     std::unordered_map<std::string, forwardMessage> mselector;
     bool loop = false;
-
-    beforeGetMessage();
-    if (recvModule.size() > 1) {
-      while (mselector.empty() || loop) {
-        MessageBus::returnFlag flag;
-        std::string sender;
-        MessageType stype;
-        queueMessage message;
-        loop = ptr->message->recv(name, flag, sender, stype, message, true);
-        if (!loop) { // 消息收集为空，执行下一次任务
-          continue;
-        }
+    do {
+      std::string sender;
+      MessageType stype;
+      queueMessage message;
+      loop = ptr->message->recv(name, sender, stype, message);
+      if (loop) { // 成功接收到了消息
         // 如果存在同一发送者的消息，只处理一次，用新的去覆盖旧的即可
         mselector[sender] = std::make_tuple(std::move(sender), std::move(stype),
                                             std::move(message));
       }
-    }
-    beforeForward();
+    } while (loop);
 
+    if (mselector.empty()) {
+      if (recvModule.size() == 1) {
+        // 只有Administrator的情况下就让它睡一秒来空出cpu
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      }
+      return;
+    }
+
+    // 获取到了执行任务，开始forward
+    beforeForward();
     // 将收集到的消息转换成待处理消息后去处理
     std::vector<forwardMessage> messages;
     messages.reserve(mselector.size());

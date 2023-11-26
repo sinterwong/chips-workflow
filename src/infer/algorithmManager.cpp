@@ -30,9 +30,12 @@ bool AlgorithmManager::registered(std::string const &name,
   // 注册算法 TODO 先直接给到 VisionInfer，话说这套框架有可能加入非视觉任务？
   name2algo[name] = std::make_shared<VisionInfer>(config);
   if (!name2algo.at(name)->init()) {
-    FLOWENGINE_LOGGER_CRITICAL("algorithm manager: failed to register {}", name);
+    FLOWENGINE_LOGGER_CRITICAL("algorithm manager: failed to register {}",
+                               name);
     return false;
   }
+  FLOWENGINE_LOGGER_INFO(
+      "AlgorithmManager algorithm {} registered successfully", name);
   return true;
 }
 
@@ -51,6 +54,8 @@ bool AlgorithmManager::unregistered(std::string const &name) {
     return false;
   }
   iter = name2algo.erase(iter);
+  FLOWENGINE_LOGGER_INFO(
+      "AlgorithmManager algorithm {} unregistered successfully", name);
   return true;
 }
 
@@ -60,24 +65,31 @@ bool AlgorithmManager::infer(std::string const &name, void *data,
   Shape const &shape = params.shape;
   auto cv_type = shape.at(2) == 1 ? CV_8UC1 : CV_8UC3;
   cv::Mat image = cv::Mat(shape.at(1), shape.at(0), cv_type, data);
-  auto &bbox = params.region;
+  auto bbox = params.region;
   cv::Mat inferImage;
-  cv::Rect2i rect{static_cast<int>(bbox.second[0]),
-                  static_cast<int>(bbox.second[1]),
-                  static_cast<int>(bbox.second[2] - bbox.second[0]),
-                  static_cast<int>(bbox.second[3] - bbox.second[1])};
-  if (rect.area() != 0) {
-    if (!utils::cropImage(image, inferImage, rect, params.frameType,
-                          params.cropScaling)) {
-      FLOWENGINE_LOGGER_ERROR(
-          "VisionInfer infer: cropImage is failed, rect is {},{},{},{}, "
-          "but the video resolution is {}x{}. The error comes from {}-{}.",
-          rect.x, rect.y, rect.width, rect.height, image.cols, image.rows,
-          params.name, name);
-      return false;
-    }
-  } else {
-    inferImage = image.clone();
+  // cv::Rect2i rect{bbox.x, bbox.y, bbox.width, bbox.height};
+  // if (rect.area() != 0) {
+  //   if (!utils::cropImage(image, inferImage, rect, params.frameType,
+  //                         params.cropScaling)) {
+  //     FLOWENGINE_LOGGER_ERROR(
+  //         "VisionInfer infer: cropImage is failed, rect is {},{},{},{}, "
+  //         "but the video resolution is {}x{}. The error comes from {}-{}.",
+  //         rect.x, rect.y, rect.width, rect.height, image.cols, image.rows,
+  //         params.name, name);
+  //     return false;
+  //   }
+  // } else {
+  //   inferImage = image.clone();
+  // }
+
+  if (!utils::cropImage(image, inferImage, bbox, params.frameType,
+                        params.cropScaling)) {
+    FLOWENGINE_LOGGER_ERROR(
+        "VisionInfer infer: cropImage is failed, rect is {},{},{},{}, "
+        "but the video resolution is {}x{}. The error comes from {}-{}.",
+        bbox.x, bbox.y, bbox.width, bbox.height, image.cols, image.rows,
+        params.name, name);
+    return false;
   }
 
   FrameInfo frame;

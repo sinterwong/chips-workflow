@@ -17,13 +17,6 @@
 #include <shared_mutex>
 #include <thread>
 
-MessageBus::returnFlag BoostMessageCheakEmpty(cqueue_ptr const &q) {
-  if (q->size_approx() == 0)
-    return MessageBus::returnFlag::successWithEmpty;
-  else
-    return MessageBus::returnFlag::successWithMore;
-}
-
 BoostMessage::BoostMessage() {}
 
 bool BoostMessage::registered(std::string const &name) {
@@ -70,9 +63,8 @@ bool BoostMessage::send(std::string const &source, std::string const &target,
   return true;
 }
 
-bool BoostMessage::recv(std::string const &name, MessageBus::returnFlag &flag,
-                        std::string &send, MessageType &type,
-                        queueMessage &message, bool waitFlag) {
+bool BoostMessage::recv(std::string const &name, std::string &send,
+                        MessageType &type, queueMessage &message) {
   /**
    * @brief 共享锁饥饿问题
    *
@@ -90,24 +82,13 @@ bool BoostMessage::recv(std::string const &name, MessageBus::returnFlag &flag,
     }
   }
   if (!receiver) {
-    flag = MessageBus::returnFlag::null;
     send = "";
     type = MessageType::None;
     message = queueMessage();
     FLOWENGINE_LOGGER_ERROR("{} is not registered!", name);
     return false;
   }
-  flag = BoostMessageCheakEmpty(receiver);
-  // do {
-  //   if (receiver->size_approx() > 0) {
-  //     receiver->try_dequeue(message);
-  //     send = message.send;
-  //     type = message.messageType;
-  //     return true;
-  //   }
-  //   if (waitFlag)
-  //     std::this_thread::sleep_for(std::chrono::milliseconds(10));
-  // } while (waitFlag);
+
   if (receiver->size_approx() > 0) {
     receiver->try_dequeue(message);
     send = message.send;

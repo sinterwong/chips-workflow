@@ -37,5 +37,7 @@ public:
   virtual AlgoRetType getType(std::string const &) const noexcept = 0;
 
   virtual AlgoSerial getSerial(std::string const &) const noexcept = 0;
+
+  virtual void getActiveAlgorithms(std::vector<std::string> &) = 0;
 };
 #endif

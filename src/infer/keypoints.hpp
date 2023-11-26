@@ -9,14 +9,14 @@
  *
  */
 
-#ifndef __INFERENCE_VISION_DETECTION_H_
-#define __INFERENCE_VISION_DETECTION_H_
 #include "core/factory.hpp"
 #include "vision.hpp"
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
+#ifndef __INFERENCE_VISION_DETECTION_H_
+#define __INFERENCE_VISION_DETECTION_H_
 namespace infer::vision {
 class Keypoints : public Vision {
   //!
@@ -26,14 +26,6 @@ public:
   explicit Keypoints(const AlgoConfig &_param, ModelInfo const &_info)
       : Vision(_param, _info) {
     config = mParams.getCopyParams<PointsDetAlgo>();
-  }
-
-  //!
-  //! \brief ProcessInput that the input is correct for infer
-  //!
-  virtual bool processInput(cv::Mat const &input, void **output,
-                            common::ColorType) const override {
-    return true;
   }
 
   //!
@@ -49,7 +41,9 @@ public:
 protected:
   PointsDetAlgo config;
   virtual void generateKeypointsBoxes(std::unordered_map<int, KeypointsBoxes> &,
-                                      void **) const = 0;
+                                      void **) const {};
+
+  virtual void generateKeypoints(KeypointsRet &, void **) const {};
 };
 } // namespace infer::vision
 

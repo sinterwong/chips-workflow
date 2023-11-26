@@ -19,6 +19,7 @@ namespace infer {
 using common::BBox;
 using Point2f = common::Point<float>;
 using common::KeypointsBox;
+using common::KeypointsRet;
 using common::KeypointsBoxes;
 using common::Shape;
 

@@ -45,6 +45,26 @@ inline void hwc_to_chw(T *chw_data, T *hwc_data, int channel, int height,
   }
 }
 
+inline void normalize_L2(float *x, int d) {
+  float sum = 0;
+  for (int i = 0; i < d; i++) {
+    sum += x[i] * x[i];
+  }
+  sum = std::sqrt(sum);
+  for (int i = 0; i < d; i++) {
+    x[i] /= sum;
+  }
+}
+
+inline float dot(std::vector<float> &f1, std::vector<float> &f2) {
+  // 归一化后的特征向量，计算点积
+  float ret = 0.0;
+  for (size_t i = 0; i < f1.size(); ++i) {
+    ret += f1.at(i) * f2.at(i);
+  }
+  return ret;
+}
+
 bool resizeInput(cv::Mat &image, bool isScale, std::array<int, 2> &dstShape);
 
 void BGR2YUV(const cv::Mat bgrImg, cv::Mat &y, cv::Mat &u, cv::Mat &v);
@@ -58,7 +78,13 @@ void YV12toNV12(const cv::Mat &input, cv::Mat &output);
 
 void RGB2NV12(cv::Mat const &input, cv::Mat &output, bool is_parallel = false);
 
+void BGR2NV12(cv::Mat const &input, cv::Mat &output, bool is_parallel = false);
+
 bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
                common::ColorType type, float sr = 0.0);
+
+using common::RetBox;
+bool cropImage(cv::Mat const &input, cv::Mat &output, RetBox &bbox,
+               common::ColorType type, float sr = 0);
 } // namespace infer::utils
 #endif

@@ -67,6 +67,21 @@ bool AlgoInference::infer(FrameInfo &input, void **outputs) {
   return true;
 }
 
+bool AlgoInference::infer(cv::Mat const &input, void **outputs) {
+  // 预处理数据
+  input_data = input;
+  // 推理模型
+  sp_bpu_start_predict(engine, reinterpret_cast<char *>(input_data.data));
+  // 解析模型输出
+  hbSysFlushMem(&(output_tensor->sysMem[0]), HB_SYS_MEM_CACHE_INVALIDATE);
+
+  float **ret = reinterpret_cast<float **>(*outputs);
+  for (int i = 0; i < output_count; ++i) {
+    ret[i] = reinterpret_cast<float *>(output_tensor[i].sysMem[0].virAddr);
+  }
+  return true;
+}
+
 bool AlgoInference::processInput(void *inputs) {
   auto inputData = reinterpret_cast<FrameInfo *>(inputs);
   char *data = reinterpret_cast<char *>(*inputData->data);

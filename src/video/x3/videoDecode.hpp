@@ -15,6 +15,7 @@
 #include "joining_thread.h"
 #include "logger/logger.hpp"
 #include <memory>
+#include <mutex>
 #include <opencv2/core/mat.hpp>
 #include <thread>
 
@@ -42,7 +43,13 @@ public:
 
   bool run() override;
 
+  bool start(std::string const &) override;
+
+  bool stop() override;
+
   inline bool isRunning() override { return stream && stream->IsStreaming(); }
+
+  inline std::string getUri() override { return uri; }
 
   inline int getHeight() override {
     if (isRunning()) {
@@ -71,6 +78,13 @@ public:
     return common::ColorType::NV12;
   }
 
+  explicit VideoDecode() {
+    channel = ChannelsManager::getInstance().getChannel();
+    if (channel < 0) {
+      throw std::runtime_error("Channel usage overflow!");
+    }
+  }
+
   explicit VideoDecode(std::string const &uri_, int w_ = 1920, int h_ = 1080)
       : uri(uri_), w(w_), h(h_) {
     channel = ChannelsManager::getInstance().getChannel();
@@ -80,9 +94,7 @@ public:
   }
 
   ~VideoDecode() noexcept {
-    if (stream && stream->IsStreaming()) {
-      stream->Close();
-    }
+    std::lock_guard lk(frame_m);
     // 手动析构解码器，确保析构完成后再释放channel
     stream.reset();
     // 释放channel

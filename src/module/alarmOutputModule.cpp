@@ -88,7 +88,6 @@ void AlarmOutputModule::forward(std::vector<forwardMessage> &message) {
                               code);
     }
   }
-  std::this_thread::sleep_for(std::chrono::microseconds(300));
 }
 
 FlowEngineModuleRegister(AlarmOutputModule, backend_ptr, std::string const &,

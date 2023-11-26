@@ -46,7 +46,7 @@ private:
   std::string config_path;
   utils::ConfigParser configParser;
   backend_ptr backendPtr = std::make_shared<Backend>(
-      std::make_unique<BoostMessage>(), std::make_unique<RouteFramePool>(16),
+      std::make_unique<BoostMessage>(), std::make_unique<StreamPoolBus>(),
       std::make_unique<AlgorithmManager>());
   // std::unique_ptr<thread_pool> pool;
   std::unique_ptr<thread_pool> pool;
@@ -119,14 +119,15 @@ private:
   bool parseConfigs(std::string const &uri, std::vector<PipelineParams> &,
                     std::vector<AlgorithmParams> &);
 
-  void terminate() {
-    // 向所有模块发送终止信号
-    // for (auto iter = atm.begin(); iter != atm.end(); ++iter) {
-    //   backendPtr->message->send(name, iter->first, MessageType::Close,
-    //                             queueMessage());
-    // }
-    std::this_thread::sleep_for(std::chrono::seconds(5));
-  }
+  void terminate() {}
+
+  void removeInactiveModules();
+
+  bool loadConfigs(std::vector<PipelineParams> &pipelines, std::vector<AlgorithmParams> &algorithms);
+
+  void updateAlgorithms(const std::vector<AlgorithmParams> &algorithms);
+
+  void updatePipelines(const std::vector<PipelineParams> &pipelines);
 
 public:
   PipelineModule(std::string const &config_, size_t workers_n);

@@ -31,31 +31,37 @@ namespace module {
 
 class StreamModule : public Module {
 
+using TIMEPOINT = std::chrono::time_point<std::chrono::high_resolution_clock>;
+
 private:
   // CameraResult cameraResult;
   std::unique_ptr<StreamBase> config;
 
   std::unique_ptr<VideoDecode> decoder;
 
+  void messageListener(); // 监听外部消息
+
+  // 开始和结束执行程序的时间
+  TIMEPOINT startTime;
+  TIMEPOINT endTime;
+
 public:
   StreamModule(backend_ptr ptr, std::string const &, MessageType const &,
                ModuleConfig &) noexcept(false);
 
-  ~StreamModule() {}
+  ~StreamModule() { ptr->pools->unregistered(name); }
+
+  virtual void go() override;
 
   virtual void beforeForward() override;
 
-  virtual void forward(std::vector<forwardMessage> &message) override {};
+  virtual void afterForward() override;
+
+  virtual void forward(std::vector<forwardMessage> &message) override{};
 
   void startup();
 
   void step() override;
-
-  static void delBuffer(std::vector<std::any> &);
-
-  std::any getMatBuffer(std::vector<std::any> &list, FrameBuf *buf);
-
-  std::any getPtrBuffer(std::vector<std::any> &list, FrameBuf *buf);
 };
 
 } // namespace module

@@ -10,15 +10,19 @@
  *
  */
 #include "streamModule.h"
+#include "framePool.hpp"
 #include "logger/logger.hpp"
 #include "messageBus.h"
 #include <array>
+#include <chrono>
 #include <memory>
 #include <opencv2/opencv.hpp>
 #include <stdexcept>
 #include <thread>
 #include <unordered_map>
 #include <utility>
+
+#include "videoDecoderPool.hpp"
 
 namespace module {
 
@@ -38,66 +42,97 @@ std::any getPtrBuffer(std::vector<std::any> &list, FrameBuf *buf) {
   return reinterpret_cast<void *>(mat->data);
 }
 
-FrameBuf makeFrameBuf(std::shared_ptr<cv::Mat> frame, int height, int width) {
-  FrameBuf temp;
-  temp.write({frame},
-             {std::make_pair("void*", getPtrBuffer),
-              std::make_pair("Mat", getMatBuffer)},
-             &StreamModule::delBuffer,
-             std::make_tuple(width, height, 3, UINT8));
-  return temp;
-}
-
-void StreamModule::delBuffer(std::vector<std::any> &list) {
+void delBuffer(std::vector<std::any> &list) {
   assert(list.size() == 1);
   assert(list[0].has_value());
   assert(list[0].type() == typeid(std::shared_ptr<cv::Mat>));
   list.clear();
 }
 
+frame_ptr makeFrameBuf(std::shared_ptr<cv::Mat> frame, int height, int width) {
+  FrameBuf temp;
+  temp.write({frame},
+             {std::make_pair("void*", getPtrBuffer),
+              std::make_pair("Mat", getMatBuffer)},
+             &delBuffer);
+  return std::make_shared<FrameBuf>(temp);
+}
+
 StreamModule::StreamModule(backend_ptr ptr, std::string const &_name,
-                           MessageType const &_type, ModuleConfig &_config)
-    : Module(ptr, _name, _type) {
+                           MessageType const &_type, ModuleConfig &config_)
+    : Module(ptr, _name, _type, *config_.getParams<StreamBase>()) {
 
-  config = std::make_unique<StreamBase>(*_config.getParams<StreamBase>());
-
-  decoder = std::make_unique<VideoDecode>(config->uri, config->width, config->height);
-  if (!decoder->init()) {
-    FLOWENGINE_LOGGER_INFO("{} VideoManager init failed!", name);
+  config = std::make_unique<StreamBase>(*config_.getParams<StreamBase>());
+  if (ptr->pools->registered(name, 2)) {
+    FLOWENGINE_LOGGER_INFO("{} stream pool registering is successful", name);
+  } else {
+    FLOWENGINE_LOGGER_CRITICAL("{} stream pool registering is failed!", name);
     throw std::runtime_error("StreamModule ctor has failed!");
-  };
+  }
+}
+
+void StreamModule::messageListener() {
+  // 在此处监听外界的消息，这样的话就可以放心大胆的实现轮询逻辑了
+  while (!stopFlag.load()) {
+    // 检查外界消息
+    std::string sender;
+    MessageType stype = MessageType::None;
+    queueMessage message;
+    ptr->message->recv(name, sender, stype, message);
+    if (stype == MessageType::Close) {
+      stopFlag.store(true);
+      return;
+    }
+    // 避免内旋过分占用资源
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  }
+}
+
+void StreamModule::go() {
+  std::thread listenerThread(&StreamModule::messageListener, this);
+  // 或者保存该线程，并在适当的时机进行 join()
+  listenerThread.detach();
+
+  while (!stopFlag.load()) {
+    step();
+  }
+}
+
+void StreamModule::step() {
+  // 轮询逻辑
+  if (!decoder) { // 解码器不在工作状态
+    beforeForward();
+  }
+
+  if (!decoder || !decoder->isRunning()) {
+    return;
+  }
+  auto currentTime = std::chrono::high_resolution_clock::now();
+  if (config->runTime == 0 || currentTime < endTime) {
+    startup();
+  } else {
+    afterForward();
+  }
 }
 
 void StreamModule::beforeForward() {
-  // 视频流检查
-  if (!decoder->isRunning()) {
-    if (decoder->run()) {
-      FLOWENGINE_LOGGER_INFO("StreamModule video is opened!");
-    } else {
-      FLOWENGINE_LOGGER_ERROR("StreamModule is failed to open!");
-    }
+  // 此处会悬停等待解码器（即使是收到了Close信号依然会继续排队）
+  decoder = FIFOVideoDecoderPool::getInstance().acquire();
+
+  // 启动解码器
+  if (!decoder->start(config->uri)) {
+    FLOWENGINE_LOGGER_ERROR("StreamModule is failed to open {}!", config->uri);
+    // 归还解码器
+    FIFOVideoDecoderPool::getInstance().release(std::move(decoder));
+    decoder = nullptr;
+    // 等待一会再回去排队
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    return;
   }
+  startTime = std::chrono::high_resolution_clock::now(); // 初始化开始时间
+  endTime = startTime + std::chrono::seconds(config->runTime); // 初始化结束时间
+  FLOWENGINE_LOGGER_INFO("StreamModule video is opened {}!", config->uri);
 };
-
-void StreamModule::step() {
-  beforeForward();
-  if (!decoder->isRunning()) {
-    return;
-  }
-
-  // 按目前的设计只需要监测Close消息类型。
-  MessageBus::returnFlag flag;
-  std::string sender;
-  MessageType stype = MessageType::None;
-  queueMessage message;
-  ptr->message->recv(name, flag, sender, stype, message, false);
-  if (stype == MessageType::Close) {
-    FLOWENGINE_LOGGER_INFO("{} StreamModule was done!", name);
-    stopFlag.store(true);
-    return;
-  }
-  startup();
-}
 
 void StreamModule::startup() {
 
@@ -109,8 +144,9 @@ void StreamModule::startup() {
     return;
   }
 
-  FrameBuf fbm = makeFrameBuf(frame, decoder->getHeight(), decoder->getWidth());
-  int returnKey = ptr->pool->write(fbm);
+  frame_ptr fbm =
+      makeFrameBuf(frame, decoder->getHeight(), decoder->getWidth());
+  int returnKey = ptr->pools->write(name, fbm);
 
   // 报警时所需的视频流的信息
   AlarmInfo alarmInfo;
@@ -119,6 +155,7 @@ void StreamModule::startup() {
   alarmInfo.height = decoder->getHeight();
   alarmInfo.width = decoder->getWidth();
   sendMessage.frameType = decoder->getType();
+  sendMessage.steramName = name;
   sendMessage.key = returnKey;
   // sendMessage.cameraResult = cameraResult;
   sendMessage.alarmInfo = std::move(alarmInfo);
@@ -126,8 +163,18 @@ void StreamModule::startup() {
 
   autoSend(sendMessage);
   // std::this_thread::yield();
-  std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
+
+void StreamModule::afterForward() {
+  // 此时意味着需要对decoder进行归还
+  if (decoder) {
+    FIFOVideoDecoderPool::getInstance().release(std::move(decoder));
+    decoder = nullptr;
+    FLOWENGINE_LOGGER_DEBUG("{} has finished!", name);
+  }
+}
+
 FlowEngineModuleRegister(StreamModule, backend_ptr, std::string const &,
                          MessageType const &, ModuleConfig &);
 } // namespace module

@@ -15,6 +15,10 @@
 
 #include <cassert>
 
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
 namespace module {
 
 /**
@@ -31,27 +35,22 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
     }
 
     // 读取图片
-    FrameBuf frameBufMessage = ptr->pool->read(buf.key);
-    auto image =
-        std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
-
-    if (alarmUtils.isRecording()) {
-      alarmUtils.recordVideo(*image);
-      break;
+    frame_ptr frameBuf = ptr->pools->read(buf.steramName, buf.key);
+    if (!frameBuf) {
+      FLOWENGINE_LOGGER_WARN("{} ObjectNumberModule read frame is failed!",
+                             name);
+      return;
     }
+    auto image = std::any_cast<std::shared_ptr<cv::Mat>>(frameBuf->read("Mat"));
 
     // 初始待计算区域，每次算法结果出来之后需要更新regions
     std::vector<common::RetBox> regions;
     for (auto const &area : config->regions) {
-      regions.emplace_back(common::RetBox{
-          name,
-          {static_cast<float>(area[0].x), static_cast<float>(area[0].y),
-           static_cast<float>(area[1].x), static_cast<float>(area[1].y), 0.0,
-           0.0}});
+      regions.emplace_back(RetBox(name, area));
     }
     if (regions.empty()) {
       // 前端没有画框
-      regions.emplace_back(common::RetBox{name, {0, 0, 0, 0, 0, 0}});
+      regions.emplace_back(common::RetBox{name});
     }
 
     // 根据提供的配置执行算法，
@@ -59,6 +58,8 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
     auto &attentions = detNet.second.attentions; // 检测关注的类别
 
     int objectNumber = 0;
+    std::vector<RetBox> rbboxes; // 报警框
+
     for (auto &region : regions) {
 
       InferParams detParams{name,
@@ -77,7 +78,6 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
         FLOWENGINE_LOGGER_ERROR("ObjectNumberModule: Wrong algorithm type!");
         return;
       }
-
       for (auto &bbox : *bboxes) {
         // 需要过滤掉不关注的类别
         if (!attentions.empty()) {
@@ -86,7 +86,19 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
           if (iter == attentions.end()) { // 该类别没有出现在关注类别中
             continue;
           }
+          // // 阈值太低的过滤
+          // if (bbox.det_confidence < 0.6) {
+          //   continue;
+          // }
         }
+        common::RetBox b = {name,
+                            static_cast<int>(bbox.bbox[0] + region.x),
+                            static_cast<int>(bbox.bbox[1] + region.y),
+                            static_cast<int>(bbox.bbox[2] - bbox.bbox[0]),
+                            static_cast<int>(bbox.bbox[3] - bbox.bbox[1]),
+                            bbox.det_confidence,
+                            static_cast<int>(bbox.class_id)};
+        rbboxes.emplace_back(std::move(b));
         objectNumber++;
       }
     }
@@ -98,18 +110,19 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
       // 生成报警信息
       alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "数量达标",
                                    config.get());
-      // 生成报警图片，此处相当于截了个图
-      alarmUtils.saveAlarmImage(buf.alarmInfo.alarmFile + "/" +
-                                    buf.alarmInfo.alarmId + ".jpg",
-                                *image, buf.frameType, config->isDraw);
-      // // 初始化报警视频
-      // if (config->videoDuration > 0) {
-      //   alarmUtils.initRecorder(buf.alarmInfo.alarmFile + "/" +
-      //                               buf.alarmInfo.alarmId + ".mp4",
-      //                           buf.alarmInfo.width, buf.alarmInfo.height,
-      //                           25, config->videoDuration);
-      // }
+      // 生成报警图片并画框
+      alarmUtils.saveAlarmImage(
+          buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".jpg",
+          *image, buf.frameType, static_cast<DRAW_TYPE>(2), rbboxes);
+
+      // 本轮算法结果生成
+      json algoRet;
+      std::string jsonStr;
+      utils::retBoxes2json(rbboxes, jsonStr);
+      algoRet[detNet.first] = std::move(jsonStr);
+      buf.alarmInfo.algorithmResult = algoRet.dump();
       autoSend(buf);
+
       // 录制报警视频
       if (config->videoDuration > 0) {
         bool ret = video::utils::videoRecordWithFFmpeg(
@@ -121,9 +134,6 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
         }
       }
     }
-  }
-  if (!alarmUtils.isRecording()) {
-    std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
   }
 }
 

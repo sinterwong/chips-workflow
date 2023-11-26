@@ -13,8 +13,13 @@
 #include "frame_difference.h"
 #include "logger/logger.hpp"
 #include "video_utils.hpp"
+#include <algorithm>
 #include <cassert>
 #include <opencv2/imgcodecs.hpp>
+
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 namespace module {
 void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
@@ -24,25 +29,25 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
       stopFlag.store(true);
       return;
     }
-    auto frameBufMessage = ptr->pool->read(buf.key);
-    auto frame =
-        std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
-
-    if (alarmUtils.isRecording()) { // 正在录像
-      alarmUtils.recordVideo(*frame);
-      break;
+    // 读取图片
+    frame_ptr frameBuf = ptr->pools->read(buf.steramName, buf.key);
+    if (!frameBuf) {
+      FLOWENGINE_LOGGER_WARN("{} FrameDifferenceModule read frame is failed!",
+                             name);
+      return;
     }
+    auto frame = std::any_cast<std::shared_ptr<cv::Mat>>(frameBuf->read("Mat"));
 
     // 只能有一个区域被监控
     assert(config->regions.size() <= 1);
     cv::Mat croppedImage;
     cv::Rect rect;
     if (config->regions.size() == 1) {
-      auto &region = config->regions.at(0);
-      int x = region[0].x;
-      int y = region[0].y;
-      int w = region[1].x - x;
-      int h = region[1].y - y;
+      auto &points = config->regions.at(0);
+      int x = std::min(points[0].x, points[1].x);
+      int y = std::min(points[0].y, points[1].y);
+      int w = std::max(points[0].x, points[1].x) - x;
+      int h = std::max(points[0].y, points[1].y) - y;
       rect = {x, y, w, h};
       // 截取待计算区域
       infer::utils::cropImage(*frame, croppedImage, rect, buf.frameType);
@@ -69,10 +74,10 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
     // 意味着检测到了动态目标，可以进行后续的逻辑（5进3或其他过滤方法，当前只是用了阈值）
     for (auto &bbox : bboxes) {
       // offset bbox
-      bbox.second.at(0) += rect.x;
-      bbox.second.at(1) += rect.y;
-      bbox.second.at(2) += rect.x;
-      bbox.second.at(3) += rect.y;
+      bbox.x += rect.x;
+      bbox.y += rect.y;
+      // bbox.second.at(2) += rect.x;
+      // bbox.second.at(3) += rect.y;
     }
     FLOWENGINE_LOGGER_DEBUG("{} FrameDifferenceModule detect {} objects", name,
                             bboxes.size());
@@ -80,16 +85,16 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
     alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在报警行为",
                                  config.get());
     // 生成报警图片
-    alarmUtils.saveAlarmImage(buf.alarmInfo.alarmFile + "/" +
-                                  buf.alarmInfo.alarmId + ".jpg",
-                              *frame, buf.frameType, config->isDraw);
-    // // 初始化报警视频
-    // if (config->videoDuration > 0) {
-    //   alarmUtils.initRecorder(
-    //       buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".mp4",
-    //       buf.alarmInfo.width, buf.alarmInfo.height, 25,
-    //       config->videoDuration);
-    // }
+    alarmUtils.saveAlarmImage(
+        buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".jpg", *frame,
+        buf.frameType, static_cast<DRAW_TYPE>(config->drawType));
+
+    // 本轮算法结果生成
+    json algoRet;
+    std::string jsonStr;
+    utils::retBoxes2json(bboxes, jsonStr);
+    algoRet[name] = std::move(jsonStr);
+    buf.alarmInfo.algorithmResult = algoRet.dump();
 
     autoSend(buf);
     // 录制报警视频
@@ -104,9 +109,6 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
     }
 
     break;
-  }
-  if (!alarmUtils.isRecording()) {
-    std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
   }
 }
 FlowEngineModuleRegister(FrameDifferenceModule, backend_ptr,

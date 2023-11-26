@@ -13,7 +13,7 @@ void cskTrackModule::forward(std::vector<forwardMessage> &message) {
       return;
     } else if (type == MessageType::Stream) {
       if (moduleFlag == init || moduleFlag == tracking) {
-        auto frameBufMessage = ptr->pool->read(buf.key);
+        auto frameBufMessage = ptr->pools->read(buf.steramName, buf.key);
 
         cv::Mat image = std::any_cast<cv::Mat>(frameBufMessage.read("Mat"));
 

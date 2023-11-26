@@ -19,11 +19,8 @@ using json = nlohmann::json;
 
 namespace module {
 
-/**
- * @brief
- *
- * @param message
- */
+using common::RetBox;
+
 void DetClsModule::forward(std::vector<forwardMessage> &message) {
   for (auto &[send, type, buf] : message) {
     if (type == MessageType::Close) {
@@ -33,14 +30,12 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
     }
 
     // 读取图片
-    FrameBuf frameBufMessage = ptr->pool->read(buf.key);
-    auto image =
-        std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
-
-    if (alarmUtils.isRecording()) {
-      alarmUtils.recordVideo(*image);
-      break;
+    frame_ptr frameBuf = ptr->pools->read(buf.steramName, buf.key);
+    if (!frameBuf) {
+      FLOWENGINE_LOGGER_WARN("{} DetClsModule read frame is failed!", name);
+      return;
     }
+    auto image = std::any_cast<std::shared_ptr<cv::Mat>>(frameBuf->read("Mat"));
 
     // 各个算法结果的区域
     std::unordered_map<std::string, std::vector<common::RetBox>> algoRegions;
@@ -48,15 +43,11 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
     // 初始待计算区域，每次算法结果出来之后需要更新regions
     std::vector<common::RetBox> regions;
     for (auto const &area : config->regions) {
-      regions.emplace_back(common::RetBox{
-          name,
-          {static_cast<float>(area[0].x), static_cast<float>(area[0].y),
-           static_cast<float>(area[1].x), static_cast<float>(area[1].y), 0.0,
-           0.0}});
+      regions.emplace_back(RetBox(name, area));
     }
     if (regions.empty()) {
       // 前端没有画框
-      regions.emplace_back(common::RetBox{name, {0, 0, 0, 0, 0, 0}});
+      regions.emplace_back(RetBox{name});
     }
     algoRegions["regions"] = std::move(regions);
 
@@ -94,10 +85,8 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
                 continue;
               }
             }
-            common::RetBox b = {ap.first,
-                                {region.second[0], region.second[1],
-                                 region.second[2], region.second[3],
-                                 cls->second, static_cast<float>(cls->first)}};
+            RetBox b{ap.first,      region.x,    region.y,  region.width,
+                     region.height, cls->second, cls->first};
             algoRegions[ap.first].emplace_back(std::move(b));
             break;
           }
@@ -115,12 +104,13 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
                 }
               }
               // 记录算法结果
-              common::RetBox b = {ap.first,
-                                  {bbox.bbox[0] + region.second[0],
-                                   bbox.bbox[1] + region.second[1],
-                                   bbox.bbox[2] + region.second[0],
-                                   bbox.bbox[3] + region.second[1],
-                                   bbox.det_confidence, bbox.class_id}};
+              common::RetBox b{ap.first,
+                               static_cast<int>(bbox.bbox[0] + region.x),
+                               static_cast<int>(bbox.bbox[1] + region.y),
+                               static_cast<int>(bbox.bbox[2] - bbox.bbox[0]),
+                               static_cast<int>(bbox.bbox[3] - bbox.bbox[1]),
+                               bbox.det_confidence,
+                               static_cast<int>(bbox.class_id)};
               algoRegions[ap.first].emplace_back(std::move(b));
             }
             break;
@@ -137,63 +127,61 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
     // 至此，所有的算法模块执行完成，整合算法结果判断是否报警
     auto lastPipeName = apipes.at(apipes.size() - 1).first;
     auto &alarmRegions = algoRegions.at(lastPipeName);
-    if (alarmRegions.size() > 0) {
-      for (auto const &box : algoRegions.at(lastPipeName)) {
-        alarmBox = box;
-        if (alarmBox.second[4] > config->threshold) {
-          // 存在符合条件的报警
-          FLOWENGINE_LOGGER_DEBUG("{}: {}, {}, {}!", name, alarmBox.first,
-                                  alarmBox.second[4], alarmBox.second[5]);
-          // 生成报警信息
-          alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在报警行为",
-                                       config.get());
-
-          // 生成报警图片
-          alarmUtils.saveAlarmImage(
-              buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".jpg",
-              *image, buf.frameType, config->isDraw, alarmBox);
-
-          // 初始化报警视频
-          // if (config->videoDuration > 0) {
-          //   alarmUtils.initRecorder(buf.alarmInfo.alarmFile + "/" +
-          //                               buf.alarmInfo.alarmId + ".mp4",
-          //                           buf.alarmInfo.width,
-          //                           buf.alarmInfo.height, 25,
-          //                           config->videoDuration);
-          // }
-          // 本轮算法结果生成
-          json algoRet;
-          for (auto &info : algoRegions) {
-            std::string bboxesJson, aname;
-            utils::retBoxes2json(info.second, bboxesJson);
-
-            // // 模块名称提取
-            // std::string_view str_view = info.first;
-            // auto pos1 = str_view.find('_');
-            // auto pos2 = str_view.find('_', pos1 + 1);
-            // aname = str_view.substr(pos1 + 1, pos2 - pos1 - 1);
-            algoRet[info.first] = std::move(bboxesJson);
+    RetBox alarmBox = {name};
+    bool isAlarm = false;
+    if ((alarmRegions.size() > 0) == (config->requireExistence)) {
+      /**
+       * @brief 报警条件：关注类别是否存在 == 存在关注类别后报/不报警
+       *  设关注类型是否存在为a, 存在关注类别后报/不报警为b:
+       * 会报警的情况：a=true and b=true, a=false and b=false
+       * 当 a=true，b=true, 此时需要通过阈值判定，当阈值通过才会报警
+       */
+      if (alarmRegions.size() == 0) {
+        isAlarm = true; // a=false and b=false的情况
+      } else {
+        // a=true and b=true的情况
+        for (auto const &box : alarmRegions) {
+          if (box.confidence > config->threshold) {
+            // 存在符合条件的报警
+            alarmBox = box;
+            isAlarm = true;
+            FLOWENGINE_LOGGER_DEBUG("{}: {}, {}, {}!", name, alarmBox.name,
+                                    alarmBox.confidence, alarmBox.idx);
+            break;
           }
-          buf.alarmInfo.algorithmResult = algoRet.dump();
-          autoSend(buf);
-
-          // 录制报警视频
-          if (config->videoDuration > 0) {
-            bool ret = video::utils::videoRecordWithFFmpeg(
-                buf.alarmInfo.cameraIp,
-                buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".mp4",
-                config->videoDuration);
-            if (!ret) {
-              FLOWENGINE_LOGGER_ERROR("{} video record is failed.", name);
-            }
-          }
-          break;
         }
       }
     }
-  }
-  if (!alarmUtils.isRecording()) {
-    std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
+    if (isAlarm) { // 需要报警
+      // 生成报警信息
+      alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在报警行为",
+                                   config.get());
+      // 生成报警图片，带框和不带框共两张
+      alarmUtils.saveAlarmImage(
+          buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".jpg",
+          *image, buf.frameType, static_cast<DRAW_TYPE>(2), {alarmBox});
+
+      // 本轮算法结果生成
+      json algoRet;
+      for (auto &info : algoRegions) {
+        std::string bboxesJson, aname;
+        utils::retBoxes2json(info.second, bboxesJson);
+        algoRet[info.first] = std::move(bboxesJson);
+      }
+      buf.alarmInfo.algorithmResult = algoRet.dump();
+      autoSend(buf);
+
+      // 录制报警视频
+      if (config->videoDuration > 0) {
+        bool ret = video::utils::videoRecordWithFFmpeg(
+            buf.alarmInfo.cameraIp,
+            buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".mp4",
+            config->videoDuration);
+        if (!ret) {
+          FLOWENGINE_LOGGER_ERROR("{} video record is failed.", name);
+        }
+      }
+    }
   }
 }
 

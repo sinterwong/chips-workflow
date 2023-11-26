@@ -50,6 +50,7 @@ struct AlarmInfo {
  *
  */
 struct queueMessage {
+  std::string steramName;  // 流标识
   int key;                 // 帧id
   int status;              // 上游状态
   std::string send;        // 上游模块名称
@@ -65,13 +66,6 @@ struct queueMessage {
  */
 class MessageBus {
 public:
-  enum class returnFlag {
-    null,
-    mapNotFind,
-    successWithEmpty,
-    successWithMore,
-  };
-
   virtual bool registered(std::string const &name) = 0;
 
   virtual bool unregistered(std::string const &name) = 0;
@@ -79,9 +73,8 @@ public:
   virtual bool send(std::string const &source, std::string const &target,
                     MessageType const &type, queueMessage message) = 0;
 
-  virtual bool recv(std::string const &name, returnFlag &flag,
-                    std::string &sender, MessageType &senderType,
-                    queueMessage &message, bool waitFlag = true) = 0;
+  virtual bool recv(std::string const &name, std::string &sender,
+                    MessageType &senderType, queueMessage &message) = 0;
 };
 
 #endif // DETTRACKENGINE_MESSAGEBUS_H

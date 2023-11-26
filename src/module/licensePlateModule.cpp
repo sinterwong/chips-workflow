@@ -36,27 +36,22 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
     }
 
     // 读取图片
-    FrameBuf frameBufMessage = ptr->pool->read(buf.key);
-    auto image =
-        std::any_cast<std::shared_ptr<cv::Mat>>(frameBufMessage.read("Mat"));
-
-    // if (alarmUtils.isRecording()) {
-    //   alarmUtils.recordVideo(*image);
-    //   break;
-    // }
+    frame_ptr frameBuf = ptr->pools->read(buf.steramName, buf.key);
+    if (!frameBuf) {
+      FLOWENGINE_LOGGER_WARN("{} LicensePlateModule read frame is failed!",
+                             name);
+      return;
+    }
+    auto image = std::any_cast<std::shared_ptr<cv::Mat>>(frameBuf->read("Mat"));
 
     // 初始待计算区域，每次算法结果出来之后需要更新regions
     std::vector<common::RetBox> regions;
     for (auto const &area : config->regions) {
-      regions.emplace_back(common::RetBox{
-          name,
-          {static_cast<float>(area[0].x), static_cast<float>(area[0].y),
-           static_cast<float>(area[1].x), static_cast<float>(area[1].y), 0.0,
-           0.0}});
+      regions.emplace_back(RetBox(name, area));
     }
     if (regions.empty()) {
       // 前端没有画框
-      regions.emplace_back(common::RetBox{name, {0, 0, 0, 0, 0, 0}});
+      regions.emplace_back(common::RetBox{name});
     }
 
     assert(regions.size() == 1);
@@ -108,7 +103,7 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
       InferParams recParams{name,
                             buf.frameType,
                             0.0,
-                            common::RetBox{name, {0, 0, 0, 0, 0, 0}},
+                            common::RetBox{name},
                             {licensePlateImage.cols, licensePlateImage.rows,
                              licensePlateImage.channels()}};
       InferResult textRecRet;
@@ -135,16 +130,9 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
       alarmUtils.generateAlarmInfo(name, buf.alarmInfo, "存在车牌",
                                    config.get());
       // 生成报警图片
-      alarmUtils.saveAlarmImage(buf.alarmInfo.alarmFile + "/" +
-                                    buf.alarmInfo.alarmId + ".jpg",
-                                *image, buf.frameType, config->isDraw);
-      // // 初始化报警视频
-      // if (config->videoDuration > 0) {
-      //   alarmUtils.initRecorder(buf.alarmInfo.alarmFile + "/" +
-      //                               buf.alarmInfo.alarmId + ".mp4",
-      //                           buf.alarmInfo.width, buf.alarmInfo.height,
-      //                           25, config->videoDuration);
-      // }
+      alarmUtils.saveAlarmImage(
+          buf.alarmInfo.alarmFile + "/" + buf.alarmInfo.alarmId + ".jpg",
+          *image, buf.frameType, static_cast<DRAW_TYPE>(config->drawType));
       autoSend(buf);
       // 录制报警视频
       if (config->videoDuration > 0) {
@@ -158,9 +146,6 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
       }
     }
   }
-  // if (!alarmUtils.isRecording()) {
-  std::this_thread::sleep_for(std::chrono::microseconds{config->interval});
-  // }
 }
 
 FlowEngineModuleRegister(LicensePlateModule, backend_ptr, std::string const &,

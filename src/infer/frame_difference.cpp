@@ -102,10 +102,7 @@ bool FrameDifference::update(cv::Mat &frame, std::vector<RetBox> &bboxes,
       continue;
     }
 
-    RetBox bbox = {"FrameDifference",
-                   {static_cast<float>(rect.x), static_cast<float>(rect.y),
-                    static_cast<float>(rect.x + rect.width),
-                    static_cast<float>(rect.y + rect.height), 0.0, 0.0}};
+    RetBox bbox{"FrameDifference", rect.x, rect.y, rect.width, rect.height};
     bboxes.emplace_back(std::move(bbox));
   }
   return true;

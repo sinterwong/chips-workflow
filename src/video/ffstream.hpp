@@ -66,7 +66,7 @@ private:
 public:
   bool openStream(); // 开启视频流
 
-  int getRawFrame(void **data, bool isCopy = false);
+  int getRawFrame(void **data, bool isCopy = false, bool onlyIFrame = false);
 
   inline bool isRunning() { return isOpen.load(); };
 

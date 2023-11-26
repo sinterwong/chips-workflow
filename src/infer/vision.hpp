@@ -12,6 +12,8 @@
 #ifndef __INFER_VISION_H_
 #define __INFER_VISION_H_
 #include "infer_common.hpp"
+#include "inference.h"
+#include "preprocess.hpp"
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgproc.hpp>
 
@@ -21,15 +23,52 @@ using common::AlgoRet;
 class Vision {
 public:
   explicit Vision(const AlgoConfig &_param, ModelInfo const &_info)
-      : mParams(_param), modelInfo(_info) {}
+      : mParams(_param), modelInfo(_info) {
+    config = mParams.getBaseParams();
+  }
 
   virtual ~Vision(){};
 
   //!
   //! \brief ProcessInput that the input is correct for infer
-  //!
-  virtual bool processInput(cv::Mat const &, void **,
-                            common::ColorType) const = 0;
+  //! * The processInput of common version
+  virtual bool processInput(FrameInfo const &inputData, cv::Mat &output) const {
+
+    char *data = reinterpret_cast<char *>(*inputData.data);
+    int height = inputData.shape.at(1);
+    int width = inputData.shape.at(0);
+
+    switch (inputData.type) {
+    case common::ColorType::RGB888:
+    case common::ColorType::BGR888: {
+      cv::Mat image{height, width, CV_8UC3, data};
+      // cv::imwrite("temp_out.jpg", image);
+
+      std::array<int, 2> shape = {width, height};
+      if (!utils::resizeInput(image, config->isScale, shape)) {
+        return false;
+      }
+      output.create(cv::Size(image.channels(), image.cols * image.rows),
+                    CV_8UC1);
+      utils::hwc_to_chw(output.data, image.data, image.channels(), image.rows,
+                        image.cols);
+    }
+    case common::ColorType::NV12: {
+      output = cv::Mat(height * 3 / 2, width, CV_8UC1, data);
+      utils::NV12toRGB(output, output);
+      std::array<int, 2> shape = {config->inputShape.at(0),
+                                  config->inputShape.at(1)};
+      if (!utils::resizeInput(output, config->isScale, shape)) {
+        return false;
+      }
+      utils::RGB2NV12(output, output);
+    }
+    case common::ColorType::None: {
+      return false;
+    }
+    }
+    return true;
+  }
 
   //!
   //! \brief ProcessInput that the input is correct for infer
@@ -44,6 +83,9 @@ public:
 protected:
   //!< The parameters for the sample.
   AlgoConfig mParams;
+
+  //!< The basic config of the model
+  AlgoBase *config;
 
   //!< The information of model.
   ModelInfo modelInfo;

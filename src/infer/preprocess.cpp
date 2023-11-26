@@ -11,11 +11,98 @@
 #include "preprocess.hpp"
 #include "logger/logger.hpp"
 #include <common/common.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/core/types.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 #include <opencv2/imgproc/types_c.h>
 
 using common::ColorType;
 
 namespace infer::utils {
+
+void interleaveRows(const cv::Mat &input1, const cv::Mat &input2,
+                    cv::Mat &output) {
+  // 确保两个输入矩阵具有相同的维度和数据类型
+  CV_Assert(input1.size() == input2.size() && input1.type() == input2.type());
+
+  // 调整输出矩阵的尺寸
+  if (output.empty()) {
+    output.create(input1.rows * 2, input1.cols, input1.type());
+  }
+  CV_Assert(input1.rows * 2 == output.rows);
+
+  for (int row = 0; row < input1.rows; ++row) {
+    // 为input1和input2的当前行获取指针
+    const uchar *ptr1 = input1.ptr<uchar>(row);
+    const uchar *ptr2 = input2.ptr<uchar>(row);
+
+    // 获取output的两个相应行的指针
+    uchar *outPtr1 = output.ptr<uchar>(row * 2);
+    uchar *outPtr2 = output.ptr<uchar>(row * 2 + 1);
+
+    // 复制input1和input2的内容到output的相应位置
+    memcpy(outPtr1, ptr1, input1.cols * sizeof(uchar));
+    memcpy(outPtr2, ptr2, input2.cols * sizeof(uchar));
+  }
+}
+
+void interleaveColumns(const cv::Mat &input1, const cv::Mat &input2,
+                       cv::Mat &output) {
+  // 确保两个输入矩阵具有相同的维度和数据类型
+  CV_Assert(input1.size() == input2.size() && input1.type() == input2.type());
+
+  // 调整输出矩阵的尺寸
+  if (output.empty()) {
+    output.create(input1.rows, input1.cols * 2, input1.type());
+  }
+
+  CV_Assert(input1.cols * 2 == output.cols);
+
+  // 比较低效，使用at()的方式获取值
+  // for (int y = 0; y < output.rows; y++) {
+  //   for (int x = 0; x < output.cols; x += 2) {
+  //     output.at<uchar>(y, x) = input1.at<uchar>(y, x / 2);
+  //     output.at<uchar>(y, x + 1) = input2.at<uchar>(y, x / 2);
+  //   }
+  // }
+
+  // 相对高效，使用指针来直接访问Mat数据
+  for (int row = 0; row < input1.rows; ++row) {
+    const uchar *ptr1 = input1.ptr<uchar>(row);
+    const uchar *ptr2 = input2.ptr<uchar>(row);
+    uchar *outPtr = output.ptr<uchar>(row);
+
+    for (int col = 0; col < input1.cols; ++col) {
+      *outPtr++ = *ptr1++;
+      *outPtr++ = *ptr2++;
+    }
+  }
+}
+
+cv::Mat interleaveColumnsParallel(const cv::Mat &input1, const cv::Mat &input2,
+                                  cv::Mat &output) {
+  CV_Assert(input1.size() == input2.size() && input1.type() == input2.type());
+
+  if (output.empty()) {
+    output.create(input1.rows, input1.cols * 2, input1.type());
+  }
+
+  cv::parallel_for_(cv::Range(0, input1.rows), [&](const cv::Range &range) {
+    for (int row = range.start; row < range.end; row++) {
+      const uchar *ptr1 = input1.ptr<uchar>(row);
+      const uchar *ptr2 = input2.ptr<uchar>(row);
+      uchar *outPtr = output.ptr<uchar>(row);
+
+      for (int col = 0; col < input1.cols; ++col) {
+        *outPtr++ = *ptr1++;
+        *outPtr++ = *ptr2++;
+      }
+    }
+  });
+
+  return output;
+}
 
 bool resizeInput(cv::Mat &image, bool isScale, std::array<int, 2> &dstShape) {
   if (isScale) {
@@ -33,6 +120,49 @@ bool resizeInput(cv::Mat &image, bool isScale, std::array<int, 2> &dstShape) {
   } else {
     cv::resize(image, image, cv::Size(dstShape[0], dstShape[1]));
   }
+  return true;
+}
+
+bool delBoundaryInfo(cv::Mat const &input, cv::Mat &output,
+                     std::vector<cv::Point2i> &points, ColorType type) {
+
+  if (type == ColorType::NV12) {
+
+    cv::Mat yMask(cv::Size(input.cols, input.rows * 2 / 3), CV_8UC1,
+                  cv::Scalar(0));
+
+    cv::fillPoly(yMask, std::vector<std::vector<cv::Point2i>>{points},
+                 cv::Scalar(255));
+
+    // u和v分量的mask
+    cv::Mat uMask, vMask;
+    cv::resize(yMask, uMask, cv::Size(yMask.cols / 2, yMask.rows / 2));
+    vMask = uMask;
+
+    cv::Mat uvMask;
+    // 合并uMask和vMask到uvMask(uv是交叉排列的)
+    // interleaveColumnsParallel(uMask, vMask, uvMask);
+    interleaveColumns(uMask, vMask, uvMask);
+
+    // 将yMask为0的部分对应的output填0
+    output(cv::Rect(0, 0, input.cols, input.rows * 2 / 3)).setTo(0, yMask == 0);
+
+    // 将uvMask为0的部分对应的output填128
+    output(cv::Rect(0, input.rows * 2 / 3, input.cols, input.rows / 3))
+        .setTo(128, uvMask == 0);
+
+  } else if (type == ColorType::BGR888 || type == ColorType::RGB888) {
+    // 创建一个空的黑色掩膜
+    cv::Mat mask(output.size(), CV_8UC1, cv::Scalar(0));
+    cv::fillPoly(mask, std::vector<std::vector<cv::Point2i>>{points},
+                 cv::Scalar(255));
+    output.setTo(0, mask == 0);
+  } else {
+    FLOWENGINE_LOGGER_ERROR(
+        "delBoundaryInfo failed: unknow the image ColorType!");
+    return false;
+  }
+
   return true;
 }
 
@@ -66,53 +196,30 @@ void YUV2BGR(const cv::Mat y, const cv::Mat u, const cv::Mat v,
 void YU122NV12(cv::Mat const &input, cv::Mat &output) {
   int y_rows = input.rows * 2 / 3;
   cv::Mat y = input.rowRange(0, y_rows).colRange(0, input.cols);
+  // uv 不可以为奇数
   cv::Mat uv = input.rowRange(y_rows, input.rows).colRange(0, input.cols);
-  output.create(cv::Size(input.cols, input.rows), CV_8UC1);
 
-  // 拷贝y通道
-  y.copyTo(output.rowRange(0, y.rows).colRange(0, y.cols)); // 5ms左右
-
-  // // 指出nv12的uv通道，准备填值
-  cv::Mat uvInterleaved =
-      output.rowRange(y_rows, input.rows).colRange(0, uv.cols);
-
-  // int u_rows = uv.rows / 2;
-  // int u_cols = uv.cols / 2;
-  // for (int row = 0; row < u_rows; ++row) {
-  //   for (int col = 0; col < u_cols; ++col) {
-  //     // 一共四组，每组复制总共30ms，四组共耗时大约120ms
-  //     uvInterleaved.at<uchar>(2 * row, col * 2) = uv.at<uchar>(row, col);
-  //     uvInterleaved.at<uchar>(2 * row, col * 2 + 1) =
-  //         uv.at<uchar>(row + u_rows, col);
-  //     uvInterleaved.at<uchar>(2 * row + 1, col * 2) =
-  //         uv.at<uchar>(row, col + u_cols);
-  //     uvInterleaved.at<uchar>(2 * row + 1, col * 2 + 1) =
-  //         uv.at<uchar>(row + u_rows, col + u_cols);
-  //   }
-  // }
-
-  // 将UV分别重塑为两个矩阵
-  cv::Mat u = uv.rowRange(0, uv.rows / 2).colRange(0, uv.cols / 2);
-  cv::Mat v = uv.rowRange(uv.rows / 2, uv.rows).colRange(0, uv.cols / 2);
-
-  // 将U和V矩阵分别复制到UV通道中，每个U/V对应一个2x2的位置
-  for (int row = 0; row < uv.rows / 2; ++row) {
-    uchar *uvInterleavedRow = uvInterleaved.ptr<uchar>(2 * row);
-    uchar *uRow = u.ptr<uchar>(row);
-    uchar *vRow = v.ptr<uchar>(row);
-
-    for (int col = 0; col < uv.cols / 2; ++col) {
-      uvInterleavedRow[2 * col] = uRow[col];
-      uvInterleavedRow[2 * col + 1] = vRow[col];
-    }
-
-    uvInterleavedRow = uvInterleaved.ptr<uchar>(2 * row + 1);
-
-    for (int col = 0; col < uv.cols / 2; ++col) {
-      uvInterleavedRow[2 * col] = uRow[col];
-      uvInterleavedRow[2 * col + 1] = vRow[col];
+  // 对uv进行矫正
+  cv::Rect rect = {0, 0, uv.cols, uv.rows};
+  if (rect.height % 2) {
+    rect.height -= 1;
+    uv = uv(rect);
+    if ((uv.rows + y.rows) % 3 != 0) {
+      y_rows -= (uv.rows + y.rows) % 3;
+      rect = {0, 0, y.cols, y_rows};
+      y = y(rect);
     }
   }
+  cv::Mat u = uv.rowRange(0, uv.rows / 2).colRange(0, uv.cols / 2);
+  cv::Mat v = uv.rowRange(uv.rows / 2, uv.rows).colRange(0, uv.cols / 2);
+  // 单个的一轮uv
+  cv::Mat uvOne;
+  // 两轮uv的交错
+  cv::Mat uvInterleave;
+  interleaveColumns(u, v, uvOne);
+  interleaveRows(uvOne, uvOne, uvInterleave);
+  // 合并最终的结果
+  cv::vconcat(y, uvInterleave, output);
 }
 
 void YU122NV12_parallel(cv::Mat const &input, cv::Mat &output) {
@@ -183,11 +290,8 @@ void YUV444toNV12(cv::Mat const &input, cv::Mat &output) {
 void RGB2NV12(cv::Mat const &input, cv::Mat &output, bool is_parallel) {
   // 这里图片的宽高必须是偶数，否则直接卡死这里
   cv::Rect rect{0, 0, input.cols, input.rows};
-  if (rect.width % 2 != 0)
-    rect.width -= 1;
-  if (rect.height % 2 != 0) {
-    rect.height -= 1;
-  }
+  rect.width -= rect.width % 2;
+  rect.height -= rect.height % 2;
   cv::Mat in_temp = input(rect);
   cv::Mat temp;
   cv::cvtColor(in_temp, temp, cv::COLOR_RGB2YUV_I420);
@@ -201,8 +305,31 @@ void RGB2NV12(cv::Mat const &input, cv::Mat &output, bool is_parallel) {
   // YUV444toNV12(temp, output);
 }
 
+void BGR2NV12(cv::Mat const &input, cv::Mat &output, bool is_parallel) {
+  // 这里图片的宽高必须是偶数，否则直接卡死这里
+  cv::Rect rect{0, 0, input.cols, input.rows};
+  rect.width -= rect.width % 2;
+  rect.height -= rect.height % 2;
+  cv::Mat in_temp = input(rect);
+  cv::Mat temp;
+  cv::cvtColor(in_temp, temp, cv::COLOR_BGR2YUV_I420);
+  if (is_parallel) {
+    YU122NV12_parallel(temp, output);
+  } else {
+    YU122NV12(temp, output);
+  }
+
+  // cv::cvtColor(input, temp, cv::COLOR_RGB2YUV);
+  // YUV444toNV12(temp, output);
+}
+
 void NV12toRGB(cv::Mat const &nv12, cv::Mat &output) {
-  cv::cvtColor(nv12, output, CV_YUV2RGB_NV12);
+  cv::Rect rect{0, 0, nv12.cols, nv12.rows};
+  // width % 2 == 0 and height % 3 == 0
+  rect.width -= rect.width % 2;
+  rect.height -= rect.height % 3;
+  cv::Mat temp = nv12(rect);
+  cv::cvtColor(temp, output, cv::COLOR_YUV2RGB_NV12);
 }
 
 template <ColorType format>
@@ -226,14 +353,11 @@ bool _crop<ColorType::NV12>(cv::Mat const &input, cv::Mat &output,
                    .rowRange(input.rows * 2 / 3 + rect.y / 2,
                              input.rows * 2 / 3 + (rect.y + rect.height) / 2)
                    .colRange(rect.x, rect.x + rect.width);
-  cv::Mat y_cropped = y.clone();
-  cv::Mat uv_cropped = uv.clone();
   cv::Rect2i rect_y(0, 0, rect.width, rect.height);
   cv::Rect2i rect_uv(0, 0, rect.width, rect.height / 2);
-  y_cropped = y_cropped(rect_y);
-  uv_cropped = uv_cropped(rect_uv);
+  cv::Mat y_cropped = y(rect_y);
+  cv::Mat uv_cropped = uv(rect_uv);
   cv::vconcat(y_cropped, uv_cropped, output);
-
   return true;
 }
 
@@ -251,11 +375,9 @@ bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
     rect.height = std::min(maxHeight - rect.y, rect.height + sh);
   }
   // width 和 height 如果为奇数的话至少是1，因此可以直接操作
-  if (rect.width % 2 != 0)
-    rect.width -= 1;
-  if (rect.height % 2 != 0) {
-    rect.height -= 1;
-  }
+  rect.width -= rect.width % 2;
+  rect.height -= rect.height % 2;
+
   if (rect.width + rect.x > maxWidth || rect.height + rect.y > maxHeight) {
     FLOWENGINE_LOGGER_ERROR("cropImage is failed: error region!");
     return false;
@@ -279,6 +401,28 @@ bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
 bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
                ColorType type, float sr) {
   return crop(input, output, rect, type, sr);
+}
+
+bool cropImage(cv::Mat const &input, cv::Mat &output, RetBox &bbox,
+               ColorType type, float sr) {
+  // 先抠图，如果是多边区域的话，就将多变区域描黑
+  cv::Rect2i rect{bbox.x, bbox.y, bbox.width, bbox.height};
+  if (sr > 0) { // 如果需要放大边框，直接不用扣了
+    return cropImage(input, output, rect, type, sr);
+  }
+  if (!crop(input, output, rect, type, sr)) {
+    return false;
+  };
+  if (bbox.isPoly) {
+    // 为points做坐标偏移
+    std::vector<cv::Point2i> offsetPoints;
+    for (const auto &pt : bbox.points) {
+      offsetPoints.emplace_back(pt.x - bbox.x, pt.y - bbox.y);
+    }
+    // 去除边界信息
+    delBoundaryInfo(output, output, offsetPoints, type);
+  }
+  return true;
 }
 
 } // namespace infer::utils

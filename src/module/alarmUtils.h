@@ -16,6 +16,7 @@
 #include <memory>
 #include <opencv2/imgproc.hpp>
 #include <stdexcept>
+#include <string_view>
 #include <vector>
 
 #include "common/common.hpp"
@@ -27,12 +28,18 @@
 
 #include "videoRecord.hpp"
 
-using common::AlarmBase;
-
 using namespace video;
+using common::LogicBase;
 
 namespace module {
 namespace filesystem = std::experimental::filesystem;
+
+enum class DRAW_TYPE : uint8_t {
+  NOT_DRAW = 0,
+  DRAW_BBOX,
+  DRAW_BBOX_WITH_ORIGINAL,
+};
+
 class AlarmUtils {
 protected:
   bool isRecord = false; // 是否是保存视频状态
@@ -70,7 +77,7 @@ public:
   }
 
   inline void recordVideo(cv::Mat &frame) {
-  // inline void recordVideo(cv::Mat &frame, RetBox const &bbox) {
+    // inline void recordVideo(cv::Mat &frame, RetBox const &bbox) {
     // if (drawTimes-- > 0) {
     //   utils::drawRetBox(frame, bbox, cv::Scalar{255, 0, 0});
     // }
@@ -87,7 +94,7 @@ public:
 
   inline void generateAlarmInfo(std::string const &name, AlarmInfo &alarmInfo,
                                 std::string const &detail,
-                                AlarmBase const *const config) {
+                                LogicBase const *const config) {
     // 生成本次报警的唯一ID
     alarmInfo.alarmId = utils::generate_hex(16);
     alarmInfo.alarmFile = config->outputDir + "/" + alarmInfo.alarmId;
@@ -102,8 +109,9 @@ public:
   }
 
   inline void saveAlarmImage(std::string const &path, cv::Mat const &frame,
-                             ColorType const ctype, bool isDraw = false,
-                             RetBox bbox = RetBox{"", {0, 0, 0, 0, 0, 0}}) {
+                             ColorType const ctype,
+                             DRAW_TYPE dtype = DRAW_TYPE::NOT_DRAW,
+                             std::vector<RetBox> bboxes = {}) {
     cv::Mat showImage;
     // 临时画个图（后续根据前端参数来决定返回的图片是否带有画图标记）
     switch (ctype) {
@@ -124,15 +132,24 @@ public:
     }
     }
     // 画报警框
-    if (isDraw) {
-      utils::drawRetBox(showImage, bbox);
+    switch (dtype) {
+    case DRAW_TYPE::DRAW_BBOX_WITH_ORIGINAL: {
+      // 报警框名称操作
+      std::string oriPath = path;
+      size_t pos = path.rfind(".jpg");
+      if (pos != std::string::npos) {
+        oriPath.erase(pos);
+      }
+      cv::imwrite(oriPath + "_original.jpg", showImage);
     }
-
-    // // 报警框名称操作
-    // auto pos = name.find("_");
-    // alarmBox.first = name.substr(pos + 1).substr(0, name.substr(pos +
-    // 1).find("_"));
-
+    case DRAW_TYPE::DRAW_BBOX: {
+      utils::drawRetBox(showImage, bboxes);
+      break;
+    }
+    default: {
+      break;
+    }
+    }
     // 输出alarm image
     cv::imwrite(path, showImage);
   }

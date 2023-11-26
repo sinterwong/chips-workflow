@@ -18,14 +18,33 @@ namespace video {
 
 class VDecoder : private common::NonCopyable {
 public:
+  // 初始化视频解码
   virtual bool init() = 0;
+
+  // 开启视频解码
+  virtual bool start(std::string const &uri) = 0;
+
+  // 关闭视频解码
+  virtual bool stop() = 0;
+
+  // 启动视频解码
   virtual bool run() = 0;
+
+  // 解码状态检查
   virtual bool isRunning() = 0;
+
+  // 基础信息获取
+  virtual std::string getUri() = 0;
   virtual int getHeight() = 0;
   virtual int getWidth() = 0;
   virtual int getRate() = 0;
+
+  // 获取解码图像
   virtual std::shared_ptr<cv::Mat> getcvImage() = 0;
+
+  // 解码图像颜色格式
   virtual common::ColorType getType() const noexcept = 0;
+
   virtual ~VDecoder() noexcept {}
 };
 } // namespace video
