@@ -58,8 +58,8 @@ using Shape = std::array<int, 3>;
  *
  */
 struct FrameInfo {
-  Shape shape;  // 图片分辨率
-  Shape inputShape;  // 图片输入算法时的维度（eg:NV12的话维度为{w, h * 1.5, c};
+  Shape shape; // 图片分辨率
+  Shape inputShape; // 图片输入算法时的维度（eg:NV12的话维度为{w, h * 1.5, c};
   ColorType type;
   void **data;
 };
@@ -170,12 +170,18 @@ struct OCRRet {
   std::string chars;  // 映射后结果
 };
 
+// 关键点检测（无框）
+struct KeypointsRet {
+  Points2f points; // 关键点
+  float *M;        // 仿射变换矩阵
+};
+
 // 特征
 using Eigenvector = std::vector<float>;
 
 // 算法结果
-using AlgoRet = std::variant<std::monostate, BBoxes, ClsRet, CharsRet, Points2f,
-                             KeypointsBoxes, Eigenvector>;
+using AlgoRet = std::variant<std::monostate, BBoxes, ClsRet, CharsRet,
+                             KeypointsRet, KeypointsBoxes, Eigenvector>;
 
 /**
  * @brief 算法推理时返回结果
@@ -308,6 +314,7 @@ enum class AlgoSerial : uint16_t {
   CRNN,
   Softmax,
   FaceNet,
+  FaceKeyPoints,
 };
 
 // 算法系列映射
@@ -318,6 +325,7 @@ static std::unordered_map<std::string, AlgoSerial> algoSerialMapping{
     std::make_pair("CRNN", AlgoSerial::CRNN),
     std::make_pair("Softmax", AlgoSerial::Softmax),
     std::make_pair("FaceNet", AlgoSerial::FaceNet),
+    std::make_pair("FaceKeyPoints", AlgoSerial::FaceKeyPoints),
 };
 
 // 算法系列映射算法类型
@@ -325,6 +333,7 @@ static std::unordered_map<AlgoSerial, AlgoRetType> serial2TypeMapping{
     std::make_pair(AlgoSerial::Yolo, AlgoRetType::Detection),
     std::make_pair(AlgoSerial::Assd, AlgoRetType::Detection),
     std::make_pair(AlgoSerial::YoloPDet, AlgoRetType::Detection),
+    std::make_pair(AlgoSerial::FaceKeyPoints, AlgoRetType::Detection),
     std::make_pair(AlgoSerial::CRNN, AlgoRetType::OCR),
     std::make_pair(AlgoSerial::Softmax, AlgoRetType::Classifier),
     std::make_pair(AlgoSerial::FaceNet, AlgoRetType::Feature),

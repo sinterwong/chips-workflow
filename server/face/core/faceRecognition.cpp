@@ -30,8 +30,11 @@ bool FaceRecognition::extract(FramePackage const &framePackage,
 
   // 人脸检测
   InferResult faceDetRet;
-  AlgoManager::getInstance().infer(AlgoType::DET, frame, faceDetRet);
-
+  auto ret = AlgoManager::getInstance().infer(AlgoType::DET, frame, faceDetRet);
+  if (!ret.get()) {
+    FLOWENGINE_LOGGER_INFO("Face detection failed!");
+    return false;
+  }
   auto kbboxes = std::get_if<KeypointsBoxes>(&faceDetRet.aRet);
   if (!kbboxes || kbboxes->empty()) {
     FLOWENGINE_LOGGER_INFO("Not a single face was detected!");
@@ -52,7 +55,11 @@ bool FaceRecognition::extract(FramePackage const &framePackage,
   // cv::imwrite("output.jpg", faceImage);
   // 人脸特征提取
   InferResult faceRecRet;
-  AlgoManager::getInstance().infer(AlgoType::REC, faceInput, faceRecRet);
+  ret = AlgoManager::getInstance().infer(AlgoType::REC, faceInput, faceRecRet);
+  if (!ret.get()) {
+    FLOWENGINE_LOGGER_INFO("Face recognition failed!");
+    return false;
+  }
   feature = *std::get_if<std::vector<float>>(&faceRecRet.aRet);
   utils::normalize_L2(feature.data(), feature.size());
   return true;

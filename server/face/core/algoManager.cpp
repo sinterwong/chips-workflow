@@ -21,8 +21,9 @@ std::future<bool> AlgoManager::infer(AlgoType const &atype,
 
   std::future<bool> ret = task.get_future();
 
-  // 在单独的线程上运行任务
-  task();
+  // 在新线程上运行任务
+  std::thread task_thread(std::move(task));
+  task_thread.detach(); // 使线程在后台运行，独立于当前线程
 
   return ret; // 移交调用者等待算法结果
 }
