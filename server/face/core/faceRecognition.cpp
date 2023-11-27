@@ -10,6 +10,8 @@
  */
 #include "faceRecognition.hpp"
 #include "networkUtils.hpp"
+#include "postprocess.hpp"
+
 namespace server::face::core {
 
 FaceRecognition *FaceRecognition::instance = nullptr;
@@ -42,8 +44,8 @@ bool FaceRecognition::extract(FramePackage const &framePackage,
   }
 
   // 获取最靠近中心的人脸
-  size_t index = findClosestBBoxIndex(*kbboxes, framePackage.frame->cols,
-                                      framePackage.frame->rows);
+  size_t index = utils::findClosestBBoxIndex(*kbboxes, framePackage.frame->cols,
+                                             framePackage.frame->rows);
 
   auto kbbox = kbboxes->at(index);
 
@@ -143,27 +145,4 @@ void FaceRecognition::getFaceInput(cv::Mat const &input, cv::Mat &output,
   frame.data = reinterpret_cast<void **>(&output.data);
 }
 
-size_t FaceRecognition::findClosestBBoxIndex(KeypointsBoxes const &kbboxes,
-                                             float w, float h) {
-  float image_center_x = w / 2.0;
-  float image_center_y = h / 2.0;
-
-  float min_distance = std::numeric_limits<float>::max();
-  size_t closest_bbox_index = -1;
-
-  for (size_t i = 0; i < kbboxes.size(); ++i) {
-    const auto &kbbox = kbboxes[i];
-    float bbox_center_x = (kbbox.bbox.bbox[0] + kbbox.bbox.bbox[2]) / 2.0;
-    float bbox_center_y = (kbbox.bbox.bbox[1] + kbbox.bbox.bbox[3]) / 2.0;
-
-    float distance = std::hypot(bbox_center_x - image_center_x,
-                                bbox_center_y - image_center_y);
-
-    if (distance < min_distance) {
-      min_distance = distance;
-      closest_bbox_index = i;
-    }
-  }
-  return closest_bbox_index;
-}
 } // namespace server::face::core

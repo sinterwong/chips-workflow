@@ -211,4 +211,27 @@ void sortFourPoints(Points2f &points) {
   // }
 }
 
+ size_t findClosestBBoxIndex(KeypointsBoxes const &kbboxes, float w, float h){
+  float image_center_x = w / 2.0;
+  float image_center_y = h / 2.0;
+
+  float min_distance = std::numeric_limits<float>::max();
+  size_t closest_bbox_index = -1;
+
+  for (size_t i = 0; i < kbboxes.size(); ++i) {
+    const auto &kbbox = kbboxes[i];
+    float bbox_center_x = (kbbox.bbox.bbox[0] + kbbox.bbox.bbox[2]) / 2.0;
+    float bbox_center_y = (kbbox.bbox.bbox[1] + kbbox.bbox.bbox[3]) / 2.0;
+
+    float distance = std::hypot(bbox_center_x - image_center_x,
+                                bbox_center_y - image_center_y);
+
+    if (distance < min_distance) {
+      min_distance = distance;
+      closest_bbox_index = i;
+    }
+  }
+  return closest_bbox_index;
+}
+
 } // namespace infer::utils

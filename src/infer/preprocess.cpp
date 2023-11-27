@@ -12,6 +12,8 @@
 #include "logger/logger.hpp"
 #include <common/common.hpp>
 #include <opencv2/core.hpp>
+#include <opencv2/core/hal/interface.h>
+#include <opencv2/core/mat.inl.hpp>
 #include <opencv2/core/types.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
@@ -390,7 +392,7 @@ bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
   case ColorType::NV12: {
     return _crop<ColorType::NV12>(input, output, rect);
   }
-  case ColorType::None: {
+  default: {
     FLOWENGINE_LOGGER_ERROR("cropImage is failed: unknow the image ColorType!");
     return false;
   }
@@ -399,12 +401,12 @@ bool crop(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
 }
 
 bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
-               ColorType type, float sr) {
+               ColorType const &type, float sr) {
   return crop(input, output, rect, type, sr);
 }
 
 bool cropImage(cv::Mat const &input, cv::Mat &output, RetBox &bbox,
-               ColorType type, float sr) {
+               ColorType const &type, float sr) {
   // 先抠图，如果是多边区域的话，就将多变区域描黑
   cv::Rect2i rect{bbox.x, bbox.y, bbox.width, bbox.height};
   if (sr > 0) { // 如果需要放大边框，直接不用扣了
@@ -425,4 +427,33 @@ bool cropImage(cv::Mat const &input, cv::Mat &output, RetBox &bbox,
   return true;
 }
 
+std::pair<float, float> sharpnessAndBrightnessScore(cv::Mat const &image) {
+  // Crop the face from the image
+  cv::Mat imageGray;
+
+  cv::cvtColor(image, imageGray, cv::COLOR_BGR2GRAY);
+
+  // Blur the face image with a 5x5 Gaussian kernel
+  cv::Mat blurFaceImage;
+  cv::GaussianBlur(imageGray, blurFaceImage, cv::Size(5, 5), 1, 1);
+
+  // Calculate the sharpness score
+  cv::Mat diffImage;
+  cv::absdiff(imageGray, blurFaceImage, diffImage);
+
+  double sum = cv::sum(diffImage)[0];
+
+  double sharpnessScore = sum / (diffImage.rows * diffImage.cols * 255.0);
+  sharpnessScore = std::min(1.0, sharpnessScore * 100);
+
+  // Calculate the brightness score
+  double brightnessScore = cv::mean(imageGray)[0];
+  if (brightnessScore < 20 || brightnessScore > 230) {
+    brightnessScore = 0;
+  } else {
+    brightnessScore = 1 - std::abs(brightnessScore - 127.5) / 127.5;
+  }
+  return {static_cast<float>(sharpnessScore),
+          static_cast<float>(brightnessScore)};
+}
 } // namespace infer::utils
