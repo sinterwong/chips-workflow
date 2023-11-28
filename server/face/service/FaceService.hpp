@@ -175,6 +175,12 @@ public:
   // 批量删除
   oatpp::Object<StatusDto>
   deleteBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users);
+
+  // Get 人脸质检
+  oatpp::Object<StatusDto> faceQuality(oatpp::String const &url);
+
+  // Post 人脸质检
+  oatpp::Object<StatusDto> faceQuality(oatpp::Object<ImageDto> const &image);
 };
 } // namespace server::face
 #endif

@@ -12,6 +12,7 @@
 #include "faceQuality.hpp"
 #include "algoManager.hpp"
 #include "logger/logger.hpp"
+#include "networkUtils.hpp"
 #include "postprocess.hpp"
 #include "preprocess.hpp"
 #include <opencv2/core/types.hpp>
@@ -25,6 +26,19 @@ using namespace common;
 namespace server::face::core {
 
 FaceQuality *FaceQuality::instance = nullptr;
+
+bool FaceQuality::infer(std::string const &url, int &quality) {
+  // 推理任务定义
+  std::shared_ptr<cv::Mat> image_bgr = getImageByUri(url);
+  if (image_bgr == nullptr) {
+    return false;
+  }
+
+  // TODO: 暂时写死NV12格式推理
+  cv::Mat input;
+  infer::utils::BGR2NV12(*image_bgr, input);
+  return infer(FramePackage{url, std::make_shared<cv::Mat>(input)}, quality);
+}
 
 bool FaceQuality::infer(FramePackage const &framePackage, int &quality) {
 
@@ -64,12 +78,16 @@ bool FaceQuality::infer(FramePackage const &framePackage, int &quality) {
   // 1. 图像尺寸
   if (faceWidth < 80 || faceHeight < 80) {
     quality = 1;
+    FLOWENGINE_LOGGER_DEBUG("faceWidth: {}, faceHeight: {}", faceWidth,
+                            faceHeight);
     return true;
   }
 
   // 2. 长宽比
   if (faceWidth / faceHeight > 2.5 || faceHeight / faceWidth > 2.5) {
     quality = 2;
+    FLOWENGINE_LOGGER_DEBUG("faceWidth: {}, faceHeight: {}", faceWidth,
+                            faceHeight);
     return true;
   }
 
@@ -92,14 +110,18 @@ bool FaceQuality::infer(FramePackage const &framePackage, int &quality) {
 
   if (sharpness <= 0.4 || brightness <= 0.4) {
     quality = 3;
+    FLOWENGINE_LOGGER_DEBUG("sharpness: {}, brightness: {}", sharpness,
+                            brightness);
     return true;
   }
 
   // 4. 角度
   float pitch, yaw, roll;
   points5angle(kbbox.points, pitch, yaw, roll);
-  if (pitch >= 30 || yaw >= 30 || roll >= 30) {
+  // pitch 为仰头角度，yaw 为左右转头角度，roll 为摇头角度
+  if (pitch >= 30 || yaw >= 35 || roll >= 30) {
     quality = 4;
+    FLOWENGINE_LOGGER_DEBUG("pitch: {}, yaw: {}, roll: {}", pitch, yaw, roll);
     return true;
   }
 

@@ -41,6 +41,9 @@ public:
    * @return true
    * @return false
    */
+
+  bool infer(std::string const &url, int &quality);
+
   bool infer(FramePackage const &framePackage, int &quality);
 
 private:

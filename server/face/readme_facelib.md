@@ -180,6 +180,25 @@ POST /face/v0/facelib/deleteBatch
 }
 ```
 
+### 9. 人脸质检
+对人脸图片进行质检。
+
+#### 请求
+POST /face/v0/facelib/faceQuality
+
+#### POST 参数示例
+```json
+{"name": "temp", "url": "http://xxx.com/xxx.jpg"}
+```
+#### 响应
+```json
+{
+    "status": "OK", 
+    "code": 200, 
+    "message": "0"  # 质检结果，0：正常，1：图片尺寸过小，2：长宽比过大，3：模糊度或亮度过大，4：人脸角度过大，5：大胡子，6：普通眼镜，7：口罩遮挡，8：墨镜，9：其它遮挡，-1：无人脸或未知错误
+}
+```
+
 ### 错误处理
 #### 重复创建id
 ```json
@@ -312,6 +331,12 @@ def compare_two_users_post(data):
     print("Compare User:", response.json())
 
 
+def face_quality(data):
+    response = requests.post(
+        f"{BASE_URL}/face/v0/facelib/faceQuality", data=json.dumps(data), headers=headers)
+    print("Face Quality:", response.json())
+
+
 if __name__ == "__main__":
     create_user({"userId": "12345", "libName": "temp1",
                 "url": get_base64_of_image("image1.png")})
@@ -321,13 +346,13 @@ if __name__ == "__main__":
         {"userId": "22222", "libName": "temp2",
             "url": get_base64_of_image("image2.png")}
     ]))
-    
+
     # 单个更新允许换库
     update_user({"userId": "12345", "libName": "temp1",
                 "url": get_base64_of_image("image2.png")})
 
     # 批量操作暂时不允许“换库”
-    update_batch_users(([  
+    update_batch_users(([
         {"userId": "11111", "libName": "temp2",
             "url": get_base64_of_image("image2.png")},
         {"userId": "22222", "libName": "temp2",
@@ -351,6 +376,10 @@ if __name__ == "__main__":
         {"userId": "11111"},
         {"userId": "22222"}
     ]))
+    
+    # 质检结果，0：正常，1：图片尺寸过小，2：长宽比过大，3：模糊度或亮度过大，4：人脸角度过大，5：大胡子，6：普通眼镜，7：口罩遮挡，8：墨镜，9：其它遮挡，-1：无人脸或未知错误
+    face_quality({"name": "temp2", "url": get_base64_of_image("image2.png")})
+
 ```
 
 ## TODO
@@ -359,3 +388,7 @@ if __name__ == "__main__":
 - [x] 人脸接口支持base64编码
 - [x] 批量增删改接口
 - [x] 人脸库分库增删改
+- [x] 人脸质检接口
+- [ ] 活体检测功能
+- [ ] 批量搜索
+- [ ] 批量质检

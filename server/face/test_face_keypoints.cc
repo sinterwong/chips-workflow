@@ -177,8 +177,8 @@ int main(int argc, char **argv) {
     std::vector<cv::Point2f> points;
     for (auto &p : kbbox.points) {
       cv::circle(image_bgr,
-                 cv::Point{static_cast<int>(p.x), static_cast<int>(p.y)}, 3,
-                 cv::Scalar{255, 255, 0});
+                 cv::Point{static_cast<int>(p.x), static_cast<int>(p.y)}, 4,
+                 cv::Scalar{0, 0, 255});
       cv::putText(image_bgr, std::to_string(i++),
                   cv::Point(static_cast<int>(p.x), static_cast<int>(p.y)),
                   cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(255, 14, 50), 1);
@@ -223,7 +223,7 @@ int main(int argc, char **argv) {
     // 可视化人脸关键点
     for (auto &p : ret->points) {
       cv::circle(image_bgr,
-                 cv::Point{static_cast<int>(p.x), static_cast<int>(p.y)}, 3,
+                 cv::Point{static_cast<int>(p.x), static_cast<int>(p.y)}, 2,
                  cv::Scalar{255, 255, 0});
     }
     cv::imwrite(prefix + "_image_bgr_face_keypoints.jpg", image_bgr);

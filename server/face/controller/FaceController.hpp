@@ -164,6 +164,17 @@ public:
     return createDtoResponse(Status::CODE_200,
                              m_faceService.deleteBatch(users));
   }
+
+  // 人脸质量检测
+  ENDPOINT_INFO(faceQuality) {
+    info->summary = "Face quality detection";
+    info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
+  }
+  ENDPOINT("POST", "face/v0/facelib/faceQuality", faceQuality,
+           BODY_DTO(Object<ImageDto>, image)) {
+    return createDtoResponse(Status::CODE_200,
+                             m_faceService.faceQuality(image));
+  }
 };
 
 #include OATPP_CODEGEN_END(ApiController) //<- End Codegen
