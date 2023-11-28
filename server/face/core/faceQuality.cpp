@@ -98,7 +98,7 @@ bool FaceQuality::infer(FramePackage const &framePackage, int &quality) {
   // 4. 角度
   float pitch, yaw, roll;
   points5angle(kbbox.points, pitch, yaw, roll);
-  if (pitch < 30 || yaw < 30 || roll < 30) {
+  if (pitch >= 30 || yaw >= 30 || roll >= 30) {
     quality = 4;
     return true;
   }
@@ -200,17 +200,16 @@ bool FaceQuality::getFaceInput(cv::Mat const &input, cv::Mat &output,
     return false;
   }
 
-  FrameInfo faceInput;
-  faceInput.data = reinterpret_cast<void **>(&output.data);
+  frame.data = reinterpret_cast<void **>(&output.data);
   // 输入的图像尺寸
-  faceInput.inputShape = {output.cols, output.rows, output.channels()};
-  faceInput.type = type;
+  frame.inputShape = {output.cols, output.rows, output.channels()};
+  frame.type = type;
 
   if (type == ColorType::NV12) {
     // RGB图像的尺寸
-    faceInput.shape = {output.cols, output.rows * 2 / 3, output.channels()};
+    frame.shape = {output.cols, output.rows * 2 / 3, output.channels()};
   } else {
-    faceInput.shape = {output.cols, output.rows, output.channels()};
+    frame.shape = {output.cols, output.rows, output.channels()};
   }
   return true;
 }

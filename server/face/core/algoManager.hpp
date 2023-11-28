@@ -56,6 +56,10 @@ private:
         std::make_shared<AlgoDispatcher>(AlgoType::DET, DET_ALGO_NUM);
     algoDispatchers[AlgoType::REC] =
         std::make_shared<AlgoDispatcher>(AlgoType::REC, REC_ALGO_NUM);
+    algoDispatchers[AlgoType::QUALITY] =
+        std::make_shared<AlgoDispatcher>(AlgoType::QUALITY, QUALITY_ALGO_NUM);
+    algoDispatchers[AlgoType::KEYPOINT] = std::make_shared<AlgoDispatcher>(
+        AlgoType::KEYPOINT, KEY_POINTS_ALGO_NUM);
   }
   ~AlgoManager() {
     delete instance;

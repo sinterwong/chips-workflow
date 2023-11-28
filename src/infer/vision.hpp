@@ -52,6 +52,7 @@ public:
                     CV_8UC1);
       utils::hwc_to_chw(output.data, image.data, image.channels(), image.rows,
                         image.cols);
+      break;
     }
     case common::ColorType::NV12: {
       output = cv::Mat(height * 3 / 2, width, CV_8UC1, data);
@@ -62,6 +63,7 @@ public:
         return false;
       }
       utils::RGB2NV12(output, output);
+      break;
     }
     case common::ColorType::None: {
       return false;
