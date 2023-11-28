@@ -19,16 +19,20 @@ public:
   ([] {
     oatpp::swagger::DocumentInfo::Builder builder;
 
-    builder.setTitle("User entity service")
-        .setDescription("Face server API")
+    builder.setTitle("Face service's API")
+        .setDescription(
+            "该页面描述了人脸库服务API的使用方法。通过这些API，您可以在人脸库中"
+            "创建、更新、删除和搜索用户，同时提供了一系列人脸相关的算法任务。每"
+            "个API调用都会返回一个JSON格式的响应。")
         .setVersion("1.0")
         .setContactName("Sinter")
         .setContactUrl("http://114.242.23.39:9797")
+        .setContactEmail("sinterwong@gmail.com")
 
-        .setLicenseName("Apache License, Version 2.0")
-        .setLicenseUrl("http://www.apache.org/licenses/LICENSE-2.0")
-
-        .addServer("http://114.242.23.39:9797", "server on x3pi");
+        // .setLicenseName("Apache License, Version 2.0")
+        // .setLicenseUrl("http://www.apache.org/licenses/LICENSE-2.0")
+        
+        .addServer("http://114.242.23.39:9797", "face server on x3pi");
 
     return builder.build();
   }());
