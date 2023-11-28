@@ -1,6 +1,5 @@
 import requests
 import json
-import time
 import base64
 
 BASE_URL = "http://localhost:9797"  # Change this to your server's URL and port
@@ -75,15 +74,10 @@ def compare_two_users_post(data):
     print("Compare User:", response.json())
 
 
-def start_video(post_data):
+def face_quality(data):
     response = requests.post(
-        f"{BASE_URL}/stream/startVideo", data=json.dumps(post_data), headers=headers)
-    print("Start video:", response.json())
-
-
-def stop_video(name):
-    response = requests.get(f"{BASE_URL}/stream/stopVideo?name={name}")
-    print("Stop video:", response.json())
+        f"{BASE_URL}/face/v0/facelib/faceQuality", data=json.dumps(data), headers=headers)
+    print("Face Quality:", response.json())
 
 
 if __name__ == "__main__":
@@ -95,25 +89,25 @@ if __name__ == "__main__":
         {"userId": "22222", "libName": "temp2",
             "url": get_base64_of_image("image2.png")}
     ]))
-    
+
     # 单个更新允许换库
     update_user({"userId": "12345", "libName": "temp1",
                 "url": get_base64_of_image("image2.png")})
 
     # 批量操作暂时不允许“换库”
-    update_batch_users(([  
+    update_batch_users(([
         {"userId": "11111", "libName": "temp2",
             "url": get_base64_of_image("image2.png")},
         {"userId": "22222", "libName": "temp2",
             "url": get_base64_of_image("image1.png")}
     ]))
 
-    search_user("temp1", "/path/image2.png")
+    search_user("temp1", "/root/workspace/softwares/flowengine/image2.png")
     search_user_post(
         {"name": "temp2", "url": get_base64_of_image("image2.png")})
 
-    compare_two_users("/path/image1.png",
-                      "/path/image1.png")
+    compare_two_users("/root/workspace/softwares/flowengine/image1.png",
+                      "/root/workspace/softwares/flowengine/image1.png")
 
     compare_two_users_post(([
         {"url": get_base64_of_image("image1.png")},
@@ -126,7 +120,4 @@ if __name__ == "__main__":
         {"userId": "22222"}
     ]))
 
-    start_video(
-        {"name": "video1", "libName": "temp1", "url": "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101"})
-    time.sleep(10)  # 10s
-    stop_video("video1")
+    face_quality({"name": "temp2", "url": get_base64_of_image("image2.png")})

@@ -10,7 +10,6 @@
  */
 #include "FaceDto.hpp"
 #include "FaceService.hpp"
-#include "FacelibDto.hpp"
 #include "ImageDto.hpp"
 #include "StatusDto.hpp"
 #include <memory>
@@ -38,7 +37,7 @@ public:
   // RESTful API，GET 请求通常用于获取资源，POST 通常用于创建资源。
   // 幂等性是指一次和多次请求某一个资源应该具有同样的副作用。GET、DELETE和PUT应该是幂等的，而POST不是。
   ENDPOINT_INFO(createOneUser) {
-    info->summary = "Create new User";
+    info->summary = "Create a new User";
     info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
@@ -49,7 +48,7 @@ public:
   }
 
   ENDPOINT_INFO(updateOneUser) {
-    info->summary = "Update User by userId and url";
+    info->summary = "Update the user by userId and url";
     info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
@@ -60,7 +59,7 @@ public:
   }
 
   ENDPOINT_INFO(deleteOneUser) {
-    info->summary = "Delete User by userId";
+    info->summary = "Delete the user by userId";
     info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
@@ -75,7 +74,7 @@ public:
 
   // 以图搜人 GET
   ENDPOINT_INFO(searchUser) {
-    info->summary = "Search User by url of user's picture";
+    info->summary = "Search one user by url of user's picture";
     info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
@@ -91,7 +90,7 @@ public:
 
   // 以图搜人 POST
   ENDPOINT_INFO(searchUserPost) {
-    info->summary = "Search User by url of user's picture";
+    info->summary = "Search one user by url of user's picture";
     info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
@@ -127,7 +126,7 @@ public:
 
   // 批量新增
   ENDPOINT_INFO(createBatchUsers) {
-    info->summary = "Create batch users";
+    info->summary = "Create a batch of users";
     info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
@@ -141,7 +140,7 @@ public:
 
   // 批量更新
   ENDPOINT_INFO(updateBatchUsers) {
-    info->summary = "Update batch users";
+    info->summary = "Update a batch of users";
     info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");
@@ -154,7 +153,7 @@ public:
 
   // 批量删除
   ENDPOINT_INFO(deleteBatchUsers) {
-    info->summary = "Delete batch users";
+    info->summary = "Delete a batch of users";
     info->addResponse<Object<StatusDto>>(Status::CODE_200, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_404, "application/json");
     info->addResponse<Object<StatusDto>>(Status::CODE_500, "application/json");

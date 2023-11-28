@@ -20,15 +20,15 @@ public:
     oatpp::swagger::DocumentInfo::Builder builder;
 
     builder.setTitle("User entity service")
-        .setDescription("CRUD API Example project with swagger docs")
+        .setDescription("Face server API")
         .setVersion("1.0")
-        .setContactName("Ivan Ovsyanochka")
-        .setContactUrl("https://oatpp.io/")
+        .setContactName("Sinter")
+        .setContactUrl("http://114.242.23.39:9797")
 
         .setLicenseName("Apache License, Version 2.0")
         .setLicenseUrl("http://www.apache.org/licenses/LICENSE-2.0")
 
-        .addServer("http://localhost:9797", "server on localhost");
+        .addServer("http://114.242.23.39:9797", "server on x3pi");
 
     return builder.build();
   }());
