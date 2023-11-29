@@ -57,9 +57,6 @@ private:
 private:
   bool getFaceInput(cv::Mat const &input, cv::Mat &output, FrameInfo &frame,
                     BBox const &bbox, ColorType const &type);
-
-  void points5angle(Points2f const &points, float &pitch, float &yaw,
-                    float &roll);
 };
 } // namespace server::face::core
 

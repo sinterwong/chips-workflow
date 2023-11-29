@@ -44,5 +44,8 @@ void sortFourPoints(Points2f &points);
 
 // 获取最中心的bbox
 size_t findClosestBBoxIndex(KeypointsBoxes const &kbboxes, float w, float h);
+
+void points5angle(Points2f const &points, float &pitch, float &yaw,
+                  float &roll);
 } // namespace infer::utils
 #endif

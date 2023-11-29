@@ -211,7 +211,7 @@ void sortFourPoints(Points2f &points) {
   // }
 }
 
- size_t findClosestBBoxIndex(KeypointsBoxes const &kbboxes, float w, float h){
+size_t findClosestBBoxIndex(KeypointsBoxes const &kbboxes, float w, float h) {
   float image_center_x = w / 2.0;
   float image_center_y = h / 2.0;
 
@@ -232,6 +232,51 @@ void sortFourPoints(Points2f &points) {
     }
   }
   return closest_bbox_index;
+}
+
+void points5angle(Points2f const &points, float &pitch, float &yaw,
+                  float &roll) {
+  // Assuming points is of size 5 and contains 2D points (x, y)
+
+  // Extracting x and y coordinates
+  std::vector<float> LMx, LMy;
+  for (const auto &p : points) {
+    LMx.push_back(p.x);
+    LMy.push_back(p.y);
+  }
+
+  float dPx_eyes = std::max((LMx[1] - LMx[0]), 1.0f);
+  float dPy_eyes = LMy[1] - LMy[0];
+  float angle = std::atan(dPy_eyes / dPx_eyes);
+
+  float alpha = std::cos(angle);
+  float beta = std::sin(angle);
+
+  // Rotated landmarks
+  std::vector<float> LMxr, LMyr;
+  for (size_t i = 0; i < LMx.size(); ++i) {
+    LMxr.push_back(alpha * LMx[i] + beta * LMy[i] + (1 - alpha) * LMx[2] / 2 -
+                   beta * LMy[2] / 2);
+    LMyr.push_back(-beta * LMx[i] + alpha * LMy[i] + beta * LMx[2] / 2 +
+                   (1 - alpha) * LMy[2] / 2);
+  }
+
+  // Average distance between eyes and mouth
+  float dXtot = (LMxr[1] - LMxr[0] + LMxr[4] - LMxr[3]) / 2;
+  float dYtot = (LMyr[3] - LMyr[0] + LMyr[4] - LMyr[1]) / 2;
+
+  // Average distance between nose and eyes
+  float dXnose = (LMxr[1] - LMxr[2] + LMxr[4] - LMxr[2]) / 2;
+  float dYnose = (LMyr[3] - LMyr[2] + LMyr[4] - LMyr[2]) / 2;
+
+  // Relative rotation
+  float Xfrontal = dXtot != 0 ? (-90 + 90 / 0.5 * dXnose / dXtot) : 0;
+  float Yfrontal = dYtot != 0 ? (-90 + 90 / 0.5 * dYnose / dYtot) : 0;
+
+  // Assigning results to output parameters
+  roll = angle * 180 / M_PI;
+  yaw = Xfrontal;
+  pitch = Yfrontal;
 }
 
 } // namespace infer::utils
