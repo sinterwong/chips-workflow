@@ -135,6 +135,7 @@ bool ConfigParser::parseConfig(std::string const &path,
       break;
     }
     case common::AlgoSerial::YoloPDet:
+    case common::AlgoSerial::Yolov8PDet:
     case common::AlgoSerial::FaceKeyPoints: {
       int numPoints;
       EXTRACT_JSON_VALUE(algo, "num_points", numPoints);

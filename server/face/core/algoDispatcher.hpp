@@ -22,7 +22,7 @@
 namespace server::face::core {
 
 static std::string DET_MODEL_PATH =
-    "/opt/deploy/models/yolov5n-face-sim.engine";
+    "/opt/deploy/models/yolov8n_face_640x640_nv12.bin";
 
 static std::string REC_MODEL_PATH =
     "/opt/deploy/models/arcface_112x112_nv12.engine";
@@ -81,7 +81,7 @@ private:
                                      {"input"},
                                      {"output"},
                                      DET_MODEL_PATH,
-                                     "YoloPDet",
+                                     "Yolov8PDet",
                                      {640, 640, 3},
                                      false,
                                      255.0,
