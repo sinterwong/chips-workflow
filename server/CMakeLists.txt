@@ -10,7 +10,6 @@ LINK_LIBRARIES(
     oatpp::oatpp
     oatpp::oatpp-swagger
     oatpp::oatpp-sqlite
-    ${SQLITE_LIBS}
 )
 
 # submodule

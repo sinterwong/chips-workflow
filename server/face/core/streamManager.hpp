@@ -15,7 +15,7 @@
 
 #include "resultProcessor.hpp"
 #include "thread_pool.h"
-#include "video/videoDecode.hpp"
+#include "videoDecode.hpp"
 #include <cstdint>
 #include <future>
 #include <memory>

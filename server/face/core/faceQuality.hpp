@@ -56,7 +56,7 @@ private:
 
 private:
   bool getFaceInput(cv::Mat const &input, cv::Mat &output, FrameInfo &frame,
-                    BBox const &bbox, ColorType const &type);
+                    common::BBox const &bbox, ColorType const &type);
 };
 } // namespace server::face::core
 

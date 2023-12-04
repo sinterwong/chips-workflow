@@ -162,7 +162,7 @@ bool FaceQuality::infer(FramePackage const &framePackage, int &quality) {
 }
 
 bool FaceQuality::getFaceInput(cv::Mat const &input, cv::Mat &output,
-                               FrameInfo &frame, BBox const &bbox,
+                               FrameInfo &frame, common::BBox const &bbox,
                                ColorType const &type) {
   int x, y, w, h;
   x = static_cast<int>(bbox.bbox[0]);

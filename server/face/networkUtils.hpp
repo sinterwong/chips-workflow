@@ -13,11 +13,14 @@
 
 #include "myBase64.hpp"
 #include <curl/curl.h>
-#include <filesystem>
 #include <memory>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <string>
+// #include <filesystem>
+#include <experimental/filesystem>
+
+using namespace std::experimental;
 
 inline size_t curl_callback(void *ptr, size_t size, size_t nmemb,
                             std::string *data) {
@@ -162,7 +165,7 @@ inline std::shared_ptr<cv::Mat> getImageByUri(const std::string &uri) {
     image_bgr = str2mat(uri);
   } else {
     // 不是http或base64，那么就是本地路径
-    if (std::filesystem::exists(uri)) {
+    if (filesystem::exists(uri)) {
       image_bgr = std::make_shared<cv::Mat>(cv::imread(uri));
     }
   }
