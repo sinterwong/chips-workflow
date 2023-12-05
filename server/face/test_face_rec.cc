@@ -13,6 +13,7 @@
 #include "logger/logger.hpp"
 #include <gflags/gflags.h>
 #include <opencv2/imgcodecs.hpp>
+#include "faceInferUtils.hpp"
 
 DEFINE_string(img1, "", "Specify a image path which contains some face.");
 DEFINE_string(img2, "", "Specify a image path which contains some face.");
@@ -28,9 +29,8 @@ void getFrameInput(cv::Mat &input, FrameInfo &frame) {
   frame.data = reinterpret_cast<void **>(&input.data);
   frame.inputShape = {input.cols, input.rows, input.channels()};
 
-  // 暂时写死NV12格式，这里应该有一个宏来确定是什么推理数据
-  frame.shape = {input.cols, input.rows * 2 / 3, input.channels()};
-  frame.type = common::ColorType::NV12;
+  frame.shape = core::getShape(input.cols, input.rows);
+  frame.type = core::getColorType();
 }
 
 int main(int argc, char **argv) {

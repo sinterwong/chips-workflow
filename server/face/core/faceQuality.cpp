@@ -11,6 +11,7 @@
 
 #include "faceQuality.hpp"
 #include "algoManager.hpp"
+#include "faceInferUtils.hpp"
 #include "logger/logger.hpp"
 #include "networkUtils.hpp"
 #include "postprocess.hpp"
@@ -34,9 +35,8 @@ bool FaceQuality::infer(std::string const &url, int &quality) {
     return false;
   }
 
-  // TODO: 暂时写死NV12格式推理
   cv::Mat input;
-  infer::utils::BGR2NV12(*image_bgr, input);
+  convertBGRToInputByType(*image_bgr, input);
   return infer(FramePackage{url, std::make_shared<cv::Mat>(input)}, quality);
 }
 
@@ -48,10 +48,8 @@ bool FaceQuality::infer(FramePackage const &framePackage, int &quality) {
   frame.inputShape = {framePackage.frame->cols, framePackage.frame->rows,
                       framePackage.frame->channels()};
 
-  // TODO:暂时默认是NV12格式，这里应该有一个宏来确定是什么推理数据
-  frame.shape = {framePackage.frame->cols, framePackage.frame->rows * 2 / 3,
-                 framePackage.frame->channels()};
-  frame.type = ColorType::NV12;
+  frame.shape = getShape(framePackage.frame->cols, framePackage.frame->rows);
+  frame.type = getColorType();
 
   // 人脸检测
   InferResult faceDetRet;
@@ -101,9 +99,8 @@ bool FaceQuality::infer(FramePackage const &framePackage, int &quality) {
   }
 
   // 3. 亮度和锐度
-  // 默认图像是NV12格式
   cv::Mat faceImageBGR;
-  cv::cvtColor(faceImage, faceImageBGR, cv::COLOR_YUV2BGR_NV12);
+  convertInputToBGRByType(faceImage, faceImageBGR);
   float sharpness, brightness;
   std::tie(sharpness, brightness) =
       utils::sharpnessAndBrightnessScore(faceImageBGR);

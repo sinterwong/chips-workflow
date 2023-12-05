@@ -22,16 +22,16 @@
 namespace server::face::core {
 
 static std::string DET_MODEL_PATH =
-    "/opt/deploy/models/yolov8n_face_640x640_nv12.bin";
+    "/opt/deploy/models/yolov8n_face_640x640.engine";
 
 static std::string REC_MODEL_PATH =
-    "/opt/deploy/models/arcface_112x112_nv12.engine";
+    "/opt/deploy/models/arcface_112x112.engine";
 
 static std::string QUALITY_MODEL_PATH =
-    "/opt/deploy/models/face_quality_128x128_nv12.engine";
+    "/opt/deploy/models/face_quality_128x128.engine";
 
 static std::string KEYPOINT_MODEL_PATH =
-    "/opt/deploy/models/2d106det_192x192_nv12.bin";
+    "/opt/deploy/models/2d106det_192x192.engine";
 
 enum class AlgoType { DET, REC, QUALITY, KEYPOINT };
 
@@ -78,8 +78,8 @@ private:
   AlgoConfig getDetConfig() {
     PointsDetAlgo faceDet_config{{
                                      1,
-                                     {"input"},
-                                     {"output"},
+                                     {"images"},
+                                     {"output0"},
                                      DET_MODEL_PATH,
                                      "Yolov8PDet",
                                      {640, 640, 3},
@@ -138,13 +138,13 @@ private:
   AlgoConfig getKeyPointsConfig() {
     PointsDetAlgo facePoints_config{{
                                         1,
-                                        {"input"},
-                                        {"output"},
+                                        {"data"},
+                                        {"fc1"},
                                         KEYPOINT_MODEL_PATH,
                                         "FaceKeyPoints",
                                         {192, 192, 3},
                                         false,
-                                        255.0,
+                                        1,
                                         0,
                                         0.3,
                                     },

@@ -31,7 +31,7 @@ public:
 
         // .setLicenseName("Apache License, Version 2.0")
         // .setLicenseUrl("http://www.apache.org/licenses/LICENSE-2.0")
-        
+
         .addServer("http://114.242.23.39:9797", "face server on x3pi");
 
     return builder.build();
@@ -44,8 +44,7 @@ public:
                          swaggerResources)
   ([] {
     // Make sure to specify correct full path to oatpp-swagger/res folder !!!
-    return oatpp::swagger::Resources::loadResources(
-        "/root/workspace/projects/oatpp-swagger/res");
+    return oatpp::swagger::Resources::loadResources("/opt/deploy/swagger_res");
   }());
 };
 } // namespace server::face

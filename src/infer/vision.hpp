@@ -13,6 +13,7 @@
 #define __INFER_VISION_H_
 #include "infer_common.hpp"
 #include "inference.h"
+#include "opencv2/imgcodecs.hpp"
 #include "preprocess.hpp"
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgproc.hpp>
@@ -44,10 +45,12 @@ public:
       cv::Mat image{height, width, CV_8UC3, data};
       // cv::imwrite("temp_out.jpg", image);
 
-      std::array<int, 2> shape = {width, height};
+      std::array<int, 2> shape = {config->inputShape.at(0),
+                                  config->inputShape.at(1)};
       if (!utils::resizeInput(image, config->isScale, shape)) {
         return false;
       }
+      // cv::imwrite("temp_out_resized.jpg", image);
       output.create(cv::Size(image.channels(), image.cols * image.rows),
                     CV_8UC1);
       utils::hwc_to_chw(output.data, image.data, image.channels(), image.rows,

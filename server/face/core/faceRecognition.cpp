@@ -9,6 +9,7 @@
  *
  */
 #include "faceRecognition.hpp"
+#include "faceInferUtils.hpp"
 #include "networkUtils.hpp"
 #include "postprocess.hpp"
 
@@ -25,10 +26,8 @@ bool FaceRecognition::extract(FramePackage const &framePackage,
   frame.inputShape = {framePackage.frame->cols, framePackage.frame->rows,
                       framePackage.frame->channels()};
 
-  // TODO:暂时默认是NV12格式，这里应该有一个宏来确定是什么推理数据
-  frame.shape = {framePackage.frame->cols, framePackage.frame->rows * 2 / 3,
-                 framePackage.frame->channels()};
-  frame.type = ColorType::NV12;
+  frame.shape = getShape(framePackage.frame->cols, framePackage.frame->rows);
+  frame.type = getColorType();
 
   // 人脸检测
   InferResult faceDetRet;
@@ -75,9 +74,8 @@ bool FaceRecognition::extract(std::string const &url,
     return false;
   }
 
-  // TODO: 暂时写死NV12格式推理
   cv::Mat input;
-  infer::utils::BGR2NV12(*image_bgr, input);
+  convertBGRToInputByType(*image_bgr, input);
   return extract(FramePackage{url, std::make_shared<cv::Mat>(input)}, feature);
 }
 

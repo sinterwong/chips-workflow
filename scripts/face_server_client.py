@@ -2,7 +2,8 @@ import requests
 import json
 import base64
 
-BASE_URL = "http://localhost:9797"  # Change this to your server's URL and port
+# Change this to your server's URL and port
+BASE_URL = "http://localhost:9797"
 headers = {'Content-Type': 'application/json'}
 
 
@@ -82,36 +83,39 @@ def face_quality(data):
 
 if __name__ == "__main__":
     create_user({"userId": "12345", "libName": "temp1",
-                "url": get_base64_of_image("image1.png")})
+                "url": get_base64_of_image("face_image1.png")})
     create_batch_users(([
         {"userId": "11111", "libName": "temp2",
-            "url": get_base64_of_image("image1.png")},
+            "url": get_base64_of_image("face_image1.png")},
         {"userId": "22222", "libName": "temp2",
-            "url": get_base64_of_image("image2.png")}
+            "url": get_base64_of_image("face_image2.png")}
     ]))
 
     # 单个更新允许换库
     update_user({"userId": "12345", "libName": "temp1",
-                "url": get_base64_of_image("image2.png")})
+                "url": get_base64_of_image("face_image2.png")})
 
     # 批量操作暂时不允许“换库”
     update_batch_users(([
         {"userId": "11111", "libName": "temp2",
-            "url": get_base64_of_image("image2.png")},
+            "url": get_base64_of_image("face_image2.png")},
         {"userId": "22222", "libName": "temp2",
-            "url": get_base64_of_image("image1.png")}
+            "url": get_base64_of_image("face_image1.png")}
     ]))
 
-    search_user("temp1", "/root/workspace/softwares/flowengine/image2.png")
+    search_user(
+        "temp1", "/home/wangxt/workspace/projects/flowengine/scripts/face_image2.png")
     search_user_post(
-        {"name": "temp2", "url": get_base64_of_image("image2.png")})
+        {"name": "temp2", "url": get_base64_of_image("face_image2.png")})
 
-    compare_two_users("/root/workspace/softwares/flowengine/image1.png",
-                      "/root/workspace/softwares/flowengine/image1.png")
+    compare_two_users("/home/wangxt/workspace/projects/flowengine/scripts/face_image1.png",
+                      "/home/wangxt/workspace/projects/flowengine/scripts/face_image3.png")
 
     compare_two_users_post(([
-        {"url": get_base64_of_image("image1.png")},
-        {"url": get_base64_of_image("image2.png")}
+        {"url": get_base64_of_image(
+            "face_image1.png")},
+        {"url": get_base64_of_image(
+            "face_image2.png")}
     ]))
 
     delete_user("12345")
@@ -120,4 +124,5 @@ if __name__ == "__main__":
         {"userId": "22222"}
     ]))
 
-    face_quality({"name": "temp2", "url": get_base64_of_image("image2.png")})
+    face_quality({"name": "temp2", "url": get_base64_of_image(
+        "face_image2.png")})

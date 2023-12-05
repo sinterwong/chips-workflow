@@ -9,8 +9,10 @@
  *
  */
 
+#include "core/faceInferUtils.hpp"
 #include "infer/faceKeyPoints.hpp"
 #include "logger/logger.hpp"
+#include "postprocess.hpp"
 #include "visionInfer.hpp"
 #include <gflags/gflags.h>
 #include <opencv2/calib3d.hpp>
@@ -43,20 +45,20 @@ algo_ptr getVision(AlgoConfig &&config) {
 }
 
 void inference(cv::Mat &image, InferResult &ret,
-               std::shared_ptr<AlgoInfer> vision) {
+               std::shared_ptr<AlgoInfer> vision, int inputSize) {
 
   RetBox region{"hello"};
 
   InferParams params{std::string("hello"),
-                     ColorType::NV12,
+                     server::face::core::getColorType(),
                      0.0,
                      region,
                      {image.cols, image.rows, image.channels()}};
 
   // 制作输入数据
   FrameInfo frame;
-  frame.shape = {image.cols, image.rows * 2 / 3, 3};
-  frame.inputShape = {640, 640, 3};
+  frame.shape = server::face::core::getShape(image.cols, image.rows);
+  frame.inputShape = {inputSize, inputSize, 3};
   frame.type = params.frameType;
   frame.data = reinterpret_cast<void **>(&image.data);
   vision->infer(frame, params, ret);
@@ -108,33 +110,34 @@ int main(int argc, char **argv) {
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-  PointsDetAlgo faceDet_config{{
-                                   1,
-                                   {"input"},
-                                   {"output"},
-                                   "/opt/deploy/models/yolov8n_face_640x640_nv12.bin",
-                                   "Yolov8PDet",
-                                   {640, 640, 3},
-                                   false,
-                                   255.0,
-                                   0,
-                                   0.25,
-                               },
-                               5,
-                               0.4};
+  PointsDetAlgo faceDet_config{
+      {
+          1,
+          {"images"},
+          {"output0"},
+          "/opt/deploy/models/yolov8n_face_640x640.engine",
+          "Yolov8PDet",
+          {640, 640, 3},
+          false,
+          255.0,
+          0,
+          0.25,
+      },
+      5,
+      0.4};
   AlgoConfig fdet_config;
   fdet_config.setParams(faceDet_config);
 
   PointsDetAlgo facePoints_config{
       {
           1,
-          {"input"},
-          {"output"},
-          "/opt/deploy/models/2d106det_192x192_nv12.bin",
+          {"data"},
+          {"fc1"},
+          "/opt/deploy/models/2d106det_192x192.engine",
           "FaceKeyPoints",
           {INPUT_SIZE, INPUT_SIZE, 3},
           false,
-          255.0,
+          1.0,
           0,
           0.3,
       },
@@ -149,86 +152,84 @@ int main(int argc, char **argv) {
 
   // 图片读取
   cv::Mat image_bgr = cv::imread(FLAGS_img);
+  cv::Mat image_bgr_show = image_bgr.clone();
 
-  cv::Mat image_rgb;
-  cv::cvtColor(image_bgr, image_rgb, cv::COLOR_BGR2RGB);
-
-  cv::Mat image_nv12;
-  infer::utils::RGB2NV12(image_rgb, image_nv12);
+  cv::Mat inputImage;
+  server::face::core::convertBGRToInputByType(image_bgr, inputImage);
 
   InferResult faceDetRet;
-  inference(image_nv12, faceDetRet, faceDet);
+  inference(inputImage, faceDetRet, faceDet, 640);
   auto kbboxes = std::get_if<KeypointsBoxes>(&faceDetRet.aRet);
-  if (!kbboxes) {
+  if (!kbboxes || kbboxes->empty()) {
     FLOWENGINE_LOGGER_ERROR("Not a single face was detected!");
     return -1;
   }
 
-  for (auto &kbbox : *kbboxes) {
-    cv::Mat ori_face_nv12, ori_face_rgb;
-    cv::Rect2i rect{static_cast<int>(kbbox.bbox.bbox[0]),
-                    static_cast<int>(kbbox.bbox.bbox[1]),
-                    static_cast<int>(kbbox.bbox.bbox[2] - kbbox.bbox.bbox[0]),
-                    static_cast<int>(kbbox.bbox.bbox[3] - kbbox.bbox.bbox[1])};
-    // 可视化人脸检测结果：人脸框和5个关键点
-    cv::rectangle(image_bgr, rect, cv::Scalar(0, 0, 255), 2);
-    infer::utils::cropImage(image_nv12, ori_face_nv12, rect, ColorType::NV12);
-    int i = 1;
-    std::vector<cv::Point2f> points;
-    for (auto &p : kbbox.points) {
-      cv::circle(image_bgr,
-                 cv::Point{static_cast<int>(p.x), static_cast<int>(p.y)}, 4,
-                 cv::Scalar{0, 0, 255});
-      cv::putText(image_bgr, std::to_string(i++),
-                  cv::Point(static_cast<int>(p.x), static_cast<int>(p.y)),
-                  cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(255, 14, 50), 1);
-      points.push_back(cv::Point2f{p.x, p.y});
-    }
-
-    // TODO 基于5个点的人脸关键点矫正
-    std::string prefix = std::to_string(rand() % 1000);
-    utils::NV12toRGB(ori_face_nv12, ori_face_rgb);
-    cv::imwrite(prefix + "_ori_face.jpg", ori_face_rgb);
-
-    // 计算仿射变换的两个部分：旋转和缩放
-    float w = kbbox.bbox.bbox[2] - kbbox.bbox.bbox[0];
-    float h = kbbox.bbox.bbox[3] - kbbox.bbox.bbox[1];
-    cv::Point2f center =
-        cv::Point2f{kbbox.bbox.bbox[0] + (w / 2), kbbox.bbox.bbox[1] + (h / 2)};
-    // 旋转矩阵
-    int rotation = 0;
-    float maxSize = std::max(w, h) * 1.5;
-    float scale = INPUT_SIZE / maxSize;
-
-    cv::Mat rotMat = transform(INPUT_SIZE, center, scale, rotation);
-    std::cout << "rotMat: " << rotMat << std::endl;
-
-    cv::Mat aligned_face_rgb = normCrop(image_rgb, rotMat, INPUT_SIZE);
-    cv::imwrite(prefix + "_aligned_face.jpg", aligned_face_rgb);
-
-    cv::Mat aligned_face_nv12;
-    utils::RGB2NV12(aligned_face_rgb, aligned_face_nv12);
-
-    // TODO 人脸特征提取
-    InferResult facePointsRet;
-    facePointsRet.aRet =
-        KeypointsRet{.points = {}, .M = reinterpret_cast<float *>(rotMat.data)};
-    inference(aligned_face_nv12, facePointsRet, facePoints);
-    auto ret = std::get_if<KeypointsRet>(&facePointsRet.aRet);
-    if (!ret) {
-      FLOWENGINE_LOGGER_ERROR("facePointsRet is not a KeypointsBoxes");
-      return -1;
-    }
-    
-    // 可视化人脸关键点
-    for (auto &p : ret->points) {
-      cv::circle(image_bgr,
-                 cv::Point{static_cast<int>(p.x), static_cast<int>(p.y)}, 2,
-                 cv::Scalar{255, 255, 0});
-    }
-    cv::imwrite(prefix + "_image_bgr_face_keypoints.jpg", image_bgr);
-    break;
+  int kbboxIndex = infer::utils::findClosestBBoxIndex(*kbboxes, image_bgr.cols,
+                                                      image_bgr.rows);
+  auto kbbox = kbboxes->at(kbboxIndex);
+  cv::Mat ori_face;
+  cv::Rect2i rect{static_cast<int>(kbbox.bbox.bbox[0]),
+                  static_cast<int>(kbbox.bbox.bbox[1]),
+                  static_cast<int>(kbbox.bbox.bbox[2] - kbbox.bbox.bbox[0]),
+                  static_cast<int>(kbbox.bbox.bbox[3] - kbbox.bbox.bbox[1])};
+  // 可视化人脸检测结果：人脸框和5个关键点
+  cv::rectangle(image_bgr_show, rect, cv::Scalar(0, 0, 255), 2);
+  infer::utils::cropImage(inputImage, ori_face, rect,
+                          server::face::core::getColorType());
+  int i = 1;
+  std::vector<cv::Point2f> points;
+  for (auto &p : kbbox.points) {
+    cv::circle(image_bgr_show,
+               cv::Point{static_cast<int>(p.x), static_cast<int>(p.y)}, 4,
+               cv::Scalar{0, 0, 255});
+    cv::putText(image_bgr_show, std::to_string(i++),
+                cv::Point(static_cast<int>(p.x), static_cast<int>(p.y)),
+                cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(255, 14, 50), 1);
+    points.push_back(cv::Point2f{p.x, p.y});
   }
+
+  // TODO 基于5个点的人脸关键点矫正
+  std::string prefix = std::to_string(rand() % 1000);
+
+  // 计算仿射变换的两个部分：旋转和缩放
+  float w = kbbox.bbox.bbox[2] - kbbox.bbox.bbox[0];
+  float h = kbbox.bbox.bbox[3] - kbbox.bbox.bbox[1];
+  cv::Point2f center =
+      cv::Point2f{kbbox.bbox.bbox[0] + (w / 2), kbbox.bbox.bbox[1] + (h / 2)};
+  // 旋转矩阵
+  int rotation = 0;
+  float maxSize = std::max(w, h) * 1.5;
+  float scale = INPUT_SIZE / maxSize;
+
+  cv::Mat rotMat = transform(INPUT_SIZE, center, scale, rotation);
+  std::cout << "rotMat: " << rotMat << std::endl;
+
+  cv::Mat aligned_face_bgr = normCrop(image_bgr, rotMat, INPUT_SIZE);
+  cv::imwrite(prefix + "_aligned_face.jpg", aligned_face_bgr);
+
+  cv::Mat aligned_face_input;
+  server::face::core::convertBGRToInputByType(aligned_face_bgr,
+                                              aligned_face_input);
+
+  // TODO 人脸特征提取
+  InferResult facePointsRet;
+  facePointsRet.aRet =
+      KeypointsRet{.points = {}, .M = reinterpret_cast<float *>(rotMat.data)};
+  inference(aligned_face_input, facePointsRet, facePoints, INPUT_SIZE);
+  auto ret = std::get_if<KeypointsRet>(&facePointsRet.aRet);
+  if (!ret) {
+    FLOWENGINE_LOGGER_ERROR("facePointsRet is not a KeypointsBoxes");
+    return -1;
+  }
+
+  // 可视化人脸关键点
+  for (auto &p : ret->points) {
+    cv::circle(image_bgr_show,
+               cv::Point{static_cast<int>(p.x), static_cast<int>(p.y)}, 2,
+               cv::Scalar{255, 255, 0});
+  }
+  cv::imwrite(prefix + "_image_bgr_face_keypoints.jpg", image_bgr_show);
 
   gflags::ShutDownCommandLineFlags();
   return 0;
