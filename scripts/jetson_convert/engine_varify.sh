@@ -24,3 +24,6 @@ do
       echo "Engine $file is failed"
    fi
 done
+
+# example usage
+# ./engine_varify.sh -i /home/nvidia/Downloads/engines

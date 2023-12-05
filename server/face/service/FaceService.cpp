@@ -15,6 +15,7 @@
 #include "StatusDto.hpp"
 #include "UserDb.hpp"
 #include "UserDto.hpp"
+#include "faceQuality.hpp"
 #include "faceRecognition.hpp"
 #include "myBase64.hpp"
 #include "networkUtils.hpp"
@@ -853,5 +854,32 @@ FaceService::deleteBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
   status->code = 200;
   status->message = "Users were successfully deleted.";
   return status;
+}
+
+// 人脸质检
+oatpp::Object<StatusDto> FaceService::faceQuality(oatpp::String const &url) {
+  auto status = StatusDto::createShared();
+
+  int quality = -1;
+  // 质量检测
+  auto ret = core::FaceQuality::getInstance().infer(url, quality);
+  if (!ret || quality < 0) {
+    status->status = "Internal Server Error";
+    status->code = 500;
+    status->message = "Face quality check failed.";
+    return status;
+  }
+
+  status->status = "OK";
+  status->code = 200;
+  status->message = std::to_string(quality);
+  return status;
+}
+
+// Post 人脸质检
+oatpp::Object<StatusDto>
+FaceService::faceQuality(oatpp::Object<ImageDto> const &image) {
+  // Post 本身只是解决了参数传递的问题，具体的逻辑还是调用Get的函数
+  return faceQuality(image->url);
 }
 } // namespace server::face

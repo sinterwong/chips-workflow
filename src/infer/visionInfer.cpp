@@ -64,7 +64,10 @@ bool VisionInfer::infer(FrameInfo &frame, const InferParams &params,
    */
   cv::Mat inputImage;
   auto preprocess_start = std::chrono::high_resolution_clock::now();
-  vision->processInput(frame, inputImage);
+  if (!vision->processInput(frame, inputImage)) {
+    FLOWENGINE_LOGGER_ERROR("VisionInfer infer: failed to processInput!");
+    return false;
+  }
   auto preprocess_stop = std::chrono::high_resolution_clock::now();
   auto preprocess_duration =
       std::chrono::duration_cast<std::chrono::microseconds>(preprocess_stop -

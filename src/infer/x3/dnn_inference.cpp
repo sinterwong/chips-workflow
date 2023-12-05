@@ -70,6 +70,11 @@ bool AlgoInference::infer(FrameInfo &input, void **outputs) {
 bool AlgoInference::infer(cv::Mat const &input, void **outputs) {
   // 预处理数据
   input_data = input;
+
+  if (input_data.data == nullptr) {
+    FLOWENGINE_LOGGER_ERROR("[AlgoInference::infer]: input data is nullptr!");
+    return false;
+  }
   // 推理模型
   sp_bpu_start_predict(engine, reinterpret_cast<char *>(input_data.data));
   // 解析模型输出
@@ -107,5 +112,5 @@ void AlgoInference::getModelInfo(ModelInfo &info) const {
   info.outputShapes = outputShapes;
 }
 
-} // namespace x3
+} // namespace dnn
 } // namespace infer

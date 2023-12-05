@@ -3,6 +3,11 @@ PROJECT(FaceService LANGUAGES C CXX)
 
 LOAD_FAISS()
 
+IF(TARGET_HARDWARE STREQUAL jetson)
+  LOAD_OPENMP()
+  LOAD_OPENBLAS()
+ENDIF()
+
 LINK_DIRECTORIES(
   ${OpenCV_LIBRARY_DIR}
 )
@@ -15,6 +20,7 @@ TARGET_INCLUDE_DIRECTORIES(face_server PRIVATE
   ${PROJECT_INCLUDE_DIR}
   ${PROJECT_INCLUDE_DIR}/core
   ${PROJECT_INCLUDE_DIR}/video
+  ${PROJECT_INCLUDE_DIR}/jetson-utils
   ${PROJECT_INCLUDE_DIR}/infer
   ${PROJECT_INCLUDE_DIR}/infer/jetson
   ${PROJECT_INCLUDE_DIR}/infer/x3
@@ -46,6 +52,7 @@ FOREACH(sourcefile ${APP_SOURCES})
       ${PROJECT_INCLUDE_DIR}
       ${PROJECT_INCLUDE_DIR}/core
       ${PROJECT_INCLUDE_DIR}/video
+      ${PROJECT_INCLUDE_DIR}/jetson-utils
       ${PROJECT_INCLUDE_DIR}/infer
       ${PROJECT_INCLUDE_DIR}/infer/jetson
       ${PROJECT_INCLUDE_DIR}/infer/x3
@@ -55,7 +62,7 @@ FOREACH(sourcefile ${APP_SOURCES})
       ${CURL_INCLUDE_DIR}
     )
 
-    TARGET_LINK_LIBRARIES(${testname} face_server infer video core module_logger stdc++fs ${FAISS_LIBRARIES} ${OpenCV_LIBS} ${CURL_LIBRARIES})
+    TARGET_LINK_LIBRARIES(${testname} face_server infer video core module_logger stdc++fs ${FAISS_LIBRARIES} ${BLAS_LIBRARIES} ${FFMPEG_LIBS} ${OpenCV_LIBS} ${CURL_LIBRARIES})
 
     INSTALL(TARGETS ${testname}
         ARCHIVE DESTINATION lib

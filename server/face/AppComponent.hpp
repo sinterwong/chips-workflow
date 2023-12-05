@@ -1,7 +1,7 @@
 #ifndef AppComponent_hpp
 #define AppComponent_hpp
 
-// #include "SwaggerComponent.hpp"
+#include "SwaggerComponent.hpp"
 
 #include "ErrorHandler.hpp"
 
@@ -23,6 +23,11 @@ namespace server::face {
  */
 class AppComponent {
 public:
+  /**
+   *  Swagger component
+   */
+  SwaggerComponent swaggerComponent;
+  
   /**
    * Database component
    */

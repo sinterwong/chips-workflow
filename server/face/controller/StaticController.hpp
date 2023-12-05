@@ -27,8 +27,8 @@ public:
                        "    <meta charset=utf-8/>"
                        "  </head>"
                        "  <body>"
-                       "    <p>Hello CRUD example project!</p>"
-                       "    <a href='swagger/ui'>Checkout Swagger-UI page</a>"
+                       "    <p>Welcome to face server!</p>"
+                       "    <a href='swagger/ui'>API Page</a>"
                        "  </body>"
                        "</html>";
     auto response = createResponse(Status::CODE_200, html);

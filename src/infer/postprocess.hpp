@@ -41,5 +41,11 @@ void fourPointTransform(cv::Mat &input, cv::Mat &output,
 
 // 按照左上、右上、右下、左下的顺序排序
 void sortFourPoints(Points2f &points);
+
+// 获取最中心的bbox
+size_t findClosestBBoxIndex(KeypointsBoxes const &kbboxes, float w, float h);
+
+void points5angle(Points2f const &points, float &pitch, float &yaw,
+                  float &roll);
 } // namespace infer::utils
 #endif

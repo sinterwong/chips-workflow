@@ -22,12 +22,18 @@
 namespace server::face::core {
 
 static std::string DET_MODEL_PATH =
-    "/opt/deploy/models/yolov5n-face-sim.engine";
+    "/opt/deploy/models/yolov8n_face_640x640.engine";
 
 static std::string REC_MODEL_PATH =
-    "/opt/deploy/models/arcface_112x112_nv12.engine";
+    "/opt/deploy/models/arcface_112x112.engine";
 
-enum class AlgoType { DET, REC, KEYPOINT };
+static std::string QUALITY_MODEL_PATH =
+    "/opt/deploy/models/face_quality_128x128.engine";
+
+static std::string KEYPOINT_MODEL_PATH =
+    "/opt/deploy/models/2d106det_192x192.engine";
+
+enum class AlgoType { DET, REC, QUALITY, KEYPOINT };
 
 using namespace infer;
 using namespace common;
@@ -72,10 +78,10 @@ private:
   AlgoConfig getDetConfig() {
     PointsDetAlgo faceDet_config{{
                                      1,
-                                     {"input"},
-                                     {"output"},
+                                     {"images"},
+                                     {"output0"},
                                      DET_MODEL_PATH,
-                                     "YoloPDet",
+                                     "Yolov8PDet",
                                      {640, 640, 3},
                                      false,
                                      255.0,
@@ -109,6 +115,46 @@ private:
     return frec_config;
   }
 
+  // 质量算法配置获取
+  AlgoConfig getQualityConfig() {
+    ClassAlgo faceQuality_config{{
+        1,
+        {"input"},
+        {"output"},
+        QUALITY_MODEL_PATH,
+        "Softmax",
+        {128, 128, 3},
+        false,
+        255.0,
+        0,
+        0.3,
+    }};
+    AlgoConfig fquality_config;
+    fquality_config.setParams(faceQuality_config);
+    return fquality_config;
+  }
+
+  // 关键点算法配置获取
+  AlgoConfig getKeyPointsConfig() {
+    PointsDetAlgo facePoints_config{{
+                                        1,
+                                        {"data"},
+                                        {"fc1"},
+                                        KEYPOINT_MODEL_PATH,
+                                        "FaceKeyPoints",
+                                        {192, 192, 3},
+                                        false,
+                                        1,
+                                        0,
+                                        0.3,
+                                    },
+                                    106,
+                                    0.4};
+    AlgoConfig fpoints_config;
+    fpoints_config.setParams(facePoints_config);
+    return fpoints_config;
+  }
+
 public:
   // constructor
   AlgoDispatcher(AlgoType const &type, int const num) {
@@ -124,6 +170,20 @@ public:
       for (int i = 0; i < num; ++i) {
         // 初始化算法资源
         algos.push_back(getVision(getRecConfig()));
+        availableAlgos.push(algos[i]);
+      }
+      break;
+    case AlgoType::QUALITY:
+      for (int i = 0; i < num; ++i) {
+        // 初始化算法资源
+        algos.push_back(getVision(getQualityConfig()));
+        availableAlgos.push(algos[i]);
+      }
+      break;
+    case AlgoType::KEYPOINT:
+      for (int i = 0; i < num; ++i) {
+        // 初始化算法资源
+        algos.push_back(getVision(getKeyPointsConfig()));
         availableAlgos.push(algos[i]);
       }
       break;

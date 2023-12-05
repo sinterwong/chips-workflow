@@ -12,7 +12,6 @@
 #include "logger/logger.hpp"
 #include <cstddef>
 #include <cstdint>
-#include <filesystem>
 #include <memory>
 #include <unordered_map>
 #include <utility>
