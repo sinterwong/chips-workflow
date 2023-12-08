@@ -106,7 +106,7 @@ private:
   static FaceLibraryManager *instance;
 
 private:
-  // TODO:人脸库映射表用来分治人脸库，目前只管理了一个人脸库
+  // TODO:人脸库映射表用来分治人脸库，需要管理人脸库同时在线的数量
   std::unordered_map<std::string, std::unique_ptr<FaceLibrary>> facelibs;
 };
 } // namespace server::face::core

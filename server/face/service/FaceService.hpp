@@ -16,10 +16,12 @@
 #include "UserDto.hpp"
 #include "faceLibManager.hpp"
 #include "logger/logger.hpp"
+#include "networkUtils.hpp"
 #include "preprocess.hpp"
 #include <cstddef>
 #include <memory>
 #include <oatpp/web/protocol/http/Http.hpp>
+#include <opencv2/imgcodecs.hpp>
 #include <string>
 #include <vector>
 
@@ -49,6 +51,14 @@ inline std::string joinIdNumbers(const std::vector<std::string> &idNumbers,
     }
   }
   return stream.str();
+}
+
+const static std::string backupImageDir = "/opt/deploy/backup";
+inline void backupImage(oatpp::Int32 const &idx, std::string const &libName,
+                        std::string const &idNumber, std::string const &url) {
+  std::string fileName =
+      std::to_string(idx) + "_" + libName + "_" + idNumber + ".jpg";
+  cv::imwrite(backupImageDir + "/" + fileName, *getImageByUri(url));
 }
 
 class FaceService {

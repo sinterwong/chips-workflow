@@ -362,6 +362,9 @@ oatpp::Object<StatusDto> FaceService::createUser(oatpp::String const &idNumber,
     return status;
   }
 
+  // 入库成功，备份人脸图片并且更新人脸库
+  backupImage(id, libName, idNumber, url);
+
   // 检查人脸库是否在线
   if (core::FaceLibraryManager::getInstance().CHECK_FACELIB_EXIST(libName)) {
     // 如果人脸库在线，则需要更新人脸库，否则不需要
@@ -405,6 +408,10 @@ oatpp::Object<StatusDto> FaceService::updateUser(oatpp::String const &idNumber,
    * 考虑一个情况，如果一条数据在本次更新中更新了一下libName字段，id和idNumber没有发生改变，
    * 这步操作对应了人脸库中的”换库“，如果原来的库在线，需要先删除原来库中的数据，不在线则不需要
    */
+
+  // 入库成功，备份人脸图片并且更新人脸库
+  backupImage(id, libName, idNumber, url);
+
   // 检查人脸库是否存在
   if (core::FaceLibraryManager::getInstance().CHECK_FACELIB_EXIST(libName)) {
     // 人脸库在线，需要进行更新操作
@@ -602,11 +609,13 @@ FaceService::createBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
     idNumbers.erase(idNumbers.begin() + index);
     libNames.erase(libNames.begin() + index);
     features.erase(features.begin() + index);
+    urls.erase(urls.begin() + index);
   }
 
   // 此时的idNumbers与features与libNames一一对应
   assert(idNumbers.size() == features.size() &&
-         idNumbers.size() == libNames.size());
+         idNumbers.size() == libNames.size() &&
+         idNumbers.size() == urls.size());
 
   // 全部失败的情况
   if (idNumbers.empty()) {
@@ -642,10 +651,18 @@ FaceService::createBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
         std::find(idNumbers.begin(), idNumbers.end(), erridNumbersDB[i]));
     features.erase(features.begin() + index);
     libNames.erase(libNames.begin() + index);
+    urls.erase(urls.begin() + index);
+    idNumbers.erase(idNumbers.begin() + index);
   }
 
   // 此时的ids与features一一对应，更新人脸库
-  assert(ids.size() == features.size());
+  assert(ids.size() == features.size() && ids.size() == libNames.size() &&
+         ids.size() == urls.size() && ids.size() == idNumbers.size());
+
+  // 备份图片
+  for (size_t i = 0; i < ids.size(); ++i) {
+    backupImage(ids[i], libNames[i], idNumbers[i], urls[i]);
+  }
 
   // 归类不同的libName，libName和id和feature是一对多的关系
   std::unordered_map<std::string, std::pair<std::vector<long>,
@@ -709,11 +726,13 @@ FaceService::updateBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
     idNumbers.erase(idNumbers.begin() + index);
     features.erase(features.begin() + index);
     libNames.erase(libNames.begin() + index);
+    urls.erase(urls.begin() + index);
   }
 
   // 此时的idNumbers与features一一对应
   assert(idNumbers.size() == features.size() &&
-         idNumbers.size() == libNames.size());
+         idNumbers.size() == libNames.size() &&
+         idNumbers.size() == urls.size());
 
   // 全部失败的情况
   if (idNumbers.empty()) {
@@ -749,10 +768,18 @@ FaceService::updateBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
         std::find(idNumbers.begin(), idNumbers.end(), erridNumbersDB[i]));
     features.erase(features.begin() + index);
     libNames.erase(libNames.begin() + index);
+    urls.erase(urls.begin() + index);
+    idNumbers.erase(idNumbers.begin() + index);
   }
 
   // 此时的ids与features一一对应，更新人脸库
-  assert(ids.size() == features.size() && ids.size() == libNames.size());
+  assert(ids.size() == features.size() && ids.size() == libNames.size() &&
+         ids.size() == urls.size() && ids.size() == idNumbers.size());
+
+  // 备份图片
+  for (size_t i = 0; i < ids.size(); ++i) {
+    backupImage(ids[i], libNames[i], idNumbers[i], urls[i]);
+  }
 
   // TODO:批量更新“换库”操作太麻烦了，暂时不做
 
