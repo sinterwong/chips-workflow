@@ -15,9 +15,9 @@
 #include "StatusDto.hpp"
 #include "UserDb.hpp"
 #include "UserDto.hpp"
+#include "common/myBase64.hpp"
 #include "faceQuality.hpp"
 #include "faceRecognition.hpp"
-#include "myBase64.hpp"
 #include "networkUtils.hpp"
 #include <cassert>
 #include <cstdint>

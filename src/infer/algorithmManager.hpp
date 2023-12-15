@@ -9,8 +9,8 @@
  *
  */
 
-#include "core/algoInfer.hpp"
-#include "core/algorithmBus.h"
+#include "algoInfer.hpp"
+#include "algorithmBus.h"
 #include <algorithm>
 #include <memory>
 #include <shared_mutex>

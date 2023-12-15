@@ -10,7 +10,7 @@
  */
 #ifndef __INFERENCE_VISION_FEATURES_H_
 #define __INFERENCE_VISION_FEATURES_H_
-#include "core/factory.hpp"
+#include "common/factory.hpp"
 #include "vision.hpp"
 #include <memory>
 

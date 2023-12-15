@@ -12,7 +12,7 @@
 #ifndef __FLOWENGINE_VIDEO_DECODE_H_
 #define __FLOWENGINE_VIDEO_DECODE_H_
 #include "common/common.hpp"
-#include "joining_thread.h"
+#include "common/joining_thread.h"
 #include "logger/logger.hpp"
 #include <memory>
 #include <mutex>

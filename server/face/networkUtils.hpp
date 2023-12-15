@@ -11,7 +11,7 @@
 #ifndef __SERVER_NETWORK_UTILS_HPP_
 #define __SERVER_NETWORK_UTILS_HPP_
 
-#include "myBase64.hpp"
+#include "common/myBase64.hpp"
 #include <curl/curl.h>
 #include <memory>
 #include <opencv2/core/mat.hpp>
