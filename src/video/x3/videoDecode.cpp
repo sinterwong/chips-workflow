@@ -9,7 +9,7 @@
  *
  */
 #include "videoDecode.hpp"
-#include "joining_thread.h"
+#include "common/joining_thread.h"
 #include "logger/logger.hpp"
 #include <cstdint>
 #include <memory>

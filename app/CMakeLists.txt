@@ -4,7 +4,6 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations -Wno-
 
 INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}
-    ${PROJECT_INCLUDE_DIR}/core
     ${PROJECT_INCLUDE_DIR}/infer
     ${PROJECT_INCLUDE_DIR}/video
     ${PROJECT_INCLUDE_DIR}/module
@@ -47,7 +46,6 @@ LINK_LIBRARIES(
     video 
     infer 
     license 
-    core 
     module_logger 
     stdc++fs
 )

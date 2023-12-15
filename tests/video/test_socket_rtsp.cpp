@@ -68,7 +68,7 @@ std::string extractMediaUUID(const std::string &response) {
 
 int main() {
   std::string stream_url =
-      "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101";
+      "rtsp://admin:zkfd123.com@localhost:554/Streaming/Channels/101";
 
   // delete the last ‘/’
   if (!stream_url.empty() && stream_url.back() == '/') {

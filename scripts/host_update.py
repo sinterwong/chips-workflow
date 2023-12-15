@@ -27,7 +27,7 @@ def run_smoke(conf):
                      # '--uri', conf["CameraIp"],
                      '--uri', "rtsp://user:passward@192.168.3.2:554/test",
                      '--camera_id', str(conf["CameraId"]),
-                     '--result_url', "http://114.242.23.39:9400/v1/internal/receive_alarm",
+                     '--result_url', "http://localhost:9400/v1/internal/receive_alarm",
                      # '--codec', conf["VideoCode"],
                      '--codec', "h265",
                      # '--height', conf["Height"],
@@ -112,7 +112,7 @@ def main(args):
     # pids[0] = p.pid
 
 
-# python host_update.py --url http://114.242.23.39:9400/v1/internal/get_config --host_id 22 --out_path /home/wangxt/workspace/projects/flowengine/tests/data/output.json
+# python host_update.py --url http://localhost:9400/v1/internal/get_config --host_id 22 --out_path /home/wangxt/workspace/projects/flowengine/tests/data/output.json
 if __name__ == "__main__":
     args = parser.parse_args()
 

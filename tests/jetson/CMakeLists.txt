@@ -3,7 +3,6 @@ PROJECT(Jetson-Tests)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations -Wno-error=unused-function")
 INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}
-    ${PROJECT_INCLUDE_DIR}/core
     ${PROJECT_INCLUDE_DIR}/infer
     ${PROJECT_INCLUDE_DIR}/video
     ${PROJECT_INCLUDE_DIR}/jetson-utils

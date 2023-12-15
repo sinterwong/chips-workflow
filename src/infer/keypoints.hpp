@@ -9,7 +9,7 @@
  *
  */
 
-#include "core/factory.hpp"
+#include "common/factory.hpp"
 #include "vision.hpp"
 #include <memory>
 #include <unordered_map>

@@ -15,9 +15,9 @@
 #include "StatusDto.hpp"
 #include "UserDb.hpp"
 #include "UserDto.hpp"
+#include "common/myBase64.hpp"
 #include "faceQuality.hpp"
 #include "faceRecognition.hpp"
-#include "myBase64.hpp"
 #include "networkUtils.hpp"
 #include <cassert>
 #include <cstdint>
@@ -181,7 +181,7 @@ oatpp::Int32 FaceService::insertUser(
     oatpp::provider::ResourceHandle<oatpp::orm::Connection> const &connection) {
   auto user = UserDto::createShared();
   user->idNumber = idNumber;
-  user->libName = idNumber;
+  user->libName = libName;
   user->feature = feature;
   auto dbResult = m_database->createUser(user);
   if (!dbResult->isSuccess()) {
@@ -362,12 +362,12 @@ oatpp::Object<StatusDto> FaceService::createUser(oatpp::String const &idNumber,
     return status;
   }
 
-  // 检查人脸库是否存在
-  if (!core::FaceLibraryManager::getInstance().CHECK_FACELIB_EXIST(libName)) {
-    // 人脸库不存在，需要尝试恢复，如果恢复失败，需要创建
-    assert(restoreFacelib(libName, status, true));
-  } else {
-    // 提取特征成功，接下来特征入库
+  // 入库成功，备份人脸图片并且更新人脸库
+  backupImage(id, libName, idNumber, url);
+
+  // 检查人脸库是否在线
+  if (core::FaceLibraryManager::getInstance().CHECK_FACELIB_EXIST(libName)) {
+    // 如果人脸库在线，则需要更新人脸库，否则不需要
     core::FaceLibraryManager::getInstance().createOne(libName, id,
                                                       feature.data());
   }
@@ -398,17 +398,6 @@ oatpp::Object<StatusDto> FaceService::updateUser(oatpp::String const &idNumber,
   // feature to base64
   std::string base64 = feature2base64(feature);
 
-  // 需要知道libName较上次是否发生了改变，如果发生了变化需要先删除原来库中的数据
-  auto dbLibName = getLibNameByIdNumber(idNumber, status);
-  if (dbLibName->empty()) {
-    return status;
-  }
-
-  bool needDelete = false;
-  if (dbLibName != libName) {
-    needDelete = true;
-  }
-
   // 更新并获取id
   auto id = updateUserByIdNumber(idNumber, libName, base64, status);
   if (id < 0) {
@@ -419,11 +408,22 @@ oatpp::Object<StatusDto> FaceService::updateUser(oatpp::String const &idNumber,
    * 考虑一个情况，如果一条数据在本次更新中更新了一下libName字段，id和idNumber没有发生改变，
    * 这步操作对应了人脸库中的”换库“，如果原来的库在线，需要先删除原来库中的数据，不在线则不需要
    */
+
+  // 入库成功，备份人脸图片并且更新人脸库
+  backupImage(id, libName, idNumber, url);
+
   // 检查人脸库是否存在
-  if (!core::FaceLibraryManager::getInstance().CHECK_FACELIB_EXIST(libName)) {
-    // 人脸库不存在，需要尝试恢复。由于上一步数据库已经有数据，所以恢复人脸特征库必然成功
-    assert(restoreFacelib(libName, status, false));
-  } else {
+  if (core::FaceLibraryManager::getInstance().CHECK_FACELIB_EXIST(libName)) {
+    // 人脸库在线，需要进行更新操作
+    // 需要知道libName较上次是否发生了改变，如果发生了变化需要先删除原来库中的数据
+    auto dbLibName = getLibNameByIdNumber(idNumber, status);
+    if (dbLibName->empty()) {
+      return status;
+    }
+
+    // 如果原来的库在线，需要删除原来库中的数据
+    bool needDelete = true ? dbLibName != libName : false;
+
     // 如果是“换库”操作，这里的updateOne实际上执行的是createOne操作
     core::FaceLibraryManager::getInstance().updateOne(libName, id,
                                                       feature.data());
@@ -469,8 +469,12 @@ FaceService::deleteUser(oatpp::String const &idNumber) {
   OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
                     dbResult->getErrorMessage());
 
-  auto ret = core::FaceLibraryManager::getInstance().deleteOne(libName, id);
-  OATPP_ASSERT_HTTP(ret, Status::CODE_500, "Failed to delete the user.");
+  // 检查人脸库是否在线
+  if (core::FaceLibraryManager::getInstance().CHECK_FACELIB_EXIST(libName)) {
+    // 人脸库在线，需要进行更新操作
+    auto ret = core::FaceLibraryManager::getInstance().deleteOne(libName, id);
+    OATPP_ASSERT_HTTP(ret, Status::CODE_500, "Failed to delete the user.");
+  }
 
   status->status = "OK";
   status->code = 200;
@@ -484,10 +488,15 @@ oatpp::Object<StatusDto> FaceService::searchUser(oatpp::String const &libName,
   auto status = StatusDto::createShared();
 
   if (!core::FaceLibraryManager::getInstance().CHECK_FACELIB_EXIST(libName)) {
-    status->status = "Not Found";
-    status->code = 404;
-    status->message = "Facelib not found.";
-    return status;
+    // 人脸库不存在，需要尝试恢复
+    if (!restoreFacelib(libName, status)) {
+      // 恢复失败，返回错误
+      status->status = "Not Found";
+      status->code = 404;
+      status->message = "Facelib not found.";
+      return status;
+    }
+    // 恢复成功，继续执行
   }
 
   std::vector<float> feature;
@@ -600,11 +609,13 @@ FaceService::createBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
     idNumbers.erase(idNumbers.begin() + index);
     libNames.erase(libNames.begin() + index);
     features.erase(features.begin() + index);
+    urls.erase(urls.begin() + index);
   }
 
   // 此时的idNumbers与features与libNames一一对应
   assert(idNumbers.size() == features.size() &&
-         idNumbers.size() == libNames.size());
+         idNumbers.size() == libNames.size() &&
+         idNumbers.size() == urls.size());
 
   // 全部失败的情况
   if (idNumbers.empty()) {
@@ -640,10 +651,18 @@ FaceService::createBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
         std::find(idNumbers.begin(), idNumbers.end(), erridNumbersDB[i]));
     features.erase(features.begin() + index);
     libNames.erase(libNames.begin() + index);
+    urls.erase(urls.begin() + index);
+    idNumbers.erase(idNumbers.begin() + index);
   }
 
   // 此时的ids与features一一对应，更新人脸库
-  assert(ids.size() == features.size());
+  assert(ids.size() == features.size() && ids.size() == libNames.size() &&
+         ids.size() == urls.size() && ids.size() == idNumbers.size());
+
+  // 备份图片
+  for (size_t i = 0; i < ids.size(); ++i) {
+    backupImage(ids[i], libNames[i], idNumbers[i], urls[i]);
+  }
 
   // 归类不同的libName，libName和id和feature是一对多的关系
   std::unordered_map<std::string, std::pair<std::vector<long>,
@@ -656,13 +675,9 @@ FaceService::createBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
 
   // 更新人脸库
   for (auto &item : libName2ids) {
-    // 检查人脸库是否存在
-    if (!core::FaceLibraryManager::getInstance().CHECK_FACELIB_EXIST(
+    // 如果人脸库在线，需要更新人脸库，否则不需要
+    if (core::FaceLibraryManager::getInstance().CHECK_FACELIB_EXIST(
             item.first)) {
-      // 因为前面的检查，此时人脸库恢复也好，新建库也好，一定不会失败
-      // 因为数据库在以上的操作中已经更新，恢复时会包含最新的数据
-      assert(restoreFacelib(item.first, status, true));
-    } else {
       // 人脸库存在，直接插入。
       core::FaceLibraryManager::getInstance().createBatch(
           item.first, item.second.first, item.second.second);
@@ -711,11 +726,13 @@ FaceService::updateBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
     idNumbers.erase(idNumbers.begin() + index);
     features.erase(features.begin() + index);
     libNames.erase(libNames.begin() + index);
+    urls.erase(urls.begin() + index);
   }
 
   // 此时的idNumbers与features一一对应
   assert(idNumbers.size() == features.size() &&
-         idNumbers.size() == libNames.size());
+         idNumbers.size() == libNames.size() &&
+         idNumbers.size() == urls.size());
 
   // 全部失败的情况
   if (idNumbers.empty()) {
@@ -751,10 +768,18 @@ FaceService::updateBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
         std::find(idNumbers.begin(), idNumbers.end(), erridNumbersDB[i]));
     features.erase(features.begin() + index);
     libNames.erase(libNames.begin() + index);
+    urls.erase(urls.begin() + index);
+    idNumbers.erase(idNumbers.begin() + index);
   }
 
   // 此时的ids与features一一对应，更新人脸库
-  assert(ids.size() == features.size() && ids.size() == libNames.size());
+  assert(ids.size() == features.size() && ids.size() == libNames.size() &&
+         ids.size() == urls.size() && ids.size() == idNumbers.size());
+
+  // 备份图片
+  for (size_t i = 0; i < ids.size(); ++i) {
+    backupImage(ids[i], libNames[i], idNumbers[i], urls[i]);
+  }
 
   // TODO:批量更新“换库”操作太麻烦了，暂时不做
 
@@ -769,12 +794,9 @@ FaceService::updateBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
 
   // 更新人脸库
   for (auto &item : libName2ids) {
-    // 检查人脸库是否存在
-    if (!core::FaceLibraryManager::getInstance().CHECK_FACELIB_EXIST(
+    // 检查人脸库是否在线，如果在线，直接更新，否则不需要
+    if (core::FaceLibraryManager::getInstance().CHECK_FACELIB_EXIST(
             item.first)) {
-      // 因为数据库在以上的操作中已经更新，恢复时会包含最新的数据
-      assert(restoreFacelib(item.first, status, true));
-    } else {
       // 人脸库存在，直接更新
       core::FaceLibraryManager::getInstance().updateBatch(
           item.first, item.second.first, item.second.second);
@@ -846,8 +868,13 @@ FaceService::deleteBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
 
   // 删除人脸库
   for (auto &item : libName2ids) {
-    core::FaceLibraryManager::getInstance().deleteBatch(item.first,
-                                                        item.second);
+    // 检查人脸库是否在线，如果在线，直接删除，否则不需要
+    if (core::FaceLibraryManager::getInstance().CHECK_FACELIB_EXIST(
+            item.first)) {
+      // 人脸库存在，直接删除
+      core::FaceLibraryManager::getInstance().deleteBatch(item.first,
+                                                          item.second);
+    }
   }
 
   status->status = "OK";

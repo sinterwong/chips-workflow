@@ -18,7 +18,6 @@ FILE(GLOB_RECURSE FACE_SERVER_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 ADD_LIBRARY(face_server ${FACE_SERVER_LIB_SRC})
 TARGET_INCLUDE_DIRECTORIES(face_server PRIVATE
   ${PROJECT_INCLUDE_DIR}
-  ${PROJECT_INCLUDE_DIR}/core
   ${PROJECT_INCLUDE_DIR}/video
   ${PROJECT_INCLUDE_DIR}/jetson-utils
   ${PROJECT_INCLUDE_DIR}/infer
@@ -30,7 +29,7 @@ TARGET_INCLUDE_DIRECTORIES(face_server PRIVATE
   ${CURL_INCLUDE_DIR}
 )
 
-TARGET_LINK_LIBRARIES(face_server infer video core module_logger stdc++fs ${FAISS_LIBRARIES} ${OpenCV_LIBS} ${CURL_LIBRARIES})
+TARGET_LINK_LIBRARIES(face_server infer video module_logger stdc++fs ${FAISS_LIBRARIES} ${OpenCV_LIBS} ${CURL_LIBRARIES})
 
 # transfer all headers to the include directory
 FILE(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR}/server/face)
@@ -50,7 +49,6 @@ FOREACH(sourcefile ${APP_SOURCES})
 
     TARGET_INCLUDE_DIRECTORIES(${testname} PRIVATE
       ${PROJECT_INCLUDE_DIR}
-      ${PROJECT_INCLUDE_DIR}/core
       ${PROJECT_INCLUDE_DIR}/video
       ${PROJECT_INCLUDE_DIR}/jetson-utils
       ${PROJECT_INCLUDE_DIR}/infer
@@ -62,7 +60,7 @@ FOREACH(sourcefile ${APP_SOURCES})
       ${CURL_INCLUDE_DIR}
     )
 
-    TARGET_LINK_LIBRARIES(${testname} face_server infer video core module_logger stdc++fs ${FAISS_LIBRARIES} ${BLAS_LIBRARIES} ${FFMPEG_LIBS} ${OpenCV_LIBS} ${CURL_LIBRARIES})
+    TARGET_LINK_LIBRARIES(${testname} face_server infer video module_logger stdc++fs ${FAISS_LIBRARIES} ${BLAS_LIBRARIES} ${FFMPEG_LIBS} ${OpenCV_LIBS} ${CURL_LIBRARIES})
 
     INSTALL(TARGETS ${testname}
         ARCHIVE DESTINATION lib

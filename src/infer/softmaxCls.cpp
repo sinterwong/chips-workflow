@@ -9,7 +9,7 @@
  *
  */
 #include "softmaxCls.hpp"
-#include "core/factory.hpp"
+#include "common/factory.hpp"
 #include "logger/logger.hpp"
 
 namespace infer::vision {

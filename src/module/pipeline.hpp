@@ -16,10 +16,10 @@
 #include "backend.h"
 #include "boostMessage.h"
 #include "common/common.hpp"
+#include "common/thread_pool.h"
 #include "configParser.hpp"
 #include "logger/logger.hpp"
 #include "module.hpp"
-#include "thread_pool.h"
 
 #include <algorithm>
 #include <any>
@@ -123,7 +123,8 @@ private:
 
   void removeInactiveModules();
 
-  bool loadConfigs(std::vector<PipelineParams> &pipelines, std::vector<AlgorithmParams> &algorithms);
+  bool loadConfigs(std::vector<PipelineParams> &pipelines,
+                   std::vector<AlgorithmParams> &algorithms);
 
   void updateAlgorithms(const std::vector<AlgorithmParams> &algorithms);
 

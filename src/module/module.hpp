@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "backend.h"
-#include "factory.hpp"
+#include "common/factory.hpp"
 #include "logger/logger.hpp"
 
 using common::MessageType;

@@ -26,13 +26,13 @@ public:
             "个API调用都会返回一个JSON格式的响应。")
         .setVersion("1.0")
         .setContactName("Sinter")
-        .setContactUrl("http://114.242.23.39:9797")
+        .setContactUrl("http://localhost:9797")
         .setContactEmail("sinterwong@gmail.com")
 
         // .setLicenseName("Apache License, Version 2.0")
         // .setLicenseUrl("http://www.apache.org/licenses/LICENSE-2.0")
 
-        .addServer("http://114.242.23.39:9797", "face server on x3pi");
+        .addServer("http://localhost:9797", "face server on x3pi");
 
     return builder.build();
   }());

@@ -203,6 +203,7 @@ public:
                        {frame.inputShape.at(0), frame.inputShape.at(1),
                         frame.inputShape.at(2)}};
     algo_ptr vision = getAvailableAlgo();
+    // TODO:infer 是线程安全的，要多个线程同时调用才能并发前处理。
     bool res = vision->infer(frame, params, ret);
     releaseAlgo(vision);
     return res;

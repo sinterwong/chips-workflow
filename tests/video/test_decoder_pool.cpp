@@ -166,9 +166,9 @@ void test_fifo_decoder_pool(std::vector<std::string> &urls) {
 
 int main(int argc, char **argv) {
   std::vector<std::string> urls = {
-      "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101",
-      "rtsp://admin:zkfd123.com@192.168.31.41:554/Streaming/Channels/101",
-      "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101"};
+      "rtsp://admin:zkfd123.com@localhost:554/Streaming/Channels/101",
+      "rtsp://admin:zkfd123.com@localhost:554/Streaming/Channels/101",
+      "rtsp://admin:zkfd123.com@localhost:554/Streaming/Channels/101"};
 
   // test_decoder_pool(urls);
 

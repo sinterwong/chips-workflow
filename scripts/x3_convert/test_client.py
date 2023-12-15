@@ -1,7 +1,7 @@
 import requests
 import base64
 
-onnx_path = "/open_explorer/workspace/projects/flowengine/scripts/x3_convert/yolov8n-face.onnx"
+onnx_path = "/open_explorer/workspace/projects/flowengine/scripts/x3_convert/yolov8n-face_reshape.onnx"
 
 with open(onnx_path, mode="rb") as rbf:
     data = rbf.read()

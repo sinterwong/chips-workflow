@@ -20,8 +20,6 @@
 #ifndef __SERVER_FACE_CORE_FACE_LIBRARY_MANAGER_HPP_
 #define __SERVER_FACE_CORE_FACE_LIBRARY_MANAGER_HPP_
 
-#define FACELIB_DIM 512
-
 namespace server::face::core {
 
 class FaceLibraryManager {
@@ -106,8 +104,15 @@ private:
   static FaceLibraryManager *instance;
 
 private:
-  // TODO:人脸库映射表用来分治人脸库，目前只管理了一个人脸库
+  // TODO:人脸库映射表用来分治人脸库，需要管理人脸库同时在线的数量
   std::unordered_map<std::string, std::unique_ptr<FaceLibrary>> facelibs;
+
+  // 各个人脸库使用计数，分析出热点人脸库，当人脸库数量达到上限时，将最久未使用的人脸库关闭
+  std::unordered_map<std::string, uint32_t> facelibUsage;
+
+  uint8_t const MAX_FACELIB_NUM = 10;
+
+  uint16_t const FACELIB_DIM = 512;
 };
 } // namespace server::face::core
 #endif

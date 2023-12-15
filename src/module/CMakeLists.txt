@@ -13,14 +13,13 @@ TARGET_INCLUDE_DIRECTORIES(module PRIVATE
     ${PROJECT_INCLUDE_DIR}/jetson-utils
     ${CUDA_INCLUDE_DIRS}
     ${PROJECT_INCLUDE_DIR}/module
-    ${PROJECT_INCLUDE_DIR}/core
     ${PROJECT_INCLUDE_DIR}/infer
     ${PROJECT_INCLUDE_DIR}/video
     ${3RDPARTY_ROOT}/eigen
     ${CURL_INCLUDE_DIR}
     ${OpenCV_INCLUDE_DIRS}
 )
-TARGET_LINK_LIBRARIES(module infer video core module_logger ${FAISS_LIBRARIES} ${CURL_LIBRARIES})
+TARGET_LINK_LIBRARIES(module infer video module_logger ${FAISS_LIBRARIES} ${CURL_LIBRARIES})
 
 # transfer all headers to the include directory
 FILE(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR}/module)

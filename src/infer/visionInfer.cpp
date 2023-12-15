@@ -10,7 +10,7 @@
  */
 
 #include "visionInfer.hpp"
-#include "core/factory.hpp"
+#include "common/factory.hpp"
 #include "logger/logger.hpp"
 #include "preprocess.hpp"
 #include "vision.hpp"

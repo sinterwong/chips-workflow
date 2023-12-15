@@ -16,7 +16,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "concurrentqueue.h"
+#include "common/concurrentqueue.h"
 #include "messageBus.h"
 
 using cqueue = moodycamel::ConcurrentQueue<queueMessage>;

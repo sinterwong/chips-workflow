@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2023
  *
  */
-#include "core/algoInfer.hpp"
+#include "algoInfer.hpp"
 #include "dnn_inference.hpp"
 #include "vision.hpp"
 #include <mutex>
