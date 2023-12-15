@@ -22,7 +22,7 @@ parser.add_argument('--out_path', default="output.json",
 parser.add_argument('--config_root', default="/home/wangxt/workspace/projects/flowengine/conf/app",
                     type=str, help='export the path of config file')
 
-parser.add_argument('--result_url', default="http://114.242.23.39:9403/v1/internal/receive_alarm",
+parser.add_argument('--result_url', default="http://localhost:9403/v1/internal/receive_alarm",
                     type=str, help='app send output url')
 
 
@@ -152,7 +152,7 @@ def run():
             stop_process(ok)
     stream2configs = new_configs
 
-# python app_control.py --url http://114.242.23.39:9403/v1/internal/get_config --host_id 62
+# python app_control.py --url http://localhost:9403/v1/internal/get_config --host_id 62
 if __name__ == "__main__":
     args = parser.parse_args()
     stream2pid = {}

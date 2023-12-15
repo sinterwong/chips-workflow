@@ -40,7 +40,7 @@ class MinioClient:
 bucket_name = 'facerecognitionimagesbackup'
 
 # Create client with access key and secret key
-client = MinioClient('114.242.23.39:20503',
+client = MinioClient('localhost:20503',
                      access_key='zkfd',
                      secret_key='ZKFD123.com', bucket_name=bucket_name)
 
