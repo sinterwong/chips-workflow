@@ -1,38 +1,53 @@
 # chips-workflow
 
-## Description
-chips-workflow is a dnn inference workflow engine that allows you to create and run pipeline for video and picture scenes.
+## Introduction
+chips-workflow is a framework for video processing. It is designed for edge computing and supports multiple platforms. It is based on the pipeline model and supports the following functions:
+- video decoding
+- video encoding
+- image inference
+- video pipeline inference 
 
 ## Denpendencies
-- C++17
-- CMake 3.10 or higher
+- cmake >= 3.10
+- g++ >= 7.5
 - spdlog
 - gflags
-- ffmpeg
-- opencv 4.2 or higher
-- Eigen 3+
-- curl
-- openssl
+- opencv >= 4.1
+- ffmepeg(when using video)
+- curl(when using module or server)
+- openssl(when using license)
+- oatpp >= 1.3.0(when using server)
+- faiss(when using servre/face)
+- jetson-utils(when using video in jetson platform)
 
-## Sturcture
-- src
-  - common: common code
-  - core: core backend code
-  - infer: algorithms and dnnEngine wrapper for inference
-  - license: license code
-  - logger: logger
-  - modules: function modules
-  - utils: utilities
-  - video: video processing and platforms enc and dec wrapper
-- tests: test code
-- app: application code
-- 3rdparty: third party libraries
-- cmake: environment construction related files.
-- scripts: scripts for building and deploying etc.
-- platform: cross-compile related files
+## Project Structure
+```bash
+├── 3rdparty
+│   ├── ...
+│   └── target
+│       ├── linux_aarch64
+│       │   ├── dependency1
+│       │   └── dependency2
+│       └── linux_x86_64
+├── build(build files)
+├── app(applications)
+├── cmake(cmake files)
+├── server
+├── src
+│   ├── common
+│   ├── infer
+│   ├── license
+│   ├── module
+│   ├── logger
+│   ├── utils
+│   └── video
+└── tests(test cases)
+```
 
 ## Build
 ### dependencies setting
+Please see the cmake/load_3rdparty.cmake file for needed dependencies in different platforms.
+
 ```bash
 cd 3rdparty/target/linux_${platform}/
 ln -s ${your_libname_path} libname
@@ -50,7 +65,7 @@ cmake -DCMAKE_TOOLCHAIN_FILE=../platform/toolchain/aarch64.platform.cmake -DTOOL
   "cmake.configureArgs": [
     "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/platforms/linux/aarch64.platform.cmake",
     "-DTOOLCHAIN_ROOTDIR=/opt/gcc-aarch64-linux-gnu/bin",
-    "-DAPPSDK_PATH=/path/root"
+    "-DAPPSDK_PATH=/path/root"  // for some platforms which need sdk like horizon-x3pi
   ],
   "cmake.cacheInit": null,
   "cmake.buildDirectory": "${workspaceFolder}/build",
@@ -61,14 +76,14 @@ cmake -DCMAKE_TOOLCHAIN_FILE=../platform/toolchain/aarch64.platform.cmake -DTOOL
 
 ## Run
 ```bash
-cd build/aarch64/bin
+cd build/your_platform/bin
 ./your_app --args
 ```
 
 ## TODO
-- [x] support Jetson NX
+- [x] support Jetson
 - [x] support Horizon X3pi
+- [x] pipeline inference demo(app/app_flowengine.cpp)
+- [x] face recognition server
 - [ ] support Rockchip RK3588
-- [ ] gtest unit test
-- [ ] optimize concurrency for infer
-- [ ] http server for pipeline
+- [ ] pipeline inference server
