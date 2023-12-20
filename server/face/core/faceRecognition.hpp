@@ -56,8 +56,6 @@ private:
 
   void getFaceInput(cv::Mat const &input, cv::Mat &output, FrameInfo &frame,
                     Points2f const &points, ColorType const &type);
-
-  size_t findClosestBBoxIndex(KeypointsBoxes const &kbboxes, float w, float h);
 };
 } // namespace server::face::core
 #endif

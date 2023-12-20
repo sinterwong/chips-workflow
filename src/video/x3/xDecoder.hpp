@@ -13,7 +13,7 @@
 #define __DECODER_FOR_X3_H_
 
 #include "ffstream.hpp"
-#include "joining_thread.h"
+#include "common/joining_thread.h"
 #include "logger/logger.hpp"
 #include "videoSource.hpp"
 #include "video_common.hpp"

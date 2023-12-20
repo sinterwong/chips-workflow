@@ -3,7 +3,6 @@ PROJECT(X3-Tests)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations -Wno-error=unused-function")
 INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}
-    ${PROJECT_INCLUDE_DIR}/core
     ${PROJECT_INCLUDE_DIR}/infer
     ${PROJECT_INCLUDE_DIR}/video
     ${OpenCV_INCLUDE_DIRS}
@@ -23,7 +22,6 @@ LINK_LIBRARIES(
     ${X3_LIBS}
     video 
     infer
-    core
     module_logger
     stdc++fs
 )

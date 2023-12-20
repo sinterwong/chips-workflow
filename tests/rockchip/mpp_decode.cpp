@@ -338,7 +338,7 @@ int main(int argc, char **argv) {
   /*
   ffmpeg -y -c:v h264_rkmpp \
          -rtsp_transport tcp \
-         -i rtsp://admin:zkfd123.com@114.242.23.39:9303/Streaming/Channels/101 \
+         -i rtsp://admin:zkfd123.com@localhost:9303/Streaming/Channels/101 \
          -c copy output.mp4
   */
   gflags::SetUsageMessage("some usage message");

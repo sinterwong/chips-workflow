@@ -9,7 +9,10 @@
  *
  */
 #include "faceRecognition.hpp"
+#include "faceInferUtils.hpp"
 #include "networkUtils.hpp"
+#include "postprocess.hpp"
+
 namespace server::face::core {
 
 FaceRecognition *FaceRecognition::instance = nullptr;
@@ -23,10 +26,8 @@ bool FaceRecognition::extract(FramePackage const &framePackage,
   frame.inputShape = {framePackage.frame->cols, framePackage.frame->rows,
                       framePackage.frame->channels()};
 
-  // TODO:暂时默认是NV12格式，这里应该有一个宏来确定是什么推理数据
-  frame.shape = {framePackage.frame->cols, framePackage.frame->rows * 2 / 3,
-                 framePackage.frame->channels()};
-  frame.type = ColorType::NV12;
+  frame.shape = getShape(framePackage.frame->cols, framePackage.frame->rows);
+  frame.type = getColorType();
 
   // 人脸检测
   InferResult faceDetRet;
@@ -42,8 +43,8 @@ bool FaceRecognition::extract(FramePackage const &framePackage,
   }
 
   // 获取最靠近中心的人脸
-  size_t index = findClosestBBoxIndex(*kbboxes, framePackage.frame->cols,
-                                      framePackage.frame->rows);
+  size_t index = utils::findClosestBBoxIndex(*kbboxes, framePackage.frame->cols,
+                                             framePackage.frame->rows);
 
   auto kbbox = kbboxes->at(index);
 
@@ -73,9 +74,8 @@ bool FaceRecognition::extract(std::string const &url,
     return false;
   }
 
-  // TODO: 暂时写死NV12格式推理
   cv::Mat input;
-  infer::utils::BGR2NV12(*image_bgr, input);
+  convertBGRToInputByType(*image_bgr, input);
   return extract(FramePackage{url, std::make_shared<cv::Mat>(input)}, feature);
 }
 
@@ -143,27 +143,4 @@ void FaceRecognition::getFaceInput(cv::Mat const &input, cv::Mat &output,
   frame.data = reinterpret_cast<void **>(&output.data);
 }
 
-size_t FaceRecognition::findClosestBBoxIndex(KeypointsBoxes const &kbboxes,
-                                             float w, float h) {
-  float image_center_x = w / 2.0;
-  float image_center_y = h / 2.0;
-
-  float min_distance = std::numeric_limits<float>::max();
-  size_t closest_bbox_index = -1;
-
-  for (size_t i = 0; i < kbboxes.size(); ++i) {
-    const auto &kbbox = kbboxes[i];
-    float bbox_center_x = (kbbox.bbox.bbox[0] + kbbox.bbox.bbox[2]) / 2.0;
-    float bbox_center_y = (kbbox.bbox.bbox[1] + kbbox.bbox.bbox[3]) / 2.0;
-
-    float distance = std::hypot(bbox_center_x - image_center_x,
-                                bbox_center_y - image_center_y);
-
-    if (distance < min_distance) {
-      min_distance = distance;
-      closest_bbox_index = i;
-    }
-  }
-  return closest_bbox_index;
-}
 } // namespace server::face::core

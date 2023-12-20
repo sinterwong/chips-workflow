@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
   gflags::SetUsageMessage("some usage message");
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
-  // "rtsp://admin:zkfd123.com@114.242.23.39:9303/Streaming/Channels/101"
+  // "rtsp://admin:zkfd123.com@localhost:9303/Streaming/Channels/101"
   // "csi://0"
   cv::Mat image_bgr = cv::imread(FLAGS_uri);
   cv::Mat image_rgb;

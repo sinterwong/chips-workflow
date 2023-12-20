@@ -3,12 +3,13 @@ PROJECT(FlowEngineSrc)
 
 LOAD_OATPP()
 LOAD_OATPP_SQLITE()
+LOAD_OATPP_SWAGGER()
 
 LINK_LIBRARIES(
     gflags
     oatpp::oatpp
+    oatpp::oatpp-swagger
     oatpp::oatpp-sqlite
-    ${SQLITE_LIBS}
 )
 
 # submodule

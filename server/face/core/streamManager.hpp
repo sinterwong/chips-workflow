@@ -13,9 +13,9 @@
 #ifndef __SERVER_FACE_CORE_STREAM_MANAGER_HPP_
 #define __SERVER_FACE_CORE_STREAM_MANAGER_HPP_
 
+#include "common/thread_pool.h"
 #include "resultProcessor.hpp"
-#include "thread_pool.h"
-#include "video/videoDecode.hpp"
+#include "videoDecode.hpp"
 #include <cstdint>
 #include <future>
 #include <memory>

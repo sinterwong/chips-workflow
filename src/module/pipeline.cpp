@@ -10,7 +10,7 @@
  */
 
 #include "pipeline.hpp"
-#include "factory.hpp"
+#include "common/factory.hpp"
 #include "logger/logger.hpp"
 #include "module.hpp"
 #include <algorithm>

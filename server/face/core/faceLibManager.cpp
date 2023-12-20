@@ -38,8 +38,25 @@ bool FaceLibraryManager::registerFacelib(
     FLOWENGINE_LOGGER_WARN("Facelib {} already exists.", name);
     return false;
   }
+
+  // 检查人脸库数量是否达到上限
+  if (facelibs.size() >= MAX_FACELIB_NUM) {
+    FLOWENGINE_LOGGER_WARN("Facelib number has reached the upper limit.");
+    // 关闭最近最少使用的人脸库
+    auto minUsage = facelibUsage.begin();
+    for (auto it = facelibUsage.begin(); it != facelibUsage.end(); ++it) {
+      if (it->second < minUsage->second) {
+        minUsage = it;
+      }
+    }
+    // 关闭最近最少使用的人脸库
+    unregisterFacelib(minUsage->first);
+    FLOWENGINE_LOGGER_WARN("Facelib {} has been closed.", minUsage->first);
+  }
+
   // 初始化人脸库
   facelibs[name] = std::make_unique<FaceLibrary>(FACELIB_DIM);
+  facelibUsage[name] = 0;
   if (!ids.empty() && !features.empty() && ids.size() == features.size()) {
     // 加载特征到人脸库
     try {
@@ -48,6 +65,7 @@ bool FaceLibraryManager::registerFacelib(
     } catch (std::exception &e) {
       FLOWENGINE_LOGGER_ERROR("Create facelib {} failed: {}", name, e.what());
       facelibs.erase(name);
+      facelibUsage.erase(name);
       return false;
     }
   }
@@ -59,6 +77,7 @@ bool FaceLibraryManager::unregisterFacelib(std::string const &name) {
     return false;
   }
   facelibs.erase(name);
+  facelibUsage.erase(name);
   return true;
 }
 
@@ -73,6 +92,7 @@ bool FaceLibraryManager::createOne(std::string const &tname, long id,
     FLOWENGINE_LOGGER_WARN("Face library create {} failed.", id);
     return false;
   }
+  facelibUsage[tname] += 1;
   return true;
 }
 
@@ -82,6 +102,7 @@ bool FaceLibraryManager::createBatch(std::string const &tname,
     return false;
   }
   facelibs.at(tname)->addVectors(*vecs, ids);
+  facelibUsage[tname] += 1;
   return true;
 }
 
@@ -94,6 +115,7 @@ bool FaceLibraryManager::createBatch(
   // 加载特征到人脸库
   auto ret = Flatten(features);
   facelibs.at(tname)->addVectors(ret.data(), ids);
+  facelibUsage[tname] += 1;
   return true;
 }
 
@@ -106,6 +128,7 @@ bool FaceLibraryManager::updateOne(std::string const &tname, long id,
     FLOWENGINE_LOGGER_WARN("Face library update {} failed.", id);
     return false;
   }
+  facelibUsage[tname] += 1;
   return true;
 }
 
@@ -115,6 +138,7 @@ bool FaceLibraryManager::updateBatch(std::string const &tname,
     return false;
   }
   facelibs.at(tname)->updateVectors(*vecs, ids);
+  facelibUsage[tname] += 1;
   return true;
 }
 
@@ -127,6 +151,7 @@ bool FaceLibraryManager::updateBatch(
   // 加载特征到人脸库
   auto ret = Flatten(features);
   facelibs.at(tname)->updateVectors(ret.data(), ids);
+  facelibUsage[tname] += 1;
   return true;
 }
 
@@ -138,6 +163,7 @@ bool FaceLibraryManager::deleteOne(std::string const &tname, long id) {
     FLOWENGINE_LOGGER_WARN("Face library delete {} failed.", id);
     return false;
   }
+  facelibUsage[tname] += 1;
   return true;
 }
 
@@ -147,6 +173,7 @@ bool FaceLibraryManager::deleteBatch(std::string const &tname,
     return false;
   }
   facelibs.at(tname)->deleteVectors(ids);
+  facelibUsage[tname] += 1;
   return true;
 }
 
@@ -156,6 +183,7 @@ long FaceLibraryManager::match(std::string const &tname, float *vec,
     return -2;
   }
   auto ret = facelibs.at(tname)->search(vec, 1).at(0);
+  facelibUsage[tname] += 1;
   // 阈值
   FLOWENGINE_LOGGER_DEBUG("ID: {}, Distance: {}", ret.first, ret.second);
   if (ret.second > threshold) {

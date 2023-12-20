@@ -21,6 +21,8 @@ namespace server::face::core {
 
 constexpr int DET_ALGO_NUM = 4;
 constexpr int REC_ALGO_NUM = 1;
+constexpr int QUALITY_ALGO_NUM = 1;
+constexpr int KEY_POINTS_ALGO_NUM = 1;
 
 inline std::future<bool> make_false_future() {
   std::promise<bool> prom;
@@ -54,6 +56,10 @@ private:
         std::make_shared<AlgoDispatcher>(AlgoType::DET, DET_ALGO_NUM);
     algoDispatchers[AlgoType::REC] =
         std::make_shared<AlgoDispatcher>(AlgoType::REC, REC_ALGO_NUM);
+    algoDispatchers[AlgoType::QUALITY] =
+        std::make_shared<AlgoDispatcher>(AlgoType::QUALITY, QUALITY_ALGO_NUM);
+    algoDispatchers[AlgoType::KEYPOINT] = std::make_shared<AlgoDispatcher>(
+        AlgoType::KEYPOINT, KEY_POINTS_ALGO_NUM);
   }
   ~AlgoManager() {
     delete instance;

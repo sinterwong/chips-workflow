@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2023
  *
  */
+#include "oatpp-swagger/Controller.hpp"
 #include <iostream>
 #include <memory>
 #include <oatpp/core/Types.hpp>
@@ -19,6 +20,7 @@
 
 #include "AppComponent.hpp"
 #include "FaceController.hpp"
+#include "StaticController.hpp"
 #include "VideoController.hpp"
 
 namespace server::face {
@@ -42,6 +44,9 @@ void run() {
 
   docEndpoints.append(
       router->addController(VideoController::createShared())->getEndpoints());
+
+  router->addController(oatpp::swagger::Controller::createShared(docEndpoints));
+  router->addController(StaticController::createShared());
 
   // Get connection handler component
   OATPP_COMPONENT(std::shared_ptr<oatpp::network::ConnectionHandler>,

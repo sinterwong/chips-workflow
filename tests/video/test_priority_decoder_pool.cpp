@@ -49,9 +49,9 @@ template <typename Pool> void run_stream(Pool &pool, std::string url, int idx) {
 
 int main(int argc, char **argv) {
   std::vector<std::string> urls = {
-      "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101",
-      "rtsp://admin:zkfd123.com@192.168.31.41:554/Streaming/Channels/101",
-      "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101"};
+      "rtsp://admin:zkfd123.com@localhost:554/Streaming/Channels/101",
+      "rtsp://admin:zkfd123.com@localhost:554/Streaming/Channels/101",
+      "rtsp://admin:zkfd123.com@localhost:554/Streaming/Channels/101"};
 
   return 0;
 }

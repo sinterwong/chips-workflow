@@ -10,7 +10,7 @@
  */
 #include "crnnRec.hpp"
 #include "charsRec.hpp"
-#include "core/factory.hpp"
+#include "common/factory.hpp"
 #include "logger/logger.hpp"
 
 #include <algorithm>

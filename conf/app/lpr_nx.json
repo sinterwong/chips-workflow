@@ -50,7 +50,7 @@
       "Pipeline": [
         {
           "Id": 95,
-          "cameraIp": "rtsp://114.242.23.39:6001/MainStream",
+          "cameraIp": "rtsp://localhost:6001/MainStream",
           "flowType": "rtsp",
           "height": 720,
           "runTime": 0,
@@ -64,7 +64,7 @@
         },
         {
           "Id": 95,
-          "cameraIp": "rtsp://114.242.23.39:6001/MainStream",
+          "cameraIp": "rtsp://localhost:6001/MainStream",
           "flowType": "rtsp",
           "height": 720,
           "runTime": 0,

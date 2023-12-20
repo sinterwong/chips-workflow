@@ -13,6 +13,7 @@
 #define __INFERENCE_UTILS_PREPROCESS_H_
 #include "infer_common.hpp"
 #include "opencv2/imgproc.hpp"
+#include <utility>
 
 namespace infer::utils {
 template <typename T>
@@ -81,10 +82,12 @@ void RGB2NV12(cv::Mat const &input, cv::Mat &output, bool is_parallel = false);
 void BGR2NV12(cv::Mat const &input, cv::Mat &output, bool is_parallel = false);
 
 bool cropImage(cv::Mat const &input, cv::Mat &output, cv::Rect2i &rect,
-               common::ColorType type, float sr = 0.0);
+               common::ColorType const &type, float sr = 0.0);
 
 using common::RetBox;
 bool cropImage(cv::Mat const &input, cv::Mat &output, RetBox &bbox,
-               common::ColorType type, float sr = 0);
+               common::ColorType const &type, float sr = 0);
+
+std::pair<float, float> sharpnessAndBrightnessScore(cv::Mat const &input);
 } // namespace infer::utils
 #endif

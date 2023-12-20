@@ -60,9 +60,9 @@ bool set_and_get_data(std::shared_ptr<FFStream> stream, void *decoder,
 
 int main(int argc, char **argv) {
   std::string url1 =
-      "rtsp://admin:ghrq123456@114.242.23.39:6102/Streaming/Channels/101";
+      "rtsp://admin:ghrq123456@localhost:6102/Streaming/Channels/101";
   std::string url2 =
-      "rtsp://114.242.23.39:6106/user=admin_password=tlJwpbo6_channel=1_stream=0.sdp?real_stream";
+      "rtsp://localhost:6106/user=admin_password=tlJwpbo6_channel=1_stream=0.sdp?real_stream";
 
   // 解码器handle
   void *decoder;
