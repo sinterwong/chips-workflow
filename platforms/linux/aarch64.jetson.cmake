@@ -1,6 +1,6 @@
 MESSAGE(STATUS "Configure Cross Compiler")
 
-# SET(CMAKE_SYSTEM_NAME Linux)  # 加上之后找不到CUDA 我也不知道为啥
+# SET(CMAKE_SYSTEM_NAME Linux)  # TODO:加上之后找不到CUDA
 SET(CMAKE_SYSTEM_PROCESSOR aarch64)
 SET(TARGET_OS linux)
 SET(TARGET_ARCH aarch64)

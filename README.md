@@ -81,6 +81,7 @@ cd build/your_platform/bin
 ```
 
 ## TODO
+- [ ] support generic platform with onnxruntime(x86_64, aarch64)
 - [x] support Jetson
 - [x] support Horizon X3pi
 - [x] pipeline inference demo(app/app_flowengine.cpp)

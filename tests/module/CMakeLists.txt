@@ -10,8 +10,10 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/video
     ${PROJECT_INCLUDE_DIR}/video/x3
     ${PROJECT_INCLUDE_DIR}/video/jetson
+    ${PROJECT_INCLUDE_DIR}/video/generic
     ${PROJECT_INCLUDE_DIR}/infer/x3
     ${PROJECT_INCLUDE_DIR}/infer/jetson
+    ${PROJECT_INCLUDE_DIR}/infer/generic
     ${OpenCV_INCLUDE_DIRS}
     ${CUDA_INCLUDE_DIRS}
     ${3RDPARTY_DIR}/gflags/include
@@ -31,7 +33,7 @@ ELSEIF(TARGET_HARDWARE STREQUAL "jetson")
     MESSAGE(STATUS "Loading Jetson dependent libraries")
     SET(CHIPS_DEPAND_LIBS jetson-utils)
 ELSE()
-    SET(CHIPS_DEPAND_LIBS)
+    SET(CHIPS_DEPAND_LIBS ${ONNXRUNTIME_LIBS})
 ENDIF()
 
 LINK_LIBRARIES(

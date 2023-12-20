@@ -46,7 +46,14 @@ ELSEIF(TARGET_HARDWARE STREQUAL rockchip)
   )
   TARGET_LINK_LIBRARIES(video ${OpenCV_LIBS} ${MPP_LIB} ${RGA_LIB} module_logger)
 ELSE()
-  MESSAGE(WARNING "No platform specified!")
+  TARGET_INCLUDE_DIRECTORIES(video PRIVATE
+    ${PROJECT_INCLUDE_DIR}
+    ${PROJECT_INCLUDE_DIR}/video
+    ${OpenCV_INCLUDE_DIRS}
+    ${FFMPEG_INCLUDE_DIR}
+  )
+  TARGET_LINK_LIBRARIES(video ${OpenCV_LIBS} module_logger)
+  MESSAGE(INFO "No hardware target specified, video module will build with Generic.")
 ENDIF()
 
 # transfer all headers to the include directory

@@ -8,6 +8,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/jetson-utils
     ${PROJECT_INCLUDE_DIR}/video/x3
     ${PROJECT_INCLUDE_DIR}/video/jetson
+    ${PROJECT_INCLUDE_DIR}/video/generic
     ${3RDPARTY_DIR}/gflags/include
     ${CUDA_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
