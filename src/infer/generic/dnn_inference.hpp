@@ -61,29 +61,51 @@ private:
   //!
   //! \brief Release the resource
   //!
-  int terminate() { return 0; }
+  int terminate() {
+    // if (outputDatas != nullptr) {
+    //   for (int i = 0; i < outputShapes.size(); i++) {
+    //     if (outputDatas[i] != nullptr) {
+    //       delete[] outputDatas[i];
+    //       outputDatas[i] = nullptr;
+    //     }
+    //   }
+    //   delete[] outputDatas;
+    //   outputDatas = nullptr;
+    // }
+
+    // 释放 outputNames
+    // if (outputNames != nullptr) {
+    //   delete[] outputNames;
+    //   outputNames = nullptr;
+    // }
+
+    return 0;
+  }
 
 private:
   //!< The parameters for the sample.
   AlgoBase mParams;
 
   Ort::Value inputTensor{nullptr};
-  std::vector<Ort::Value> outputTensors;
+  // std::vector<Ort::Value> outputTensors;
+  Ort::Value outputTensor{nullptr};
 
   Ort::AllocatorWithDefaultOptions ortAlloc;
 
-  const char *inputName;
+  const char *inputNames[1];
   std::vector<int64_t> inputShape;
 
-  std::vector<const char *> outputNames;
+  // const char **outputNames;
+  const char *outputNames[1];
   std::vector<std::vector<int64_t>> outputShapes;
 
   // infer engine
-  Ort::Env env;
+  Ort::Env env{ORT_LOGGING_LEVEL_VERBOSE};
   std::unique_ptr<Ort::Session> session;
 
   cv::Mat inputData;
-  std::vector<std::vector<float>> outputDatas;
+  // float **outputDatas;
+  float *outputDatas;
 };
 } // namespace dnn
 } // namespace infer

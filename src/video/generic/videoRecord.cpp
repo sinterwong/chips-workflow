@@ -9,22 +9,17 @@
  *
  */
 #include "videoRecord.hpp"
-#include "logger/logger.hpp"
-#include "video_utils.hpp"
-#include <algorithm>
-#include <cassert>
 #include <experimental/filesystem>
-#include <memory>
 
 using namespace std::experimental;
 
 namespace video {
 
-bool VideoRecord::init() { return true; }
+bool VideoRecord::init() { return false; }
 
-bool VideoRecord::check() const noexcept { return true; }
+bool VideoRecord::check() const noexcept { return false; }
 
 void VideoRecord::destory() noexcept {}
 
-bool VideoRecord::record(void *frame) { return true; }
+bool VideoRecord::record(void *frame) { return false; }
 } // namespace video

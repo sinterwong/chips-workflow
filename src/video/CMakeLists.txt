@@ -52,7 +52,7 @@ ELSE()
     ${OpenCV_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIR}
   )
-  TARGET_LINK_LIBRARIES(video ${OpenCV_LIBS} module_logger)
+  TARGET_LINK_LIBRARIES(video ${OpenCV_LIBS} ${FFMPEG_LIBS} module_logger)
   MESSAGE(INFO "No hardware target specified, video module will build with Generic.")
 ENDIF()
 

@@ -81,6 +81,11 @@ struct RetBox {
 
   RetBox(std::string name_, Points2i points_ = {})
       : name(std::move(name_)), points(std::move(points_)) {
+
+    if (points.empty()) {
+      return;
+    }
+
     if (points.size() > 2) {
       isPoly = true;
     }

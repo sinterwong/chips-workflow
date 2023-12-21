@@ -34,7 +34,7 @@ TARGET_INCLUDE_DIRECTORIES(face_server PRIVATE
   ${CURL_INCLUDE_DIR}
 )
 
-TARGET_LINK_LIBRARIES(face_server infer video module_logger stdc++fs ${ONNXRUNTIME_LIBS} ${FAISS_LIBRARIES} ${OpenCV_LIBS} ${CURL_LIBRARIES})
+TARGET_LINK_LIBRARIES(face_server infer video module_logger stdc++fs ${ONNXRUNTIME_LIBS} ${FFMPEG_LIBS} ${FAISS_LIBRARIES} ${OpenCV_LIBS} ${CURL_LIBRARIES})
 
 # transfer all headers to the include directory
 FILE(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR}/server/face)

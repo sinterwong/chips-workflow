@@ -10,12 +10,8 @@
  */
 
 #include "common/common.hpp"
-#include <any>
-#include <iostream>
 #include <memory>
 #include <opencv2/videoio.hpp>
-#include <stdexcept>
-#include <string>
 
 #include "video_common.hpp"
 

@@ -55,7 +55,7 @@ bool VisionInfer::init() {
 
 bool VisionInfer::infer(FrameInfo &frame, const InferParams &params,
                         InferResult &ret) {
-
+  // 栈上指针，infer后指向推理引擎管理的内存，无需在此处释放
   void *outputs[modelInfo.output_count];
   void *output = reinterpret_cast<void *>(outputs);
   ret.shape = frame.shape;

@@ -24,8 +24,7 @@ namespace server::face::core {
 static std::string DET_MODEL_PATH =
     "/opt/deploy/models/yolov8n_face_640x640.engine";
 
-static std::string REC_MODEL_PATH =
-    "/opt/deploy/models/arcface_112x112.engine";
+static std::string REC_MODEL_PATH = "/opt/deploy/models/arcface_112x112.engine";
 
 static std::string QUALITY_MODEL_PATH =
     "/opt/deploy/models/face_quality_128x128.engine";
@@ -203,7 +202,7 @@ public:
                        {frame.inputShape.at(0), frame.inputShape.at(1),
                         frame.inputShape.at(2)}};
     algo_ptr vision = getAvailableAlgo();
-    // TODO:infer 是线程安全的，要多个线程同时调用才能并发前处理。
+    // TODO:infer 是线程安全的，此举多余，后续优化一下策略
     bool res = vision->infer(frame, params, ret);
     releaseAlgo(vision);
     return res;
