@@ -70,7 +70,19 @@ ELSEIF(TARGET_HARDWARE STREQUAL rockchip)
     )
     TARGET_LINK_LIBRARIES(infer ${OpenCV_LIBS} ${RKNN_API_LIB} module_logger)
 ELSE()
-    MESSAGE(WARNING "No platform specified!")
+    FILE(GLOB_RECURSE NN_LIB_HEAD ${CMAKE_CURRENT_SOURCE_DIR}/generic/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/generic/*.h)
+    FILE(GLOB_RECURSE NN_LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/generic/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/generic/*.c)
+    LIST(APPEND INFER_LIB_SRC ${NN_LIB_SRC})
+    ADD_LIBRARY(infer SHARED ${INFER_LIB_SRC})
+    TARGET_INCLUDE_DIRECTORIES(infer PRIVATE
+        ${PROJECT_INCLUDE_DIR}
+        ${PROJECT_INCLUDE_DIR}/infer
+        ${PROJECT_INCLUDE_DIR}/infer/generic
+        ${3RDPARTY_ROOT}/eigen
+        ${OpenCV_INCLUDE_DIRS}
+        ${ONNXRUNTIME_INCLUDE_DIR}
+    )
+    TARGET_LINK_LIBRARIES(infer ${OpenCV_LIBS} ${ONNXRUNTIME_LIBS} module_logger)
 ENDIF()
 
 # transfer all headers to the include directory
