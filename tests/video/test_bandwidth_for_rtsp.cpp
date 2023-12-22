@@ -36,7 +36,7 @@ bool rtsp_read_thread(std::string &url) {
   void *data;
   // 每个线程读取100次
   while (stream.isRunning()) {
-    int size = stream.getRawFrame(&data);
+    int size = stream.getDataFrame(&data);
     if (size == -1) {
       error_count++;
       return false;

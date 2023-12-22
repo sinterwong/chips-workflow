@@ -10,18 +10,20 @@
  */
 #ifndef __STREAM_MANAGER_FFMPAGE_H_
 #define __STREAM_MANAGER_FFMPAGE_H_
-#include "libavutil/rational.h"
 #include "logger/logger.hpp"
 #include <mutex>
 #include <ostream>
 #include <shared_mutex>
+#include <sys/types.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 #include "libavcodec/avcodec.h"
 #include <libavformat/avformat.h>
+#include <libavutil/imgutils.h>
 #include <libavutil/timestamp.h>
+#include <libswscale/swscale.h>
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
@@ -53,6 +55,14 @@ private:
   // ffmepg data packet
   AVPacket avpacket = {0};
 
+  // ffmpeg codec
+  AVCodecContext *avCodecContext = nullptr;
+  AVFrame *frame = nullptr;
+  AVFrame *frame_rgb = nullptr;
+  struct SwsContext *swsCtx;
+  uint8_t *rgbBuf = nullptr;
+  int rgbBufSize = 0;
+
   AvParam av_param;
 
   std::atomic_bool isOpen = false;
@@ -64,9 +74,10 @@ private:
   uint8_t *seqHeader = nullptr;
 
 public:
-  bool openStream(); // 开启视频流
+  bool openStream(bool withCodec = false); // 开启视频流
 
-  int getRawFrame(void **data, bool isCopy = false, bool onlyIFrame = false);
+  int getDataFrame(void **data, bool isCopy = false, bool onlyIFrame = false,
+                   bool isDecode = false);
 
   inline bool isRunning() { return isOpen.load(); };
 
@@ -123,6 +134,9 @@ public:
       avformat_close_input(&avContext);
     }
     isOpen.store(false);
+
+    // 解码器开关控制在openStream, 因此在此处关闭
+    closeCodec();
   }
 
   explicit FFStream(std::string const &uri_) noexcept : uri(uri_) {}
@@ -135,6 +149,33 @@ public:
       free(seqHeader);
       seqHeader = nullptr;
     }
+  }
+
+private:
+  bool openCodec(); // 开启解码器
+
+  inline bool closeCodec() { // 释放解码器资源
+    if (swsCtx) {
+      sws_freeContext(swsCtx);
+      swsCtx = nullptr;
+    }
+    if (rgbBuf) {
+      free(rgbBuf);
+      rgbBuf = nullptr;
+    }
+    if (frame_rgb) {
+      av_frame_free(&frame_rgb);
+      frame_rgb = nullptr;
+    }
+    if (avCodecContext) {
+      avcodec_free_context(&avCodecContext);
+      avCodecContext = nullptr;
+    }
+    if (frame) { // 释放帧资源
+      av_frame_free(&frame);
+      frame = nullptr;
+    }
+    return true;
   }
 };
 } // namespace video::utils

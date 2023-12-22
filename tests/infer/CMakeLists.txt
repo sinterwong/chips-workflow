@@ -15,6 +15,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/infer/x3
     ${PROJECT_INCLUDE_DIR}/infer/generic
     ${3RDPARTY_DIR}/gflags/include
+    ${ONNXRUNTIME_INCLUDE_DIR}
     ${CUDA_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
     ${FFMPEG_INCLUDE_DIR}
@@ -40,6 +41,7 @@ LINK_LIBRARIES(
     ${OpenCV_LIBS}
     ${FFMPEG_LIBS}
     ${FAISS_LIBRARIES}
+    ${ONNXRUNTIME_LIBS}
     gflags
     pthread
     video

@@ -10,9 +10,9 @@
  */
 
 #include "ffstream.hpp"
-#include "libavcodec/avcodec.h"
 #include "logger/logger.hpp"
 #include <cstdlib>
+
 #include <mutex>
 
 using namespace std::chrono_literals;
@@ -32,6 +32,7 @@ std::unordered_map<AVCodecID, std::string> const FFStream::codecMapping = {
 
 static int build_dec_seq_header(uint8_t *pbHeader, std::string const &p_enType,
                                 const AVStream *st, int *sizelength) {
+
   AVCodecParameters *avc = st->codecpar;
 
   uint8_t *pbMetaData = avc->extradata;
@@ -139,7 +140,7 @@ static int build_dec_seq_header(uint8_t *pbHeader, std::string const &p_enType,
   return size;
 }
 
-bool FFStream::openStream() {
+bool FFStream::openStream(bool withCodec) {
   std::lock_guard<std::shared_mutex> lk(ctx_m);
 
   int ret = 0;
@@ -169,16 +170,96 @@ bool FFStream::openStream() {
                             av_param.videoIndex, uri);
     return false;
   }
-  av_init_packet(&avpacket);
-  avpacket.data = nullptr;
-  avpacket.size = 0;
+
+  av_packet_unref(&avpacket);
   isOpen.store(true);
 
   av_param.firstPacket = 1;
+
+  if (withCodec) {
+    if (!openCodec()) {
+      FLOWENGINE_LOGGER_ERROR("openCodec failed");
+      return false;
+    }
+  }
   return true;
 }
 
-int FFStream::getRawFrame(void **data, bool isCopy, bool onlyIFrame) {
+bool FFStream::openCodec() {
+  if (!isRunning()) {
+    FLOWENGINE_LOGGER_ERROR("The stream is not opened!");
+    return false;
+  }
+  AVCodecParameters *codec;
+
+  int ret = 0;
+
+  codec = avContext->streams[av_param.videoIndex]->codecpar;
+  AVCodec const *avCodec = avcodec_find_decoder(
+      avContext->streams[av_param.videoIndex]->codecpar->codec_id);
+
+  if (!avCodec) {
+    FLOWENGINE_LOGGER_ERROR("avcodec_find_decoder failed");
+    return false;
+  }
+
+  avCodecContext = avcodec_alloc_context3(avCodec);
+  if (!avCodecContext) {
+    FLOWENGINE_LOGGER_ERROR("avcodec_alloc_context3 failed");
+    return false;
+  }
+
+  ret = avcodec_parameters_to_context(avCodecContext, codec);
+  if (ret < 0) {
+    FLOWENGINE_LOGGER_ERROR("avcodec_parameters_to_context failed");
+    return false;
+  }
+
+  ret = avcodec_open2(avCodecContext, avCodec, nullptr);
+  if (ret < 0) {
+    FLOWENGINE_LOGGER_ERROR("avcodec_open2 failed");
+    return false;
+  }
+
+  if (!frame) {
+    frame = av_frame_alloc();
+    if (!frame) {
+      FLOWENGINE_LOGGER_ERROR("av_frame_alloc failed");
+      return false;
+    }
+  }
+
+  if (!frame_rgb) {
+    frame_rgb = av_frame_alloc();
+    if (!frame_rgb) {
+      FLOWENGINE_LOGGER_ERROR("av_frame_alloc failed");
+      return false;
+    }
+  }
+  rgbBufSize = av_image_get_buffer_size(AV_PIX_FMT_RGB24, avCodecContext->width,
+                                        avCodecContext->height, 1);
+  rgbBuf = (uint8_t *)av_malloc(rgbBufSize * sizeof(uint8_t));
+  av_image_fill_arrays(frame_rgb->data, frame_rgb->linesize, rgbBuf,
+                       AV_PIX_FMT_RGB24, avCodecContext->width,
+                       avCodecContext->height, 1);
+
+  // 转换像素格式为RGB24
+  swsCtx = sws_getContext(avCodecContext->width, avCodecContext->height,
+                          avCodecContext->pix_fmt, avCodecContext->width,
+                          avCodecContext->height, AV_PIX_FMT_RGB24,
+                          SWS_BILINEAR, nullptr, nullptr, nullptr);
+
+  if (!swsCtx) {
+    FLOWENGINE_LOGGER_ERROR("sws_getContext failed");
+    return false;
+  }
+
+  FLOWENGINE_LOGGER_INFO("open codec success! codec: {}", avCodec->name);
+  return true;
+}
+
+int FFStream::getDataFrame(void **data, bool isCopy, bool onlyIFrame,
+                           bool isDecode) {
   std::lock_guard<std::shared_mutex> lk(ctx_m);
   if (!isRunning())
     return -1; // 流已关闭
@@ -187,8 +268,9 @@ int FFStream::getRawFrame(void **data, bool isCopy, bool onlyIFrame) {
   int error = 0;
 
   if (!avpacket.size) {
-    av_packet_unref(&avpacket); // 不加就会内存泄露
+    av_packet_unref(&avpacket); // 释放上一帧数据包
     error = av_read_frame(avContext, &avpacket);
+    FLOWENGINE_LOGGER_DEBUG("av_read_frame, size: {}", avpacket.size);
   }
   if (error < 0) {
     if (error == AVERROR_EOF || (avContext->pb && avContext->pb->eof_reached)) {
@@ -229,7 +311,6 @@ int FFStream::getRawFrame(void **data, bool isCopy, bool onlyIFrame) {
         *data = (void *)seqHeader;
       }
     } else {
-      av_param.bufSize = avpacket.size;
       if (onlyIFrame) {
         if (!(avpacket.flags & AV_PKT_FLAG_KEY)) {
           // 这不是I帧，所以我们释放数据包并返回
@@ -237,10 +318,40 @@ int FFStream::getRawFrame(void **data, bool isCopy, bool onlyIFrame) {
           return 0;
         }
       }
-      if (isCopy) {
-        memcpy(*data, (void *)avpacket.data, avpacket.size);
+
+      if (isDecode) {
+        if (!avCodecContext) {
+          FLOWENGINE_LOGGER_ERROR("codec is not opened!");
+          return -1;
+        }
+
+        int ret = avcodec_send_packet(avCodecContext, &avpacket);
+        if (ret < 0) {
+          FLOWENGINE_LOGGER_ERROR("avcodec_send_packet failed, ret: {}", ret);
+          return -1;
+        }
+        ret = avcodec_receive_frame(avCodecContext, frame);
+        if (ret < 0) {
+          FLOWENGINE_LOGGER_ERROR("avcodec_receive_frame failed, ret: {}", ret);
+          return -2;
+        }
+
+        sws_scale(swsCtx, frame->data, frame->linesize, 0,
+                  avCodecContext->height, frame_rgb->data, frame_rgb->linesize);
+
+        av_param.bufSize = frame_rgb->linesize[0] * frame_rgb->height;
+        if (isCopy) {
+          memcpy(*data, (void *)frame_rgb->data[0], av_param.bufSize);
+        } else {
+          *data = (void *)frame_rgb->data[0];
+        }
       } else {
-        *data = (void *)avpacket.data;
+        av_param.bufSize = avpacket.size;
+        if (isCopy) {
+          memcpy(*data, (void *)avpacket.data, avpacket.size);
+        } else {
+          *data = (void *)avpacket.data;
+        }
       }
       // 置0
       avpacket.size = 0;
