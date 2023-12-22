@@ -52,8 +52,8 @@ bool FaceKeyPoints::processOutput(void **output, InferResult &result) const {
 }
 
 void FaceKeyPoints::generateKeypoints(KeypointsRet &kps, void **outputs) const {
-  float **output = reinterpret_cast<float **>(*outputs);
-  float *out = output[0];
+  float **output = reinterpret_cast<float **>(outputs);
+  float *out = output[0]; // just one output
   int dim = modelInfo.outputShapes[0].at(1);
 
   for (int i = 0; i < dim; i += 2) {

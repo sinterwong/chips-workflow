@@ -13,6 +13,7 @@
 #include "logger/logger.hpp"
 #include "preprocess.hpp"
 
+#include <memory>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 
@@ -23,9 +24,11 @@ using namespace infer::utils;
 bool AlgoInference::initialize() {
 
   // 加载模型
-  auto memoryInfo =
-      Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
-  session = std::make_unique<Ort::Session>(env, mParams.modelPath.c_str(),
+  memoryInfo = std::make_unique<Ort::MemoryInfo>(
+      Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU));
+  env =
+      std::make_unique<Ort::Env>(ORT_LOGGING_LEVEL_INFO, mParams.name.c_str());
+  session = std::make_unique<Ort::Session>(*env, mParams.modelPath.c_str(),
                                            Ort::SessionOptions{nullptr});
 
   assert(session->GetInputCount() == 1);
@@ -38,57 +41,29 @@ bool AlgoInference::initialize() {
   inputNames[0] = mParams.inputNames.at(0).c_str();
 
   // 初始化输出名称
-  // outputNames = new const char *[session->GetOutputCount()];
+  outputNames = new const char *[session->GetOutputCount()];
 
   // // 获取输出信息
-  // for (int i = 0; i < session->GetOutputCount(); i++) {
-  //   auto outputInfo = session->GetOutputTypeInfo(i);
-  //   outputShapes.push_back(outputInfo.GetTensorTypeAndShapeInfo().GetShape());
-  //   outputNames[i] = mParams.outputNames.at(i).c_str();
-  // }
-  outputNames[0] = mParams.outputNames.at(0).c_str();
-
-  // 不用初始化输入数据，因为后面会直接指向外部传入的输入数据
-  // inputData.create(1,
-  //                  inputShape.at(0) * inputShape.at(1) * inputShape.at(2) *
-  //                      inputShape.at(3),
-  //                  CV_32FC1);
-
-  inputTensor = Ort::Value::CreateTensor<float>(
-      memoryInfo, reinterpret_cast<float *>(inputData.data),
-      inputShape.at(0) * inputShape.at(1) * inputShape.at(2) * inputShape.at(3),
-      inputShape.data(), inputShape.size());
-
-  // // 初始化输出数据
-  // outputDatas = new float *[outputShapes.size()];
-  // for (int i = 0; i < outputShapes.size(); i++) {
-  //   auto outputShape = outputShapes.at(i);
-  //   size_t outputSize = 1;
-  //   for (auto &dim : outputShape) {
-  //     outputSize *= dim;
-  //   }
-  //   outputDatas[i] = new float[outputSize];
-  //   outputTensors.emplace_back(Ort::Value::CreateTensor<float>(
-  //       memoryInfo, outputDatas[i], outputSize, outputShape.data(),
-  //       outputShape.size()));
-  // }
-  // auto outputShape = outputShapes.at(0);
-
-  auto outputInfo = session->GetOutputTypeInfo(0);
-  auto outputShape = outputInfo.GetTensorTypeAndShapeInfo().GetShape();
-  size_t outputSize = 1;
-  for (auto &dim : outputShape) {
-    outputSize *= dim;
+  for (int i = 0; i < session->GetOutputCount(); i++) {
+    auto outputInfo = session->GetOutputTypeInfo(i);
+    outputShapes.push_back(outputInfo.GetTensorTypeAndShapeInfo().GetShape());
+    outputNames[i] = mParams.outputNames.at(i).c_str();
   }
-  // outputDatas[0] = new float[outputSize];
-  // outputTensor = Ort::Value::CreateTensor<float>(
-  //     memoryInfo, outputDatas[0], outputSize, outputShapes.at(0).data(),
-  //     outputShapes.at(0).size());
 
-  outputDatas = new float[outputSize];
-  outputTensor =
-      Ort::Value::CreateTensor<float>(memoryInfo, outputDatas, outputSize,
-                                      outputShape.data(), outputShape.size());
+  // 初始化输出数据
+  outputDatas = new float *[outputShapes.size()];
+  for (int i = 0; i < outputShapes.size(); i++) {
+    auto outputShape = outputShapes.at(i);
+    size_t outputSize = 1;
+    for (auto &dim : outputShape) {
+      outputSize *= dim;
+    }
+    outputDatas[i] = new float[outputSize];
+    outputTensors.emplace_back(Ort::Value::CreateTensor<float>(
+        *memoryInfo, outputDatas[i], outputSize, outputShape.data(),
+        outputShape.size()));
+  }
+  auto outputShape = outputShapes.at(0);
   return true;
 }
 
@@ -101,20 +76,14 @@ bool AlgoInference::infer(FrameInfo &input, void **outputs) {
 
   // 执行推理
   Ort::RunOptions runOptions;
-  // session->Run(runOptions, inputName, &inputTensor, 1, outputNames,
-  //              outputTensors.data(), outputTensors.size());
-
   session->Run(runOptions, inputNames, &inputTensor, 1, outputNames,
-               &outputTensor, 1);
+               outputTensors.data(), outputTensors.size());
 
-  // //
   // TODO:这里指向的是类内的outputDatas，因为数据没有拷贝出去，所以后处理当前不能在外面并发完成
-  // float **ret = reinterpret_cast<float **>(outputs);
-  // for (int i = 0; i < outputShapes.size(); i++) {
-  //   ret[i] = outputDatas[i];
-  // }
   float **ret = reinterpret_cast<float **>(outputs);
-  ret[0] = outputTensor.GetTensorMutableData<float>();
+  for (int i = 0; i < outputShapes.size(); i++) {
+    ret[i] = outputTensors[i].GetTensorMutableData<float>();
+  }
   return true;
 }
 
@@ -124,21 +93,23 @@ bool AlgoInference::infer(cv::Mat const &input, void **outputs) {
   inputData = input;
 
   // normalize
-  inputData.convertTo(inputData, CV_32FC3, mParams.alpha, mParams.beta);
+  inputData.convertTo(inputData, CV_32FC1, 1.0 / mParams.alpha, mParams.beta);
+
+  inputTensor = Ort::Value::CreateTensor<float>(
+      *memoryInfo, reinterpret_cast<float *>(inputData.data),
+      inputShape.at(0) * inputShape.at(1) * inputShape.at(2) * inputShape.at(3),
+      inputShape.data(), inputShape.size());
 
   // 执行推理
   Ort::RunOptions runOptions;
-  // session->Run(runOptions, inputName, &inputTensor, 1, outputNames,
-  //              outputTensors.data(), outputTensors.size());
   session->Run(runOptions, inputNames, &inputTensor, 1, outputNames,
-               &outputTensor, 1);
+               outputTensors.data(), outputTensors.size());
 
   // TODO:这里指向的是类内的outputDatas，因为数据没有拷贝出去，所以后处理当前不能在外面并发完成
   float **ret = reinterpret_cast<float **>(outputs);
-  // for (int i = 0; i < outputShapes.size(); i++) {
-  //   ret[i] = outputDatas[i];
-  // }
-  ret[0] = outputTensor.GetTensorMutableData<float>();
+  for (int i = 0; i < outputShapes.size(); i++) {
+    ret[i] = outputTensors[i].GetTensorMutableData<float>();
+  }
   return true;
 }
 

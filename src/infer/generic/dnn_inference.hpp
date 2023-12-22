@@ -62,22 +62,22 @@ private:
   //! \brief Release the resource
   //!
   int terminate() {
-    // if (outputDatas != nullptr) {
-    //   for (int i = 0; i < outputShapes.size(); i++) {
-    //     if (outputDatas[i] != nullptr) {
-    //       delete[] outputDatas[i];
-    //       outputDatas[i] = nullptr;
-    //     }
-    //   }
-    //   delete[] outputDatas;
-    //   outputDatas = nullptr;
-    // }
+    if (outputDatas != nullptr) {
+      for (int i = 0; i < outputShapes.size(); i++) {
+        if (outputDatas[i] != nullptr) {
+          delete[] outputDatas[i];
+          outputDatas[i] = nullptr;
+        }
+      }
+      delete[] outputDatas;
+      outputDatas = nullptr;
+    }
 
     // 释放 outputNames
-    // if (outputNames != nullptr) {
-    //   delete[] outputNames;
-    //   outputNames = nullptr;
-    // }
+    if (outputNames != nullptr) {
+      delete[] outputNames;
+      outputNames = nullptr;
+    }
 
     return 0;
   }
@@ -87,25 +87,23 @@ private:
   AlgoBase mParams;
 
   Ort::Value inputTensor{nullptr};
-  // std::vector<Ort::Value> outputTensors;
-  Ort::Value outputTensor{nullptr};
+  std::vector<Ort::Value> outputTensors;
 
-  Ort::AllocatorWithDefaultOptions ortAlloc;
+  // Ort::AllocatorWithDefaultOptions ortAlloc;
 
   const char *inputNames[1];
   std::vector<int64_t> inputShape;
 
-  // const char **outputNames;
-  const char *outputNames[1];
+  const char **outputNames;
   std::vector<std::vector<int64_t>> outputShapes;
 
   // infer engine
-  Ort::Env env{ORT_LOGGING_LEVEL_VERBOSE};
+  std::unique_ptr<Ort::Env> env;
   std::unique_ptr<Ort::Session> session;
+  std::unique_ptr<Ort::MemoryInfo> memoryInfo;
 
   cv::Mat inputData;
-  // float **outputDatas;
-  float *outputDatas;
+  float **outputDatas;
 };
 } // namespace dnn
 } // namespace infer

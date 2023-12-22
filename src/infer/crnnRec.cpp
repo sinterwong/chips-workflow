@@ -30,8 +30,8 @@ CharsRet CRNN::decodeChars(CharsRet const &preds) const {
 }
 
 CharsRet CRNN::generateChars(void **outputs) const {
-  float **out = reinterpret_cast<float **>(*outputs);
-  float *output = out[0]; // 只有一个输出
+  float **out = reinterpret_cast<float **>(outputs);
+  float *output = out[0]; // just one output
   int numChars = modelInfo.outputShapes[0].at(1);
   int numClasses = modelInfo.outputShapes[0].at(2);
   std::vector<int> predIds;

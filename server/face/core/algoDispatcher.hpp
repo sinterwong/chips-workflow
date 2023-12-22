@@ -76,6 +76,7 @@ private:
   // 检测算法配置获取
   AlgoConfig getDetConfig() {
     PointsDetAlgo faceDet_config{{
+                                     "faceDet",
                                      1,
                                      {"images"},
                                      {"output0"},
@@ -97,6 +98,7 @@ private:
   // 识别算法配置获取
   AlgoConfig getRecConfig() {
     FeatureAlgo faceNet_config{{
+                                   "faceRec",
                                    1,
                                    {"input.1"},
                                    {"516"},
@@ -117,6 +119,7 @@ private:
   // 质量算法配置获取
   AlgoConfig getQualityConfig() {
     ClassAlgo faceQuality_config{{
+        "faceQuality",
         1,
         {"input"},
         {"output"},
@@ -136,6 +139,7 @@ private:
   // 关键点算法配置获取
   AlgoConfig getKeyPointsConfig() {
     PointsDetAlgo facePoints_config{{
+                                        "facePoints",
                                         1,
                                         {"data"},
                                         {"fc1"},

@@ -17,7 +17,7 @@ namespace infer::vision {
 void Assd::generateBoxes(std::unordered_map<int, BBoxes> &m,
                          void **outputs) const {
 
-  float **output = static_cast<float **>(*outputs);
+  float **output = reinterpret_cast<float **>(outputs);
   assert(static_cast<int>(modelInfo.outputShapes.size()) ==
          modelInfo.output_count);
 

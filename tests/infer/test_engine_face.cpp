@@ -59,6 +59,7 @@ int main(int argc, char **argv) {
   alpha = 255.0;
   common::Shape inputShape{160, 160, 3};
   common::AlgoBase base_config{
+      "facenet",
       1,
       std::move(inputNames),
       std::move(outputNames),

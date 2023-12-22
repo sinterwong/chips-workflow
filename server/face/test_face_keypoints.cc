@@ -112,6 +112,7 @@ int main(int argc, char **argv) {
 
   PointsDetAlgo faceDet_config{
       {
+          "faceDet",
           1,
           {"images"},
           {"output0"},
@@ -130,6 +131,7 @@ int main(int argc, char **argv) {
 
   PointsDetAlgo facePoints_config{
       {
+          "faceRec",
           1,
           {"data"},
           {"fc1"},

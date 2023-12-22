@@ -171,6 +171,7 @@ int main(int argc, char **argv) {
   FlowEngineLoggerSetLevel(1);
 
   PointsDetAlgo lprDet_config{{
+                                  "lprDet",
                                   1,
                                   {"input"},
                                   {"output"},
@@ -188,6 +189,7 @@ int main(int argc, char **argv) {
   pdet_config.setParams(lprDet_config);
 
   ClassAlgo lprNet_config{{
+      "lprRec",
       1,
       {"images"},
       {"output"},
@@ -229,8 +231,8 @@ int main(int argc, char **argv) {
                     static_cast<int>(kbbox.bbox.bbox[1]),
                     static_cast<int>(kbbox.bbox.bbox[2] - kbbox.bbox.bbox[0]),
                     static_cast<int>(kbbox.bbox.bbox[3] - kbbox.bbox.bbox[1])};
-    infer::utils::cropImage(image_rgb, licensePlateImage, rect,
-                            ColorType::RGB888);
+    infer::utils::cropImage(image_bgr, licensePlateImage, rect,
+                            ColorType::BGR888);
     if (kbbox.bbox.class_id == 1) { // 双层车牌情况
       // 车牌矫正
       sortFourPoints(kbbox.points); // 排序关键点
@@ -240,10 +242,8 @@ int main(int argc, char **argv) {
 
       // 上下分割，垂直合并车牌
       splitMerge(lpr_ted, licensePlateImage);
-      cv::imwrite("test_lpr_plate_src.jpg", licensePlateImage);
-      cv::imwrite("test_lpr_plate_dst.jpg", lpr_ted);
-      cv::imwrite("test_lpr_plate_input.jpg", licensePlateImage);
     }
+    cv::imwrite("test_lpr.jpg", licensePlateImage);
     InferResult lprRecRet;
     inference(licensePlateImage, lprRecRet, lprNet);
 

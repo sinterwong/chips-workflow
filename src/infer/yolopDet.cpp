@@ -39,24 +39,26 @@ bool YoloPDet::processOutput(void **output, InferResult &result) const {
 
 void YoloPDet::generateKeypointsBoxes(
     std::unordered_map<int, KeypointsBoxes> &m, void **outputs) const {
-  float **output = reinterpret_cast<float **>(*outputs);
+  float **output = reinterpret_cast<float **>(outputs);
+  float *out = output[0]; // just one output
+
   int numAnchors = modelInfo.outputShapes[0].at(1);
   // num = 4 + 1 + (numPoints * 2) + numClass = 5 + (numPoints * 2) + numClass
   int num = modelInfo.outputShapes[0].at(2);
   int pointsEndIndex = 5 + config.numPoints * 2;
   for (int i = 0; i < numAnchors * num; i += num) {
-    if (output[0][i + 4] <= config.cond_thr)
+    if (out[i + 4] <= config.cond_thr)
       continue;
     KeypointsBox kBox;
     for (int p = 5; p < pointsEndIndex; p += 2) {
-      kBox.points.push_back(Point2f{output[0][i + p], output[0][i + p + 1]});
+      kBox.points.push_back(Point2f{out[i + p], out[i + p + 1]});
     }
     kBox.bbox.class_id = std::distance(
-        output[0] + i + pointsEndIndex, // 4框 + 1置信度 + n个角点, 再往后是类别
-        std::max_element(output[0] + i + pointsEndIndex, output[0] + i + num));
+        out + i + pointsEndIndex, // 4框 + 1置信度 + n个角点, 再往后是类别
+        std::max_element(out + i + pointsEndIndex, out + i + num));
     int real_idx = i + pointsEndIndex + kBox.bbox.class_id;
-    kBox.bbox.det_confidence = output[0][real_idx];
-    memcpy(&kBox.bbox, &output[0][i], 5 * sizeof(float));
+    kBox.bbox.det_confidence = out[real_idx];
+    memcpy(&kBox.bbox, &out[i], 5 * sizeof(float));
     if (m.count(kBox.bbox.class_id) == 0)
       m.emplace(kBox.bbox.class_id, KeypointsBoxes());
     m[kBox.bbox.class_id].push_back(kBox);

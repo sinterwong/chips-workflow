@@ -53,8 +53,11 @@ public:
       // cv::imwrite("temp_out_resized.jpg", image);
       output.create(cv::Size(image.channels(), image.cols * image.rows),
                     CV_8UC1);
+      // output = image.clone();
       utils::hwc_to_chw(output.data, image.data, image.channels(), image.rows,
                         image.cols);
+
+      // cv::imwrite("temp_out.jpg", output);
       break;
     }
     case common::ColorType::NV12: {

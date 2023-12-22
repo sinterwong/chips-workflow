@@ -211,6 +211,7 @@ struct ModelInfo {
  *
  */
 struct AlgoBase {
+  std::string name;
   int batchSize;                        // batch of number
   std::vector<std::string> inputNames;  // input names
   std::vector<std::string> outputNames; // output names

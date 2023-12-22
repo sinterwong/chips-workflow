@@ -101,6 +101,7 @@ bool ConfigParser::parseConfig(std::string const &path,
   json algos = config["Algorithms"];
   for (auto const &algo : algos) {
     AlgoBase algo_base;
+    EXTRACT_JSON_VALUE(algo, "name", algo_base.name);
     EXTRACT_JSON_VALUE(algo, "modelPath", algo_base.modelPath);
     EXTRACT_JSON_VALUE(algo, "algo_serial", algo_base.serial);
     EXTRACT_JSON_VALUE(algo, "batchSize", algo_base.batchSize);

@@ -16,8 +16,8 @@ DEFINE_string(image_path, "", "Specify image path.");
 DEFINE_string(model_path, "", "Specify the yolo model path.");
 
 using common::AlgoBase;
-using common::DetAlgo;
 using common::ClassAlgo;
+using common::DetAlgo;
 using common::InferResult;
 using common::RetBox;
 using common::Shape;
@@ -44,6 +44,7 @@ int main(int argc, char **argv) {
 
   Shape inputShape{176, 48, 3};
   AlgoBase base_config{
+      "crnn",
       1,
       std::move(inputNames),
       std::move(outputNames),
@@ -118,14 +119,13 @@ int main(int argc, char **argv) {
   //   }
   // }
   // cv::imwrite("test_vision_infer_out.jpg", image_bgr);
-  
-  
+
   cv::imwrite("test_vision_infer_nv12.jpg", image_nv12);
   for (auto &c : *chars) {
     std::cout << c << ", ";
   }
   std::cout << std::endl;
-  
+
   gflags::ShutDownCommandLineFlags();
   return 0;
 }
