@@ -8,6 +8,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/jetson-utils
     ${PROJECT_INCLUDE_DIR}/video/x3
     ${PROJECT_INCLUDE_DIR}/video/jetson
+    ${PROJECT_INCLUDE_DIR}/video/generic
     ${3RDPARTY_DIR}/gflags/include
     ${CUDA_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
@@ -16,7 +17,6 @@ INCLUDE_DIRECTORIES(
 
 LINK_DIRECTORIES(
     ${OpenCV_LIBRARY_DIR}
-    ${FFMPEG_LIBRARY_DIR}
     ${X3_DIRECTORIES}
 )
 IF(TARGET_HARDWARE STREQUAL "x3")
@@ -29,16 +29,6 @@ ELSE()
     SET(CHIPS_DEPAND_LIBS)
 ENDIF()
 
-LINK_LIBRARIES(
-    ${OpenCV_LIBS}
-    ${FFMPEG_LIBS}
-    gflags
-    pthread
-    video 
-    module_logger 
-    stdc++fs
-)
-
 SET(LINK "-Wl,--no-as-needed")
 FILE(MAKE_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/video)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/video)
@@ -48,6 +38,7 @@ FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
     STRING(REPLACE ".cpp" "" testname ${sourcefilewithoutpath})
     ADD_EXECUTABLE( ${testname} ${sourcefile})
+    TARGET_LINK_LIBRARIES(${testname} video module_logger ${CHIPS_DEPAND_LIBS} ${OpenCV_LIBS} ${FFMPEG_LIBS} gflags pthread stdc++fs)
 
     INSTALL(TARGETS ${testname}
         ARCHIVE DESTINATION lib

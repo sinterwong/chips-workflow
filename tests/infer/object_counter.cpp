@@ -89,6 +89,7 @@ int main(int argc, char **argv) {
 
   // 算法启动
   DetAlgo person_det_params{{
+                                "personDet",
                                 1,
                                 {"images"},
                                 {"output"},
@@ -105,6 +106,7 @@ int main(int argc, char **argv) {
   det_config.setParams(person_det_params);
 
   FeatureAlgo reid_params{{
+                              "reid",
                               1,
                               {"images"},
                               {"output"},

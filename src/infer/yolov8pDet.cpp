@@ -39,18 +39,19 @@ bool Yolov8PDet::processOutput(void **output, InferResult &result) const {
 
 void Yolov8PDet::generateKeypointsBoxes(
     std::unordered_map<int, KeypointsBoxes> &m, void **outputs) const {
-  float **output = reinterpret_cast<float **>(*outputs);
+  float **output = reinterpret_cast<float **>(outputs);
+  float *out = output[0]; // just one output
   // outputShapes: [1, 20, 8400]
   int numAnchors = modelInfo.outputShapes[0].at(2);
   // num = 4 + 1 + (numPoints * 3) = 5 + (numPoints * 3)
   int numPoints = config.numPoints * 3;
 
   // 遍历score行
-  float *cxs = output[0];
-  float *cys = output[0] + numAnchors;
-  float *widths = output[0] + (2 * numAnchors);
-  float *heights = output[0] + (3 * numAnchors);
-  float *scores = output[0] + (4 * numAnchors);
+  float *cxs = out;
+  float *cys = out + numAnchors;
+  float *widths = out + (2 * numAnchors);
+  float *heights = out + (3 * numAnchors);
+  float *scores = out + (4 * numAnchors);
 
   for (int i = 0; i < numAnchors; i++) {
     // 遍历每个score行的每个score
@@ -63,8 +64,8 @@ void Yolov8PDet::generateKeypointsBoxes(
     kBox.bbox.det_confidence = scores[i];
     // build points
     for (int p = 0; p < numPoints; p += 3) {
-      float *px = output[0] + ((p + 5) * numAnchors);
-      float *py = output[0] + ((p + 6) * numAnchors);
+      float *px = out + ((p + 5) * numAnchors);
+      float *py = out + ((p + 6) * numAnchors);
       kBox.points.push_back(Point2f{px[i], py[i]});
     }
     if (m.count(kBox.bbox.class_id) == 0)

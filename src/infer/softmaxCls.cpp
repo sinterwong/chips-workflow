@@ -15,8 +15,8 @@
 namespace infer::vision {
 
 ClsRet Softmax::generateClass(void **outputs) const {
-  float **out = reinterpret_cast<float **>(*outputs);
-  float *output = out[0];
+  float **out = reinterpret_cast<float **>(outputs);
+  float *output = out[0]; // just one output
 
   int outputSize = modelInfo.outputShapes[0].at(1);
 

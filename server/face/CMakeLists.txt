@@ -3,7 +3,10 @@ PROJECT(FaceService LANGUAGES C CXX)
 
 LOAD_FAISS()
 
-IF(TARGET_HARDWARE STREQUAL jetson)
+# 除了x3平台，其他平台都需要加载OpenMP和OpenBLAS
+IF(TARGET_HARDWARE STREQUAL "x3")
+  MESSAGE(STATUS "x3 platform, skip loading OpenMP and OpenBLAS")
+ELSE()
   LOAD_OPENMP()
   LOAD_OPENBLAS()
 ENDIF()
@@ -23,13 +26,15 @@ TARGET_INCLUDE_DIRECTORIES(face_server PRIVATE
   ${PROJECT_INCLUDE_DIR}/infer
   ${PROJECT_INCLUDE_DIR}/infer/jetson
   ${PROJECT_INCLUDE_DIR}/infer/x3
+  ${PROJECT_INCLUDE_DIR}/infer/generic
   ${PROJECT_INCLUDE_DIR}/server/face
+  ${ONNXRUNTIME_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIRS}
   ${FAISS_INCLUDE_DIR}
   ${CURL_INCLUDE_DIR}
 )
 
-TARGET_LINK_LIBRARIES(face_server infer video module_logger stdc++fs ${FAISS_LIBRARIES} ${OpenCV_LIBS} ${CURL_LIBRARIES})
+TARGET_LINK_LIBRARIES(face_server infer video module_logger stdc++fs ${ONNXRUNTIME_LIBS} ${FFMPEG_LIBS} ${FAISS_LIBRARIES} ${OpenCV_LIBS} ${CURL_LIBRARIES})
 
 # transfer all headers to the include directory
 FILE(MAKE_DIRECTORY ${PROJECT_INCLUDE_DIR}/server/face)
@@ -54,13 +59,15 @@ FOREACH(sourcefile ${APP_SOURCES})
       ${PROJECT_INCLUDE_DIR}/infer
       ${PROJECT_INCLUDE_DIR}/infer/jetson
       ${PROJECT_INCLUDE_DIR}/infer/x3
+      ${PROJECT_INCLUDE_DIR}/infer/generic
       ${PROJECT_INCLUDE_DIR}/server/face
+      ${ONNXRUNTIME_INCLUDE_DIR}
       ${OpenCV_INCLUDE_DIRS}
       ${FAISS_INCLUDE_DIR}
       ${CURL_INCLUDE_DIR}
     )
 
-    TARGET_LINK_LIBRARIES(${testname} face_server infer video module_logger stdc++fs ${FAISS_LIBRARIES} ${BLAS_LIBRARIES} ${FFMPEG_LIBS} ${OpenCV_LIBS} ${CURL_LIBRARIES})
+    TARGET_LINK_LIBRARIES(${testname} face_server infer video module_logger stdc++fs ${ONNXRUNTIME_LIBS} ${FAISS_LIBRARIES} ${BLAS_LIBRARIES} ${FFMPEG_LIBS} ${OpenCV_LIBS} ${CURL_LIBRARIES})
 
     INSTALL(TARGETS ${testname}
         ARCHIVE DESTINATION lib

@@ -46,12 +46,15 @@ using json = nlohmann::json;
       try {                                                                    \
         var = (json_obj)[key].get<decltype(var)>();                            \
       } catch (std::exception const &e) {                                      \
-        FLOWENGINE_LOGGER_ERROR(                                               \
-            "ConfigParser: Paramer extracting \"{}\" was failed!", key);       \
+        FLOWENGINE_LOGGER_ERROR("ConfigParser: Paramer extracting \"{}\" for " \
+                                "module \"{}\" was failed!",                   \
+                                (json_obj)["name"], key);                      \
         return false;                                                          \
       }                                                                        \
     } else {                                                                   \
-      FLOWENGINE_LOGGER_ERROR("ConfigParser: \"{}\" doesn't exist.", key);     \
+      FLOWENGINE_LOGGER_ERROR(                                                 \
+          "ConfigParser: module \"{}\"'s \"{}\" doesn't exist.",               \
+          (json_obj)["name"], key);                                            \
       return false;                                                            \
     }                                                                          \
   } while (0)
@@ -62,13 +65,15 @@ using json = nlohmann::json;
       try {                                                                    \
         var = (json_obj)[key].get<decltype(var)>();                            \
       } catch (std::exception const &e) {                                      \
-        FLOWENGINE_LOGGER_ERROR(                                               \
-            "ConfigParser: Paramer extracting \"{}\" was failed!", key);       \
+        FLOWENGINE_LOGGER_ERROR("ConfigParser: Paramer extracting \"{}\" for " \
+                                "module \"{}\" was failed!",                   \
+                                (json_obj)["name"], key);                      \
         return false;                                                          \
       }                                                                        \
     } else {                                                                   \
-      FLOWENGINE_LOGGER_WARN(                                                  \
-          "ConfigParser: \"{}\" doesn't exist. Using default value.", key);    \
+      FLOWENGINE_LOGGER_WARN("ConfigParser: \"{}\" in \"{}\" doesn't exist. "  \
+                             "Using default value.",                           \
+                             key, (json_obj)["name"]);                         \
       var = default_val;                                                       \
     }                                                                          \
   } while (0)
@@ -96,6 +101,7 @@ bool ConfigParser::parseConfig(std::string const &path,
   json algos = config["Algorithms"];
   for (auto const &algo : algos) {
     AlgoBase algo_base;
+    EXTRACT_JSON_VALUE(algo, "name", algo_base.name);
     EXTRACT_JSON_VALUE(algo, "modelPath", algo_base.modelPath);
     EXTRACT_JSON_VALUE(algo, "algo_serial", algo_base.serial);
     EXTRACT_JSON_VALUE(algo, "batchSize", algo_base.batchSize);

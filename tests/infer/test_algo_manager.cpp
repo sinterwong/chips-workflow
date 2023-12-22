@@ -14,11 +14,11 @@
 DEFINE_string(image_path, "", "Specify image path.");
 DEFINE_string(model_path, "", "Specify the yolo model path.");
 
-using common::RetBox;
 using common::AlgoBase;
 using common::DetAlgo;
 using common::InferParams;
 using common::InferResult;
+using common::RetBox;
 using common::Shape;
 using infer::AlgorithmManager;
 
@@ -43,6 +43,7 @@ int main(int argc, char **argv) {
 
   Shape inputShape{640, 640, 3};
   AlgoBase base_config{
+      "yolov5",
       1,
       std::move(inputNames),
       std::move(outputNames),

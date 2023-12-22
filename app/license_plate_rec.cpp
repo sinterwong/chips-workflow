@@ -6,8 +6,6 @@
 #include <gflags/gflags.h>
 #include <iostream>
 
-#include <Eigen/Dense>
-
 #include <locale>
 #include <memory>
 #include <opencv2/core/mat.hpp>
@@ -51,14 +49,14 @@ void inference(cv::Mat &image, InferResult &ret,
   RetBox region{"hello"};
 
   InferParams params{std::string("hello"),
-                     ColorType::NV12,
+                     ColorType::RGB888,
                      0.0,
                      region,
                      {image.cols, image.rows, image.channels()}};
 
   // 制作输入数据
   FrameInfo frame;
-  frame.shape = {image.cols, image.rows * 2 / 3, 3};
+  frame.shape = {image.cols, image.rows, 3};
   frame.type = params.frameType;
   frame.data = reinterpret_cast<void **>(&image.data);
   vision->infer(frame, params, ret);
@@ -170,15 +168,18 @@ int main(int argc, char **argv) {
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
+  FlowEngineLoggerSetLevel(1);
+
   PointsDetAlgo lprDet_config{{
+                                  "lprDet",
                                   1,
-                                  {"images"},
+                                  {"input"},
                                   {"output"},
                                   FLAGS_det_model_path,
                                   "YoloPDet",
                                   {640, 640, 3},
                                   false,
-                                  0,
+                                  255,
                                   0,
                                   0.3,
                               },
@@ -188,6 +189,7 @@ int main(int argc, char **argv) {
   pdet_config.setParams(lprDet_config);
 
   ClassAlgo lprNet_config{{
+      "lprRec",
       1,
       {"images"},
       {"output"},
@@ -195,8 +197,8 @@ int main(int argc, char **argv) {
       "CRNN",
       {176, 48, 3},
       false,
-      0,
-      0,
+      49.215,
+      3.047,
       0.3,
   }};
   AlgoConfig prec_config;
@@ -211,11 +213,8 @@ int main(int argc, char **argv) {
   cv::Mat image_rgb;
   cv::cvtColor(image_bgr, image_rgb, cv::COLOR_BGR2RGB);
 
-  cv::Mat image_nv12;
-  infer::utils::RGB2NV12(image_rgb, image_nv12);
-
   InferResult lprDetRet;
-  inference(image_nv12, lprDetRet, lprDet);
+  inference(image_rgb, lprDetRet, lprDet);
 
   auto pbboxes = std::get_if<KeypointsBoxes>(&lprDetRet.aRet);
   if (!pbboxes) {
@@ -232,24 +231,19 @@ int main(int argc, char **argv) {
                     static_cast<int>(kbbox.bbox.bbox[1]),
                     static_cast<int>(kbbox.bbox.bbox[2] - kbbox.bbox.bbox[0]),
                     static_cast<int>(kbbox.bbox.bbox[3] - kbbox.bbox.bbox[1])};
-    infer::utils::cropImage(image_nv12, licensePlateImage, rect,
-                            ColorType::NV12);
+    infer::utils::cropImage(image_bgr, licensePlateImage, rect,
+                            ColorType::BGR888);
     if (kbbox.bbox.class_id == 1) { // 双层车牌情况
       // 车牌矫正
       sortFourPoints(kbbox.points); // 排序关键点
-      cv::Mat lpr_rgb;
-      cv::cvtColor(licensePlateImage, lpr_rgb, cv::COLOR_YUV2RGB_NV12);
       cv::Mat lpr_ted;
       // 相对于车牌图片的点
-      fourPointTransform(lpr_rgb, lpr_ted, kbbox.points);
+      fourPointTransform(licensePlateImage, lpr_ted, kbbox.points);
 
       // 上下分割，垂直合并车牌
       splitMerge(lpr_ted, licensePlateImage);
-      utils::RGB2NV12(licensePlateImage, licensePlateImage);
-      cv::imwrite("test_lpr_plate_src.jpg", lpr_rgb);
-      cv::imwrite("test_lpr_plate_dst.jpg", lpr_ted);
-      cv::imwrite("test_lpr_plate_input.jpg", licensePlateImage);
     }
+    cv::imwrite("test_lpr.jpg", licensePlateImage);
     InferResult lprRecRet;
     inference(licensePlateImage, lprRecRet, lprNet);
 

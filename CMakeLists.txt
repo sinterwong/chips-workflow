@@ -40,7 +40,7 @@ IF(NOT TARGET_ARCH)
 ENDIF()
 
 IF(NOT TARGET_HARDWARE)
-    SET(TARGET_HARDWARE none) # [none/x3/jetson]
+    SET(TARGET_HARDWARE generic) # [generic/x3/jetson]
 ENDIF()
 
 SET(PROJECT_OUTPUT_DIR ${PROJECT_BINARY_DIR}/${TARGET_ARCH})
@@ -80,13 +80,9 @@ ELSEIF(TARGET_HARDWARE STREQUAL "rockchip")
     MESSAGE(STATUS "Loading Rockchip dependent libraries")
     LOAD_ROCKCHIP()
 ELSE()
-    IF(WITH_MNN_ENGINE)
-        MESSAGE(INFO "--------------------------------")
-        MESSAGE(STATUS "Using MNN: on")
-        LOAD_MNN()
-    ENDIF()
-
-    MESSAGE(WARNING "No TARGET_HARDWARE specified!")
+    MESSAGE(STATUS "Loading Generic dependent libraries")
+    LOAD_GENERIC()
+    ADD_DEFINITIONS(-DDECODER_POOL_SIZE=2)
 ENDIF()
 
 MESSAGE(INFO "3rdparty libraries has loaded.")

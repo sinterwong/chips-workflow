@@ -109,6 +109,7 @@ int main(int argc, char **argv) {
   FlowEngineLoggerSetLevel(1);
 
   PointsDetAlgo faceDet_config{{
+                                   "faceDet",
                                    1,
                                    {"images"},
                                    {"output"},
@@ -126,6 +127,7 @@ int main(int argc, char **argv) {
   fdet_config.setParams(faceDet_config);
 
   FeatureAlgo faceNet_config{{
+                                 "faceRec",
                                  1,
                                  {"images"},
                                  {"output"},
