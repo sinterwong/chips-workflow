@@ -30,7 +30,7 @@ bool set_and_get_data(std::shared_ptr<FFStream> stream, void *decoder,
                       char *yuv_data, int channel, bool first = false) {
   void *raw_data;
   // 只取I帧的情况下可以做到一路解码处理多路视频流
-  int bufSize = stream->getRawFrame(&raw_data, false, true);
+  int bufSize = stream->getDataFrame(&raw_data, false, true);
   if (bufSize < 0)
     std::terminate();
   if (bufSize == 0) {
@@ -62,7 +62,8 @@ int main(int argc, char **argv) {
   std::string url1 =
       "rtsp://admin:ghrq123456@localhost:6102/Streaming/Channels/101";
   std::string url2 =
-      "rtsp://localhost:6106/user=admin_password=tlJwpbo6_channel=1_stream=0.sdp?real_stream";
+      "rtsp://localhost:6106/"
+      "user=admin_password=tlJwpbo6_channel=1_stream=0.sdp?real_stream";
 
   // 解码器handle
   void *decoder;
@@ -101,7 +102,7 @@ int main(int argc, char **argv) {
 
   // // 扔掉stream2中的第一帧
   // void *temp_d1;
-  // int firstPacket1 = stream2->getRawFrame(&temp_d1);
+  // int firstPacket1 = stream2->getDataFrame(&temp_d1);
   // FLOWENGINE_LOGGER_INFO("Stream2 size of the first packet is {}",
   //                        firstPacket1);
 

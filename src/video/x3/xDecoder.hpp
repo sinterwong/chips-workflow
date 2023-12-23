@@ -12,8 +12,8 @@
 #ifndef __DECODER_FOR_X3_H_
 #define __DECODER_FOR_X3_H_
 
-#include "ffstream.hpp"
 #include "common/joining_thread.h"
+#include "ffstream.hpp"
 #include "logger/logger.hpp"
 #include "videoSource.hpp"
 #include "video_common.hpp"
@@ -114,7 +114,7 @@ public:
       isClosed.store(false);
       // 优化成一个条件变量
       while (!mTerminate.load() && stream && stream->isRunning()) {
-        int bufSize = stream->getRawFrame(&raw_data);
+        int bufSize = stream->getDataFrame(&raw_data);
         if (bufSize < 0)
           break;
         int ret =
@@ -152,7 +152,7 @@ public:
       // 等待生产者线程结束
       std::unique_lock<std::mutex> closeLock(closeMutex);
       cv.wait(closeLock, [this]() { return isClosed.load(); });
-      mTerminate.store(false);  // 重置
+      mTerminate.store(false); // 重置
     }
     if (mStreaming.load()) {
       // 停止解码

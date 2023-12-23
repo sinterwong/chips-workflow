@@ -8,8 +8,6 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <arm_neon.h>
-
 const auto initLogger = []() -> decltype(auto) {
   FlowEngineLoggerInit(true, true, true, true);
   return true;

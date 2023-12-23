@@ -4,6 +4,10 @@
 #include <chrono>
 #include <gflags/gflags.h>
 #include <iostream>
+#include <opencv2/core/hal/interface.h>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 DEFINE_string(uri, "", "Specify the url of video.");
 
 const bool initLogger = []() {
@@ -18,7 +22,7 @@ int main(int argc, char **argv) {
 
   // 测试ffstream内存泄露情况
   video::utils::FFStream stream{FLAGS_uri};
-  if (!stream.openStream()) {
+  if (!stream.openStream(true)) {
     FLOWENGINE_LOGGER_ERROR("open stream failed!");
     return -1;
   }
@@ -26,14 +30,28 @@ int main(int argc, char **argv) {
   void *data = nullptr;
 
   auto time = utils::measureTime([&]() {
-  int count = 0;
+    int count = 0;
     while (stream.isRunning() && ++count < 1000) {
+
+      int bufSize = stream.getDataFrame(&data, false, false, true);
+      if (bufSize < 0) {
+        if (bufSize == -1) {
+          FLOWENGINE_LOGGER_ERROR("getDataFrame failed");
+          break;
+        } else {
+          FLOWENGINE_LOGGER_WARN("getDataFrame failed, ret: {}", bufSize);
+          continue;
+        }
+      }
+      // use opencv to write data to file
       if (count % 100 == 0) {
         FLOWENGINE_LOGGER_INFO("count: {}", count);
-      }
-      int bufSize = stream.getRawFrame(&data, false);
-      if (bufSize < 0) {
-        break;
+        cv::Mat frame{stream.getHeight(), stream.getWidth(), CV_8UC3, data};
+        if (frame.empty()) {
+          FLOWENGINE_LOGGER_ERROR("frame is empty!");
+          break;
+        }
+        cv::imwrite("test_ffmstream_frame.jpg", frame);
       }
     }
   });

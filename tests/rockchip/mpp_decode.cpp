@@ -58,7 +58,7 @@ static int decode_simple(MpiDecLoopData *data) {
                          stream.getHeight(), stream.getRate());
 
   while (stream.isRunning() && !pkt_eos) {
-    int bufSize = stream.getRawFrame(&buf, false);
+    int bufSize = stream.getDataFrame(&buf, false);
     // setup eos flag
     if (bufSize < 0) {
       mpp_packet_set_eos(packet);
@@ -375,8 +375,8 @@ int main(int argc, char **argv) {
 
   // buf = mpp_malloc(char, pkt_size);
   // if (nullptr == buf) {
-  //   FLOWENGINE_LOGGER_ERROR("mpi_dec_test malloc input stream buffer failed");
-  //   goto MPP_TEST_OUT;
+  //   FLOWENGINE_LOGGER_ERROR("mpi_dec_test malloc input stream buffer
+  //   failed"); goto MPP_TEST_OUT;
   // }
 
   ret = mpp_packet_init(&packet, buf, pkt_size);

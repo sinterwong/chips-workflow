@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "logger/logger.hpp"
-#include "messageBus.h"
 #include "preprocess.hpp"
 
 #include "infer/algorithmManager.hpp"
@@ -64,7 +63,7 @@ int main(int argc, char **argv) {
   RetBox region{"hello"};
 
   InferParams params{std::string("hello"),
-                     ColorType::NV12,
+                     common::ColorType::NV12,
                      0.5,
                      region,
                      {image_nv12.cols, image_nv12.rows, image_nv12.channels()}};

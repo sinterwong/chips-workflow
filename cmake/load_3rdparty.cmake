@@ -124,6 +124,7 @@ MACRO(LOAD_FFMPEG)
         avutil
         swresample
         swscale
+        postproc
     )
 
     IF(FFMPEG_INCLUDE_DIR)
