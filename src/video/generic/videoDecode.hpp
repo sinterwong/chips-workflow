@@ -13,11 +13,10 @@
 #define __FLOWENGINE_GENERIC_VIDEO_DECODE_H_
 #include "common/common.hpp"
 #include "common/joining_thread.h"
+#include "ffstream.hpp"
 #include "logger/logger.hpp"
 #include <memory>
 #include <mutex>
-#include <opencv2/core/mat.hpp>
-#include <opencv2/videoio.hpp>
 #include <thread>
 
 #include "video_common.hpp"
@@ -29,7 +28,7 @@ namespace video {
 class VideoDecode : private VDecoder {
 private:
   std::string uri; // 流地址
-  std::unique_ptr<cv::VideoCapture> stream;
+  std::unique_ptr<FFStream> stream;
   std::unique_ptr<joining_thread> consumer; // 消费者
   std::mutex frame_m;
   int channel;
@@ -45,27 +44,27 @@ public:
 
   bool stop() override;
 
-  inline bool isRunning() override { return stream && stream->isOpened(); }
+  inline bool isRunning() override { return stream && stream->isRunning(); }
 
   inline std::string getUri() override { return uri; }
 
   inline int getHeight() override {
     if (isRunning()) {
-      return stream->get(cv::CAP_PROP_FRAME_HEIGHT);
+      return stream->getHeight();
     }
     return -1;
   }
 
   inline int getWidth() override {
     if (isRunning()) {
-      return stream->get(cv::CAP_PROP_FRAME_WIDTH);
+      return stream->getWidth();
     }
     return -1;
   }
 
   inline int getRate() override {
     if (isRunning()) {
-      return stream->get(cv::CAP_PROP_FPS);
+      return stream->getRate();
     }
     return -1;
   }

@@ -190,11 +190,11 @@ bool FFStream::openCodec() {
     FLOWENGINE_LOGGER_ERROR("The stream is not opened!");
     return false;
   }
-  AVCodecParameters *codec;
 
   int ret = 0;
 
-  codec = avContext->streams[av_param.videoIndex]->codecpar;
+  AVCodecParameters *codecParameters =
+      avContext->streams[av_param.videoIndex]->codecpar;
   AVCodec const *avCodec = avcodec_find_decoder(
       avContext->streams[av_param.videoIndex]->codecpar->codec_id);
 
@@ -209,7 +209,7 @@ bool FFStream::openCodec() {
     return false;
   }
 
-  ret = avcodec_parameters_to_context(avCodecContext, codec);
+  ret = avcodec_parameters_to_context(avCodecContext, codecParameters);
   if (ret < 0) {
     FLOWENGINE_LOGGER_ERROR("avcodec_parameters_to_context failed");
     return false;
@@ -258,111 +258,118 @@ bool FFStream::openCodec() {
   return true;
 }
 
-int FFStream::getDataFrame(void **data, bool isCopy, bool onlyIFrame,
-                           bool isDecode) {
-  std::lock_guard<std::shared_mutex> lk(ctx_m);
-  if (!isRunning())
-    return -1; // 流已关闭
-
-  int seqHeaderSize = 0;
-  int error = 0;
-
-  if (!avpacket.size) {
-    av_packet_unref(&avpacket); // 释放上一帧数据包
-    error = av_read_frame(avContext, &avpacket);
-    FLOWENGINE_LOGGER_DEBUG("av_read_frame, size: {}", avpacket.size);
+int FFStream::handleDecode() {
+  int ret = avcodec_send_packet(avCodecContext, &avpacket);
+  if (ret < 0) {
+    FLOWENGINE_LOGGER_ERROR("avcodec_send_packet failed, ret: {}", ret);
+    return 0;
   }
-  if (error < 0) {
-    if (error == AVERROR_EOF || (avContext->pb && avContext->pb->eof_reached)) {
-      FLOWENGINE_LOGGER_INFO("There is no more input data, {}!", avpacket.size);
-    } else {
-      FLOWENGINE_LOGGER_ERROR("Failed to av_read_frame error(0x{})", error);
-    }
-    return -1;
-  } else {
-    if (av_param.firstPacket) {
-      seqHeaderSize = 0;
-      AVCodecParameters *codec;
-      int retSize = 0;
-      codec = avContext->streams[av_param.videoIndex]->codecpar;
-      if (seqHeader) { // 如果此时seqHeader已经申请过内存，需要先释放
-        free(seqHeader);
-        seqHeader = nullptr;
-      }
-      seqHeader = (uint8_t *)malloc(codec->extradata_size + 1024);
-      if (seqHeader == nullptr) {
-        FLOWENGINE_LOGGER_INFO("Failed to mallock seqHeader");
-        return -1;
-      }
-      memset((void *)seqHeader, 0x00, codec->extradata_size + 1024);
-
-      seqHeaderSize = build_dec_seq_header(
-          seqHeader, codecMapping.at(avContext->video_codec_id),
-          avContext->streams[av_param.videoIndex], &retSize);
-      if (seqHeaderSize < 0) {
-        FLOWENGINE_LOGGER_INFO("Failed to build seqHeader");
-        return -1;
-      }
-      av_param.firstPacket = 0;
-      av_param.bufSize = seqHeaderSize;
-      if (isCopy) {
-        memcpy(*data, (void *)seqHeader, seqHeaderSize);
-      } else {
-        *data = (void *)seqHeader;
-      }
-    } else {
-      if (onlyIFrame) {
-        if (!(avpacket.flags & AV_PKT_FLAG_KEY)) {
-          // 这不是I帧，所以我们释放数据包并返回
-          av_packet_unref(&avpacket);
-          return 0;
-        }
-      }
-
-      if (isDecode) {
-        if (!avCodecContext) {
-          FLOWENGINE_LOGGER_ERROR("codec is not opened!");
-          return -1;
-        }
-
-        int ret = avcodec_send_packet(avCodecContext, &avpacket);
-        if (ret < 0) {
-          FLOWENGINE_LOGGER_ERROR("avcodec_send_packet failed, ret: {}", ret);
-          return -1;
-        }
-        ret = avcodec_receive_frame(avCodecContext, frame);
-        if (ret < 0) {
-          FLOWENGINE_LOGGER_ERROR("avcodec_receive_frame failed, ret: {}", ret);
-          return -2;
-        }
-
-        sws_scale(swsCtx, frame->data, frame->linesize, 0,
-                  avCodecContext->height, frame_rgb->data, frame_rgb->linesize);
-
-        av_param.bufSize = frame_rgb->linesize[0] * frame_rgb->height;
-        if (isCopy) {
-          memcpy(*data, (void *)frame_rgb->data[0], av_param.bufSize);
-        } else {
-          *data = (void *)frame_rgb->data[0];
-        }
-      } else {
-        av_param.bufSize = avpacket.size;
-        if (isCopy) {
-          memcpy(*data, (void *)avpacket.data, avpacket.size);
-        } else {
-          *data = (void *)avpacket.data;
-        }
-      }
-      // 置0
-      avpacket.size = 0;
-    }
-    ++av_param.count;
-    return av_param.bufSize;
+  ret = avcodec_receive_frame(avCodecContext, frame);
+  if (ret < 0) {
+    FLOWENGINE_LOGGER_ERROR("avcodec_receive_frame failed, ret: {}", ret);
+    return 0;
   }
 
-  // TEMP
-  avpacket.size = 0;
-  return error;
+  sws_scale(swsCtx, frame->data, frame->linesize, 0, avCodecContext->height,
+            frame_rgb->data, frame_rgb->linesize);
+  return frame_rgb->linesize[0] * frame->height;
 }
 
+int FFStream::handleFirstPacket(void **data, bool isCopy) {
+  int seqHeaderSize = 0;
+  seqHeaderSize = 0;
+  AVCodecParameters *codec;
+  int retSize = 0;
+  codec = avContext->streams[av_param.videoIndex]->codecpar;
+  if (seqHeader) { // 如果此时seqHeader已经申请过内存，需要先释放
+    free(seqHeader);
+    seqHeader = nullptr;
+  }
+  seqHeader = (uint8_t *)malloc(codec->extradata_size + 1024);
+  if (seqHeader == nullptr) {
+    FLOWENGINE_LOGGER_INFO("Failed to mallock seqHeader");
+    return -1;
+  }
+  memset((void *)seqHeader, 0x00, codec->extradata_size + 1024);
+
+  seqHeaderSize = build_dec_seq_header(
+      seqHeader, codecMapping.at(avContext->video_codec_id),
+      avContext->streams[av_param.videoIndex], &retSize);
+  if (seqHeaderSize < 0) {
+    FLOWENGINE_LOGGER_INFO("Failed to build seqHeader");
+    return -1;
+  }
+  av_param.firstPacket = 0;
+  av_param.bufSize = seqHeaderSize;
+
+  void *source;
+  if (avCodecContext) {
+    av_param.bufSize = handleDecode();
+    if (av_param.bufSize < 0) {
+      return -1;
+    }
+    source = (void *)frame_rgb->data[0];
+  } else {
+    source = (void *)seqHeader;
+    av_param.bufSize = seqHeaderSize;
+  }
+
+  if (isCopy) {
+    memcpy(*data, source, av_param.bufSize);
+  } else {
+    *data = source;
+  }
+  return av_param.bufSize;
+}
+
+int FFStream::handleSubsequentPackets(void **data, bool isCopy,
+                                      bool onlyIFrame) {
+  if (onlyIFrame) {
+    if (!(avpacket.flags & AV_PKT_FLAG_KEY)) {
+      // 这不是I帧，所以我们释放数据包并返回
+      av_packet_unref(&avpacket);
+      return 0;
+    }
+  }
+
+  void *source;
+  if (avCodecContext) {
+    av_param.bufSize = handleDecode();
+    if (av_param.bufSize < 0) {
+      return -1;
+    }
+    source = (void *)frame_rgb->data[0];
+  } else {
+    source = (void *)avpacket.data;
+    av_param.bufSize = avpacket.size;
+  }
+
+  if (isCopy) {
+    memcpy(*data, source, av_param.bufSize);
+  } else {
+    *data = source;
+  }
+  FLOWENGINE_LOGGER_DEBUG("av_param.bufSize: {}", av_param.bufSize);
+  return av_param.bufSize;
+}
+
+int FFStream::getDataFrame(void **data, bool isCopy, bool onlyIFrame) {
+  std::lock_guard<std::shared_mutex> lk(ctx_m);
+  if (!isRunning())
+    return -1;
+
+  av_packet_unref(&avpacket);
+  int error = av_read_frame(avContext, &avpacket);
+  if (error < 0) {
+    handleReadFrameError(error); // 处理读取帧错误的函数
+    return -1;
+  }
+  if (av_param.firstPacket) {
+    // 处理第一个包的函数
+    return handleFirstPacket(data, isCopy);
+  } else {
+    // 处理后续包的函数
+    return handleSubsequentPackets(data, isCopy, onlyIFrame);
+  }
+}
 } // namespace video::utils

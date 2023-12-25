@@ -33,18 +33,17 @@ int main(int argc, char **argv) {
     int count = 0;
     while (stream.isRunning() && ++count < 1000) {
 
-      int bufSize = stream.getDataFrame(&data, false, false, true);
+      int bufSize = stream.getDataFrame(&data, false, false);
       if (bufSize < 0) {
-        if (bufSize == -1) {
-          FLOWENGINE_LOGGER_ERROR("getDataFrame failed");
-          break;
-        } else {
-          FLOWENGINE_LOGGER_WARN("getDataFrame failed, ret: {}", bufSize);
-          continue;
-        }
+        FLOWENGINE_LOGGER_ERROR("UNKNOWN FAILED.");
+        break;
+      } else if (bufSize == 0) {
+        // 当前帧失败
+        FLOWENGINE_LOGGER_WARN("current frame failed.");
+        continue;
       }
       // use opencv to write data to file
-      if (count % 100 == 0) {
+      if (count % 25 == 0) {
         FLOWENGINE_LOGGER_INFO("count: {}", count);
         cv::Mat frame{stream.getHeight(), stream.getWidth(), CV_8UC3, data};
         if (frame.empty()) {
