@@ -9,6 +9,7 @@
  *
  */
 #include "videoDecode.hpp"
+#include "ffstream.hpp"
 #include <opencv2/imgproc.hpp>
 
 using namespace std::chrono_literals;
@@ -18,8 +19,8 @@ namespace video {
 bool VideoDecode::init() {
   // 如果uri还没有初始化Jetson在init时什么也不做
   if (!uri.empty()) {
-    stream = std::make_unique<cv::VideoCapture>(uri);
-    if (!isRunning()) {
+    stream = std::make_unique<FFStream>(uri);
+    if (!stream->openStream(true)) {
       FLOWENGINE_LOGGER_ERROR("Can't open stream {}", uri);
       return false;
     }
@@ -29,13 +30,13 @@ bool VideoDecode::init() {
 
 bool VideoDecode::start(const std::string &url) {
 
-  if (stream && stream->isOpened()) {
+  if (stream && stream->isRunning()) {
     FLOWENGINE_LOGGER_INFO("The stream had started {}", url);
     return false;
   }
   uri = url;
-  stream = std::make_unique<cv::VideoCapture>(uri);
-  if (!stream->isOpened()) {
+  stream = std::make_unique<FFStream>(uri);
+  if (!stream->openStream(true)) {
     FLOWENGINE_LOGGER_ERROR("Can't open stream {}", uri);
     return false;
   }
@@ -43,8 +44,8 @@ bool VideoDecode::start(const std::string &url) {
 }
 
 bool VideoDecode::stop() {
-  if (stream && stream->isOpened()) {
-    stream->release();
+  if (stream && stream->isRunning()) {
+    stream->closeStream();
   }
   stream.reset();
   return true;
@@ -61,13 +62,19 @@ bool VideoDecode::run() {
 
 std::shared_ptr<cv::Mat> VideoDecode::getcvImage() {
   std::lock_guard<std::mutex> lock(frame_m);
-  cv::Mat frame;
-  if (!stream->read(frame)) {
+
+  void *data = nullptr;
+  int bufSize = stream->getDataFrame(&data);
+  if (bufSize < 0) {
+    FLOWENGINE_LOGGER_ERROR("VideoDecode::getcvImage() UNKNOWN FAILED.");
+    throw std::runtime_error("UNKNOWN FAILED.");
+  } else if (bufSize == 0) {
     FLOWENGINE_LOGGER_WARN("Getframe is failed!");
     return nullptr;
   }
-  cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
-  return std::make_shared<cv::Mat>(frame);
+  // 数据需要拷贝出去，因为流中并没有拷贝，因此获取下一帧时会覆盖当前帧
+  return std::make_shared<cv::Mat>(
+      cv::Mat{stream->getHeight(), stream->getWidth(), CV_8UC3, data}.clone());
 }
 
 void VideoDecode::consumeFrame() {
@@ -75,9 +82,14 @@ void VideoDecode::consumeFrame() {
     // 每隔100ms消耗一帧，防止长时间静止
     std::this_thread::sleep_for(100ms);
     std::lock_guard<std::mutex> lock(frame_m);
-    cv::Mat frame;
-    if (!stream->read(frame)) {
-      FLOWENGINE_LOGGER_WARN("Getframe is failed!");
+    void *tempData = nullptr;
+    int bufSize = stream->getDataFrame(&tempData);
+    if (bufSize < 0) {
+      FLOWENGINE_LOGGER_ERROR("VideoDecode::consumeFrame() UNKNOWN FAILED.");
+      throw std::runtime_error("UNKNOWN FAILED.");
+    } else if (bufSize == 0) {
+      // 当前帧失败
+      FLOWENGINE_LOGGER_WARN("current frame failed.");
       continue;
     }
   }
