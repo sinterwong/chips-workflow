@@ -76,8 +76,7 @@ private:
 public:
   bool openStream(bool withCodec = false); // 开启视频流
 
-  int getDataFrame(void **data, bool isCopy = false, bool onlyIFrame = false,
-                   bool isDecode = false);
+  int getDataFrame(void **data, bool isCopy = false, bool onlyIFrame = false);
 
   inline bool isRunning() { return isOpen.load(); };
 
@@ -177,6 +176,22 @@ private:
     }
     return true;
   }
+
+  inline void handleReadFrameError(int ret) {
+    if (ret == AVERROR_EOF || (avContext->pb && avContext->pb->eof_reached)) {
+      FLOWENGINE_LOGGER_INFO("No more input data, size: {}", avpacket.size);
+    } else {
+      FLOWENGINE_LOGGER_ERROR("Failed to av_read_frame error(0x{})", ret);
+    }
+  }
+
+  // 处理第一帧数据
+  int handleFirstPacket(void **data, bool isCopy);
+
+  // 处理后续帧数据
+  int handleSubsequentPackets(void **data, bool isCopy, bool onlyIFrame);
+
+  int handleDecode();
 };
 } // namespace video::utils
 
