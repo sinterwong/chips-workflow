@@ -1,6 +1,7 @@
 import requests
 import json
 import base64
+import time
 
 # Change this to your server's URL and port
 BASE_URL = "http://localhost:9797"
@@ -81,6 +82,18 @@ def face_quality(data):
     print("Face Quality:", response.json())
 
 
+def start_video(data):
+    response = requests.post(
+        f"{BASE_URL}/face/v0/stream/startVideo", data=json.dumps(data), headers=headers)
+    print("Start video:", response.json())
+
+
+def stop_video(name):
+    response = requests.get(
+        f"{BASE_URL}/face/v0/stream/stopVideo?name={name}", headers=headers)
+    print("Stop video:", response.json())
+
+
 if __name__ == "__main__":
     create_user({"userId": "12345", "libName": "temp1",
                 "url": get_base64_of_image("face_image1.png")})
@@ -126,3 +139,13 @@ if __name__ == "__main__":
 
     face_quality({"name": "temp2", "url": get_base64_of_image(
         "face_image2.png")})
+    
+    start_video({
+        "name": "testVideo", 
+        "libName": "testdb", 
+        "url": "rtsp://admin:zkfd123.com@192.168.31.31:554/Streaming/Channels/101"
+    })
+    
+    time.sleep(50)
+    
+    stop_video("testVideo")

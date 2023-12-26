@@ -18,14 +18,14 @@ int main(int argc, char **argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
   // 测试decoder内存泄露情况
-  video::VideoDecode decoder{FLAGS_uri};
+  video::VideoDecode decoder;
   if (!decoder.init()) {
     FLOWENGINE_LOGGER_ERROR("init decoder failed!");
     return -1;
   }
   FLOWENGINE_LOGGER_INFO("Video manager has initialized!");
 
-  if (!decoder.run()) {
+  if (!decoder.start(FLAGS_uri)) {
     FLOWENGINE_LOGGER_ERROR("run decoder failed!");
     return -1;
   }

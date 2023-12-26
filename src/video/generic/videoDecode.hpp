@@ -80,7 +80,11 @@ public:
   explicit VideoDecode(std::string const &uri_, int w_ = 1920, int h_ = 1080)
       : uri(uri_) {}
 
-  ~VideoDecode() noexcept {}
+  ~VideoDecode() noexcept {
+    if (isRunning()) {
+      stop();
+    }
+  }
 };
 } // namespace video
 

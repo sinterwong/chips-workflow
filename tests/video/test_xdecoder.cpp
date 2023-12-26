@@ -28,13 +28,13 @@ const bool initLogger = []() {
 void run_stream(std::string const &url, int idx) {
 
   // 视频流
-  video::VideoDecode decoder{url};
+  video::VideoDecode decoder;
 
   if (!decoder.init()) {
     FLOWENGINE_LOGGER_INFO("{} has initialized failed!", idx);
   }
   FLOWENGINE_LOGGER_INFO("{} has initialized!", idx);
-  if (!decoder.run()) {
+  if (!decoder.start(url)) {
     FLOWENGINE_LOGGER_ERROR("{} has run failed!", idx);
     return;
   }

@@ -38,15 +38,15 @@ ELSE()
 ENDIF()
 
 LINK_LIBRARIES(
-    ${OpenCV_LIBS}
-    ${FFMPEG_LIBS}
-    ${FAISS_LIBRARIES}
-    ${ONNXRUNTIME_LIBS}
     gflags
     pthread
     video
     infer
     module_logger 
+    ${OpenCV_LIBS}
+    ${FFMPEG_LIBS}
+    ${FAISS_LIBRARIES}
+    ${ONNXRUNTIME_LIBS}
     stdc++fs
 )
 

@@ -16,13 +16,14 @@ LINK_DIRECTORIES(
 )
 
 LINK_LIBRARIES(
-    ${OpenCV_LIBS}
     gflags
     pthread
-    ${X3_LIBS}
     video 
     infer
     module_logger
+    ${X3_LIBS}
+    ${OpenCV_LIBS}
+    ${FFMPEG_LIBS}
     stdc++fs
 )
 

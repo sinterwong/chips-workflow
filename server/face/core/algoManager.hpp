@@ -19,7 +19,7 @@
 
 namespace server::face::core {
 
-constexpr int DET_ALGO_NUM = 4;
+constexpr int DET_ALGO_NUM = 2;
 constexpr int REC_ALGO_NUM = 1;
 constexpr int QUALITY_ALGO_NUM = 1;
 constexpr int KEY_POINTS_ALGO_NUM = 1;

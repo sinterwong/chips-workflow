@@ -44,7 +44,7 @@ bool VideoDecode::start(const std::string &url) {
 }
 
 bool VideoDecode::stop() {
-  if (stream && stream->isRunning()) {
+  if (isRunning()) {
     stream->closeStream();
   }
   stream.reset();

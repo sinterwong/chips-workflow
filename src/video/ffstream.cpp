@@ -349,7 +349,7 @@ int FFStream::handleSubsequentPackets(void **data, bool isCopy,
   } else {
     *data = source;
   }
-  FLOWENGINE_LOGGER_DEBUG("av_param.bufSize: {}", av_param.bufSize);
+  // FLOWENGINE_LOGGER_DEBUG("av_param.bufSize: {}", av_param.bufSize);
   return av_param.bufSize;
 }
 

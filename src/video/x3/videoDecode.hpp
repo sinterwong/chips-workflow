@@ -28,8 +28,6 @@ namespace video {
 
 class VideoDecode : private VDecoder {
 private:
-  std::string uri; // 流地址
-  int w, h;        // 流分辨率
   std::unique_ptr<videoSource> stream;
   std::unique_ptr<joining_thread> consumer; // 消费者
   std::mutex frame_m;
@@ -41,15 +39,11 @@ private:
 public:
   bool init() override;
 
-  bool run() override;
-
-  bool start(std::string const &) override;
+  bool start(std::string const &, int w = 0, int h = 0) override;
 
   bool stop() override;
 
   inline bool isRunning() override { return stream && stream->IsStreaming(); }
-
-  inline std::string getUri() override { return uri; }
 
   inline int getHeight() override {
     if (isRunning()) {
@@ -75,18 +69,10 @@ public:
   std::shared_ptr<cv::Mat> getcvImage() override;
 
   inline common::ColorType getType() const noexcept override {
-    return common::ColorType::NV12;
+    return common::getPlatformColorType();
   }
 
   explicit VideoDecode() {
-    channel = ChannelsManager::getInstance().getChannel();
-    if (channel < 0) {
-      throw std::runtime_error("Channel usage overflow!");
-    }
-  }
-
-  explicit VideoDecode(std::string const &uri_, int w_ = 1920, int h_ = 1080)
-      : uri(uri_), w(w_), h(h_) {
     channel = ChannelsManager::getInstance().getChannel();
     if (channel < 0) {
       throw std::runtime_error("Channel usage overflow!");
@@ -99,6 +85,7 @@ public:
     stream.reset();
     // 释放channel
     ChannelsManager::getInstance().setChannel(channel);
+    consumer->join();
   }
 };
 } // namespace video

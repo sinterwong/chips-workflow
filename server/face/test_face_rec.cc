@@ -8,12 +8,12 @@
  * @copyright Copyright (c) 2023
  *
  */
+#include "faceInferUtils.hpp"
 #include "faceRecognition.hpp"
 #include "facelib.hpp"
 #include "logger/logger.hpp"
 #include <gflags/gflags.h>
 #include <opencv2/imgcodecs.hpp>
-#include "faceInferUtils.hpp"
 
 DEFINE_string(img1, "", "Specify a image path which contains some face.");
 DEFINE_string(img2, "", "Specify a image path which contains some face.");
@@ -29,8 +29,8 @@ void getFrameInput(cv::Mat &input, FrameInfo &frame) {
   frame.data = reinterpret_cast<void **>(&input.data);
   frame.inputShape = {input.cols, input.rows, input.channels()};
 
-  frame.shape = core::getShape(input.cols, input.rows);
-  frame.type = core::getColorType();
+  frame.shape = common::getInferShape(input.cols, input.rows);
+  frame.type = common::getPlatformColorType();
 }
 
 int main(int argc, char **argv) {

@@ -12,8 +12,9 @@ chips-workflow is a framework for video processing. It is designed for edge comp
 - g++ >= 7.5
 - spdlog
 - gflags
-- opencv >= 4.1
-- ffmepeg(when using video)
+- opencv >= 4.2
+- onnxruntime >= 1.16.3
+- ffmepeg >= 6.1(when using video)
 - curl(when using module or server)
 - openssl(when using license)
 - oatpp >= 1.3.0(when using server)
