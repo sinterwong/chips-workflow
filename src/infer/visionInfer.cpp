@@ -57,7 +57,6 @@ bool VisionInfer::infer(FrameInfo &frame, const InferParams &params,
                         InferResult &ret) {
   // 栈上指针，infer后指向推理引擎管理的内存，无需在此处释放
   void *outputs[modelInfo.output_count];
-  void *output = reinterpret_cast<void *>(outputs);
   ret.shape = frame.shape;
   /*
    * 前处理并发性优化：在vision中实现CPU版本前处理，提高并发性
@@ -85,7 +84,7 @@ bool VisionInfer::infer(FrameInfo &frame, const InferParams &params,
     //   return false;
     // }
     // 不包含前处理的版本
-    if (!instance->infer(inputImage, &output)) {
+    if (!instance->infer(inputImage, outputs)) {
       FLOWENGINE_LOGGER_ERROR("VisionInfer infer: failed to infer!");
       return false;
     }
@@ -103,7 +102,7 @@ bool VisionInfer::infer(FrameInfo &frame, const InferParams &params,
      * 处理完成后在此处释放（反正后处理都是在CPU上完成）从而提高并发性
      */
     auto post_start = std::chrono::high_resolution_clock::now();
-    if (!vision->processOutput(&output, ret)) {
+    if (!vision->processOutput(outputs, ret)) {
       FLOWENGINE_LOGGER_ERROR("VisionInfer infer: failed to processOutput!");
       return false;
     }

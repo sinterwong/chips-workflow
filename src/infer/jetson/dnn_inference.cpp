@@ -112,9 +112,9 @@ bool AlgoInference::infer(FrameInfo &inputs, void **outputs) {
   // Memcpy from device output buffers to host output buffers
   buffers->copyOutputToHost();
 
-  float **output = reinterpret_cast<float **>(*outputs);
+  float **ret = reinterpret_cast<float **>(outputs);
   for (int i = 0; i < mParams.outputNames.size(); ++i) {
-    output[i] =
+    ret[i] =
         static_cast<float *>(buffers->getHostBuffer(mParams.outputNames[i]));
   }
   return true;

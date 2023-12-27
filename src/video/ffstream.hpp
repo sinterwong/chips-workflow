@@ -59,7 +59,7 @@ private:
   AVCodecContext *avCodecContext = nullptr;
   AVFrame *frame = nullptr;
   AVFrame *frame_rgb = nullptr;
-  struct SwsContext *swsCtx;
+  struct SwsContext *swsCtx = nullptr;
   uint8_t *rgbBuf = nullptr;
   int rgbBufSize = 0;
 

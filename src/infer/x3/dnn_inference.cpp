@@ -80,7 +80,7 @@ bool AlgoInference::infer(cv::Mat const &input, void **outputs) {
   // 解析模型输出
   hbSysFlushMem(&(output_tensor->sysMem[0]), HB_SYS_MEM_CACHE_INVALIDATE);
 
-  float **ret = reinterpret_cast<float **>(*outputs);
+  float **ret = reinterpret_cast<float **>(outputs);
   for (int i = 0; i < output_count; ++i) {
     ret[i] = reinterpret_cast<float *>(output_tensor[i].sysMem[0].virAddr);
   }
