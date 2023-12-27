@@ -54,6 +54,36 @@ enum class ColorType {
 using Shape = std::array<int, 3>;
 
 /**
+ * @brief Get the Color Type object
+ *
+ * @return common::ColorType
+ */
+inline common::ColorType getPlatformColorType() {
+  if (TARGET_PLATFORM == 0 || TARGET_PLATFORM == 2) {
+    return common::ColorType::NV12;
+  }
+  return common::ColorType::RGB888;
+}
+
+/**
+ * @brief Get the Shape object
+ *
+ * @param width
+ * @param height
+ * @return common::Shape
+ */
+inline common::Shape getInferShape(int width, int height) {
+  auto type = getPlatformColorType();
+  switch (type) {
+  case common::ColorType::NV12: {
+    return {width, height * 2 / 3, 3};
+  }
+  default:
+    return {width, height, 3};
+  }
+}
+
+/**
  * @brief 帧信息
  *
  */

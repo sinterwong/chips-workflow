@@ -149,14 +149,14 @@ int main(int argc, char **argv) {
 
   // 视频启动
   std::unique_ptr<video::VideoDecode> decoder =
-      std::make_unique<video::VideoDecode>(FLAGS_video);
+      std::make_unique<video::VideoDecode>();
   if (!decoder->init()) {
     FLOWENGINE_LOGGER_ERROR("init decoder failed!");
     return -1;
   }
   FLOWENGINE_LOGGER_INFO("Video manager has initialized!");
 
-  if (!decoder->run()) {
+  if (!decoder->start(FLAGS_video)) {
     FLOWENGINE_LOGGER_ERROR("run decoder failed!");
     return -1;
   }

@@ -129,11 +129,11 @@ int main(int argc, char **argv) {
   FLOWENGINE_LOGGER_INFO("Video manager has initialized!");
 
   // 视频流
-  video::VideoDecode decoder{FLAGS_url};
+  video::VideoDecode decoder;
 
   decoder.init();
   FLOWENGINE_LOGGER_INFO("Video manager has initialized!");
-  decoder.run();
+  decoder.start(FLAGS_url);
   FLOWENGINE_LOGGER_INFO("Video manager is running!");
 
   // trakcker

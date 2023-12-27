@@ -10,13 +10,13 @@
  */
 
 #include "resultProcessor.hpp"
+#include "logger/logger.hpp"
 namespace server::face::core {
 
 ResultProcessor *ResultProcessor::instance = nullptr;
 
 void ResultProcessor::onFrameReceived(std::string const &lname,
                                       FramePackage &&framePackage) {
-  FLOWENGINE_LOGGER_DEBUG("Frame received and processed.");
   tpool->submit([this, &lname, &framePackage]() {
     this->oneProcess(lname, std::move(framePackage));
   });
@@ -28,7 +28,8 @@ void ResultProcessor::oneProcess(std::string const &lname,
   // * 1. 根据帧包中的图片，送入人脸识别算法
   std::vector<float> feature;
   auto ret = FaceRecognition::getInstance().extract(framePackage, feature);
-  if (ret) {
+  if (!ret) {
+    FLOWENGINE_LOGGER_DEBUG("Face recognition failed!");
     return;
   }
 

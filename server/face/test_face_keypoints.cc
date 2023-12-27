@@ -50,14 +50,14 @@ void inference(cv::Mat &image, InferResult &ret,
   RetBox region{"hello"};
 
   InferParams params{std::string("hello"),
-                     server::face::core::getColorType(),
+                     common::getPlatformColorType(),
                      0.0,
                      region,
                      {image.cols, image.rows, image.channels()}};
 
   // 制作输入数据
   FrameInfo frame;
-  frame.shape = server::face::core::getShape(image.cols, image.rows);
+  frame.shape = common::getInferShape(image.cols, image.rows);
   frame.inputShape = {inputSize, inputSize, 3};
   frame.type = params.frameType;
   frame.data = reinterpret_cast<void **>(&image.data);
@@ -178,7 +178,7 @@ int main(int argc, char **argv) {
   // 可视化人脸检测结果：人脸框和5个关键点
   cv::rectangle(image_bgr_show, rect, cv::Scalar(0, 0, 255), 2);
   infer::utils::cropImage(inputImage, ori_face, rect,
-                          server::face::core::getColorType());
+                          common::getPlatformColorType());
   int i = 1;
   std::vector<cv::Point2f> points;
   for (auto &p : kbbox.points) {

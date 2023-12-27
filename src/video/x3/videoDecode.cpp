@@ -25,64 +25,40 @@ using namespace std::chrono_literals;
 namespace video {
 
 bool VideoDecode::init() {
-  // if (uri.empty()) {
-  //   // X3这里在构造对象的时候需要初始化解码器
-  //   stream = videoSource::Create();
-  // } else {
-  //   videoOptions opt;
-  //   opt.videoIdx = channel;
-  //   opt.resource = uri;
-  //   opt.height = h;
-  //   opt.width = w;
-  //   stream = videoSource::Create(opt);
-  // }
-  // return stream.get();
-
-  // 如果uri还没有初始化init时什么也不做
-  if (!uri.empty()) {
-    videoOptions opt;
-    opt.videoIdx = channel;
-    opt.resource = uri;
-    opt.height = h;
-    opt.width = w;
-    stream = videoSource::Create(opt);
-  }
+  // init 只用于初始化解码器资源，如果包装了解码器，这里就不需要做任何事情
   return true;
 }
 
-bool VideoDecode::start(const std::string &url) {
+bool VideoDecode::start(const std::string &uri, int w, int h) {
   if (stream && stream->IsStreaming()) {
     FLOWENGINE_LOGGER_INFO("The stream had started {}",
                            stream->GetResource().string);
     return false;
   }
-  uri = url;
   videoOptions opt;
   opt.videoIdx = channel;
   opt.resource = uri;
 
-  // return stream->Open(opt);
-  // TODO 每次start都是重新创建对象，因为目前来看x3的decoder不是很稳定
   stream = videoSource::Create(opt);
-  return stream->Open();
+
+  if (!stream->Open()) {
+    FLOWENGINE_LOGGER_ERROR("Open stream failed!");
+    return false;
+  }
+  consumer = std::make_unique<joining_thread>(&VideoDecode::consumeFrame, this);
+  FLOWENGINE_LOGGER_INFO("The stream had started {}",
+                         stream->GetResource().string);
+  return true;
 }
 
 bool VideoDecode::stop() {
   if (!stream || !stream->IsStreaming()) {
-    FLOWENGINE_LOGGER_ERROR("The stream was not started {}.", uri);
+    FLOWENGINE_LOGGER_ERROR("There is no stream running!");
     return false;
   }
   stream->Close();
   // TODO 安全起见，将对象一并释放掉重新创建了
   stream.reset();
-  return true;
-}
-
-bool VideoDecode::run() {
-  if (!stream->Open()) {
-    return false;
-  }
-  consumer = std::make_unique<joining_thread>(&VideoDecode::consumeFrame, this);
   return true;
 }
 
@@ -115,7 +91,7 @@ void VideoDecode::consumeFrame() {
         FLOWENGINE_LOGGER_WARN("Getframe is failed!");
       }
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(80));
   }
 }
 

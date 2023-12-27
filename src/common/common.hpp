@@ -26,5 +26,13 @@ struct NonCopyable {
   NonCopyable &operator=(const NonCopyable &) = delete;
 };
 
+/**
+ * @brief 标记过时函数
+ *
+ */
+#define FLOWENGINE_DEPRECATED(msg) [[deprecated(msg)]]
+
+
+
 } // namespace common
 #endif

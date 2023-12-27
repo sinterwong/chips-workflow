@@ -33,20 +33,21 @@ bool StreamManager::registered(std::string const &name,
     return false;
   }
   // 注册流
-  name2stream[name] = std::make_unique<VideoDecode>(uri);
+  name2stream[name] = std::make_unique<VideoDecode>();
+
+  if (!name2stream.at(name)->init()) {
+    FLOWENGINE_LOGGER_ERROR("init decoder failed!");
+    return false;
+  }
+  FLOWENGINE_LOGGER_INFO("Video decoder has initialized!");
 
   // 调用线程启动输出帧的任务
-  auto f = tpool->submit([this, &lname, &name]() -> void {
-    while (1) { // 不解除注册就无限重启
-      if (!name2stream.at(name)->init()) {
-        FLOWENGINE_LOGGER_ERROR("init decoder failed!");
-        return;
-      }
-      FLOWENGINE_LOGGER_INFO("Video manager has initialized!");
-
-      if (!name2stream.at(name)->run()) {
+  auto f = tpool->submit([this, lname, name, uri]() -> void {
+    while (1) { // 不注销就无限重启
+      if (!name2stream.at(name)->start(uri)) {
         FLOWENGINE_LOGGER_ERROR("run decoder failed!");
-        return;
+        std::this_thread::sleep_for(2000ms);
+        continue;
       }
       FLOWENGINE_LOGGER_INFO("Video manager is running!");
       uint32_t count = 0;
@@ -80,8 +81,8 @@ bool StreamManager::unregistered(std::string const &name) {
     FLOWENGINE_LOGGER_WARN("{} was no registered!", name);
     return false;
   }
-  // 内部释放足够安全，直接析构就可以
-  iter = name2stream.erase(iter);
+  // 注销流
+  name2stream.erase(iter);
   return true;
 }
 

@@ -48,8 +48,8 @@ bool FaceQuality::infer(FramePackage const &framePackage, int &quality) {
   frame.inputShape = {framePackage.frame->cols, framePackage.frame->rows,
                       framePackage.frame->channels()};
 
-  frame.shape = getShape(framePackage.frame->cols, framePackage.frame->rows);
-  frame.type = getColorType();
+  frame.shape = getInferShape(framePackage.frame->cols, framePackage.frame->rows);
+  frame.type = getPlatformColorType();
 
   // 人脸检测
   InferResult faceDetRet;

@@ -16,6 +16,7 @@
 #include <queue>
 #include <vector>
 
+#include "logger/logger.hpp"
 #include "preprocess.hpp"
 #include "visionInfer.hpp"
 

@@ -332,11 +332,10 @@ MACRO(LOAD_X3)
     LOAD_OPENCV()
     LOAD_OPENSSL()
     LOAD_CURL()
+    # LOAD_FFMPEG()
 
-    # SET(APPSDK_PATH "/root/.horizon/ddk/xj3_aarch64/appsdk/appuser/")
-    # # SET(APPSDK_PATH "/usr")
     SET(BPU_libs dnn hb_dnn)
-    SET(HB_MEDIA_libs vio hbmedia avcodec avformat avutil)
+    SET(HB_MEDIA_libs vio hbmedia avcodec avformat avutil swscale)
     SET(X3_INCLUDE
         ${APPSDK_PATH}/include
         ${APPSDK_PATH}/include/dnn
