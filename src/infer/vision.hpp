@@ -13,6 +13,7 @@
 #define __INFER_VISION_H_
 #include "infer_common.hpp"
 #include "inference.h"
+#include "logger/logger.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "preprocess.hpp"
 #include <opencv2/core/mat.hpp>
@@ -44,6 +45,10 @@ public:
     case common::ColorType::BGR888: {
       cv::Mat image{height, width, CV_8UC3, data};
       // cv::imwrite("temp_out.jpg", image);
+      if (image.empty()) {
+        FLOWENGINE_LOGGER_ERROR("VisionInfer::processInput: input is empty!");
+        return false;
+      }
 
       std::array<int, 2> shape = {config->inputShape.at(0),
                                   config->inputShape.at(1)};
@@ -62,6 +67,10 @@ public:
     }
     case common::ColorType::NV12: {
       output = cv::Mat(height * 3 / 2, width, CV_8UC1, data);
+      if (output.empty()) {
+        FLOWENGINE_LOGGER_ERROR("VisionInfer::processInput: input is empty!");
+        return false;
+      }
       utils::NV12toRGB(output, output);
       std::array<int, 2> shape = {config->inputShape.at(0),
                                   config->inputShape.at(1)};

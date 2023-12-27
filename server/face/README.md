@@ -190,12 +190,55 @@ POST /face/v0/facelib/faceQuality
 ```json
 {"name": "temp", "url": "http://xxx.com/xxx.jpg"}
 ```
+
 #### 响应
 ```json
 {
     "status": "OK", 
     "code": 200, 
     "message": "0"  # 质检结果，0：正常，1：图片尺寸过小，2：长宽比过大，3：模糊度或亮度过大，4：人脸角度过大，5：大胡子，6：普通眼镜，7：口罩遮挡，8：墨镜，9：其它遮挡，-1：无人脸或未知错误
+}
+```
+
+### 10. 人脸识别视频监控
+对视频流进行人脸识别。
+
+#### 请求
+POST /face/v0/stream/startVideo
+
+#### POST 参数示例
+```json
+{
+    "name": "testVideo", 
+    "libName": "testdb", 
+    "url": "rtsp://admin:admin@your_ip:554/MainStream"
+}
+```
+
+#### 响应
+```json
+{
+    "status": "OK", 
+    "code": 200, 
+    "message": "Video was successfully starting"
+}
+```
+
+### 11. 关闭视频流
+关闭视频流。
+
+#### 请求
+GET /face/v0/stream/stopVideo?name={name}
+
+#### GET 参数
+- `name` (必须): 视频流名称。
+
+#### 响应
+```json
+{
+    "status": "OK", 
+    "code": 200, 
+    "message": "Video was successfully stopping"
 }
 ```
 
@@ -258,6 +301,7 @@ POST /face/v0/facelib/faceQuality
 import requests
 import json
 import base64
+import time
 
 BASE_URL = "http://localhost:9797"  # Change this to your server's URL and port
 headers = {'Content-Type': 'application/json'}
@@ -337,6 +381,18 @@ def face_quality(data):
     print("Face Quality:", response.json())
 
 
+def start_video(data):
+    response = requests.post(
+        f"{BASE_URL}/face/v0/stream/startVideo", data=json.dumps(data), headers=headers)
+    print("Start video:", response.json())
+
+
+def stop_video(name):
+    response = requests.get(
+        f"{BASE_URL}/face/v0/stream/stopVideo?name={name}", headers=headers)
+    print("Stop video:", response.json())
+
+
 if __name__ == "__main__":
     create_user({"userId": "12345", "libName": "temp1",
                 "url": get_base64_of_image("image1.png")})
@@ -358,7 +414,7 @@ if __name__ == "__main__":
         {"userId": "22222", "libName": "temp2",
             "url": get_base64_of_image("image1.png")}
     ]))
-
+    
     search_user("temp1", "/path/image2.png")
     search_user_post(
         {"name": "temp2", "url": get_base64_of_image("image2.png")})
@@ -376,9 +432,21 @@ if __name__ == "__main__":
         {"userId": "11111"},
         {"userId": "22222"}
     ]))
-    
+
     # 质检结果，0：正常，1：图片尺寸过小，2：长宽比过大，3：模糊度或亮度过大，4：人脸角度过大，5：大胡子，6：普通眼镜，7：口罩遮挡，8：墨镜，9：其它遮挡，-1：无人脸或未知错误
     face_quality({"name": "temp2", "url": get_base64_of_image("image2.png")})
+    
+    # 开启视频流
+    start_video({
+        "name": "testVideo", 
+        "libName": "testdb", 
+        "url": "rtsp://admin:admin@your_ip:554/MainStream"
+    })
+    
+    time.sleep(50)
+    
+    # 关闭视频流
+    stop_video("testVideo")
 
 ```
 
@@ -389,6 +457,7 @@ if __name__ == "__main__":
 - [x] 批量增删改接口
 - [x] 人脸库分库增删改
 - [x] 人脸质检接口
+- [x] 人脸视频流识别接口（开启、关闭）
 - [ ] 活体检测功能
 - [ ] 批量搜索
 - [ ] 批量质检

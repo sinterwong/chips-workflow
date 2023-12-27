@@ -33,7 +33,7 @@ bool FaceRecognition::extract(FramePackage const &framePackage,
   InferResult faceDetRet;
   auto ret = AlgoManager::getInstance().infer(AlgoType::DET, frame, faceDetRet);
   if (!ret.get()) {
-    FLOWENGINE_LOGGER_INFO("Face detection failed!");
+    FLOWENGINE_LOGGER_ERROR("Face detection failed!");
     return false;
   }
   auto kbboxes = std::get_if<KeypointsBoxes>(&faceDetRet.aRet);
@@ -58,7 +58,7 @@ bool FaceRecognition::extract(FramePackage const &framePackage,
   InferResult faceRecRet;
   ret = AlgoManager::getInstance().infer(AlgoType::REC, faceInput, faceRecRet);
   if (!ret.get()) {
-    FLOWENGINE_LOGGER_INFO("Face recognition failed!");
+    FLOWENGINE_LOGGER_ERROR("Face recognition failed!");
     return false;
   }
   feature = *std::get_if<std::vector<float>>(&faceRecRet.aRet);

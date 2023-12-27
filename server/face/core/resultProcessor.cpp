@@ -16,20 +16,19 @@ namespace server::face::core {
 ResultProcessor *ResultProcessor::instance = nullptr;
 
 void ResultProcessor::onFrameReceived(std::string const &lname,
-                                      FramePackage &&framePackage) {
-  tpool->submit([this, &lname, &framePackage]() {
+                                      FramePackage framePackage) {
+  tpool->submit([this, &lname, framePackage]() {
     this->oneProcess(lname, std::move(framePackage));
   });
 }
 
 void ResultProcessor::oneProcess(std::string const &lname,
-                                 FramePackage &&framePackage) {
+                                 FramePackage framePackage) {
   // 单个任务的函数
   // * 1. 根据帧包中的图片，送入人脸识别算法
   std::vector<float> feature;
   auto ret = FaceRecognition::getInstance().extract(framePackage, feature);
   if (!ret) {
-    FLOWENGINE_LOGGER_DEBUG("Face recognition failed!");
     return;
   }
 
