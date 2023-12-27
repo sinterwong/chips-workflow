@@ -10,7 +10,9 @@
  */
 #include "videoDecode.hpp"
 #include "ffstream.hpp"
+#include <mutex>
 #include <opencv2/imgproc.hpp>
+#include <shared_mutex>
 #include <thread>
 
 using namespace std::chrono_literals;
@@ -23,6 +25,7 @@ bool VideoDecode::init() {
 }
 
 bool VideoDecode::start(const std::string &uri, int w, int h) {
+  std::lock_guard lk{stream_m};
   if (stream && stream->isRunning()) {
     FLOWENGINE_LOGGER_INFO("The stream had started {}", uri);
     return false;
@@ -38,7 +41,8 @@ bool VideoDecode::start(const std::string &uri, int w, int h) {
 }
 
 bool VideoDecode::stop() {
-  if (isRunning()) {
+  std::lock_guard lk{stream_m};
+  if (stream && stream->isRunning()) {
     stream->closeStream();
   }
   stream.reset();
@@ -46,8 +50,7 @@ bool VideoDecode::stop() {
 }
 
 std::shared_ptr<cv::Mat> VideoDecode::getcvImage() {
-  std::lock_guard<std::mutex> lock(frame_m);
-
+  std::shared_lock lk{stream_m};
   void *data = nullptr;
   int bufSize = stream->getDataFrame(&data);
   if (bufSize < 0) {
@@ -66,7 +69,7 @@ void VideoDecode::consumeFrame() {
   while (isRunning()) {
     // 每隔100ms消耗一帧，防止长时间静止
     {
-      std::lock_guard<std::mutex> lock(frame_m);
+      std::shared_lock lk{stream_m};
       void *tempData = nullptr;
       int bufSize = stream->getDataFrame(&tempData);
       if (bufSize < 0) {
