@@ -73,8 +73,6 @@ bool VisionInfer::infer(FrameInfo &frame, const InferParams &params,
                                                             preprocess_start);
   auto preprocess_cost =
       static_cast<double>(preprocess_duration.count()) / 1000;
-
-  // auto preprocess_cost = 0.0;
   {
     std::lock_guard lk(m);
 
@@ -115,7 +113,6 @@ bool VisionInfer::infer(FrameInfo &frame, const InferParams &params,
                             "post process time: {} ms",
                             serialName, preprocess_cost, infer_cost, post_cost);
   }
-
   return true;
 }
 
