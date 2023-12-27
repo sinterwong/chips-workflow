@@ -45,7 +45,7 @@ bool StreamManager::registered(std::string const &name,
   auto f = tpool->submit([this, lname, name, uri]() -> void {
     while (1) { // 不注销就无限重启
       if (!name2stream.at(name)->start(uri)) {
-        FLOWENGINE_LOGGER_ERROR("run decoder failed!");
+        FLOWENGINE_LOGGER_ERROR("start video {} failed, uri: {}", name, uri);
         std::this_thread::sleep_for(2000ms);
         continue;
       }
