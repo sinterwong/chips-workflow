@@ -18,6 +18,10 @@ int main(int argc, char **argv) {
   gflags::SetUsageMessage("some usage message");
   gflags::SetVersionString("1.0.0");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
+
+  // 打印opencv编译参数
+  std::cout << cv::getBuildInformation() << std::endl;
+
   auto cap = cv::VideoCapture();
 
   cap.open(FLAGS_uri);
