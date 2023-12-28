@@ -17,6 +17,7 @@
 #include "logger/logger.hpp"
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 #include <thread>
 
 #include "video_common.hpp"
@@ -27,28 +28,26 @@ namespace video {
 
 class VideoDecode : private VDecoder {
 private:
-  std::string uri; // 流地址
+  std::shared_mutex stream_m;
   std::unique_ptr<FFStream> stream;
   std::unique_ptr<joining_thread> consumer; // 消费者
-  std::mutex frame_m;
-  int channel;
 
   void consumeFrame();
 
 public:
   bool init() override;
 
-  bool run() override;
-
-  bool start(std::string const &) override;
+  bool start(std::string const &, int w = 0, int h = 0) override;
 
   bool stop() override;
 
-  inline bool isRunning() override { return stream && stream->isRunning(); }
-
-  inline std::string getUri() override { return uri; }
+  inline bool isRunning() override {
+    std::shared_lock lk{stream_m};
+    return stream && stream->isRunning();
+  }
 
   inline int getHeight() override {
+    std::shared_lock lk{stream_m};
     if (isRunning()) {
       return stream->getHeight();
     }
@@ -56,6 +55,7 @@ public:
   }
 
   inline int getWidth() override {
+    std::shared_lock lk{stream_m};
     if (isRunning()) {
       return stream->getWidth();
     }
@@ -63,6 +63,7 @@ public:
   }
 
   inline int getRate() override {
+    std::shared_lock lk{stream_m};
     if (isRunning()) {
       return stream->getRate();
     }
@@ -72,13 +73,10 @@ public:
   std::shared_ptr<cv::Mat> getcvImage() override;
 
   inline common::ColorType getType() const noexcept override {
-    return common::ColorType::RGB888;
+    return common::getPlatformColorType();
   }
 
   explicit VideoDecode() {}
-
-  explicit VideoDecode(std::string const &uri_, int w_ = 1920, int h_ = 1080)
-      : uri(uri_) {}
 
   ~VideoDecode() noexcept {
     if (isRunning()) {

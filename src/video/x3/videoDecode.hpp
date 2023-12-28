@@ -17,6 +17,7 @@
 #include <memory>
 #include <mutex>
 #include <opencv2/core/mat.hpp>
+#include <shared_mutex>
 #include <thread>
 
 #include "videoSource.hpp"
@@ -28,6 +29,7 @@ namespace video {
 
 class VideoDecode : private VDecoder {
 private:
+  std::shared_mutex stream_m;
   std::unique_ptr<videoSource> stream;
   std::unique_ptr<joining_thread> consumer; // 消费者
   std::mutex frame_m;
@@ -43,9 +45,13 @@ public:
 
   bool stop() override;
 
-  inline bool isRunning() override { return stream && stream->IsStreaming(); }
+  inline bool isRunning() override {
+    std::shared_lock lk(stream_m);
+    return stream && stream->IsStreaming();
+  }
 
   inline int getHeight() override {
+    std::shared_lock lk(stream_m);
     if (isRunning()) {
       return stream->GetHeight();
     }
@@ -53,6 +59,7 @@ public:
   }
 
   inline int getWidth() override {
+    std::shared_lock lk(stream_m);
     if (isRunning()) {
       return stream->GetWidth();
     }
@@ -60,6 +67,7 @@ public:
   }
 
   inline int getRate() override {
+    std::shared_lock lk(stream_m);
     if (isRunning()) {
       return stream->GetFrameRate();
     }
@@ -80,12 +88,11 @@ public:
   }
 
   ~VideoDecode() noexcept {
-    std::lock_guard lk(frame_m);
-    // 手动析构解码器，确保析构完成后再释放channel
-    stream.reset();
+    if (isRunning()) {
+      stop();
+    }
     // 释放channel
     ChannelsManager::getInstance().setChannel(channel);
-    consumer->join();
   }
 };
 } // namespace video

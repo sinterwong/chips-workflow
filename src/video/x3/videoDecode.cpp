@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 #include <string>
 #include <thread>
 
@@ -30,20 +31,32 @@ bool VideoDecode::init() {
 }
 
 bool VideoDecode::start(const std::string &uri, int w, int h) {
-  if (stream && stream->IsStreaming()) {
-    FLOWENGINE_LOGGER_INFO("The stream had started {}",
-                           stream->GetResource().string);
-    return false;
-  }
-  videoOptions opt;
-  opt.videoIdx = channel;
-  opt.resource = uri;
+  {
+    std::lock_guard lk(stream_m);
+    if (stream && stream->IsStreaming()) {
+      FLOWENGINE_LOGGER_INFO("The stream had started {}",
+                             stream->GetResource().string);
+      return false;
+    }
+    videoOptions opt;
+    opt.videoIdx = channel;
+    opt.resource = uri;
 
-  stream = videoSource::Create(opt);
+    // 对于网络摄像头来说不重要
+    opt.width = w;
+    opt.height = h;
 
-  if (!stream->Open()) {
-    FLOWENGINE_LOGGER_ERROR("Open stream failed!");
-    return false;
+    stream = videoSource::Create(opt);
+
+    if (!stream) {
+      FLOWENGINE_LOGGER_ERROR("Create stream failed!");
+      return false;
+    }
+
+    if (!stream->Open()) {
+      FLOWENGINE_LOGGER_ERROR("Open stream failed!");
+      return false;
+    }
   }
   consumer = std::make_unique<joining_thread>(&VideoDecode::consumeFrame, this);
   FLOWENGINE_LOGGER_INFO("The stream had started {}",
@@ -52,7 +65,8 @@ bool VideoDecode::start(const std::string &uri, int w, int h) {
 }
 
 bool VideoDecode::stop() {
-  if (!stream || !stream->IsStreaming()) {
+  std::lock_guard lk(stream_m);
+  if (!(stream && stream->IsStreaming())) {
     FLOWENGINE_LOGGER_ERROR("There is no stream running!");
     return false;
   }
@@ -63,6 +77,7 @@ bool VideoDecode::stop() {
 }
 
 std::shared_ptr<cv::Mat> VideoDecode::getcvImage() {
+  std::shared_lock lks(stream_m);
   std::lock_guard lk(frame_m);
   bool ret = stream->Capture(&frame, 1000);
   if (!ret) {
@@ -82,7 +97,8 @@ void VideoDecode::consumeFrame() {
   while (isRunning()) {
     // 每隔一段时间消耗一帧，防止长时间静止造成 ffmpeg 连接失效
     {
-      std::lock_guard lk(frame_m);
+      std::shared_lock lks(stream_m);
+      std::lock_guard lkf(frame_m);
       if (!isRunning()) {
         break;
       }

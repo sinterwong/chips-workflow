@@ -1,6 +1,7 @@
 [submodule "src/video/jetson-utils"]
 	path = src/video/jetson/jetson-utils
-	url = git@github.com:dusty-nv/jetson-utils.git
+	url = https://github.com/dusty-nv/jetson-utils.git
+	
 [submodule "3rdparty/eigen"]
 	path = 3rdparty/eigen
 	url = https://gitlab.com/libeigen/eigen.git
