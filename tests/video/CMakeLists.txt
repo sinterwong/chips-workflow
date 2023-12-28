@@ -3,6 +3,7 @@ PROJECT(Application)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lz")
 INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}
+    ${PROJECT_INCLUDE_DIR}/common
     ${PROJECT_INCLUDE_DIR}/utils
     ${PROJECT_INCLUDE_DIR}/video
     ${PROJECT_INCLUDE_DIR}/jetson-utils
@@ -31,11 +32,6 @@ ELSEIF(TARGET_HARDWARE STREQUAL "generic")
 ENDIF()
 
 LINK_LIBRARIES(
-    ${OpenCV_LIBS}
-    ${FFMPEG_LIBS}
-    ${OPENSSL_LIBS}
-    ${CURL_LIBRARIES}
-    ${CHIPS_DEPAND_LIBS}
     gflags
     pthread
     module 
@@ -43,8 +39,12 @@ LINK_LIBRARIES(
     infer 
     license 
     module_logger 
+    ${CHIPS_DEPAND_LIBS}
+    ${OpenCV_LIBS}
+    ${FFMPEG_LIBS}
+    ${OPENSSL_LIBS}
+    ${CURL_LIBRARIES}
     stdc++fs
-
 )
 SET(LINK "-Wl,--no-as-needed")
 FILE(MAKE_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/video)

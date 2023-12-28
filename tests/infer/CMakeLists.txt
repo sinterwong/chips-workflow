@@ -4,6 +4,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=deprecated-declarations -Wno-
 
 INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}
+    ${PROJECT_INCLUDE_DIR}/common
     ${PROJECT_INCLUDE_DIR}/utils
     ${PROJECT_INCLUDE_DIR}/video
     ${PROJECT_INCLUDE_DIR}/jetson-utils
