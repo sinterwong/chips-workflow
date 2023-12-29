@@ -58,7 +58,7 @@ bool StreamManager::registered(std::string const &name,
           continue;
         }
         // 抽帧处理
-        if (count++ % 5 == 0) {
+        if (count++ % 60 != 0) {
           continue;
         }
         // 输出帧提供给结果处理器，结果处理器中负责任务的调度和结果分析

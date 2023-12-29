@@ -31,7 +31,7 @@ namespace server::face::core {
 
 struct PostInfo {
   std::string cameraName;
-  long id;
+  std::string idNumber;
 };
 
 class ResultProcessor {

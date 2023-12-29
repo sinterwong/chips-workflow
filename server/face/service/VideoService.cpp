@@ -18,7 +18,8 @@ VideoService::startVideo(oatpp::Object<StreamDto> const streamDto) {
   auto status = StatusDto::createShared();
   // 参数检查
   if (streamDto->name.get() == nullptr || streamDto->libName.get() == nullptr ||
-      streamDto->url.get() == nullptr) {
+      streamDto->url.get() == nullptr ||
+      streamDto->interfaceUrl.get() == nullptr) {
     status->status = "Bad Request";
     status->code = 400;
     status->message = "Parameter error";
@@ -42,6 +43,10 @@ VideoService::startVideo(oatpp::Object<StreamDto> const streamDto) {
     status->code = 503;
     status->message = "Video startup failed";
   }
+
+  // 检查人脸库是否在线
+
+
   status->status = "OK";
   status->code = 200;
   status->message = "Video was successfully starting";

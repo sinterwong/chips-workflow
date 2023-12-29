@@ -41,11 +41,13 @@ void ResultProcessor::oneProcess(std::string const &lname,
     return;
   }
 
-  // * 3. 根据人脸库返回的结果决定是否发送消息到后端服务
-  PostInfo postInfo{framePackage.cameraName, idx};
+  // * 3. 从数据库中获取人脸身份证号码
+
+  // * 4. 发送数据到后端服务
+  PostInfo postInfo{framePackage.cameraName, ""};
   MY_CURL_POST(postUrl, {
     info["camera_id"] = postInfo.cameraName;
-    info["user_id"] = postInfo.id;
+    info["user_id"] = postInfo.idNumber;
   });
 }
 } // namespace server::face::core

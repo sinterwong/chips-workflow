@@ -41,7 +41,9 @@ inline size_t curl_callback(void *ptr, size_t size, size_t nmemb,
     nlohmann::json info;                                                       \
     add_member_code                                                            \
                                                                                \
-        std::string s_out3 = info.dump();                                      \
+    std::string s_out3 = info.dump();                                          \
+    FLOWENGINE_LOGGER_DEBUG("Post request body is {}", s_out3);                \
+                                                                               \
     std::string res;                                                           \
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, s_out3.c_str());                \
     curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, s_out3.length());            \
@@ -54,6 +56,7 @@ inline size_t curl_callback(void *ptr, size_t size, size_t nmemb,
       FLOWENGINE_LOGGER_ERROR("Post request was failed {}!", code);            \
       FLOWENGINE_LOGGER_INFO("Post result is {}", res);                        \
     }                                                                          \
+    FLOWENGINE_LOGGER_DEBUG("Post request is sucessful.");                     \
     curl_easy_cleanup(curl);                                                   \
   } while (0)
 

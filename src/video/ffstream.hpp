@@ -180,8 +180,6 @@ private:
   inline void handleReadFrameError(int ret) {
     if (ret == AVERROR_EOF || (avContext->pb && avContext->pb->eof_reached)) {
       FLOWENGINE_LOGGER_INFO("No more input data, size: {}", avpacket.size);
-      // 读取完毕，关闭流
-      closeStream();
     } else {
       FLOWENGINE_LOGGER_ERROR("Failed to av_read_frame error(0x{})", ret);
     }

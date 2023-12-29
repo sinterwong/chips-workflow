@@ -116,7 +116,7 @@ public:
       while (!mTerminate.load() && stream && stream->isRunning()) {
         int bufSize = stream->getDataFrame(&raw_data);
         if (bufSize < 0) {
-          FLOWENGINE_LOGGER_ERROR("stream is closed!");
+          FLOWENGINE_LOGGER_ERROR("stream is over!");
           break;
         } else if (bufSize == 0) {
           std::this_thread::sleep_for(10ms);
@@ -135,6 +135,11 @@ public:
       std::lock_guard<std::mutex> lock(closeMutex);
       isClosed.store(true);
       cv.notify_one(); // 通知析构函数线程已经结束
+
+      // 到此处如果资源没有释放，说明是流主动关闭，需要手动释放资源
+      if (mStreaming.load()) {
+        releaseDecoderResource();
+      }
     });
     return true;
   }
@@ -150,8 +155,9 @@ public:
    * @see videoSource::Close()
    */
   virtual inline void Close() noexcept override {
-    std::lock_guard<std::mutex> lk(resourceMutex);
+    // 外界关闭，需要和生产者线程同步
 
+    std::lock_guard<std::mutex> lk(resourceMutex);
     // 通知生产者线程结束
     mTerminate.store(true);
     {
@@ -161,20 +167,7 @@ public:
       mTerminate.store(false); // 重置
     }
     if (mStreaming.load()) {
-      // 停止解码
-      sp_stop_decode(decoder);
-
-      // 结束流
-      if (stream && stream->isRunning()) {
-        stream->closeStream();
-        stream = nullptr;
-      }
-      // 释放资源
-      if (yuv_data) {
-        delete[] yuv_data;
-        yuv_data = nullptr;
-      }
-      mStreaming.store(false);
+      releaseDecoderResource();
     }
   }
 
@@ -248,7 +241,7 @@ private:
 
   // 用于结束生产者线程
   std::mutex closeMutex;
-  std::atomic<bool> mTerminate{false};
+  std::atomic<bool> mTerminate{false}; // 主动关闭时需要使用
   std::atomic<bool> isClosed{true};
   std::condition_variable cv;
 
@@ -257,6 +250,23 @@ private:
     return true;
   }
   std::unique_ptr<joining_thread> producter;
+
+  void releaseDecoderResource() {
+    // 停止解码
+    sp_stop_decode(decoder);
+
+    // 结束流
+    if (stream && stream->isRunning()) {
+      stream->closeStream();
+      stream.reset();
+    }
+    // 释放资源
+    if (yuv_data) {
+      delete[] yuv_data;
+      yuv_data = nullptr;
+    }
+    mStreaming.store(false);
+  }
 };
 } // namespace video
 #endif
