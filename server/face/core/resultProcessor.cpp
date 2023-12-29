@@ -11,6 +11,9 @@
 
 #include "resultProcessor.hpp"
 #include "logger/logger.hpp"
+
+#include "faceDBOperator.hpp"
+
 namespace server::face::core {
 
 ResultProcessor *ResultProcessor::instance = nullptr;
@@ -42,9 +45,11 @@ void ResultProcessor::oneProcess(std::string const &lname,
   }
 
   // * 3. 从数据库中获取人脸身份证号码
+  auto status = StatusDto::createShared();
+  auto idNumber = FaceDBOperator::getInstance().getIdNumberById(idx, status);
 
   // * 4. 发送数据到后端服务
-  PostInfo postInfo{framePackage.cameraName, ""};
+  PostInfo postInfo{framePackage.cameraName, idNumber};
   MY_CURL_POST(postUrl, {
     info["camera_id"] = postInfo.cameraName;
     info["user_id"] = postInfo.idNumber;

@@ -10,6 +10,7 @@
  */
 
 #include "VideoService.hpp"
+#include "faceDBOperator.hpp"
 
 namespace server::face {
 
@@ -35,6 +36,21 @@ VideoService::startVideo(oatpp::Object<StreamDto> const streamDto) {
     return status;
   }
 
+  // 检查人脸库是否存在
+  if (!core::FaceLibraryManager::getInstance().CHECK_FACELIB_EXIST(
+          streamDto->libName)) {
+    // 人脸库不存在，需要尝试恢复
+    if (!core::FaceDBOperator::getInstance().restoreFacelib(streamDto->libName,
+                                                            status)) {
+      // 恢复失败，返回错误
+      status->status = "Not Found";
+      status->code = 404;
+      status->message = "Facelib not found.";
+      return status;
+    }
+  }
+
+  // 注册视频流
   auto ret = core::StreamManager::getInstance().registered(
       streamDto->name, streamDto->libName, streamDto->url,
       streamDto->interfaceUrl);
@@ -43,9 +59,6 @@ VideoService::startVideo(oatpp::Object<StreamDto> const streamDto) {
     status->code = 503;
     status->message = "Video startup failed";
   }
-
-  // 检查人脸库是否在线
-
 
   status->status = "OK";
   status->code = 200;
