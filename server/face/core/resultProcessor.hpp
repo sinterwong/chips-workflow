@@ -31,7 +31,7 @@ namespace server::face::core {
 
 struct PostInfo {
   std::string cameraName;
-  long id;
+  std::string idNumber;
 };
 
 class ResultProcessor {
@@ -45,7 +45,8 @@ public:
   ResultProcessor &operator=(ResultProcessor const &) = delete;
 
 public:
-  void onFrameReceived(std::string const &lname, FramePackage framePackage);
+  void onFrameReceived(std::string const &lname, FramePackage framePackage,
+                       std::string const &postUrl);
 
 private:
   ResultProcessor() {
@@ -62,11 +63,9 @@ private:
   // 执行一次算法任务
   std::unique_ptr<thread_pool> tpool;
 
-  // 后端请求接口
-  std::string postUrl = "http://localhost:19797";
-
 private:
-  void oneProcess(std::string const &lname, FramePackage framePackage);
+  void oneProcess(std::string const &lname, FramePackage framePackage,
+                  std::string const &postUrl);
 };
 } // namespace server::face::core
 

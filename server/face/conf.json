@@ -1,0 +1,105 @@
+{
+  "face_algorithm": {
+    "detection": {
+      "config_params": {
+        "name": "faceDet",
+        "serial": "Yolov8PDet",
+        "model_path": "/opt/deploy/models/yolov8n_face_640x640.engine",
+        "batch_size": 1,
+        "input_names": [
+          "images"
+        ],
+        "output_names": [
+          "output0"
+        ],
+        "input_shapes": [
+          640,
+          640,
+          3
+        ],
+        "is_scale": false,
+        "alpha": 0.5,
+        "beta": 0.5,
+        "cond_threshold": 0.3,
+        "nms_threshold": 0.45,
+        "num_points": 5
+      },
+      "num_workers": 2
+    },
+    "recognition": {
+      "config_params": {
+        "name": "faceRec",
+        "serial": "FaceNet",
+        "model_path": "/opt/deploy/models/arcface_112x112.engine",
+        "batch_size": 1,
+        "input_names": [
+          "input.1"
+        ],
+        "output_names": [
+          "516"
+        ],
+        "input_shapes": [
+          112,
+          112,
+          3
+        ],
+        "is_scale": false,
+        "alpha": 127.5,
+        "beta": 1.0,
+        "cond_threshold": 0.3,
+        "dim": 512
+      },
+      "num_workers": 1
+    },
+    "quality": {
+      "config_params": {
+        "name": "faceQuality",
+        "serial": "Softmax",
+        "model_path": "/opt/deploy/models/face_quality_128x128.engine",
+        "batch_size": 1,
+        "input_names": [
+          "input"
+        ],
+        "output_names": [
+          "output"
+        ],
+        "input_shapes": [
+          128,
+          128,
+          3
+        ],
+        "is_scale": false,
+        "alpha": 255.0,
+        "beta": 0,
+        "cond_threshold": 0.3
+      },
+      "num_workers": 1
+    },
+    "key_points": {
+      "config_params": {
+        "name": "facePoints",
+        "serial": "FaceKeyPoints",
+        "model_path": "/opt/deploy/models/2d106det_192x192.engine",
+        "batch_size": 1,
+        "input_names": [
+          "data"
+        ],
+        "output_names": [
+          "fc1"
+        ],
+        "input_shapes": [
+          192,
+          192,
+          3
+        ],
+        "is_scale": false,
+        "alpha": 1.0,
+        "beta": 0,
+        "cond_threshold": 0.3,
+        "nms_threshold": 0.45,
+        "num_points": 106
+      },
+      "num_workers": 1
+    }
+  }
+}

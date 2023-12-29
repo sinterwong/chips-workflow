@@ -25,9 +25,8 @@ int main(int argc, char **argv) {
 
   bool ret;
   ret = core::StreamManager::getInstance().registered(
-      "video1",
-      "temp",
-      "rtsp://admin:zkfd123.com@localhost:9303/Streaming/Channels/101");
+      "video1", "temp",
+      "rtsp://admin:zkfd123.com@localhost:9303/Streaming/Channels/101", "");
   if (!ret) {
     return -1;
   }

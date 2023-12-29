@@ -11,19 +11,24 @@
 
 #include "resultProcessor.hpp"
 #include "logger/logger.hpp"
+
+#include "faceDBOperator.hpp"
+
 namespace server::face::core {
 
 ResultProcessor *ResultProcessor::instance = nullptr;
 
 void ResultProcessor::onFrameReceived(std::string const &lname,
-                                      FramePackage framePackage) {
-  tpool->submit([this, &lname, framePackage]() {
-    this->oneProcess(lname, std::move(framePackage));
+                                      FramePackage framePackage,
+                                      std::string const &postUrl) {
+  tpool->submit([this, &lname, &postUrl, framePackage]() {
+    this->oneProcess(lname, std::move(framePackage), postUrl);
   });
 }
 
 void ResultProcessor::oneProcess(std::string const &lname,
-                                 FramePackage framePackage) {
+                                 FramePackage framePackage,
+                                 std::string const &postUrl) {
   // 单个任务的函数
   // * 1. 根据帧包中的图片，送入人脸识别算法
   std::vector<float> feature;
@@ -39,11 +44,15 @@ void ResultProcessor::oneProcess(std::string const &lname,
     return;
   }
 
-  // * 3. 根据人脸库返回的结果决定是否发送消息到后端服务
-  PostInfo postInfo{framePackage.cameraName, idx};
+  // * 3. 从数据库中获取人脸身份证号码
+  auto status = StatusDto::createShared();
+  auto idNumber = FaceDBOperator::getInstance().getIdNumberById(idx, status);
+
+  // * 4. 发送数据到后端服务
+  PostInfo postInfo{framePackage.cameraName, idNumber};
   MY_CURL_POST(postUrl, {
-    info["cameraName"] = postInfo.cameraName;
-    info["id"] = postInfo.id;
+    info["camera_id"] = postInfo.cameraName;
+    info["user_id"] = postInfo.idNumber;
   });
 }
 } // namespace server::face::core

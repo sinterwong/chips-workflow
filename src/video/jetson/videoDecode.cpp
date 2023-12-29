@@ -33,7 +33,7 @@ std::unordered_map<std::string, std::string> const VideoDecode::codecMapping = {
 
 void VideoDecode::fillOptionByCV(std::string const &url, videoOptions &opt) {
   auto video = cv::VideoCapture();
-  video.open(url);
+  video.open(url, cv::CAP_FFMPEG);
   opt.height = video.get(cv::CAP_PROP_FRAME_HEIGHT);
   opt.width = video.get(cv::CAP_PROP_FRAME_WIDTH);
   opt.frameRate = video.get(cv::CAP_PROP_FPS);

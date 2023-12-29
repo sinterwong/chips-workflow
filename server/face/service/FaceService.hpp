@@ -8,11 +8,9 @@
  * @copyright Copyright (c) 2023
  *
  */
-#include "AppComponent.hpp"
 #include "FaceDto.hpp"
 #include "ImageDto.hpp"
 #include "StatusDto.hpp"
-#include "UserDb.hpp"
 #include "UserDto.hpp"
 #include "faceLibManager.hpp"
 #include "logger/logger.hpp"
@@ -20,10 +18,11 @@
 #include "preprocess.hpp"
 #include <cstddef>
 #include <memory>
-#include <oatpp/web/protocol/http/Http.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <string>
 #include <vector>
+
+#include <oatpp/web/protocol/http/Http.hpp>
 
 #ifndef __CRUD_FACE_SERVICE_HPP_
 #define __CRUD_FACE_SERVICE_HPP_
@@ -63,12 +62,6 @@ inline void backupImage(oatpp::Int32 const &idx, std::string const &libName,
 
 class FaceService {
 private:
-  using Status = oatpp::web::protocol::http::Status;
-
-private:
-  OATPP_COMPONENT(std::shared_ptr<UserDb>, m_database);
-
-private:
   // 辅助函数，处理批处理操作中的失败和错误ID，减少重复代码
   void handleBatchErrors(std::vector<std::string> const &errIdNumbersAlgo,
                          std::vector<std::string> const &errIdNumbersDB,
@@ -86,60 +79,7 @@ private:
   // 特征转base64
   std::string feature2base64(std::vector<float> &feature);
 
-  // 获取所有人脸
-  oatpp::Vector<oatpp::Object<UserDto>>
-  getAllUsers(oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
-                  &connection = nullptr);
 
-  // 通过身份证号查询
-  oatpp::Int32
-  getIdByIdNumber(oatpp::String const &idNumber,
-                  oatpp::Object<StatusDto> &status,
-                  oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
-                      &connection = nullptr);
-
-  // 通过id查询idNumber
-  oatpp::String
-  getIdNumberById(oatpp::Int32 const &id, oatpp::Object<StatusDto> &status,
-                  oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
-                      &connection = nullptr);
-
-  // 新增人脸到数据库并返回id
-  oatpp::Int32
-  insertUser(std::string const &idNumber, std::string const &libName,
-             std::string const &feature, oatpp::Object<StatusDto> &status,
-             oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
-                 &connection = nullptr);
-
-  // 更新人脸到数据库
-  oatpp::Int32 updateUserByIdNumber(
-      std::string const &idNumber, std::string const &libName,
-      std::string const &feature, oatpp::Object<StatusDto> &status,
-      oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
-          &connection = nullptr);
-
-  oatpp::String
-  getLibNameById(oatpp::Int32 const &id, oatpp::Object<StatusDto> &status,
-                 oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
-                     &connection = nullptr);
-
-  oatpp::Vector<oatpp::Object<UserDto>> getUsersByLibName(
-      oatpp::String const &libName, oatpp::Object<StatusDto> &status,
-      oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
-          &connection = nullptr);
-
-  void getIdsAndFeatures(std::vector<long> &ids,
-                         std::vector<std::vector<float>> &features,
-                         oatpp::Vector<oatpp::Object<UserDto>> const &users);
-
-  oatpp::String getLibNameByIdNumber(
-      oatpp::String const &idNumber, oatpp::Object<StatusDto> &status,
-      oatpp::provider::ResourceHandle<oatpp::orm::Connection> const
-          &connection = nullptr);
-
-  bool restoreFacelib(std::string const &libName,
-                      oatpp::Object<StatusDto> &status,
-                      bool needCreate = false);
 
 public:
   // Get 新增单个人脸
