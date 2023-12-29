@@ -22,6 +22,8 @@
 
 namespace server::face::core {
 
+// TODO:加载配置文件，从配置文件中获取相关算法的配置
+
 static std::string DET_MODEL_PATH =
     "/opt/deploy/models/yolov8n_face_640x640.engine";
 

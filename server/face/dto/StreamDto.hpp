@@ -19,13 +19,15 @@ class StreamDto : public oatpp::DTO {
   DTO_FIELD_INFO(url) { info->description = "The url of stream"; }
   DTO_FIELD(String, url);
 
+  DTO_FIELD_INFO(interfaceUrl) {
+    info->description = "Results are sent to this url";
+  }
+  DTO_FIELD(String, interfaceUrl);
+
 public:
   std::string toString() const {
-    auto str = "StreamDto(\n"
-               "  name: " +
-               (name ? *name : "null") + ",\n" +
-               "  url: " + (url ? *url : "null") + "\n" + ")";
-    return str;
+    return "StreamDto: { name = " + name + ", libName = " + libName +
+           ", url = " + url + ", interfaceUrl = " + interfaceUrl + " }";
   }
 };
 

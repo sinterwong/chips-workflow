@@ -16,14 +16,16 @@ namespace server::face::core {
 ResultProcessor *ResultProcessor::instance = nullptr;
 
 void ResultProcessor::onFrameReceived(std::string const &lname,
-                                      FramePackage framePackage) {
-  tpool->submit([this, &lname, framePackage]() {
-    this->oneProcess(lname, std::move(framePackage));
+                                      FramePackage framePackage,
+                                      std::string const &postUrl) {
+  tpool->submit([this, &lname, &postUrl, framePackage]() {
+    this->oneProcess(lname, std::move(framePackage), postUrl);
   });
 }
 
 void ResultProcessor::oneProcess(std::string const &lname,
-                                 FramePackage framePackage) {
+                                 FramePackage framePackage,
+                                 std::string const &postUrl) {
   // 单个任务的函数
   // * 1. 根据帧包中的图片，送入人脸识别算法
   std::vector<float> feature;
@@ -42,8 +44,8 @@ void ResultProcessor::oneProcess(std::string const &lname,
   // * 3. 根据人脸库返回的结果决定是否发送消息到后端服务
   PostInfo postInfo{framePackage.cameraName, idx};
   MY_CURL_POST(postUrl, {
-    info["cameraName"] = postInfo.cameraName;
-    info["id"] = postInfo.id;
+    info["camera_id"] = postInfo.cameraName;
+    info["user_id"] = postInfo.id;
   });
 }
 } // namespace server::face::core

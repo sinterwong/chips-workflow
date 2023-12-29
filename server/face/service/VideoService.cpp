@@ -33,9 +33,10 @@ VideoService::startVideo(oatpp::Object<StreamDto> const streamDto) {
     status->message = "Not supported video type";
     return status;
   }
-  
+
   auto ret = core::StreamManager::getInstance().registered(
-      streamDto->name, streamDto->libName, streamDto->url);
+      streamDto->name, streamDto->libName, streamDto->url,
+      streamDto->interfaceUrl);
   if (!ret) {
     status->status = "Service Unavailable";
     status->code = 503;

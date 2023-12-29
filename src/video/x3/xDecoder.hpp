@@ -115,8 +115,14 @@ public:
       // 优化成一个条件变量
       while (!mTerminate.load() && stream && stream->isRunning()) {
         int bufSize = stream->getDataFrame(&raw_data);
-        if (bufSize < 0)
+        if (bufSize < 0) {
+          FLOWENGINE_LOGGER_ERROR("stream is closed!");
           break;
+        } else if (bufSize == 0) {
+          std::this_thread::sleep_for(10ms);
+          FLOWENGINE_LOGGER_WARN("stream is empty!");
+          continue;
+        }
         int ret =
             sp_decoder_set_image(decoder, reinterpret_cast<char *>(raw_data),
                                  mOptions->videoIdx, bufSize, 0);

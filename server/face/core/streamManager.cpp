@@ -15,8 +15,8 @@ namespace server::face::core {
 StreamManager *StreamManager::instance = nullptr;
 
 bool StreamManager::registered(std::string const &name,
-                               std::string const &lname,
-                               std::string const &uri) {
+                               std::string const &lname, std::string const &uri,
+                               std::string const &postUrl) {
   // 检查已使用线程的数量
   checkCompletedFutures();
   if (futures.size() >= DECODER_POOL_SIZE) {
@@ -42,7 +42,7 @@ bool StreamManager::registered(std::string const &name,
   FLOWENGINE_LOGGER_INFO("Video decoder has initialized!");
 
   // 调用线程启动输出帧的任务
-  auto f = tpool->submit([this, lname, name, uri]() -> void {
+  auto f = tpool->submit([this, lname, name, uri, postUrl]() -> void {
     while (1) { // 不注销就无限重启
       if (!name2stream.at(name)->start(uri)) {
         FLOWENGINE_LOGGER_ERROR("start video {} failed, uri: {}", name, uri);
@@ -64,7 +64,8 @@ bool StreamManager::registered(std::string const &name,
         // 输出帧提供给结果处理器，结果处理器中负责任务的调度和结果分析
         // cv::imwrite("test_stream_manager.jpg", *image);
         FramePackage frame{name, image};
-        ResultProcessor::getInstance().onFrameReceived(lname, std::move(frame));
+        ResultProcessor::getInstance().onFrameReceived(lname, std::move(frame),
+                                                       postUrl);
       }
       name2stream.at(name)->stop();
       std::this_thread::sleep_for(500ms);

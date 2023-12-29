@@ -211,7 +211,8 @@ POST /face/v0/stream/startVideo
 {
     "name": "testVideo", 
     "libName": "testdb", 
-    "url": "rtsp://admin:admin@your_ip:554/MainStream"
+    "url": "rtsp://admin:admin@your_ip:554/MainStream",
+    "interfaceUrl": "http://your_ip/:8082/v1/flow/faceRecognizeResult"
 }
 ```
 
@@ -440,7 +441,8 @@ if __name__ == "__main__":
     start_video({
         "name": "testVideo", 
         "libName": "testdb", 
-        "url": "rtsp://admin:admin@your_ip:554/MainStream"
+        "url": "rtsp://admin:admin@your_ip:554/MainStream", 
+        "interfaceUrl": "http://your_ip/:8082/v1/flow/faceRecognizeResult"
     })
     
     time.sleep(50)
