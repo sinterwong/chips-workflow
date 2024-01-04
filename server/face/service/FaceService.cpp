@@ -207,17 +207,18 @@ FaceService::deleteUser(oatpp::String const &idNumber) {
 
   auto status = StatusDto::createShared();
 
+  auto libName =
+      FaceDBOperator::getInstance().getLibNameByIdNumber(idNumber, status);
+
+  if (libName->empty()) {
+    return status;
+  }
+
   // 根据idNumber删除数据库中的数据
   auto id =
       FaceDBOperator::getInstance().deleteUserByIdNumber(idNumber, status);
 
   if (id < 0) {
-    return status;
-  }
-
-  // TODO:根据id获取libName
-  auto libName = FaceDBOperator::getInstance().getLibNameById(id, status);
-  if (libName->empty()) {
     return status;
   }
 
@@ -593,6 +594,15 @@ FaceService::deleteBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
     return status;
   }
 
+  // 归类libName，分别批量删除
+  std::unordered_map<std::string, std::vector<long>> libName2ids;
+  for (size_t i = 0; i < ids.size(); ++i) {
+    auto libName = FaceDBOperator::getInstance().getLibNameById(ids[i], status);
+    if (!libName->empty()) {
+      libName2ids[libName].emplace_back(ids[i]);
+    }
+  }
+
   // 构建 IN 子句中的参数字符串
   std::string idsString = "";
   for (size_t i = 0; i < ids.size(); ++i) {
@@ -610,15 +620,6 @@ FaceService::deleteBatch(oatpp::Vector<oatpp::Object<FaceDto>> const &users) {
   auto dbResult = FaceDBOperator::getInstance().executeSql(sql);
   OATPP_ASSERT_HTTP(dbResult->isSuccess(), Status::CODE_500,
                     dbResult->getErrorMessage());
-
-  // 归类libName，分别批量删除
-  std::unordered_map<std::string, std::vector<long>> libName2ids;
-  for (size_t i = 0; i < ids.size(); ++i) {
-    auto libName = FaceDBOperator::getInstance().getLibNameById(ids[i], status);
-    if (!libName->empty()) {
-      libName2ids[libName].emplace_back(ids[i]);
-    }
-  }
 
   // 删除人脸库
   for (auto &item : libName2ids) {
