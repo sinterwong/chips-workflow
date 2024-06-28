@@ -7,6 +7,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/infer
     ${PROJECT_INCLUDE_DIR}/video
     ${PROJECT_INCLUDE_DIR}/module
+    ${PROJECT_INCLUDE_DIR}/utils
     ${PROJECT_INCLUDE_DIR}/jetson-utils
     ${PROJECT_INCLUDE_DIR}/license
     ${PROJECT_INCLUDE_DIR}/infer/x3
