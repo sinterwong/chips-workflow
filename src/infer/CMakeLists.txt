@@ -21,7 +21,7 @@ IF(TARGET_HARDWARE STREQUAL jetson)
         ${PROJECT_INCLUDE_DIR}
         ${PROJECT_INCLUDE_DIR}/infer
         ${PROJECT_INCLUDE_DIR}/infer/jetson
-        ${3RDPARTY_DIR}/Eigen
+        ${3RDPARTY_DIR}/eigen
         ${OpenCV_INCLUDE_DIRS}
         ${CUDA_INCLUDE_DIRS}
     )
@@ -47,7 +47,7 @@ ELSEIF(TARGET_HARDWARE STREQUAL x3)
         ${PROJECT_INCLUDE_DIR}
         ${PROJECT_INCLUDE_DIR}/infer
         ${PROJECT_INCLUDE_DIR}/infer/x3
-        ${3RDPARTY_DIR}/Eigen
+        ${3RDPARTY_DIR}/eigen
         ${OpenCV_INCLUDE_DIRS}
         ${DNN_PATH}/include
         ${APPSDK_PATH}/include
@@ -64,7 +64,7 @@ ELSEIF(TARGET_HARDWARE STREQUAL rockchip)
         ${PROJECT_INCLUDE_DIR}
         ${PROJECT_INCLUDE_DIR}/infer
         ${PROJECT_INCLUDE_DIR}/infer/rockchip
-        ${3RDPARTY_DIR}/Eigen
+        ${3RDPARTY_DIR}/eigen
         ${OpenCV_INCLUDE_DIRS}
         ${RKNN_INCLUDE_DIR}
     )
@@ -78,7 +78,7 @@ ELSE()
         ${PROJECT_INCLUDE_DIR}
         ${PROJECT_INCLUDE_DIR}/infer
         ${PROJECT_INCLUDE_DIR}/infer/generic
-        ${3RDPARTY_DIR}/Eigen
+        ${3RDPARTY_DIR}/eigen
         ${OpenCV_INCLUDE_DIRS}
         ${ONNXRUNTIME_INCLUDE_DIR}
     )

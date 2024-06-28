@@ -16,7 +16,7 @@ TARGET_INCLUDE_DIRECTORIES(module PRIVATE
     ${PROJECT_INCLUDE_DIR}/module
     ${PROJECT_INCLUDE_DIR}/infer
     ${PROJECT_INCLUDE_DIR}/video
-    ${3RDPARTY_DIR}/Eigen
+    ${3RDPARTY_DIR}/eigen
     ${3RDPARTY_DIR}/nlohmann
     ${CURL_INCLUDE_DIR}
     ${OpenCV_INCLUDE_DIRS}

@@ -18,7 +18,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/video/generic
     ${ONNXRUNTIME_INCLUDE_DIR}
     ${CUDA_INCLUDE_DIRS}
-    ${3RDPARTY_DIR}/Eigen
+    ${3RDPARTY_DIR}/eigen
     ${3RDPARTY_DIR}/gflags/include
 )
 
