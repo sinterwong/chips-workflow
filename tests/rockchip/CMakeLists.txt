@@ -41,8 +41,8 @@ FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
     STRING(REPLACE ".cpp" "" testname ${sourcefilewithoutpath})
     ADD_EXECUTABLE(${testname} ${sourcefile})
-    INSTALL(TARGETS ${testname}
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        RUNTIME DESTINATION bin)
+    # INSTALL(TARGETS ${testname}
+    #     ARCHIVE DESTINATION lib
+    #     LIBRARY DESTINATION lib
+    #     RUNTIME DESTINATION bin)
 ENDFOREACH(sourcefile ${APP_SOURCES})

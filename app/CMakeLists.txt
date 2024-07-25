@@ -7,6 +7,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/infer
     ${PROJECT_INCLUDE_DIR}/video
     ${PROJECT_INCLUDE_DIR}/module
+    ${PROJECT_INCLUDE_DIR}/utils
     ${PROJECT_INCLUDE_DIR}/jetson-utils
     ${PROJECT_INCLUDE_DIR}/license
     ${PROJECT_INCLUDE_DIR}/infer/x3
@@ -17,7 +18,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_INCLUDE_DIR}/video/generic
     ${ONNXRUNTIME_INCLUDE_DIR}
     ${CUDA_INCLUDE_DIRS}
-    ${3RDPARTY_ROOT}/eigen
+    ${3RDPARTY_DIR}/Eigen
     ${3RDPARTY_DIR}/gflags/include
 )
 
