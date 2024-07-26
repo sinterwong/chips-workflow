@@ -9,9 +9,9 @@
  *
  */
 
-#include "boostMessage.h"
+#include "boostMessage.hpp"
 #include "logger/logger.hpp"
-#include "messageBus.h"
+#include "messageBus.hpp"
 #include <memory>
 #include <mutex>
 #include <shared_mutex>

@@ -30,7 +30,6 @@ const auto initLogger = []() -> decltype(auto) {
   return true;
 }();
 
-using namespace infer;
 using namespace infer::solution;
 using algo_ptr = std::shared_ptr<AlgoInfer>;
 
@@ -38,7 +37,8 @@ using RESULT_DATA = std::pair<int, DETECTBOX>;
 
 algo_ptr getVision(AlgoConfig &&config) {
 
-  std::shared_ptr<AlgoInfer> vision = std::make_shared<VisionInfer>(config);
+  std::shared_ptr<AlgoInfer> vision =
+      std::make_shared<infer::VisionInfer>(config);
   if (!vision->init()) {
     FLOWENGINE_LOGGER_ERROR("Failed to init vision");
     std::exit(-1); // 强制中断
@@ -88,37 +88,37 @@ int main(int argc, char **argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
   // 算法启动
-  DetAlgo person_det_params{{
-                                "personDet",
-                                1,
-                                {"images"},
-                                {"output"},
-                                FLAGS_det_model_path,
-                                "Yolo",
-                                {640, 640, 3},
-                                false,
-                                0,
-                                0,
-                                0.3,
-                            },
-                            0.4};
+  infer::DetAlgo person_det_params{{
+                                       "personDet",
+                                       1,
+                                       {"images"},
+                                       {"output"},
+                                       FLAGS_det_model_path,
+                                       "Yolo",
+                                       {640, 640, 3},
+                                       false,
+                                       0,
+                                       0,
+                                       0.3,
+                                   },
+                                   0.4};
   AlgoConfig det_config;
   det_config.setParams(person_det_params);
 
-  FeatureAlgo reid_params{{
-                              "reid",
-                              1,
-                              {"images"},
-                              {"output"},
-                              FLAGS_reid_model_path,
-                              "FaceNet",
-                              {128, 256, 3},
-                              false,
-                              0,
-                              0,
-                              0.3,
-                          },
-                          512};
+  infer::FeatureAlgo reid_params{{
+                                     "reid",
+                                     1,
+                                     {"images"},
+                                     {"output"},
+                                     FLAGS_reid_model_path,
+                                     "FaceNet",
+                                     {128, 256, 3},
+                                     false,
+                                     0,
+                                     0,
+                                     0.3,
+                                 },
+                                 512};
   AlgoConfig reid_config;
   reid_config.setParams(reid_params);
 
@@ -157,7 +157,7 @@ int main(int argc, char **argv) {
       InferResult detRet;
       inference(*image, detRet, personDet);
 
-      auto bboxes = std::get_if<BBoxes>(&detRet.aRet);
+      auto bboxes = std::get_if<infer::BBoxes>(&detRet.aRet);
       if (!bboxes) {
         FLOWENGINE_LOGGER_ERROR("Person detection is failed!");
         continue;
@@ -173,11 +173,12 @@ int main(int argc, char **argv) {
 
         cv::Mat cropedImage;
         auto rect = getRect(bbox);
-        utils::cropImage(*image, cropedImage, rect, common::ColorType::NV12);
+        infer::utils::cropImage(*image, cropedImage, rect,
+                                common::ColorType::NV12);
 
         InferResult reidRet;
         inference(cropedImage, reidRet, reidNet);
-        auto feature = std::get_if<Eigenvector>(&reidRet.aRet);
+        auto feature = std::get_if<infer::Eigenvector>(&reidRet.aRet);
         if (!feature) {
           FLOWENGINE_LOGGER_ERROR("Feature extract is failed!");
           continue;

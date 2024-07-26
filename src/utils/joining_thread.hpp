@@ -1,12 +1,12 @@
 /**
  * @file joining_thread.h
  * @author Sinter Wong (sintercver@gmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-15
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #ifndef __FLOWENGINE_JOINING_THREAD_H_
@@ -15,6 +15,7 @@
 #include <thread>
 #include <utility>
 
+namespace utils {
 class joining_thread {
 public:
   std::thread t;
@@ -51,13 +52,9 @@ public:
     }
   }
 
-  void swap(joining_thread &other) noexcept {
-      t.swap(other.t);
-  }
-  
-  std::thread::id get_id() const noexcept {
-      return t.get_id();
-  }
+  void swap(joining_thread &other) noexcept { t.swap(other.t); }
+
+  std::thread::id get_id() const noexcept { return t.get_id(); }
 
   bool joinable() const noexcept { return t.joinable(); }
 
@@ -69,5 +66,5 @@ public:
 
   const std::thread &as_thread() const noexcept { return t; }
 };
-
+} // namespace utils
 #endif

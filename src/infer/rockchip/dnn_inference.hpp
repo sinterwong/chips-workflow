@@ -11,7 +11,7 @@
 #ifndef __RKNN_INFERENCE_H_
 #define __RKNN_INFERENCE_H_
 
-#include "inference.h"
+#include "inference.hpp"
 #include "logger/logger.hpp"
 
 

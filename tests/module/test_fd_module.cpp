@@ -1,12 +1,12 @@
 #include <gflags/gflags.h>
 
-#include "backend.h"
-#include "boostMessage.h"
-#include "frameDifferenceModule.h"
+#include "backend.hpp"
+#include "boostMessage.hpp"
+#include "frameDifferenceModule.hpp"
 #include "infer/algorithmManager.hpp"
-#include "joining_thread.h"
+#include "joining_thread.hpp"
 #include "logger/logger.hpp"
-#include "streamModule.h"
+#include "streamModule.hpp"
 
 DEFINE_string(uri, "", "Specify the url of video.");
 DEFINE_double(thre, 0.01, "Specify the threshold for frame diff.");
@@ -41,12 +41,12 @@ int main(int argc, char **argv) {
   streamModule.addSendModule("frameDiff");
   fdModule.addRecvModule("stream");
 
-  joining_thread steamThread([&streamModule]() {
+  ::utils::joining_thread steamThread([&streamModule]() {
     FLOWENGINE_LOGGER_INFO("streamModule go!");
     streamModule.go();
   });
 
-  joining_thread statusThread([&fdModule]() {
+  ::utils::joining_thread statusThread([&fdModule]() {
     FLOWENGINE_LOGGER_INFO("fdModule go!");
     fdModule.go();
   });

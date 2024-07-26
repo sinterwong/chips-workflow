@@ -15,11 +15,10 @@
 #include <vector>
 
 namespace infer::vision {
-
 class YoloPDet : public Keypoints {
-  //!
-  //! \brief construction
-  //!
+  //   //!
+  //   //! \brief construction
+  //   //!
 public:
   explicit YoloPDet(const AlgoConfig &_param, ModelInfo const &info)
       : Keypoints(_param, info) {}

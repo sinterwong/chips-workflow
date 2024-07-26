@@ -1,5 +1,5 @@
 /**
- * @file trt_inference.hpp
+ * @file trt_inference.hpppp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1
@@ -12,7 +12,7 @@
 #ifndef __TRT_INFERENCE_H_
 #define __TRT_INFERENCE_H_
 #include "NvInfer.h"
-#include "inference.h"
+#include "inference.hpp"
 #include "jetson/argsParser.h"
 #include "jetson/buffers.h"
 #include "jetson/common.h"

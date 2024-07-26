@@ -24,7 +24,6 @@ const auto initLogger = []() -> decltype(auto) {
   return true;
 }();
 
-using namespace infer;
 using namespace common;
 using algo_ptr = std::shared_ptr<AlgoInfer>;
 
@@ -34,7 +33,8 @@ const std::wstring_view charsets =
 
 algo_ptr getVision(AlgoConfig &&config) {
 
-  std::shared_ptr<AlgoInfer> vision = std::make_shared<VisionInfer>(config);
+  std::shared_ptr<AlgoInfer> vision =
+      std::make_shared<infer::VisionInfer>(config);
   if (!vision->init()) {
     FLOWENGINE_LOGGER_ERROR("Failed to init vision");
     std::exit(-1); // 强制中断
@@ -137,10 +137,12 @@ void fourPointTransform(cv::Mat &input, cv::Mat &output,
 // 按照左上、右上、右下、左下的顺序排序
 void sortFourPoints(Points2f &points) {
   assert(points.size() == 4);
-  Point2f x1y1, x2y2, x3y3, x4y4;
+  infer::Point2f x1y1, x2y2, x3y3, x4y4;
   // 先对x排序，取出前两个根据y的大小决定左上和左下，后两个点根据y的大小决定右上和右下
   std::sort(points.begin(), points.end(),
-            [](Point2f const &p1, Point2f const &p2) { return p1.x < p2.x; });
+            [](infer::Point2f const &p1, infer::Point2f const &p2) {
+              return p1.x < p2.x;
+            });
   if (points[0].y <= points[1].y) {
     x1y1 = points[0];
     x4y4 = points[1];

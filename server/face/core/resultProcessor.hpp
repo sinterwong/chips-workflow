@@ -11,11 +11,11 @@
  *
  */
 
-#include "common/thread_pool.h"
 #include "faceLibManager.hpp"
 #include "faceRecognition.hpp"
 #include "logger/logger.hpp"
 #include "networkUtils.hpp"
+#include "utils/thread_pool.hpp"
 #include <cstddef>
 #include <curl/curl.h>
 #include <memory>
@@ -50,7 +50,7 @@ public:
 
 private:
   ResultProcessor() {
-    tpool = std::make_unique<thread_pool>();
+    tpool = std::make_unique<utils::thread_pool>();
     tpool->start(4);
   }
   ~ResultProcessor() {
@@ -61,7 +61,7 @@ private:
 
 private:
   // 执行一次算法任务
-  std::unique_ptr<thread_pool> tpool;
+  std::unique_ptr<utils::thread_pool> tpool;
 
 private:
   void oneProcess(std::string const &lname, FramePackage framePackage,

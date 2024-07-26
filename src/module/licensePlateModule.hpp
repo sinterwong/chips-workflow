@@ -11,7 +11,7 @@
 #ifndef __METAENGINE_LICENSE_PLATE_MODULE_H_
 #define __METAENGINE_LICENSE_PLATE_MODULE_H_
 
-#include "alarmUtils.h"
+#include "alarmUtils.hpp"
 #include "module.hpp"
 #include <codecvt>
 #include <locale>

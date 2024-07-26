@@ -9,10 +9,10 @@
  *
  */
 
-#include "alarmOutputModule.h"
+#include "alarmOutputModule.hpp"
 #include "logger/logger.hpp"
-#include "messageBus.h"
-#include "outputModule.h"
+#include "messageBus.hpp"
+#include "outputModule.hpp"
 #include <chrono>
 #include <fstream>
 #include <opencv2/imgcodecs.hpp>
@@ -22,6 +22,12 @@
 using json = nlohmann::json;
 
 namespace module {
+
+static size_t curl_callback(void *ptr, size_t size, size_t nmemb,
+                            std::string *data) {
+  data->append((char *)ptr, size * nmemb);
+  return size * nmemb;
+}
 
 CURLcode AlarmOutputModule::postResult(std::string const &url,
                                        AlarmInfo const &alarmInfo,
@@ -89,7 +95,4 @@ void AlarmOutputModule::forward(std::vector<forwardMessage> &message) {
     }
   }
 }
-
-FlowEngineModuleRegister(AlarmOutputModule, backend_ptr, std::string const &,
-                         MessageType const &, ModuleConfig &);
 } // namespace module

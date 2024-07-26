@@ -10,10 +10,11 @@
  */
 
 #include "visionInfer.hpp"
-#include "common/factory.hpp"
 #include "logger/logger.hpp"
 #include "preprocess.hpp"
+#include "utils/factory.hpp"
 #include "vision.hpp"
+#include "visionRegister.hpp"
 #include <cstdlib>
 #include <memory>
 #include <mutex>
@@ -22,11 +23,15 @@
 #include <opencv2/imgcodecs.hpp>
 #include <variant>
 
+using namespace utils;
+
 namespace infer {
 using common::InferResult;
 using common::RetPoly;
 
 bool VisionInfer::init() {
+
+  vision::VisionRegistrar::getInstance();
 
   std::string aserial;
   config.visitParams([this, &aserial](auto const &params) {
@@ -117,5 +122,4 @@ bool VisionInfer::infer(FrameInfo &frame, const InferParams &params,
 }
 
 bool VisionInfer::destory() noexcept { return true; }
-
 } // namespace infer

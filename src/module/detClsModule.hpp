@@ -14,7 +14,7 @@
 
 #include "module.hpp"
 
-#include "alarmUtils.h"
+#include "alarmUtils.hpp"
 
 using common::DetClsMonitor;
 using common::ModuleConfig;

@@ -19,25 +19,24 @@
 
 #include "common/common.hpp"
 #include "logger/logger.hpp"
-#include "messageBus.h"
+#include "messageBus.hpp"
 #include "module.hpp"
 #include "videoDecode.hpp"
 
 using common::ModuleConfig;
 using common::StreamBase;
-using namespace video;
 
 namespace module {
 
 class StreamModule : public Module {
 
-using TIMEPOINT = std::chrono::time_point<std::chrono::high_resolution_clock>;
+  using TIMEPOINT = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
 private:
   // CameraResult cameraResult;
   std::unique_ptr<StreamBase> config;
 
-  std::unique_ptr<VideoDecode> decoder;
+  std::unique_ptr<video::VideoDecode> decoder;
 
   void messageListener(); // 监听外部消息
 

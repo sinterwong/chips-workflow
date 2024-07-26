@@ -16,8 +16,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "common/concurrentqueue.h"
-#include "messageBus.h"
+#include "utils/concurrentqueue.h"
+#include "messageBus.hpp"
 
 using cqueue = moodycamel::ConcurrentQueue<queueMessage>;
 using cqueue_ptr = std::shared_ptr<cqueue>;

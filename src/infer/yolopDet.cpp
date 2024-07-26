@@ -64,7 +64,4 @@ void YoloPDet::generateKeypointsBoxes(
     m[kBox.bbox.class_id].push_back(kBox);
   }
 }
-
-FlowEngineModuleRegister(YoloPDet, AlgoConfig const &, ModelInfo const &);
-
 } // namespace infer::vision

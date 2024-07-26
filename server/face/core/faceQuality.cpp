@@ -20,8 +20,6 @@
 #include <opencv2/imgproc.hpp>
 #include <tuple>
 
-using namespace infer;
-
 using namespace common;
 
 namespace server::face::core {
@@ -48,7 +46,8 @@ bool FaceQuality::infer(FramePackage const &framePackage, int &quality) {
   frame.inputShape = {framePackage.frame->cols, framePackage.frame->rows,
                       framePackage.frame->channels()};
 
-  frame.shape = getInferShape(framePackage.frame->cols, framePackage.frame->rows);
+  frame.shape =
+      getInferShape(framePackage.frame->cols, framePackage.frame->rows);
   frame.type = getPlatformColorType();
 
   // 人脸检测
@@ -65,8 +64,8 @@ bool FaceQuality::infer(FramePackage const &framePackage, int &quality) {
   }
 
   // 获取最靠近中心的人脸
-  size_t index = utils::findClosestBBoxIndex(*kbboxes, framePackage.frame->cols,
-                                             framePackage.frame->rows);
+  size_t index = infer::utils::findClosestBBoxIndex(
+      *kbboxes, framePackage.frame->cols, framePackage.frame->rows);
 
   auto kbbox = kbboxes->at(index);
 
@@ -103,7 +102,7 @@ bool FaceQuality::infer(FramePackage const &framePackage, int &quality) {
   convertInputToBGRByType(faceImage, faceImageBGR);
   float sharpness, brightness;
   std::tie(sharpness, brightness) =
-      utils::sharpnessAndBrightnessScore(faceImageBGR);
+      infer::utils::sharpnessAndBrightnessScore(faceImageBGR);
 
   if (sharpness <= 0.4 || brightness <= 0.4) {
     quality = 3;
@@ -114,7 +113,7 @@ bool FaceQuality::infer(FramePackage const &framePackage, int &quality) {
 
   // 4. 角度
   float pitch, yaw, roll;
-  utils::points5angle(kbbox.points, pitch, yaw, roll);
+  infer::utils::points5angle(kbbox.points, pitch, yaw, roll);
   // pitch 为仰头角度，yaw 为左右转头角度，roll 为摇头角度
   if (pitch >= 30 || yaw >= 35 || roll >= 30) {
     quality = 4;
@@ -168,7 +167,7 @@ bool FaceQuality::getFaceInput(cv::Mat const &input, cv::Mat &output,
   h = static_cast<int>(bbox.bbox[3]) - y;
 
   cv::Rect retBox{x, y, w, h};
-  if (!utils::cropImage(input, output, retBox, type)) {
+  if (!infer::utils::cropImage(input, output, retBox, type)) {
     FLOWENGINE_LOGGER_ERROR("Crop image failed!");
     return false;
   }

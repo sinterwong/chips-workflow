@@ -37,7 +37,6 @@ static std::string KEYPOINT_MODEL_PATH =
 
 enum class AlgoType { DET, REC, QUALITY, KEYPOINT };
 
-using namespace infer;
 using namespace common;
 
 using algo_ptr = std::shared_ptr<AlgoInfer>;
@@ -53,7 +52,8 @@ private:
 private:
   algo_ptr getVision(AlgoConfig &&config) {
 
-    std::shared_ptr<AlgoInfer> vision = std::make_shared<VisionInfer>(config);
+    std::shared_ptr<AlgoInfer> vision =
+        std::make_shared<infer::VisionInfer>(config);
     if (!vision->init()) {
       FLOWENGINE_LOGGER_ERROR("Failed to init vision");
       std::exit(-1); // 强制中断

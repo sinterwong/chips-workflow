@@ -64,6 +64,4 @@ void FaceKeyPoints::generateKeypoints(KeypointsRet &kps, void **outputs) const {
   }
 }
 
-FlowEngineModuleRegister(FaceKeyPoints, AlgoConfig const &, ModelInfo const &);
-
 } // namespace infer::vision

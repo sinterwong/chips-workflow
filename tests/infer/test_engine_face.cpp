@@ -14,7 +14,6 @@ DEFINE_string(img1, "", "Specify face1 image path.");
 DEFINE_string(img2, "", "Specify face2 image path.");
 DEFINE_string(model_path, "", "Specify the yolo model path.");
 
-using namespace infer;
 using namespace common;
 
 std::vector<float> getFeature(std::string &imPath,
@@ -80,7 +79,8 @@ int main(int argc, char **argv) {
   // center.setParams(det_config);
   center.setParams(config);
 
-  std::shared_ptr<AlgoInfer> vision = std::make_shared<VisionInfer>(center);
+  std::shared_ptr<AlgoInfer> vision =
+      std::make_shared<infer::VisionInfer>(center);
   if (!vision->init()) {
     FLOWENGINE_LOGGER_ERROR("Failed to init vision");
     return -1;
