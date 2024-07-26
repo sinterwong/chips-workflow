@@ -10,8 +10,8 @@
  */
 #include "crnnRec.hpp"
 #include "charsRec.hpp"
-#include "common/factory.hpp"
 #include "logger/logger.hpp"
+#include "utils/factory.hpp"
 
 #include <algorithm>
 
@@ -43,6 +43,4 @@ CharsRet CRNN::generateChars(void **outputs) const {
   }
   return decodeChars(predIds);
 }
-
-FlowEngineModuleRegister(CRNN, AlgoConfig const &, ModelInfo const &);
 } // namespace infer::vision

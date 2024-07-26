@@ -10,8 +10,8 @@
  */
 
 #include "faceDBOperator.hpp"
-#include "common/myBase64.hpp"
 #include "faceLibManager.hpp"
+#include "utils/myBase64.hpp"
 #include <memory>
 
 namespace server::face::core {
@@ -24,7 +24,7 @@ void FaceDBOperator::getIdsAndFeatures(
   for (auto &user : *users) {
     auto id = user->id;
     auto feature = user->feature;
-    auto ret = flowengine::core::Base64::decode(feature);
+    auto ret = utils::Base64::decode(feature);
     // 确保解码后的字符串大小是浮点数大小的整数倍
     if (ret.size() % sizeof(float) != 0) {
       throw std::runtime_error(

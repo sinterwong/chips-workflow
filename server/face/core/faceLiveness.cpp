@@ -14,8 +14,6 @@
 #include "logger/logger.hpp"
 #include "postprocess.hpp"
 
-using namespace infer;
-
 using namespace common;
 
 namespace server::face::core {

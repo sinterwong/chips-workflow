@@ -18,8 +18,6 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/imgcodecs.hpp>
 
-using namespace infer;
-
 using namespace common;
 
 const auto initLogger = []() -> decltype(auto) {

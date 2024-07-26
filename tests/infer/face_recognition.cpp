@@ -23,7 +23,6 @@ DEFINE_string(img, "", "Specify a image which contains some face path.");
 DEFINE_string(det_model_path, "", "Specify the model path of FaceDet.");
 DEFINE_string(rec_model_path, "", "Specify the model path of FaceRec.");
 
-using namespace infer;
 using namespace common;
 using algo_ptr = std::shared_ptr<AlgoInfer>;
 
@@ -34,7 +33,8 @@ const auto initLogger = []() -> decltype(auto) {
 
 algo_ptr getVision(AlgoConfig &&config) {
 
-  std::shared_ptr<AlgoInfer> vision = std::make_shared<VisionInfer>(config);
+  std::shared_ptr<AlgoInfer> vision =
+      std::make_shared<infer::VisionInfer>(config);
   if (!vision->init()) {
     FLOWENGINE_LOGGER_ERROR("Failed to init vision");
     std::exit(-1); // 强制中断
@@ -188,14 +188,14 @@ int main(int argc, char **argv) {
 
     // TODO 基于5个点的人脸关键点矫正
     std::string prefix = std::to_string(rand() % 1000);
-    utils::NV12toRGB(ori_face_nv12, ori_face_rgb);
+    infer::utils::NV12toRGB(ori_face_nv12, ori_face_rgb);
     cv::imwrite(prefix + "_ori_face.jpg", ori_face_rgb);
 
     cv::Mat aligned_face_rgb = normCrop(image_rgb, points, 112);
     cv::imwrite(prefix + "_aligned_face.jpg", aligned_face_rgb);
 
     cv::Mat aligned_face_nv12;
-    utils::RGB2NV12(aligned_face_rgb, aligned_face_nv12);
+    infer::utils::RGB2NV12(aligned_face_rgb, aligned_face_nv12);
 
     // TODO 人脸特征提取
     InferResult faceRecRet;

@@ -1,12 +1,12 @@
 #include <gflags/gflags.h>
 
-#include "backend.h"
-#include "boostMessage.h"
+#include "backend.hpp"
+#include "boostMessage.hpp"
 #include "infer/algorithmManager.hpp"
-#include "joining_thread.h"
+#include "joining_thread.hpp"
 #include "logger/logger.hpp"
-#include "statusOutputModule.h"
-#include "streamModule.h"
+#include "statusOutputModule.hpp"
+#include "streamModule.hpp"
 
 DEFINE_string(uri, "", "Specify the url of video.");
 
@@ -38,12 +38,12 @@ int main(int argc, char **argv) {
   streamModule.addSendModule("statusOutput");
   statusOutputModule.addRecvModule("stream");
 
-  joining_thread steamThread([&streamModule]() {
+  ::utils::joining_thread steamThread([&streamModule]() {
     FLOWENGINE_LOGGER_INFO("streamModule go!");
     streamModule.go();
   });
 
-  joining_thread statusThread([&statusOutputModule]() {
+  ::utils::joining_thread statusThread([&statusOutputModule]() {
     FLOWENGINE_LOGGER_INFO("statusOutputModule go!");
     statusOutputModule.go();
   });

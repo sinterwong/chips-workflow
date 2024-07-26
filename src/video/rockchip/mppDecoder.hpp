@@ -13,8 +13,8 @@
 #define __DECODER_FOR_X3_H_
 
 #include "ffstream.hpp"
-#include "joining_thread.h"
 #include "logger/logger.hpp"
+#include "utils/joining_thread.hpp"
 #include "video_common.hpp"
 #include <atomic>
 #include <condition_variable>
@@ -78,7 +78,7 @@ public:
 private:
   videoOptions mOptions;
   std::unique_ptr<utils::FFStream> stream;
-  std::unique_ptr<joining_thread> producter;
+  std::unique_ptr<::utils::joining_thread> producter;
 };
 } // namespace video
 #endif

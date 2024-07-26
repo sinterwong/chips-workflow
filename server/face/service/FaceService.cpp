@@ -89,7 +89,7 @@ bool FaceService::extractFeature(std::string const &url,
 std::string FaceService::feature2base64(std::vector<float> &feature) {
   uchar *temp = reinterpret_cast<uchar *>(feature.data());
   std::vector<uchar> vec(temp, temp + feature.size() * sizeof(float));
-  return flowengine::core::Base64::encode(vec);
+  return utils::Base64::encode(vec);
 }
 
 oatpp::Object<StatusDto> FaceService::createUser(oatpp::String const &idNumber,

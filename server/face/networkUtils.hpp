@@ -11,16 +11,13 @@
 #ifndef __SERVER_NETWORK_UTILS_HPP_
 #define __SERVER_NETWORK_UTILS_HPP_
 
-#include "common/myBase64.hpp"
+#include "utils/myBase64.hpp"
 #include <curl/curl.h>
+#include <filesystem>
 #include <memory>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <string>
-// #include <filesystem>
-#include <experimental/filesystem>
-
-using namespace std::experimental;
 
 inline size_t curl_callback(void *ptr, size_t size, size_t nmemb,
                             std::string *data) {
@@ -143,13 +140,13 @@ inline std::string mat2str(cv::Mat const &m) {
   cv::imencode(".jpg", m, buf, std::vector<int>(params, params + 2));
   uchar *result = reinterpret_cast<uchar *>(&buf[0]);
   std::vector<uint8_t> data(result, result + buf.size());
-  std::string ret = flowengine::core::Base64::encode(data);
+  std::string ret = utils::Base64::encode(data);
   return ret;
 }
 
 inline std::shared_ptr<cv::Mat> str2mat(const std::string &s) {
   // Decode data
-  auto data = flowengine::core::Base64::decode(s);
+  auto data = utils::Base64::decode(s);
   cv::Mat img = imdecode(data, cv::IMREAD_UNCHANGED);
   if (img.empty()) {
     return nullptr;
@@ -167,7 +164,7 @@ inline std::shared_ptr<cv::Mat> getImageByUri(const std::string &uri) {
     image_bgr = str2mat(uri);
   } else {
     // 不是http或base64，那么就是本地路径
-    if (filesystem::exists(uri)) {
+    if (std::filesystem::exists(uri)) {
       image_bgr = std::make_shared<cv::Mat>(cv::imread(uri));
     }
   }

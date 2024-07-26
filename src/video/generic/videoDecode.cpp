@@ -35,7 +35,8 @@ bool VideoDecode::start(const std::string &uri, int w, int h) {
     FLOWENGINE_LOGGER_ERROR("Can't open stream {}", uri);
     return false;
   }
-  consumer = std::make_unique<joining_thread>(&VideoDecode::consumeFrame, this);
+  consumer =
+      std::make_unique<utils::joining_thread>(&VideoDecode::consumeFrame, this);
   FLOWENGINE_LOGGER_INFO("The stream had started {}", uri);
   return true;
 }

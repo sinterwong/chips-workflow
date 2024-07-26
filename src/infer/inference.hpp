@@ -1,5 +1,5 @@
 /**
- * @file inference.h
+ * @file inference.hpp
  * @author Sinter Wong (sintercver@gmail.com)
  * @brief
  * @version 0.1

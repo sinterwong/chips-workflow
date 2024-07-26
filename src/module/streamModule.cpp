@@ -9,10 +9,10 @@
  * @copyright Copyright (c) 2022
  *
  */
-#include "streamModule.h"
+#include "streamModule.hpp"
 #include "framePool.hpp"
 #include "logger/logger.hpp"
-#include "messageBus.h"
+#include "messageBus.hpp"
 #include <array>
 #include <chrono>
 #include <memory>
@@ -117,13 +117,13 @@ void StreamModule::step() {
 
 void StreamModule::beforeForward() {
   // 此处会悬停等待解码器（即使是收到了Close信号依然会继续排队）
-  decoder = FIFOVideoDecoderPool::getInstance().acquire();
+  decoder = video::FIFOVideoDecoderPool::getInstance().acquire();
 
   // 启动解码器
   if (!decoder->start(config->uri)) {
     FLOWENGINE_LOGGER_ERROR("StreamModule is failed to open {}!", config->uri);
     // 归还解码器
-    FIFOVideoDecoderPool::getInstance().release(std::move(decoder));
+    video::FIFOVideoDecoderPool::getInstance().release(std::move(decoder));
     decoder = nullptr;
     // 等待一会再回去排队
     std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -169,12 +169,9 @@ void StreamModule::startup() {
 void StreamModule::afterForward() {
   // 此时意味着需要对decoder进行归还
   if (decoder) {
-    FIFOVideoDecoderPool::getInstance().release(std::move(decoder));
+    video::FIFOVideoDecoderPool::getInstance().release(std::move(decoder));
     decoder = nullptr;
     FLOWENGINE_LOGGER_DEBUG("{} has finished!", name);
   }
 }
-
-FlowEngineModuleRegister(StreamModule, backend_ptr, std::string const &,
-                         MessageType const &, ModuleConfig &);
 } // namespace module

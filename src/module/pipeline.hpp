@@ -13,13 +13,13 @@
 #define __METAENGINE_STATUE_CONTROL_H
 
 #include "algorithmManager.hpp"
-#include "backend.h"
-#include "boostMessage.h"
+#include "backend.hpp"
+#include "boostMessage.hpp"
 #include "common/common.hpp"
-#include "common/thread_pool.h"
 #include "configParser.hpp"
 #include "logger/logger.hpp"
 #include "module.hpp"
+#include "utils/thread_pool.hpp"
 
 #include <algorithm>
 #include <any>
@@ -128,7 +128,7 @@ private:
 
   void updateAlgorithms(const std::vector<AlgorithmParams> &algorithms);
 
-  void updatePipelines(const std::vector<PipelineParams> &pipelines);
+  bool updatePipelines(const std::vector<PipelineParams> &pipelines);
 
 public:
   PipelineModule(std::string const &config_, size_t workers_n);

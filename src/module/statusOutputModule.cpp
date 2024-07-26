@@ -9,7 +9,7 @@
  *
  */
 
-#include "statusOutputModule.h"
+#include "statusOutputModule.hpp"
 #include <chrono>
 #include <fstream>
 
@@ -18,6 +18,12 @@
 using json = nlohmann::json;
 
 namespace module {
+
+static size_t curl_callback(void *ptr, size_t size, size_t nmemb,
+                            std::string *data) {
+  data->append((char *)ptr, size * nmemb);
+  return size * nmemb;
+}
 
 CURLcode StatusOutputModule::postResult(std::string const &url,
                                         StatusInfo const &statusInfo,
@@ -72,6 +78,4 @@ void StatusOutputModule::forward(std::vector<forwardMessage> &message) {
   }
   std::this_thread::sleep_for(std::chrono::seconds(1));
 }
-FlowEngineModuleRegister(StatusOutputModule, backend_ptr, std::string const &,
-                         MessageType const &, ModuleConfig &);
 } // namespace module

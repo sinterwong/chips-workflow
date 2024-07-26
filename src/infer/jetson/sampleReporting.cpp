@@ -22,7 +22,7 @@
 #include <numeric>
 #include <utility>
 
-#include "jetson/sampleInference.h"
+#include "jetson/sampleinference.hpp"
 #include "jetson/sampleOptions.h"
 #include "jetson/sampleReporting.h"
 

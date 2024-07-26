@@ -9,8 +9,8 @@
  *
  */
 
-#include "frameDifferenceModule.h"
-#include "frame_difference.h"
+#include "frameDifferenceModule.hpp"
+#include "frame_difference.hpp"
 #include "logger/logger.hpp"
 #include "video_utils.hpp"
 #include <algorithm>
@@ -111,6 +111,4 @@ void FrameDifferenceModule::forward(std::vector<forwardMessage> &message) {
     break;
   }
 }
-FlowEngineModuleRegister(FrameDifferenceModule, backend_ptr,
-                         std::string const &, MessageType &, ModuleConfig &);
 } // namespace module

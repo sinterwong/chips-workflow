@@ -16,7 +16,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-namespace flowengine::core {
+namespace utils {
 class Base64 {
 public:
   static std::string encode(const std::vector<uint8_t> &input) {
@@ -97,6 +97,6 @@ private:
       {'8', 60}, {'9', 61}, {'+', 62}, {'/', 63}};
 };
 
-} // namespace flowengine::core
+} // namespace utils
 
 #endif

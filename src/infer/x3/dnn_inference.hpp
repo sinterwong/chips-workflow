@@ -12,7 +12,7 @@
 #ifndef __X3_INFERENCE_H_
 #define __X3_INFERENCE_H_
 
-#include "inference.h"
+#include "inference.hpp"
 #include "logger/logger.hpp"
 
 #include <memory>

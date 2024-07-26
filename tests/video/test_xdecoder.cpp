@@ -13,8 +13,6 @@
 #include <tuple>
 #include <vector>
 
-using namespace video;
-
 DEFINE_string(file_path, "", "Specify the file of url path.");
 DEFINE_int32(start, 0, "stream start index.");
 DEFINE_int32(end, -1, "stream end index.");

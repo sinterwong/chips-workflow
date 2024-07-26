@@ -9,7 +9,7 @@
  *
  */
 
-#include "detClsModule.h"
+#include "detClsModule.hpp"
 #include "logger/logger.hpp"
 #include "video_utils.hpp"
 
@@ -184,7 +184,4 @@ void DetClsModule::forward(std::vector<forwardMessage> &message) {
     }
   }
 }
-
-FlowEngineModuleRegister(DetClsModule, backend_ptr, std::string const &,
-                         MessageType const &, ModuleConfig &);
 } // namespace module

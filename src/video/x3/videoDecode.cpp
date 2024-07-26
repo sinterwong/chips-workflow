@@ -9,8 +9,8 @@
  *
  */
 #include "videoDecode.hpp"
-#include "common/joining_thread.h"
 #include "logger/logger.hpp"
+#include "utils/joining_thread.hpp"
 #include <cstdint>
 #include <memory>
 #include <mutex>
@@ -58,7 +58,8 @@ bool VideoDecode::start(const std::string &uri, int w, int h) {
       return false;
     }
   }
-  consumer = std::make_unique<joining_thread>(&VideoDecode::consumeFrame, this);
+  consumer = std::make_unique<::utils::joining_thread>(
+      &VideoDecode::consumeFrame, this);
   FLOWENGINE_LOGGER_INFO("The stream had started {}",
                          stream->GetResource().string);
   return true;

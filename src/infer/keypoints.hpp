@@ -9,14 +9,14 @@
  *
  */
 
-#include "common/factory.hpp"
+#include "utils/factory.hpp"
 #include "vision.hpp"
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
-#ifndef __INFERENCE_VISION_DETECTION_H_
-#define __INFERENCE_VISION_DETECTION_H_
+#ifndef __INFERENCE_VISION_KEYPOINTS_H_
+#define __INFERENCE_VISION_KEYPOINTS_H_
 namespace infer::vision {
 class Keypoints : public Vision {
   //!

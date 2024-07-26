@@ -12,6 +12,6 @@
 #ifndef __FLOWENGINE_PLATFORM_INFO_HPP_
 #define __FLOWENGINE_PLATFORM_INFO_HPP_
 
-namespace common {} // namespace common
+namespace utils {} // namespace utils
 
 #endif // __FLOWENGINE_PLATFORM_INFO_HPP_

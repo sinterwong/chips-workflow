@@ -37,7 +37,4 @@ void Yolo::generateBoxes(std::unordered_map<int, BBoxes> &m,
     m[det.class_id].push_back(det);
   }
 }
-
-FlowEngineModuleRegister(Yolo, AlgoConfig const &, ModelInfo const &);
-
 } // namespace infer::vision

@@ -21,6 +21,4 @@ void FaceNet::generateFeature(void **outputs, Eigenvector &feature) const {
     feature.push_back(output[i]);
   }
 }
-
-FlowEngineModuleRegister(FaceNet, AlgoConfig const &, ModelInfo const &);
 } // namespace infer::vision
