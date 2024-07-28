@@ -38,7 +38,7 @@
 #include "jetson/logger.h"
 #include "jetson/sampleDevice.h"
 #include "jetson/sampleEngines.h"
-#include "jetson/sampleInference.h"
+#include "jetson/sampleinference.hpp"
 #include "jetson/sampleOptions.h"
 #include "jetson/sampleReporting.h"
 

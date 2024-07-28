@@ -12,9 +12,9 @@
 #ifndef __DECODER_FOR_X3_H_
 #define __DECODER_FOR_X3_H_
 
-#include "common/joining_thread.h"
 #include "ffstream.hpp"
 #include "logger/logger.hpp"
+#include "utils/joining_thread.hpp"
 #include "videoSource.hpp"
 #include "video_common.hpp"
 
@@ -110,7 +110,7 @@ public:
     yuv_data = new char[yuv_size];
     // raw_data = malloc(mOptions->width * mOptions->height * 3 * sizeof(char));
     mStreaming.store(true);
-    producter = std::make_unique<joining_thread>([this]() {
+    producter = std::make_unique<::utils::joining_thread>([this]() {
       isClosed.store(false);
       // 优化成一个条件变量
       while (!mTerminate.load() && stream && stream->isRunning()) {
@@ -249,7 +249,7 @@ private:
     decoder = sp_init_decoder_module();
     return true;
   }
-  std::unique_ptr<joining_thread> producter;
+  std::unique_ptr<::utils::joining_thread> producter;
 
   void releaseDecoderResource() {
     // 停止解码

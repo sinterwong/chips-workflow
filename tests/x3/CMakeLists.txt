@@ -27,7 +27,6 @@ LINK_LIBRARIES(
     stdc++fs
 )
 
-SET(LINK "-Wl,--no-as-needed")
 FILE(MAKE_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/x3)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_OUTPUT_DIR}/bin/x3)
 FILE(GLOB APP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
@@ -36,9 +35,4 @@ FOREACH(sourcefile ${APP_SOURCES})
     STRING(REGEX MATCH "[^/]+$" sourcefilewithoutpath ${sourcefile})
     STRING(REPLACE ".cpp" "" testname ${sourcefilewithoutpath})
     ADD_EXECUTABLE( ${testname} ${sourcefile})
-
-    # INSTALL(TARGETS ${testname}
-    #     ARCHIVE DESTINATION lib
-    #     LIBRARY DESTINATION lib
-    #     RUNTIME DESTINATION bin)
 ENDFOREACH(sourcefile ${APP_SOURCES})

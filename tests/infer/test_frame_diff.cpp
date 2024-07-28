@@ -9,7 +9,7 @@
  *
  */
 
-#include "frame_difference.h"
+#include "frame_difference.hpp"
 #include "logger/logger.hpp"
 #include "preprocess.hpp"
 #include "videoDecode.hpp"

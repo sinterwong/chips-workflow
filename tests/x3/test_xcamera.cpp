@@ -5,11 +5,9 @@
 #include <opencv2/imgcodecs.hpp>
 #include <string>
 
-using namespace video;
-
 int main(int argc, char **argv) {
-  videoOptions opt{std::string("csi://0"), 1920, 1080, 25, 0};
-  std::unique_ptr<XCamera> camera = XCamera::Create(opt);
+  video::videoOptions opt{std::string("csi://0"), 1920, 1080, 25, 0};
+  std::unique_ptr<video::XCamera> camera = video::XCamera::Create(opt);
 
   void *image;
   int count = 500;

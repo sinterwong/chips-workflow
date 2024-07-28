@@ -9,7 +9,7 @@
  *
  */
 
-#include "objectCounterModule.h"
+#include "objectCounterModule.hpp"
 #include "logger/logger.hpp"
 
 #include <cassert>
@@ -149,6 +149,4 @@ void ObjectCounterModule::forward(std::vector<forwardMessage> &message) {
   }
 }
 
-FlowEngineModuleRegister(ObjectCounterModule, backend_ptr, std::string const &,
-                         MessageType const &, ModuleConfig &);
 } // namespace module

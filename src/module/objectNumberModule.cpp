@@ -9,7 +9,7 @@
  *
  */
 
-#include "objectNumberModule.h"
+#include "objectNumberModule.hpp"
 #include "logger/logger.hpp"
 #include "video_utils.hpp"
 
@@ -136,7 +136,4 @@ void ObjectNumberModule::forward(std::vector<forwardMessage> &message) {
     }
   }
 }
-
-FlowEngineModuleRegister(ObjectNumberModule, backend_ptr, std::string const &,
-                         MessageType const &, ModuleConfig &);
 } // namespace module

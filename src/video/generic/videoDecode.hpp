@@ -12,9 +12,9 @@
 #ifndef __FLOWENGINE_GENERIC_VIDEO_DECODE_H_
 #define __FLOWENGINE_GENERIC_VIDEO_DECODE_H_
 #include "common/common.hpp"
-#include "common/joining_thread.h"
 #include "ffstream.hpp"
 #include "logger/logger.hpp"
+#include "utils/joining_thread.hpp"
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
@@ -30,7 +30,7 @@ class VideoDecode : private VDecoder {
 private:
   std::shared_mutex stream_m;
   std::unique_ptr<FFStream> stream;
-  std::unique_ptr<joining_thread> consumer; // 消费者
+  std::unique_ptr<::utils::joining_thread> consumer; // 消费者
 
   void consumeFrame();
 

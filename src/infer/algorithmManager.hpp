@@ -10,7 +10,7 @@
  */
 
 #include "algoInfer.hpp"
-#include "algorithmBus.h"
+#include "algorithmBus.hpp"
 #include <algorithm>
 #include <memory>
 #include <shared_mutex>

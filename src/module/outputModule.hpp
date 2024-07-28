@@ -17,7 +17,7 @@
 #include <memory>
 #include <vector>
 
-#include "messageBus.h"
+#include "messageBus.hpp"
 
 #include "logger/logger.hpp"
 #include "module.hpp"
@@ -27,12 +27,6 @@
 namespace module {
 using common::ModuleConfig;
 using common::OutputBase;
-
-static size_t curl_callback(void *ptr, size_t size, size_t nmemb,
-                            std::string *data) {
-  data->append((char *)ptr, size * nmemb);
-  return size * nmemb;
-}
 
 class OutputModule : public Module {
 protected:

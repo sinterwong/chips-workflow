@@ -15,7 +15,6 @@
 #include <vector>
 
 namespace infer::vision {
-
 class Yolov8PDet : public Keypoints {
   //!
   //! \brief construction
@@ -30,6 +29,7 @@ private:
   virtual void generateKeypointsBoxes(std::unordered_map<int, KeypointsBoxes> &,
                                       void **) const override;
 };
+
 } // namespace infer::vision
 
 #endif

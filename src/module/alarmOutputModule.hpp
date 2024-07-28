@@ -18,11 +18,11 @@
 #include <string>
 #include <vector>
 
-#include "messageBus.h"
+#include "messageBus.hpp"
 
 #include "common/common.hpp"
 #include "logger/logger.hpp"
-#include "outputModule.h"
+#include "outputModule.hpp"
 
 namespace module {
 

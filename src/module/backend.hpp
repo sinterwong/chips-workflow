@@ -12,8 +12,8 @@
 #ifndef FLOWCORE_BACKEND_H
 #define FLOWCORE_BACKEND_H
 
-#include "algorithmBus.h"
-#include "messageBus.h"
+#include "algorithmBus.hpp"
+#include "messageBus.hpp"
 #include "streamPoolBus.hpp"
 #include <memory>
 #include <string>

@@ -13,8 +13,8 @@
 #ifndef __SERVER_FACE_CORE_STREAM_MANAGER_HPP_
 #define __SERVER_FACE_CORE_STREAM_MANAGER_HPP_
 
-#include "common/thread_pool.h"
 #include "resultProcessor.hpp"
+#include "utils/thread_pool.hpp"
 #include "videoDecode.hpp"
 #include <cstdint>
 #include <future>
@@ -52,7 +52,7 @@ public:
 
 private:
   StreamManager() {
-    tpool = std::make_unique<thread_pool>();
+    tpool = std::make_unique<utils::thread_pool>();
     tpool->start(DECODER_POOL_SIZE);
   }
 
@@ -67,7 +67,7 @@ private:
   static StreamManager *instance;
 
   // 初始化解码线程池
-  std::unique_ptr<thread_pool> tpool;
+  std::unique_ptr<utils::thread_pool> tpool;
   std::vector<std::future<void>> futures;
 
   // 流对应表

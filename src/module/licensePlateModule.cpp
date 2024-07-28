@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2023
  *
  */
-#include "licensePlateModule.h"
+#include "licensePlateModule.hpp"
 #include "infer/postprocess.hpp"
 #include "logger/logger.hpp"
 #include "video_utils.hpp"
@@ -147,7 +147,4 @@ void LicensePlateModule::forward(std::vector<forwardMessage> &message) {
     }
   }
 }
-
-FlowEngineModuleRegister(LicensePlateModule, backend_ptr, std::string const &,
-                         MessageType const &, ModuleConfig &);
 } // namespace module

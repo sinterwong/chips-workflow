@@ -26,7 +26,8 @@ bool FaceRecognition::extract(FramePackage const &framePackage,
   frame.inputShape = {framePackage.frame->cols, framePackage.frame->rows,
                       framePackage.frame->channels()};
 
-  frame.shape = getInferShape(framePackage.frame->cols, framePackage.frame->rows);
+  frame.shape =
+      getInferShape(framePackage.frame->cols, framePackage.frame->rows);
   frame.type = getPlatformColorType();
 
   // 人脸检测
@@ -43,8 +44,8 @@ bool FaceRecognition::extract(FramePackage const &framePackage,
   }
 
   // 获取最靠近中心的人脸
-  size_t index = utils::findClosestBBoxIndex(*kbboxes, framePackage.frame->cols,
-                                             framePackage.frame->rows);
+  size_t index = infer::utils::findClosestBBoxIndex(
+      *kbboxes, framePackage.frame->cols, framePackage.frame->rows);
 
   auto kbbox = kbboxes->at(index);
 
@@ -62,7 +63,7 @@ bool FaceRecognition::extract(FramePackage const &framePackage,
     return false;
   }
   feature = *std::get_if<std::vector<float>>(&faceRecRet.aRet);
-  utils::normalize_L2(feature.data(), feature.size());
+  infer::utils::normalize_L2(feature.data(), feature.size());
   return true;
 }
 
@@ -130,9 +131,9 @@ void FaceRecognition::getFaceInput(cv::Mat const &input, cv::Mat &output,
   }
   if (type == ColorType::NV12) {
     cv::Mat temp;
-    utils::NV12toRGB(input, temp);
+    infer::utils::NV12toRGB(input, temp);
     temp = normCrop(temp, cvPoints, 112);
-    utils::RGB2NV12(temp, output);
+    infer::utils::RGB2NV12(temp, output);
     frame.shape = {temp.cols, temp.rows, output.channels()};
   } else {
     output = normCrop(input, cvPoints, 112);

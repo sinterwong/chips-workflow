@@ -73,7 +73,4 @@ void Yolov8PDet::generateKeypointsBoxes(
     m[kBox.bbox.class_id].push_back(kBox);
   }
 }
-
-FlowEngineModuleRegister(Yolov8PDet, AlgoConfig const &, ModelInfo const &);
-
 } // namespace infer::vision

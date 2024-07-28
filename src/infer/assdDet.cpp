@@ -93,7 +93,4 @@ void Assd::generateBoxes(std::unordered_map<int, BBoxes> &m,
 }
 
 bool Assd::verifyOutput(InferResult const &result) const { return true; }
-
-FlowEngineModuleRegister(Assd, AlgoConfig const &, ModelInfo const &);
-
 } // namespace infer::vision

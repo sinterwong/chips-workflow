@@ -33,6 +33,7 @@ TARGET_INCLUDE_DIRECTORIES(face_server PRIVATE
   ${PROJECT_INCLUDE_DIR}/infer/x3
   ${PROJECT_INCLUDE_DIR}/infer/generic
   ${PROJECT_INCLUDE_DIR}/server/face
+  ${3RDPARTY_DIR}/nlohmann
   ${ONNXRUNTIME_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIRS}
   ${FAISS_INCLUDE_DIR}
@@ -67,6 +68,7 @@ FOREACH(sourcefile ${APP_SOURCES})
       ${PROJECT_INCLUDE_DIR}/infer/x3
       ${PROJECT_INCLUDE_DIR}/infer/generic
       ${PROJECT_INCLUDE_DIR}/server/face
+      ${3RDPARTY_DIR}/nlohmann
       ${ONNXRUNTIME_INCLUDE_DIR}
       ${OpenCV_INCLUDE_DIRS}
       ${FAISS_INCLUDE_DIR}

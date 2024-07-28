@@ -12,8 +12,8 @@
 #ifndef __FLOWENGINE_VIDEO_DECODE_H_
 #define __FLOWENGINE_VIDEO_DECODE_H_
 #include "common/common.hpp"
-#include "common/joining_thread.h"
 #include "logger/logger.hpp"
+#include "utils/joining_thread.hpp"
 #include <memory>
 #include <mutex>
 #include <opencv2/core/mat.hpp>
@@ -31,7 +31,7 @@ class VideoDecode : private VDecoder {
 private:
   std::shared_mutex stream_m;
   std::unique_ptr<videoSource> stream;
-  std::unique_ptr<joining_thread> consumer; // 消费者
+  std::unique_ptr<::utils::joining_thread> consumer; // 消费者
   std::mutex frame_m;
   void *frame = nullptr;
   int channel;

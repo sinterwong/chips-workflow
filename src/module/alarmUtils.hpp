@@ -21,14 +21,13 @@
 
 #include "common/common.hpp"
 #include "logger/logger.hpp"
-#include "messageBus.h"
+#include "messageBus.hpp"
 #include "module.hpp"
 #include "module_utils.hpp"
 #include "preprocess.hpp"
 
 #include "videoRecord.hpp"
 
-using namespace video;
 using common::LogicBase;
 
 namespace module {
@@ -45,7 +44,7 @@ protected:
   bool isRecord = false; // 是否是保存视频状态
   int frameCount = 0;    // 保存帧数
   // int drawTimes = 0;     // 视频上画的次数
-  std::unique_ptr<VideoRecord> vr;
+  std::unique_ptr<video::VideoRecord> vr;
 
 public:
   AlarmUtils() {}
@@ -62,13 +61,13 @@ public:
     isRecord = true;
     frameCount = videDuration * rate;
     // drawTimes = floor(frameCount / 3);
-    videoOptions params;
+    video::videoOptions params;
     params.resource = path;
     params.width = width;
     params.height = height;
     params.frameRate = rate;
     try {
-      vr = std::make_unique<VideoRecord>(std::move(params));
+      vr = std::make_unique<video::VideoRecord>(std::move(params));
     } catch (const std::runtime_error &e) {
       FLOWENGINE_LOGGER_ERROR("initRecorder exception: ", e.what());
       return false;

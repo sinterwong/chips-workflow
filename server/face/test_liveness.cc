@@ -220,7 +220,7 @@ int main(int argc, char **argv) {
 
     // 获取最靠近中心的人脸
     size_t aIndex =
-        utils::findClosestBBoxIndex(*kbboxes, image->cols, image->rows);
+        infer::utils::findClosestBBoxIndex(*kbboxes, image->cols, image->rows);
     auto kbbox = kbboxes->at(aIndex);
 
     {
@@ -256,7 +256,8 @@ int main(int argc, char **argv) {
       h = static_cast<int>(kbbox.bbox.bbox[3]) - y;
 
       cv::Rect retBox{x, y, w, h};
-      if (!utils::cropImage(*image, faceImage, retBox, ColorType::NV12)) {
+      if (!infer::utils::cropImage(*image, faceImage, retBox,
+                                   ColorType::NV12)) {
         FLOWENGINE_LOGGER_ERROR("Crop image failed!");
         return -1;
       }
@@ -296,7 +297,7 @@ int main(int argc, char **argv) {
         actionType == LivenessStatus::SHAKE) {
       // 计算角度
       float pitch, yaw, roll;
-      utils::points5angle(kbbox.points, pitch, yaw, roll);
+      infer::utils::points5angle(kbbox.points, pitch, yaw, roll);
       FLOWENGINE_LOGGER_DEBUG("pitch: {}, yaw: {}, roll: {}", pitch, yaw, roll);
 
       if (actionType == LivenessStatus::NOD) {
@@ -339,7 +340,7 @@ int main(int argc, char **argv) {
     // cv::imwrite(prefix + "_liveness_aligned_face.jpg", aligned_face_bgr);
 
     cv::Mat aligned_face_nv12;
-    utils::BGR2NV12(aligned_face_bgr, aligned_face_nv12);
+    infer::utils::BGR2NV12(aligned_face_bgr, aligned_face_nv12);
 
     // 人脸关键点检测
     FrameInfo faceInput;

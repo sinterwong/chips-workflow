@@ -11,7 +11,7 @@
 #ifndef __FLOWENGINE_JETSON_VIDEO_DECODE_H_
 #define __FLOWENGINE_JETSON_VIDEO_DECODE_H_
 #include "common/common.hpp"
-#include "joining_thread.h"
+#include "joining_thread.hpp"
 #include "logger/logger.hpp"
 #include "videoSource.h"
 #include <memory>
@@ -27,7 +27,7 @@ class VideoDecode : private VDecoder {
 private:
   std::shared_mutex stream_m;
   std::unique_ptr<videoSource> stream = nullptr;
-  std::unique_ptr<joining_thread> consumer; // 消费者
+  std::unique_ptr<utils::joining_thread> consumer; // 消费者
   std::mutex frame_m;
   uchar3 *frame = nullptr;
   static const std::unordered_map<std::string, std::string> codecMapping;

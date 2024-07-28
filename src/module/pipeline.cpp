@@ -10,9 +10,10 @@
  */
 
 #include "pipeline.hpp"
-#include "common/factory.hpp"
 #include "logger/logger.hpp"
 #include "module.hpp"
+#include "moduleRegister.hpp"
+#include "utils/factory.hpp"
 #include <algorithm>
 #include <memory>
 #include <unordered_map>
@@ -27,6 +28,7 @@ namespace module {
 PipelineModule::PipelineModule(std::string const &config_path_,
                                size_t workers_n)
     : config_path(config_path_) {
+  ModuleNodeRegistrar::getInstance();
   pool = std::unique_ptr<thread_pool>{std::make_unique<thread_pool>()};
   pool->start(workers_n);
 }
@@ -173,7 +175,7 @@ void PipelineModule::updateAlgorithms(
   }
 }
 
-void PipelineModule::updatePipelines(
+bool PipelineModule::updatePipelines(
     const std::vector<PipelineParams> &pipelines) {
   std::vector<std::string> currentModules;
   std::vector<ModuleInfo> moduleRelations;
@@ -183,7 +185,13 @@ void PipelineModule::updatePipelines(
       moduleRelations.push_back(config.first);
 
       if (atm.find(config.first.moduleName) == atm.end()) {
-        submitModule(config.first, config.second);
+        if (!submitModule(config.first, config.second)) {
+          // pipeline中有模块启动失败，重置后返回
+          atm.clear();
+          FLOWENGINE_LOGGER_CRITICAL("Pipeline construction failed. Current "
+                                     "configurations have been cleared!");
+          return false;
+        }
       }
     }
   }
@@ -212,6 +220,7 @@ void PipelineModule::updatePipelines(
       }
     }
   }
+  return true;
 }
 
 /**
@@ -244,8 +253,7 @@ bool PipelineModule::startPipeline() {
   updateAlgorithms(algorithms);
 
   // 更新最新的pipelines
-  updatePipelines(pipelines);
-  return true;
+  return updatePipelines(pipelines);
 }
 
 void PipelineModule::run() {
@@ -259,5 +267,4 @@ void PipelineModule::run() {
     // break;
   }
 }
-
 } // namespace module

@@ -9,8 +9,8 @@
  *
  */
 #include "softmaxCls.hpp"
-#include "common/factory.hpp"
 #include "logger/logger.hpp"
+#include "utils/factory.hpp"
 
 namespace infer::vision {
 
@@ -43,5 +43,4 @@ ClsRet Softmax::generateClass(void **outputs) const {
   return ClsRet{idx, val};
 }
 
-FlowEngineModuleRegister(Softmax, AlgoConfig const &, ModelInfo const &);
 } // namespace infer::vision

@@ -18,12 +18,13 @@
 #include <thread>
 #include <vector>
 
-#include "backend.h"
-#include "common/factory.hpp"
+#include "backend.hpp"
 #include "logger/logger.hpp"
+#include "utils/factory.hpp"
 
 using common::MessageType;
 using common::ModuleBase;
+using namespace utils;
 
 namespace module {
 using forwardMessage = std::tuple<std::string, MessageType, queueMessage>;
@@ -38,8 +39,6 @@ protected:
   MessageType type; // 模块类型 {stream, output, logic}
 
   ModuleBase config; // 模块类型 {stream, output, logic}
-
-  std::mutex _m;
 
   std::vector<std::string> recvModule, sendModule;
 
@@ -135,7 +134,6 @@ public:
 
   bool autoSend(const queueMessage &buf) {
     bool ret = false;
-    std::lock_guard<std::mutex> lk(_m);
     for (auto &target : sendModule) {
       auto temp = ptr->message->send(name, target, type, buf);
       ret = ret and temp;
@@ -144,7 +142,6 @@ public:
   }
 
   void delSendModule(std::string const &name) {
-    std::lock_guard<std::mutex> lk(_m);
     auto iter = std::remove(sendModule.begin(), sendModule.end(), name);
     if (iter != sendModule.end()) {
       sendModule.erase(iter, sendModule.end());
@@ -152,7 +149,6 @@ public:
   }
 
   void addSendModule(std::string const &name) {
-    std::lock_guard<std::mutex> lk(_m);
     auto iter = std::find(sendModule.begin(), sendModule.end(), name);
     if (iter == sendModule.end()) {
       sendModule.push_back(name);
@@ -160,7 +156,6 @@ public:
   }
 
   void delRecvModule(std::string const &name) {
-    std::lock_guard<std::mutex> lk(_m);
     auto iter = std::remove(recvModule.begin(), recvModule.end(), name);
     if (iter != recvModule.end()) {
       recvModule.erase(iter, recvModule.end());
@@ -168,22 +163,15 @@ public:
   }
 
   void addRecvModule(std::string const &name) {
-    std::lock_guard<std::mutex> lk(_m);
     auto iter = std::find(recvModule.begin(), recvModule.end(), name);
     if (iter == recvModule.end()) {
       recvModule.push_back(name);
     }
   }
 
-  std::vector<std::string> getSendModule() {
-    std::lock_guard<std::mutex> lk(_m);
-    return sendModule;
-  }
+  std::vector<std::string> getSendModule() { return sendModule; }
 
-  std::vector<std::string> getRecvModule() {
-    std::lock_guard<std::mutex> lk(_m);
-    return recvModule;
-  }
+  std::vector<std::string> getRecvModule() { return recvModule; }
 };
 } // namespace module
 #endif // FLOWCORE_MODULE_HPP

@@ -12,8 +12,8 @@
 #ifndef __METAENGINE_FRAME_DIFFERENCE_MODULE_H
 #define __METAENGINE_FRAME_DIFFERENCE_MODULE_H
 
-#include "alarmUtils.h"
-#include "frame_difference.h"
+#include "alarmUtils.hpp"
+#include "frame_difference.hpp"
 #include "module.hpp"
 
 namespace module {

@@ -9,7 +9,7 @@
  *
  */
 
-#include "frame_difference.h"
+#include "frame_difference.hpp"
 #include "logger/logger.hpp"
 #include <future>
 #include <opencv2/imgcodecs.hpp>

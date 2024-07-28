@@ -12,7 +12,7 @@
 #ifndef __INFER_VISION_H_
 #define __INFER_VISION_H_
 #include "infer_common.hpp"
-#include "inference.h"
+#include "inference.hpp"
 #include "logger/logger.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "preprocess.hpp"
